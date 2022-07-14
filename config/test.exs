@@ -6,10 +6,10 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :membrane_live, MembraneLive.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "swm",
+  password: "swm123",
   hostname: "localhost",
-  database: "membrane_live_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database: "membrane_live_dev",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
