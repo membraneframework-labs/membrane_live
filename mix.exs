@@ -1,4 +1,4 @@
-defmodule Membrane.Live.MixFile do
+defmodule Membrane.Live.Mixfile do
   use Mix.Project
 
   @version "0.1.0"
@@ -26,9 +26,6 @@ defmodule Membrane.Live.MixFile do
     ]
   end
 
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {MembraneLive.Application, []},
