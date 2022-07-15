@@ -10,7 +10,6 @@ defmodule MembraneLiveWeb.Telemetry do
   end
 
   @impl true
-  @spec init(any) :: {:ok, {%{intensity: any, period: any, strategy: any}, list}}
   def init(_arg) do
     children = [
       # Telemetry poller will execute the given period measurements
