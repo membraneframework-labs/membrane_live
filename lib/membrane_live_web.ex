@@ -17,6 +17,9 @@ defmodule MembraneLiveWeb do
   and import those modules here.
   """
 
+  @spec controller ::
+          {:__block__, [],
+           [{:alias, [...], [...]} | {:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def controller do
     quote do
       use Phoenix.Controller, namespace: MembraneLiveWeb
@@ -27,6 +30,9 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec view ::
+          {:__block__, [],
+           [{:__block__, [], [...]} | {:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def view do
     quote do
       use Phoenix.View,
@@ -42,6 +48,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec live_view :: {:__block__, [], [{:__block__, [], [...]} | {:use, [...], [...]}, ...]}
   def live_view do
     quote do
       use Phoenix.LiveView,
@@ -51,6 +58,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec live_component :: {:__block__, [], [{:__block__, [], [...]} | {:use, [...], [...]}, ...]}
   def live_component do
     quote do
       use Phoenix.LiveComponent
@@ -59,6 +67,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec component :: {:__block__, [], [{:__block__, [], [...]} | {:use, [...], [...]}, ...]}
   def component do
     quote do
       use Phoenix.Component
@@ -67,6 +76,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec router :: {:__block__, [], [{:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def router do
     quote do
       use Phoenix.Router
@@ -77,6 +87,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec channel :: {:__block__, [], [{:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def channel do
     quote do
       use Phoenix.Channel
@@ -101,6 +112,7 @@ defmodule MembraneLiveWeb do
     end
   end
 
+  @spec __using__(atom) :: any
   @doc """
   When used, dispatch to the appropriate controller/view/etc.
   """

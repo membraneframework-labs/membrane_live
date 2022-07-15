@@ -13,7 +13,6 @@ defmodule MembraneLive.DataCase do
   by setting `use MembraneLive.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
-
   use ExUnit.CaseTemplate
 
   using do
@@ -35,11 +34,13 @@ defmodule MembraneLive.DataCase do
   @doc """
   Sets up the sandbox based on the test tags.
   """
+  @spec setup_sandbox(any()) :: any()
   def setup_sandbox(tags) do
     pid = Ecto.Adapters.SQL.Sandbox.start_owner!(MembraneLive.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 
+  @spec errors_on(Ecto.Changeset.t()) :: %{optional(atom) => list}
   @doc """
   A helper that transforms changeset errors into a map of messages.
 

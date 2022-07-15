@@ -5,6 +5,7 @@ defmodule MembraneLiveWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
+  @spec error_tag(atom | %{:errors => [{any, any}], optional(any) => any}, atom) :: list
   @doc """
   Generates tag for inlined form input errors.
   """
@@ -17,6 +18,7 @@ defmodule MembraneLiveWeb.ErrorHelpers do
     end)
   end
 
+  @spec translate_error({binary, keyword | map}) :: binary
   @doc """
   Translates an error message using gettext.
   """
