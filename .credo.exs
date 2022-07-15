@@ -27,12 +27,10 @@
         {Credo.Check.Consistency.SpaceAroundOperators, []},
         {Credo.Check.Consistency.SpaceInParentheses, []},
         {Credo.Check.Consistency.TabsOrSpaces, []},
-
         {Credo.Check.Design.AliasUsage,
          [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 0]},
         {Credo.Check.Design.TagTODO, [exit_status: 0]},
         {Credo.Check.Design.TagFIXME, []},
-
         {Credo.Check.Readability.AliasOrder, [priority: :normal]},
         {Credo.Check.Readability.FunctionNames, []},
         {Credo.Check.Readability.LargeNumbers, []},
@@ -53,7 +51,6 @@
         {Credo.Check.Readability.UnnecessaryAliasExpansion, []},
         {Credo.Check.Readability.VariableNames, []},
         {Credo.Check.Readability.WithSingleClause, false},
-
         {Credo.Check.Refactor.CondStatements, []},
         {Credo.Check.Refactor.CyclomaticComplexity, []},
         {Credo.Check.Refactor.FunctionArity, []},
@@ -65,7 +62,6 @@
         {Credo.Check.Refactor.Nesting, []},
         {Credo.Check.Refactor.UnlessWithElse, []},
         {Credo.Check.Refactor.WithClauses, []},
-
         {Credo.Check.Warning.BoolOperationOnSameValues, []},
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck, []},
         {Credo.Check.Warning.IExPry, []},
@@ -84,7 +80,6 @@
         {Credo.Check.Warning.UnusedStringOperation, []},
         {Credo.Check.Warning.UnusedTupleOperation, []},
         {Credo.Check.Warning.UnsafeExec, []},
-
         {Credo.Check.Readability.StrictModuleLayout,
          priority: :normal, order: ~w/shortdoc moduledoc behaviour use import require alias/a},
         {Credo.Check.Consistency.MultiAliasImportRequireUse, false},
@@ -105,7 +100,6 @@
         {Credo.Check.Warning.LeakyEnvironment, false},
         {Credo.Check.Warning.MapGetUnsafePass, false},
         {Credo.Check.Warning.UnsafeToAtom, false}
-
       ]
     }
   ]

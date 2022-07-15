@@ -18,6 +18,7 @@ config :membrane_live, MembraneLiveWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
+
 config :membrane_live, MembraneLiveWeb.Endpoint,
   live_reload: [
     patterns: [
