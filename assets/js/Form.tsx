@@ -34,7 +34,7 @@ function Form() {
   }
   
   const sendEventInfo = (): void => {
-    fetch("http://localhost:4000/new", {
+    fetch("http://localhost:4000/webinars", {
       method: "post",
       headers: { 
         "Content-Type": "application/json",
