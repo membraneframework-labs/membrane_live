@@ -15,6 +15,7 @@ type Links = {
 }
 
 function Form() {
+  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const [links, setLinks] = useState<Links>();
   const [currParticipant, setCurrParticipant] = useState<string>("");
   const [eventInfo, setEventInfo] = useState<EventInfo>({title: "", description: "", start_date: "", presenters: []});
@@ -28,7 +29,6 @@ function Form() {
     setCurrParticipant("")
   }
 
-
   const checkEventInfo = (): boolean => {
     return eventInfo.start_date != "" && eventInfo.title != "";
   }
@@ -38,7 +38,8 @@ function Form() {
       method: "post",
       headers: { 
         "Content-Type": "application/json",
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken? csrfToken : "",
         },
       body: JSON.stringify(eventInfo)
     }).then((response) => {
