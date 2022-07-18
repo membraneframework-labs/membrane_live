@@ -15,14 +15,12 @@ jobs:
       - image: membraneframeworklabs/docker_membrane:latest
         environment:
           MIX_ENV: test
-          # TEST_DATABASE_URL: postgresql://postgres@localhost/circle_test
 
       - image: cimg/postgres:14.0
-    #       environment:
-    #         POSTGRES_USER: postgres
-    #       auth:
-    #         username: mydockerhub-user
-    #         password: $DOCKERHUB_PASSWORD
+        environment:
+          POSTGRES_USER: swm
+          POSTGRES_PASSWORD: swm123
+
     steps:
       - checkout
       - run:
