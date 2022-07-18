@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Input, InputGroup, InputRightElement, Stack } from '@chakra-ui/react'
+import { Button, Input, InputGroup, InputRightElement, Stack, Textarea, UnorderedList, ListItem } from '@chakra-ui/react'
 import React from 'react';
 
 type EventInfo = {
@@ -28,8 +28,12 @@ function Form() {
     setCurrParticipant("")
   }
 
-  // ${window._env_.DASHBOARD_SERVER_URL}
-  const handleSendButton = () => {
+
+  const checkEventInfo = (): boolean => {
+    return eventInfo.start_date != "" && eventInfo.title != "";
+  }
+  
+  const sendEventInfo = (): void => {
     fetch("http://localhost:4000/new", {
       method: "post",
       headers: { 
@@ -38,17 +42,31 @@ function Form() {
         },
       body: JSON.stringify(eventInfo)
     }).then((response) => {
-            return response.json();
+      if (response.ok) {
+        return response.json();
+      }
+      return Promise.reject(response.status);
     }).then((data) => {
       setLinks(JSON.parse(data));
+    }).catch((error) => {
+      alert("Something went wrong. Please try again in a moment.");
+      console.log(error);
     });
+  }
+  
+  const handleSendButton = () => {
+    if (checkEventInfo()) {
+      sendEventInfo();
+    } else {
+      alert("Fields title and date are necessary to create an event.")
+    }
   };
 
   return (
     <div>
-      <Stack spacing={4} mx={4} width='22rem'>
-        <Input type='top' placeholder='Title' onChange={handleInputTitle}/>
-        <Input type='desc' placeholder='Description' onChange={handleInputDescription}/>
+      <Stack spacing={4}  width='30rem'>
+        <Input type='text' placeholder='Title' onChange={handleInputTitle}/>
+        <Textarea placeholder='Description' onChange={handleInputDescription}/>
         <Input
         placeholder="Select Date and Time"
         size="md"
@@ -70,6 +88,10 @@ function Form() {
             </Button>
           </InputRightElement>
         </InputGroup>
+        <UnorderedList>
+        {eventInfo.presenters &&
+          eventInfo.presenters.map((presenter, idx) => <ListItem key={idx}>{presenter}</ListItem>)}
+        </UnorderedList>
       </Stack>
       <Button h='1.75rem' size='sm' onClick={handleSendButton}>
         Send
