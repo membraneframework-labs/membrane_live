@@ -8,10 +8,45 @@ version: 2.1
 orbs:
   elixir: membraneframework/elixir@1
 
+jobs:
+  # Job equal to elixir/test, but with postgres docker image added
+  test_with_db:
+    docker:
+      - image: membraneframeworklabs/docker_membrane:latest
+          environment:
+            MIX_ENV: test
+            # TEST_DATABASE_URL: postgresql://postgres@localhost/circle_test
+
+      - image: cimg/postgres:14.0
+    #       environment:
+    #         POSTGRES_USER: postgres
+    #       auth:
+    #         username: mydockerhub-user
+    #         password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - run:
+          command: mkdir -p priv
+          name: Ensure priv dir exists
+      - elixir/get_mix_deps
+      - use_build_cache:
+          env: test
+      - run:
+          command: mix deps.compile
+          name: Ensure native deps are compiled
+      - run:
+          command: mix ecto.create
+          name: Create test database
+      - run:
+          command: mix test --warnings-as-errors
+          name: Run all tests
+ 
+
+
 workflows:
   version: 2
   build:
     jobs:
       - elixir/build_test
-      - elixir/test
+      - test_with_db
       - elixir/lint
