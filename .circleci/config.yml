@@ -35,6 +35,32 @@ jobs:
       - run:
           command: mix test --warnings-as-errors
           name: Run all tests
+
+  # Job equal to elixir/lint, but without using dialyzer (rtc_engine does not support it)
+  lint_wo_dialyzer:
+    executor:
+      mix_env: dev
+      name: elixir/docker_membrane
+    steps:
+      - checkout
+      - run:
+          command: mkdir -p priv
+          name: Ensure priv dir exists
+      - elixir/get_mix_deps
+      - use_build_cache:
+          before-save:
+            - run: mix compile
+          env: dev
+          regenerate: true
+      - run:
+          command: mix format --check-formatted
+          name: Check code formatting
+      - run:
+          command: mix credo
+          name: Run Credo linter
+      - run:
+          command: 'mix docs && mix docs 2>&1 | (! grep -q "warning:")'
+          name: Check docs generation for warnings
  
   # Install dependencies and run linter on front-end, possibly run tests in the future
   lint_frontend:
@@ -58,5 +84,5 @@ workflows:
     jobs:
       - elixir/build_test
       - test_with_db
-      - elixir/lint
+      - lint_wo_dialyzer
       - lint_frontend
