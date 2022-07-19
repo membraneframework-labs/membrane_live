@@ -2,6 +2,8 @@ defmodule MembraneLive.Webinars.Webinar do
   @moduledoc """
   Struct for webinar
   """
+  use Ecto.Schema
+  import Ecto.Changeset
 
   @type t :: %__MODULE__{
           description: String.t(),
@@ -11,9 +13,6 @@ defmodule MembraneLive.Webinars.Webinar do
           title: String.t(),
           viewer_link: String.t()
         }
-
-  use Ecto.Schema
-  import Ecto.Changeset
 
   schema "webinars" do
     field(:description, :string)
