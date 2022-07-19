@@ -40,9 +40,7 @@ jobs:
   lint_frontend:
     working_directory: ~/membrane_live/assets
     docker: 
-      - image: membraneframeworklabs/docker_membrane:latest
-        environment:
-          MIX_ENV: test
+      - image: cimg/node:18.4.0v
 
     steps:
       - checkout:
