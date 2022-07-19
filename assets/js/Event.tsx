@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {Button, Heading } from "@chakra-ui/react";
-
+import {Button, Heading, Center } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 type EventInfo = {
     link: string;
@@ -14,7 +14,7 @@ type EventInfo = {
 const initEventInfo = () => {
     return {
         link: window.location.pathname.split("/")[2],
-        title: "Mock title",
+        title: "",
         description: "",
         start_date: "",
         presenters: [],
@@ -24,6 +24,7 @@ const initEventInfo = () => {
 
 const Event = () => {
     const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
+    const navigate = useNavigate(); 
     const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
     
     useEffect(() => {
@@ -38,14 +39,19 @@ const Event = () => {
         }).then((data) => {
           setEventInfo({...eventInfo, ...JSON.parse(data).webinar});
         }).catch(() => {
-          alert("Couldn't get event information. Please reload this page.");
+           alert("Couldn't get event information. Please reload this page.");
         });
     }, []);
+
+    const handleExitButton = () => { navigate("/"); }
 
     return (
         <>
         <Heading>{eventInfo.title}</Heading>
-        <Button marginTop="100%" marginLeft="90%" colorScheme='red' size="lg"> EXIT </Button> 
+        <Center alignContent="center" bg='black' w='100%' height="50%" p={4}  color='white'>
+            Please wait for the moderator to select a presenter
+        </Center>
+        <Button marginLeft="90%" colorScheme='red' size="lg" onClick={handleExitButton}> EXIT </Button> 
         </>
     );
 }
