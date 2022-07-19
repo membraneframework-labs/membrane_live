@@ -47,7 +47,7 @@ jobs:
           command: mkdir -p priv
           name: Ensure priv dir exists
       - elixir/get_mix_deps
-      - use_build_cache:
+      - elixir/use_build_cache:
           before-save:
             - run: mix compile
           env: dev
