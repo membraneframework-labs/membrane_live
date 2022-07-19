@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Text,
   Button,
   Input,
   InputGroup,
@@ -119,7 +120,15 @@ function Form() {
         <Button h="1.75rem" size="sm" onClick={handleSendButton}>
           Send
         </Button>
-      </Stack>
+        {links ? (
+        <>
+          <Text fontSize="2xl"> Moderator link: </Text>
+          <Text fontSize="lg" as='u'> {links?.moderator_link} </Text>
+          <Text fontSize="2xl"> Viewer Link: </Text>
+          <Text fontSize="lg" as='u'> {links?.viewer_link} </Text>
+        </>
+        ): null}
+        </Stack>
     </Center>
   );
 }
