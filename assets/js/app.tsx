@@ -1,14 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ChakraProvider, Center } from "@chakra-ui/react";
-import Form from "./Form";
+import { ChakraProvider} from "@chakra-ui/react";
+import Router from "./Router";
 
 ReactDOM.createRoot(document.getElementById('main')!).render(
   <React.StrictMode>
     <ChakraProvider>
-      <Center>
-        <Form/>
-      </Center>
+      <Router/>
     </ChakraProvider>
   </React.StrictMode>
 );

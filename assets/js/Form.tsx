@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Input, InputGroup, InputRightElement, Stack, Textarea, UnorderedList, ListItem } from '@chakra-ui/react'
+import { Button, Input, InputGroup, InputRightElement, Stack, Textarea, UnorderedList, ListItem, Center } from '@chakra-ui/react'
 import React from 'react';
 
 type EventInfo = {
@@ -10,8 +10,8 @@ type EventInfo = {
 };
 
 type Links = {
-  viewer: string;
-  moderator: string;
+  viewer_link: string;
+  moderator_link: string;
 }
 
 function Form() {
@@ -41,14 +41,14 @@ function Form() {
         'Accept': 'application/json',
         'X-CSRF-TOKEN': csrfToken? csrfToken : "",
         },
-      body: JSON.stringify(eventInfo)
+      body: JSON.stringify({ webinar: eventInfo})
     }).then((response) => {
       if (response.ok) {
         return response.json();
       }
       return Promise.reject(response.status);
     }).then((data) => {
-      setLinks(JSON.parse(data));
+      setLinks(JSON.parse(data).webinar_links);
     }).catch((error) => {
       alert("Something went wrong. Please try again in a moment.");
       console.log(error);
@@ -64,9 +64,9 @@ function Form() {
   };
 
   return (
-    <div>
-      <Stack spacing={4}  width='30rem'>
-        <Input type='text' placeholder='Title' onChange={handleInputTitle}/>
+    <Center height="100vh">
+      <Stack spacing={4}  width='50rem'>
+        <Input type='text' placeholder='Title' size="lg" onChange={handleInputTitle}/>
         <Textarea placeholder='Description' onChange={handleInputDescription}/>
         <Input
         placeholder="Select Date and Time"
@@ -93,11 +93,11 @@ function Form() {
         {eventInfo.presenters &&
           eventInfo.presenters.map((presenter, idx) => <ListItem key={idx}>{presenter}</ListItem>)}
         </UnorderedList>
+        <Button h='1.75rem' size='sm' onClick={handleSendButton}>
+          Send
+        </Button>
       </Stack>
-      <Button h='1.75rem' size='sm' onClick={handleSendButton}>
-        Send
-      </Button>
-    </div>
+    </Center>
   );
 }
 

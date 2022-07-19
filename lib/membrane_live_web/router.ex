@@ -18,6 +18,7 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:browser)
 
     get("/", PageController, :index)
+    get("/event/:param", PageController, :index)
   end
 
   if Mix.env() in [:dev, :test] do
