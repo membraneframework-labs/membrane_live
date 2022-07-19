@@ -38,19 +38,19 @@ jobs:
  
   # Install dependencies and run linter on front-end, possibly run tests in the future
   lint_frontend:
+    working_directory: ~/membrane_live/assets
     docker: 
       - image: membraneframeworklabs/docker_membrane:latest
         environment:
           MIX_ENV: test
-    
-    working_directory: ~/membrane_live/assets
 
     steps:
-      - checkout
+      - checkout:
+          path: ~/membrane_live
       - run:
           command: npm install
           name: Install front-end dependencies
-      run:
+      - run:
           command: npm run format:check
           name: Run prettier on front-end
 
