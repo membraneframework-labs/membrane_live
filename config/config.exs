@@ -5,7 +5,12 @@ config :membrane_live,
 
 config :membrane_live, MembraneLiveWeb.Endpoint,
   url: [host: "localhost"],
-  render_errors: [view: MembraneLiveWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    view: MembraneLiveWeb.ErrorView,
+    format: "json",
+    accepts: ~w(html json),
+    layout: false
+  ],
   pubsub_server: MembraneLive.PubSub,
   live_view: [signing_salt: "s4HsMuAM"]
 
