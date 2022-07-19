@@ -1,6 +1,6 @@
 defmodule MembraneLiveWeb.CiDbConnectionTest do
   use MembraneLiveWeb.ConnCase
-  alias MembraneLive.{User, Repo}
+  alias MembraneLive.{Repo, User}
 
   test "write and read from db", _params do
     name = "John Doe"
