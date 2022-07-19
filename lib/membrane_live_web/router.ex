@@ -2,7 +2,7 @@ defmodule MembraneLiveWeb.Router do
   use MembraneLiveWeb, :router
 
   pipeline :browser do
-    plug(:accepts, ["html"])
+    plug(:accepts, ["json"])
     plug(:fetch_session)
     plug(:fetch_live_flash)
     plug(:put_root_layout, {MembraneLiveWeb.LayoutView, :root})

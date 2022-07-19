@@ -12,12 +12,10 @@ defmodule MembraneLive.WebinarsFixtures do
     {:ok, webinar} =
       attrs
       |> Enum.into(%{
-        description: "some description",
-        moderator_link: "some moderator_link",
-        presenters: [],
-        start_date: ~N[2022-07-17 10:20:00],
-        title: "some title",
-        viewer_link: "some viewer_link"
+        "description" => "some description",
+        "presenters" => [],
+        "start_date" => ~N[2022-07-17 10:20:00],
+        "title" => "some title"
       })
       |> MembraneLive.Webinars.create_webinar()
 

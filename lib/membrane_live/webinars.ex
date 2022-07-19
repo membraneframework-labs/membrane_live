@@ -42,6 +42,22 @@ defmodule MembraneLive.Webinars do
   """
   def get_webinar!(id), do: Repo.get!(Webinar, id)
 
+  @spec get_webinar_by_link(String.t()) :: Webinar.t() | nil
+  def get_webinar_by_link(link) do
+    get_webinar_by_link(link, :viewer_link)
+  end
+
+  defp get_webinar_by_link(link, :viewer_link) do
+    case Repo.get_by(Webinar, viewer_link: link) do
+      nil -> get_webinar_by_link(link, :moderator_link)
+      webinar -> webinar
+    end
+  end
+
+  defp get_webinar_by_link(link, :moderator_link) do
+    Repo.get_by(Webinar, moderator_link: link)
+  end
+
   @spec create_webinar(map) :: any
   @doc """
   Creates a webinar.

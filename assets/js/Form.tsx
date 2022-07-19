@@ -18,30 +18,30 @@ function Form() {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const [links, setLinks] = useState<Links>();
   const [currParticipant, setCurrParticipant] = useState<string>("");
-  const [eventInfo, setEventInfo] = useState<EventInfo>({title: "", description: "", start_date: "", presenters: []});
+  const [eventInfo, setEventInfo] = useState<EventInfo>({ title: "", description: "", start_date: "", presenters: [] });
 
-  const handleInputTitle = (event: any) => setEventInfo({...eventInfo, title: event.target.value});
-  const handleInputDescription = (event: any) => setEventInfo({...eventInfo, description: event.target.value});
-  const handleInputDate = (event: any) => setEventInfo({...eventInfo, start_date: event.target.value});
+  const handleInputTitle = (event: any) => setEventInfo({ ...eventInfo, title: event.target.value });
+  const handleInputDescription = (event: any) => setEventInfo({ ...eventInfo, description: event.target.value });
+  const handleInputDate = (event: any) => setEventInfo({ ...eventInfo, start_date: event.target.value });
   const handleInputParticipant = (event: any) => setCurrParticipant(event.target.value);
   const handleAddButton = () => {
-    setEventInfo({...eventInfo, presenters: [...eventInfo.presenters, currParticipant]});
+    setEventInfo({ ...eventInfo, presenters: [...eventInfo.presenters, currParticipant] });
     setCurrParticipant("")
   }
 
   const checkEventInfo = (): boolean => {
     return eventInfo.start_date != "" && eventInfo.title != "";
   }
-  
+
   const sendEventInfo = (): void => {
     fetch("http://localhost:4000/webinars", {
       method: "post",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         'Accept': 'application/json',
-        'X-CSRF-TOKEN': csrfToken? csrfToken : "",
-        },
-      body: JSON.stringify(eventInfo)
+        'X-CSRF-TOKEN': csrfToken ? csrfToken : "",
+      },
+      body: JSON.stringify({ webinar: eventInfo })
     }).then((response) => {
       if (response.ok) {
         return response.json();
@@ -54,7 +54,7 @@ function Form() {
       console.log(error);
     });
   }
-  
+
   const handleSendButton = () => {
     if (checkEventInfo()) {
       sendEventInfo();
@@ -65,15 +65,15 @@ function Form() {
 
   return (
     <div>
-      <Stack spacing={4}  width='30rem'>
-        <Input type='text' placeholder='Title' onChange={handleInputTitle}/>
-        <Textarea placeholder='Description' onChange={handleInputDescription}/>
+      <Stack spacing={4} width='30rem'>
+        <Input type='text' placeholder='Title' onChange={handleInputTitle} />
+        <Textarea placeholder='Description' onChange={handleInputDescription} />
         <Input
-        placeholder="Select Date and Time"
-        size="md"
-        backgroundColor="#ffffff"
-        type="datetime-local"
-        onChange={handleInputDate}
+          placeholder="Select Date and Time"
+          size="md"
+          backgroundColor="#ffffff"
+          type="datetime-local"
+          onChange={handleInputDate}
         />
         <InputGroup size='md'>
           <Input
@@ -90,8 +90,8 @@ function Form() {
           </InputRightElement>
         </InputGroup>
         <UnorderedList>
-        {eventInfo.presenters &&
-          eventInfo.presenters.map((presenter, idx) => <ListItem key={idx}>{presenter}</ListItem>)}
+          {eventInfo.presenters &&
+            eventInfo.presenters.map((presenter, idx) => <ListItem key={idx}>{presenter}</ListItem>)}
         </UnorderedList>
       </Stack>
       <Button h='1.75rem' size='sm' onClick={handleSendButton}>
