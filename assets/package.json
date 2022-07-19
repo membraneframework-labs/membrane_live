@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "format:check": "prettier --check ."
+  },
   "dependencies": {
     "@chakra-ui/react": "^2.2.4",
     "@emotion/react": "^11.9.3",
@@ -9,6 +12,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6"
+    "@types/react-dom": "^18.0.6",
+    "prettier": "^2.7.1"
   }
 }
