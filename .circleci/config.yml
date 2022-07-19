@@ -36,6 +36,12 @@ jobs:
           command: mix ecto.create
           name: Create test database
       - run:
+          command: mix phx.gen.schema User name:string
+          name: Create database schema for testing purposes
+      - run:
+          command: mix ecto.migrate
+          name: Migrate database schema changes
+      - run:
           command: mix test --warnings-as-errors
           name: Run all tests
  
