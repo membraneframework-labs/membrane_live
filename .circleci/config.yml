@@ -1,9 +1,3 @@
-# This file contains the configuration for Credo and you are probably reading
-# this after creating it with `mix credo.gen.config`.
-#
-# If you find anything wrong or unclear in this file, please report an
-# issue on GitHub: https://github.com/rrrene/credo/issues
-#
 version: 2.1
 orbs:
   elixir: membraneframework/elixir@1
@@ -42,7 +36,23 @@ jobs:
           command: mix test --warnings-as-errors
           name: Run all tests
  
+  # Install dependencies and run linter on front-end, possibly run tests in the future
+  lint_frontend:
+    docker: 
+      - image: membraneframeworklabs/docker_membrane:latest
+        environment:
+          MIX_ENV: test
+    
+    working_directory: ~/membrane_live/assets
 
+    steps:
+      - checkout
+      - run:
+          command: npm install
+          name: Install front-end dependencies
+      run:
+          command: npm run format:check
+          name: Run prettier on front-end
 
 workflows:
   version: 2
@@ -51,3 +61,4 @@ workflows:
       - elixir/build_test
       - test_with_db
       - elixir/lint
+      - lint_frontend
