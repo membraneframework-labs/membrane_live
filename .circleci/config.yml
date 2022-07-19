@@ -37,7 +37,7 @@ jobs:
           name: Create test database
       - run:
           command: mix ecto.migrate
-          name: Migrate database schema changes
+          name: Migrate database schema
       - run:
           command: mix test --warnings-as-errors
           name: Run all tests
