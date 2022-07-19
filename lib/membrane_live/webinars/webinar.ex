@@ -1,5 +1,16 @@
 defmodule MembraneLive.Webinars.Webinar do
-  @moduledoc false
+  @moduledoc """
+  Struct for webinar
+  """
+
+  @type t :: %__MODULE__{
+          description: String.t(),
+          moderator_link: String.t(),
+          presenters: list,
+          start_date: NaiveDateTime.t(),
+          title: String.t(),
+          viewer_link: String.t()
+        }
 
   use Ecto.Schema
   import Ecto.Changeset
