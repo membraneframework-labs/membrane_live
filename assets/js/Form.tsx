@@ -121,14 +121,14 @@ function Form() {
           Send
         </Button>
         {links ? (
-        <>
-          <Text fontSize="2xl"> Moderator link: </Text>
-          <Text fontSize="lg" as='u'> {links?.moderator_link} </Text>
-          <Text fontSize="2xl"> Viewer Link: </Text>
-          <Text fontSize="lg" as='u'> {links?.viewer_link} </Text>
-        </>
-        ): null}
-        </Stack>
+          <>
+            <Text fontSize="2xl"> Moderator link: </Text>
+            <Text fontSize="lg" as='u'> {links?.moderator_link} </Text>
+            <Text fontSize="2xl"> Viewer Link: </Text>
+            <Text fontSize="lg" as='u'> {links?.viewer_link} </Text>
+          </>
+        ) : null}
+      </Stack>
     </Center>
   );
 }

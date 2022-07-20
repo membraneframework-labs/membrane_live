@@ -1,17 +1,88 @@
-# This file contains the configuration for Credo and you are probably reading
-# this after creating it with `mix credo.gen.config`.
-#
-# If you find anything wrong or unclear in this file, please report an
-# issue on GitHub: https://github.com/rrrene/credo/issues
-#
 version: 2.1
 orbs:
   elixir: membraneframework/elixir@1
+
+jobs:
+  # Job equal to elixir/test, but with postgres docker image added and database created
+  test_with_db:
+    docker:
+      - image: membraneframeworklabs/docker_membrane:latest
+        environment:
+          MIX_ENV: test
+
+      - image: cimg/postgres:14.0
+        environment:
+          POSTGRES_USER: swm
+          POSTGRES_PASSWORD: swm123
+
+    steps:
+      - checkout
+      - run:
+          command: mkdir -p priv
+          name: Ensure priv dir exists
+      - elixir/get_mix_deps
+      - elixir/use_build_cache:
+          env: test
+      - run:
+          command: mix deps.compile
+          name: Ensure native deps are compiled
+      - run:
+          command: mix ecto.create
+          name: Create test database
+      - run:
+          command: mix ecto.migrate
+          name: Migrate database schema
+      - run:
+          command: mix test --warnings-as-errors
+          name: Run all tests
+
+  # Job equal to elixir/lint, but without using dialyzer (rtc_engine does not support it)
+  lint_wo_dialyzer:
+    executor:
+      mix_env: dev
+      name: elixir/docker_membrane
+    steps:
+      - checkout
+      - run:
+          command: mkdir -p priv
+          name: Ensure priv dir exists
+      - elixir/get_mix_deps
+      - elixir/use_build_cache:
+          before-save:
+            - run: mix compile
+          env: dev
+          regenerate: true
+      - run:
+          command: mix format --check-formatted
+          name: Check code formatting
+      - run:
+          command: mix credo
+          name: Run Credo linter
+      - run:
+          command: 'mix docs && mix docs 2>&1 | (! grep -q "warning:")'
+          name: Check docs generation for warnings
+ 
+  # Install dependencies and run linter on front-end, possibly run tests in the future
+  lint_frontend:
+    working_directory: ~/membrane_live/assets
+    docker: 
+      - image: cimg/node:18.4.0
+
+    steps:
+      - checkout:
+          path: ~/membrane_live
+      - run:
+          command: npm install
+          name: Install front-end dependencies
+      - run:
+          command: npm run format:check
+          name: Run prettier on front-end
 
 workflows:
   version: 2
   build:
     jobs:
       - elixir/build_test
-      - elixir/test
-      - elixir/lint
+      - test_with_db
+      - lint_wo_dialyzer
+      - lint_frontend
