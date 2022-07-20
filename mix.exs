@@ -61,7 +61,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
-      {:credo, ">= 0.0.0", only: :dev, runtime: false}
+      {:credo, ">= 0.0.0", only: :dev, runtime: false},
+      {:uuid, "~> 1.1"}
     ]
   end
 
