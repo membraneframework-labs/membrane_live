@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Text,
   Button,
   Input,
   InputGroup,
@@ -8,6 +9,7 @@ import {
   Textarea,
   UnorderedList,
   ListItem,
+  Center,
 } from "@chakra-ui/react";
 import React from "react";
 
@@ -19,8 +21,8 @@ type EventInfo = {
 };
 
 type Links = {
-  viewer: string;
-  moderator: string;
+  viewer_link: string;
+  moderator_link: string;
 };
 
 function Form() {
@@ -58,7 +60,7 @@ function Form() {
         Accept: "application/json",
         "X-CSRF-TOKEN": csrfToken ? csrfToken : "",
       },
-      body: JSON.stringify(eventInfo),
+      body: JSON.stringify({ webinar: eventInfo }),
     })
       .then((response) => {
         if (response.ok) {
@@ -67,7 +69,7 @@ function Form() {
         return Promise.reject(response.status);
       })
       .then((data) => {
-        setLinks(JSON.parse(data));
+        setLinks(JSON.parse(data).webinar_links);
       })
       .catch((error) => {
         alert("Something went wrong. Please try again in a moment.");
@@ -84,9 +86,9 @@ function Form() {
   };
 
   return (
-    <div>
-      <Stack spacing={4} width="30rem">
-        <Input type="text" placeholder="Title" onChange={handleInputTitle} />
+    <Center height="100vh">
+      <Stack spacing={4} width="50rem">
+        <Input type="text" placeholder="Title" size="lg" onChange={handleInputTitle} />
         <Textarea placeholder="Description" onChange={handleInputDescription} />
         <Input
           placeholder="Select Date and Time"
@@ -115,11 +117,19 @@ function Form() {
               <ListItem key={idx}>{presenter}</ListItem>
             ))}
         </UnorderedList>
+        <Button h="1.75rem" size="sm" onClick={handleSendButton}>
+          Send
+        </Button>
+        {links ? (
+          <>
+            <Text fontSize="2xl"> Moderator link: </Text>
+            <Text fontSize="lg" as='u'> {links?.moderator_link} </Text>
+            <Text fontSize="2xl"> Viewer Link: </Text>
+            <Text fontSize="lg" as='u'> {links?.viewer_link} </Text>
+          </>
+        ) : null}
       </Stack>
-      <Button h="1.75rem" size="sm" onClick={handleSendButton}>
-        Send
-      </Button>
-    </div>
+    </Center>
   );
 }
 

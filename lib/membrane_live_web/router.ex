@@ -19,6 +19,7 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", PageController, :index)
     resources("/webinars", WebinarController, except: [:edit, :new])
+    get("/event/:param", PageController, :index)
   end
 
   if Mix.env() in [:dev, :test] do
