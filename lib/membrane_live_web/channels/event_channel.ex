@@ -2,12 +2,14 @@ defmodule MembraneLiveWeb.EventChannel do
   use Phoenix.Channel
   alias MembraneLiveWeb.Presence
 
-  def join("event:" <> _id, %{"name" => name} , socket) do
+  def join("event:" <> _id, %{"name" => name}, socket) do
     viewer_data = Presence.get_by_key(socket, name)
+
     case viewer_data do
       [] ->
         send(self(), {:after_join, name})
         {:ok, socket}
+
       _ ->
         {:error, %{reason: "Viewer with this name already exists."}}
     end

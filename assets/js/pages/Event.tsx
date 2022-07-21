@@ -76,8 +76,6 @@ const Event = () => {
       .receive("error", (resp) => {
         setChannelConnErr(resp.reason);
       });
-
-    
   };
 
   return (

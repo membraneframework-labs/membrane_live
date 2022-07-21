@@ -10,7 +10,7 @@ defmodule MembraneLiveWeb.EventSocket do
   # Uncomment the following line to define a "room:*" topic
   # pointing to the `MembraneLiveWeb.RoomChannel`:
   #
-  channel "event:*", MembraneLiveWeb.EventChannel
+  channel("event:*", MembraneLiveWeb.EventChannel)
   #
   # To create a channel file, use the mix task:
   #
@@ -18,7 +18,6 @@ defmodule MembraneLiveWeb.EventSocket do
   #
   # See the [`Channels guide`](https://hexdocs.pm/phoenix/channels.html)
   # for further details.
-
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
