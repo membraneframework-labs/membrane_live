@@ -115,6 +115,6 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   end
 
   defp get_uuid_from_link(viewer_link) do
-    String.replace_prefix(viewer_link, "webinars/events/", "")
+    String.replace_prefix(viewer_link, "/event/", "")
   end
 end
