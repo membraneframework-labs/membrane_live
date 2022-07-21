@@ -18,7 +18,7 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:browser)
 
     get("/", PageController, :index)
-    resources("/webinars", WebinarController, except: [:edit, :new])
+    resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/event/:param", PageController, :index)
   end
 

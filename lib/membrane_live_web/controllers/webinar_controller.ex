@@ -18,7 +18,7 @@ defmodule MembraneLiveWeb.WebinarController do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
-      |> render("show_links.json", webinar: webinar)
+      |> render("show_links.json", webinar_links: Webinars.get_links(webinar))
     end
   end
 
@@ -37,9 +37,9 @@ defmodule MembraneLiveWeb.WebinarController do
     get_with_callback(conn, params, &delete_callback/2)
   end
 
-  defp get_with_callback(conn, %{"id" => id} = params, callback) do
-    case Webinars.get_webinar(id) do
-      nil -> %{error: :not_found, message: "Webinar with id #{id} could not be found"}
+  defp get_with_callback(conn, %{"uuid" => uuid} = params, callback) do
+    case Webinars.get_webinar(uuid) do
+      nil -> %{error: :not_found, message: "Webinar with uuid #{uuid} could not be found"}
       webinar -> callback.(conn, Map.put(params, "webinar_db", webinar))
     end
   end

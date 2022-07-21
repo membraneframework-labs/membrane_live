@@ -9,36 +9,16 @@ defmodule MembraneLive.Webinars do
   alias MembraneLive.Webinars.Webinar
 
   @spec list_webinars :: list(Webinar.t())
-  def list_webinars do
-    Repo.all(Webinar)
-  end
+  def list_webinars, do: Repo.all(Webinar)
 
   @spec get_webinar(integer()) :: Webinar.t() | nil
   def get_webinar(id), do: Repo.get(Webinar, id)
 
-  @spec get_webinar!(integer()) :: Webinar.t()
+  @spec get_webinar!(integer()) :: {:ok, Webinar.t()}
   def get_webinar!(id), do: Repo.get!(Webinar, id)
-
-  @spec get_webinar_by_link(String.t()) :: Webinar.t() | nil
-  def get_webinar_by_link(link) do
-    get_webinar_by_link(link, :viewer_link)
-  end
-
-  defp get_webinar_by_link(link, :viewer_link) do
-    case Repo.get_by(Webinar, viewer_link: link) do
-      nil -> get_webinar_by_link(link, :moderator_link)
-      webinar -> webinar
-    end
-  end
-
-  defp get_webinar_by_link(link, :moderator_link) do
-    Repo.get_by(Webinar, moderator_link: link)
-  end
 
   @spec create_webinar(map) :: any
   def create_webinar(attrs \\ %{}) do
-    attrs = add_links(attrs)
-
     %Webinar{}
     |> Webinar.changeset(attrs)
     |> Repo.insert()
@@ -67,8 +47,14 @@ defmodule MembraneLive.Webinars do
     Webinar.changeset(webinar, attrs)
   end
 
-  defp add_links(attrs) do
-    attrs = Map.put(attrs, "viewer_link", "webinars/event/#{UUID.uuid4()}")
-    Map.put(attrs, "moderator_link", "webinars/event/#{UUID.uuid4()}")
+  @spec get_links(atom | %{:uuid => any, optional(any) => any}) :: %{
+          moderator_link: <<_::64, _::_*8>>,
+          viewer_link: <<_::64, _::_*8>>
+        }
+  def get_links(webinar) do
+    %{
+      viewer_link: "webinars/events/#{webinar.uuid}",
+      moderator_link: "webinars/events/#{webinar.uuid}/moderator"
+    }
   end
 end

@@ -12,6 +12,8 @@ defmodule Membrane.Live.Mixfile do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
+      preferred_cli_env: [ci: :test],
 
       # hex
       description: "Membrane Live App",
@@ -59,7 +61,7 @@ defmodule Membrane.Live.Mixfile do
       {:plug_cowboy, "~> 2.5"},
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:credo, ">= 0.0.0", only: :dev, runtime: false},
+      {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:uuid, "~> 1.1"}
     ]
   end
@@ -82,6 +84,17 @@ defmodule Membrane.Live.Mixfile do
       formatters: ["html"],
       source_ref: "v#{@version}",
       nest_modules_by_prefix: [Membrane.Template]
+    ]
+  end
+
+  def aliases do
+    [
+      ci: [
+        "format --check-formatted",
+        "compile --force --warnings-as-errors",
+        "test --warnings-as-errors",
+        "credo"
+      ]
     ]
   end
 end
