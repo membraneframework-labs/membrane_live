@@ -1,9 +1,12 @@
 defmodule MembraneLiveWeb.EventChannel do
+  @moduledoc """
+  Channel for communicating in each event.
+  """
+  import Ecto.Query, only: [from: 2]
   use Phoenix.Channel
-  alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
   alias MembraneLive.Repo
-  import Ecto.Query, only: [from: 2]
+  alias MembraneLive.Webinars.Webinar
 
   def join("event:" <> id, %{"name" => name}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
@@ -18,7 +21,7 @@ defmodule MembraneLiveWeb.EventChannel do
             send(self(), {:after_join, name})
             {:ok, socket}
 
-          _ ->
+          _viewer_exists ->
             {:error, %{reason: "Viewer with this name already exists."}}
         end
     end

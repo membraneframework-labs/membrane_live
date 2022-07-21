@@ -25,7 +25,7 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     "title" => nil
   }
 
-  @link_prefix "webinars/events/"
+  @link_prefix "/event/"
   @moderator_link_suffix "/moderator"
 
   setup %{conn: conn} do
