@@ -25,6 +25,9 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     "title" => nil
   }
 
+  @link_prefix "webinars/events/"
+  @moderator_link_suffix "/moderator"
+
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
@@ -40,8 +43,13 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     test "renders webinar when data is valid", %{conn: conn} do
       conn = post(conn, Routes.webinar_path(conn, :create), webinar: @create_attrs)
 
-      assert %{"viewer_link" => viewer_link, "moderator_link" => _moderator_link} =
+      assert %{"viewer_link" => viewer_link, "moderator_link" => moderator_link} =
                json_response(conn, 201)["webinar_links"]
+
+      assert String.starts_with?(viewer_link, @link_prefix)
+      assert String.starts_with?(moderator_link, @link_prefix)
+
+      assert String.ends_with?(moderator_link, @moderator_link_suffix)
 
       uuid = get_uuid_from_link(viewer_link)
       webinar = Webinars.get_webinar(uuid)
