@@ -9,6 +9,7 @@ defmodule MembraneLive.Application do
       MembraneLive.Repo,
       MembraneLiveWeb.Telemetry,
       {Phoenix.PubSub, name: MembraneLive.PubSub},
+      MembraneLiveWeb.Presence,
       MembraneLiveWeb.Endpoint
     ]
 

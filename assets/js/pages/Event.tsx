@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Button, Heading, Center } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { Socket } from "phoenix";
+import Popup from "../components/Popup";
 
 type EventInfo = {
   link: string;
@@ -26,6 +28,9 @@ const Event = () => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const socket = new Socket("/socket");
+  socket.connect();
+  let channel;
 
   useEffect(() => {
     fetch("http://localhost:4000/webinars/" + eventInfo.link, {
@@ -50,6 +55,30 @@ const Event = () => {
     navigate("/");
   };
 
+  const connectToChannel = (
+    name: string,
+    onClose: () => void,
+    setChannelConnErr: (value: any) => void
+  ): void => {
+    channel = socket.channel("event:" + eventInfo.link, { name: name });
+    channel
+      .join()
+      .receive("ok", (resp) => {
+        setChannelConnErr("");
+        onClose();
+      })
+      .receive("error", (resp) => {
+        setChannelConnErr(resp.reason);
+      });
+
+    channel.on("presence_state", (message) => {
+      console.log(message); // TODO: implement
+    });
+    channel.on("presence_diff", (message) => {
+      console.log(message); // TODO: implement
+    });
+  };
+
   return (
     <>
       <Heading>{eventInfo.title}</Heading>
@@ -60,6 +89,7 @@ const Event = () => {
         {" "}
         EXIT{" "}
       </Button>
+      <Popup connectToChannel={connectToChannel} />
     </>
   );
 };
