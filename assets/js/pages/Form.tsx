@@ -69,7 +69,7 @@ function Form() {
         return Promise.reject(response.status);
       })
       .then((data) => {
-        setLinks(JSON.parse(data).webinar_links);
+        setLinks(data.webinar_links);
       })
       .catch((error) => {
         alert("Something went wrong. Please try again in a moment.");

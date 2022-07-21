@@ -44,9 +44,9 @@ const Event = () => {
         return Promise.reject(response.status);
       })
       .then((data) => {
-        setEventInfo({ ...eventInfo, ...JSON.parse(data).webinar });
+        setEventInfo({ ...eventInfo, ...data.webinar });
       })
-      .catch(() => {
+      .catch((e) => {
         alert("Couldn't get event information. Please reload this page.");
       });
   }, []);
@@ -64,6 +64,12 @@ const Event = () => {
     channel
       .join()
       .receive("ok", (resp) => {
+        channel.on("presence_state", (message) => {
+          console.log(message); // TODO: implement
+        });
+        channel.on("presence_diff", (message) => {
+          console.log(message); // TODO: implement
+        });
         setChannelConnErr("");
         onClose();
       })
@@ -71,12 +77,7 @@ const Event = () => {
         setChannelConnErr(resp.reason);
       });
 
-    channel.on("presence_state", (message) => {
-      console.log(message); // TODO: implement
-    });
-    channel.on("presence_diff", (message) => {
-      console.log(message); // TODO: implement
-    });
+    
   };
 
   return (
