@@ -1,8 +1,8 @@
 defmodule MembraneLiveWeb.ErrorView do
+  # credo:disable-for-this-file
   use MembraneLiveWeb, :view
 
-  # credo:disable-for-next-line
-  def template_not_found(template, _assigns) do
-    Phoenix.Controller.status_message_from_template(template)
+  def render("error.json", %{error: :not_found, message: message}) do
+    %{status: 404, message: message}
   end
 end

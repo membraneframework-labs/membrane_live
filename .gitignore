@@ -181,4 +181,5 @@ $RECYCLE.BIN/
 # node_module in assets
 assets/node_modules/*
 
+.vscode
 priv/static/assets/app.js
