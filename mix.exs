@@ -92,7 +92,7 @@ defmodule Membrane.Live.Mixfile do
       ci: [
         "format --check-formatted",
         "compile --force --warnings-as-errors",
-        "test",
+        "test --warnings-as-errors",
         "credo"
       ]
     ]

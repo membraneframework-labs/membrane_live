@@ -40,7 +40,7 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     test "renders webinar when data is valid", %{conn: conn} do
       conn = post(conn, Routes.webinar_path(conn, :create), webinar: @create_attrs)
 
-      assert %{"viewer_link" => viewer_link, "moderator_link" => moderator_link} =
+      assert %{"viewer_link" => viewer_link, "moderator_link" => _moderator_link} =
                json_response(conn, 201)["webinar_links"]
 
       uuid = get_uuid_from_link(viewer_link)
