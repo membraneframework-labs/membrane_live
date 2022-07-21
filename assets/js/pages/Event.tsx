@@ -3,6 +3,7 @@ import { Button, Heading, Center } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { Socket } from "phoenix";
 import Popup from "../components/Popup";
+import PresenterPopup from "../components/PresenterPopup";
 
 type EventInfo = {
   link: string;
@@ -28,6 +29,7 @@ const Event = () => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const [isPresenterPopupOpen, setIsPresenterPopupOpen] = useState<boolean>(false); // will be triggered with call from server
   const socket = new Socket("/socket");
   socket.connect();
   let channel;
@@ -90,6 +92,7 @@ const Event = () => {
         EXIT{" "}
       </Button>
       <Popup connectToChannel={connectToChannel} />
+      {isPresenterPopupOpen ? <PresenterPopup onAccept={() => {}} onReject={() => {}} /> : null}
     </>
   );
 };
