@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Text,
   Button,
   Input,
   InputGroup,
@@ -10,6 +9,7 @@ import {
   UnorderedList,
   ListItem,
   Center,
+  Link,
 } from "@chakra-ui/react";
 import React from "react";
 
@@ -122,16 +122,8 @@ function Form() {
         </Button>
         {links ? (
           <>
-            <Text fontSize="2xl"> Moderator link: </Text>
-            <Text fontSize="lg" as="u">
-              {" "}
-              {links?.moderator_link}{" "}
-            </Text>
-            <Text fontSize="2xl"> Viewer Link: </Text>
-            <Text fontSize="lg" as="u">
-              {" "}
-              {links?.viewer_link}{" "}
-            </Text>
+            <Link href={links?.moderator_link}>Moderator link</Link>
+            <Link href={links?.viewer_link}>Viewer link</Link>
           </>
         ) : null}
       </Stack>

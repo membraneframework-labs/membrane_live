@@ -53,8 +53,8 @@ defmodule MembraneLive.Webinars do
         }
   def get_links(webinar) do
     %{
-      viewer_link: "webinars/events/#{webinar.uuid}",
-      moderator_link: "webinars/events/#{webinar.uuid}/moderator"
+      viewer_link: "/event/#{webinar.uuid}",
+      moderator_link: "/event/#{webinar.uuid}/moderator"
     }
   end
 end

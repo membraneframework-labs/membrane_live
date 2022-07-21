@@ -74,7 +74,8 @@ const Event = () => {
         onClose();
       })
       .receive("error", (resp) => {
-        setChannelConnErr(resp.reason);
+        if (resp.reason === "Viewer with this name already exists.") setChannelConnErr(resp.reason);
+        else alert(resp.reason);
       });
   };
 
