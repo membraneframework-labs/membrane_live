@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, Heading, Center } from "@chakra-ui/react";
+import { Button, Heading, Center, Flex, Box, Spacer } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { Socket } from "phoenix";
+import { Socket, Presence } from "phoenix";
 import Popup from "../components/Popup";
+import ParticipantsList from "../components/ParticipantsList";
 
 type EventInfo = {
   link: string;
@@ -28,9 +29,11 @@ const Event = () => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const [participants, setParticipants] = useState<string[]>([]);
   const socket = new Socket("/socket");
   socket.connect();
   let channel;
+  let presence;
 
   useEffect(() => {
     fetch("http://localhost:4000/webinars/" + eventInfo.link, {
@@ -61,14 +64,16 @@ const Event = () => {
     setChannelConnErr: (value: any) => void
   ): void => {
     channel = socket.channel("event:" + eventInfo.link, { name: name });
+    presence = new Presence(channel);
     channel
       .join()
       .receive("ok", (resp) => {
-        channel.on("presence_state", (message) => {
-          console.log(message); // TODO: implement
-        });
-        channel.on("presence_diff", (message) => {
-          console.log(message); // TODO: implement
+        presence.onSync(() => {
+          const parts: string[] = [];
+          presence.list((name, { metas: [first, ...rest] }) => {
+            parts.push(name);
+          });
+          setParticipants(parts);
         });
         setChannelConnErr("");
         onClose();
@@ -81,14 +86,20 @@ const Event = () => {
 
   return (
     <>
-      <Heading>{eventInfo.title}</Heading>
-      <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
-        Please wait for the moderator to select a presenter
-      </Center>
-      <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
-        {" "}
-        EXIT{" "}
-      </Button>
+      <Flex w="100vh">
+        <Box w="50%">
+          <Heading>{eventInfo.title}</Heading>
+          <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
+            Please wait for the moderator to select a presenter
+          </Center>
+          <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
+            {" "}
+            EXIT{" "}
+          </Button>
+        </Box>
+        <Spacer />
+        <ParticipantsList participants={participants} />
+      </Flex>
       <Popup connectToChannel={connectToChannel} />
     </>
   );
