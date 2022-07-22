@@ -14,7 +14,7 @@ type PopupProp = {
 };
 
 const PresenterPopup = ({ onAccept, onReject }: PopupProp) => {
-  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true });
+  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -22,7 +22,7 @@ const PresenterPopup = ({ onAccept, onReject }: PopupProp) => {
       <ModalContent>
         <ModalHeader>You've been assigned a presenter role by the moderator</ModalHeader>
         <Button
-          colorScheme="blue"
+          variant="ghost"
           onClick={() => {
             onClose();
             onReject();
