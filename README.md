@@ -1,9 +1,9 @@
 # Membrane Live
 
-[![API Docs](https://img.shields.io/badge/api-docs-yellow.svg?style=flat)](https://hexdocs.pm/membrane_template_plugin)
-[![CircleCI](https://circleci.com/gh/membraneframework/membrane_template_plugin.svg?style=svg)](https://circleci.com/gh/membraneframework/membrane_template_plugin)
+[![API Docs](https://img.shields.io/badge/api-docs-yellow.svg?style=flat)](https://hexdocs.pm/membrane_core)
+[![CircleCI](https://circleci.com/gh/membraneframework-labs/membrane_live.svg?style=svg)](https://circleci.com/gh/membraneframework-labs/membrane_live)
 
-This repository contains a project done during the Summer internship of 2022 in Software Mansion.
+This repository contains a project created during the Summer Internship of 2022 in Software Mansion.
 
 
 ## Copyright and License
