@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Form from "./Form";
-import Event from "./Event";
+import Form from "../pages/Form";
+import Event from "../pages/Event";
 import { Container } from "@chakra-ui/react";
 
 const Router = () => {

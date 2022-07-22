@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Button, Heading, Center } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { Socket } from "phoenix";
+import Popup from "../components/Popup";
 
 type EventInfo = {
   link: string;
@@ -26,6 +28,9 @@ const Event = () => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const socket = new Socket("/socket");
+  socket.connect();
+  let channel;
 
   useEffect(() => {
     fetch("http://localhost:4000/webinars/" + eventInfo.link, {
@@ -39,15 +44,39 @@ const Event = () => {
         return Promise.reject(response.status);
       })
       .then((data) => {
-        setEventInfo({ ...eventInfo, ...JSON.parse(data).webinar });
+        setEventInfo({ ...eventInfo, ...data.webinar });
       })
-      .catch(() => {
+      .catch((e) => {
         alert("Couldn't get event information. Please reload this page.");
       });
   }, []);
 
   const handleExitButton = () => {
     navigate("/");
+  };
+
+  const connectToChannel = (
+    name: string,
+    onClose: () => void,
+    setChannelConnErr: (value: any) => void
+  ): void => {
+    channel = socket.channel("event:" + eventInfo.link, { name: name });
+    channel
+      .join()
+      .receive("ok", (resp) => {
+        channel.on("presence_state", (message) => {
+          console.log(message); // TODO: implement
+        });
+        channel.on("presence_diff", (message) => {
+          console.log(message); // TODO: implement
+        });
+        setChannelConnErr("");
+        onClose();
+      })
+      .receive("error", (resp) => {
+        if (resp.reason === "Viewer with this name already exists.") setChannelConnErr(resp.reason);
+        else alert(resp.reason);
+      });
   };
 
   return (
@@ -60,6 +89,7 @@ const Event = () => {
         {" "}
         EXIT{" "}
       </Button>
+      <Popup connectToChannel={connectToChannel} />
     </>
   );
 };

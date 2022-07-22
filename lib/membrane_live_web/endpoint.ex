@@ -1,6 +1,11 @@
 defmodule MembraneLiveWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :membrane_live
 
+  socket("/socket", MembraneLiveWeb.EventSocket,
+    websocket: true,
+    longpoll: false
+  )
+
   @session_options [
     store: :cookie,
     key: "_membrane_live_key",
