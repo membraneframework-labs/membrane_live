@@ -7,6 +7,7 @@ import PresenterPopup from "../components/PresenterPopup";
 import ParticipantsList from "../components/ParticipantsList";
 
 type EventInfo = {
+  username: string;
   link: string;
   title: string;
   description: string;
@@ -17,6 +18,7 @@ type EventInfo = {
 
 const initEventInfo = () => {
   return {
+    username: "",
     link: window.location.pathname.split("/")[2],
     title: "",
     description: "",
@@ -36,6 +38,7 @@ const Event = () => {
   socket.connect();
   let channel;
   let presence;
+  let userChannel;
 
   useEffect(() => {
     fetch("http://localhost:4000/webinars/" + eventInfo.link, {
@@ -65,6 +68,7 @@ const Event = () => {
     onClose: () => void,
     setChannelConnErr: (value: any) => void
   ): void => {
+    setEventInfo({...eventInfo, username: name});
     channel = socket.channel("event:" + eventInfo.link, { name: name });
     presence = new Presence(channel);
     channel
@@ -84,6 +88,19 @@ const Event = () => {
         if (resp.reason === "Viewer with this name already exists.") setChannelConnErr(resp.reason);
         else alert(resp.reason);
       });
+    userChannel = socket.channel("private:" + eventInfo.link + ":" + name, {});
+    userChannel.join()
+    .receive("ok", (resp) => {
+      channel.on("presenter_prop", (message) => {
+        console.log(message); // TODO: implement
+      });
+      channel.on("presenter_answer", (message) => {
+        console.log(message); // TODO: implement
+      });
+    })
+    .receive("error", (resp) => {
+      alert(resp.reason);
+    });
   };
 
   return (
