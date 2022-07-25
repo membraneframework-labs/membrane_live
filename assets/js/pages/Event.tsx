@@ -21,7 +21,7 @@ const initEventInfo = () => {
     description: "",
     start_date: "",
     presenters: [],
-    is_moderator: false,
+    is_moderator: window.location.pathname.split("/")[3] != undefined,
   };
 };
 
@@ -98,7 +98,7 @@ const Event = () => {
           </Button>
         </Box>
         <Spacer />
-        <ParticipantsList participants={participants} />
+        <ParticipantsList participants={participants} isModerator={eventInfo.is_moderator} />
       </Flex>
       <Popup connectToChannel={connectToChannel} />
     </>

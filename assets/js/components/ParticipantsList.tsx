@@ -2,11 +2,8 @@ import React from "react";
 import {
   SimpleGrid,
   Box,
-  Table,
   Flex,
   Heading,
-  ButtonGroup,
-  Button,
   Spacer,
   Avatar,
   Menu,
@@ -16,22 +13,26 @@ import {
   MenuItem,
 } from "@chakra-ui/react";
 
-const ParticipantMenu = (props) => {
+const ModeratorMenu = ({ isPresenter }) => {
   return (
     <Menu>
-      <MenuButton as={IconButton} aroa-label="Options" icon={"Menu Icon"} variant="outline" />
+      <MenuButton
+        as={IconButton}
+        aroa-label="Options"
+        icon={"Menu Icon"}
+        variant="outline"
+        backgroundColor="red"
+      />
       <MenuList>
-        <MenuItem>Opcja 1</MenuItem>
-        <MenuItem>Opcja 2</MenuItem>
-        <MenuItem>Opcja 3</MenuItem>
-        <MenuItem>Opcja 4</MenuItem>
-        <MenuItem>Opcja 5</MenuItem>
+        <MenuItem>{isPresenter ? "Set as a normal participant" : "Set as a presenter"}</MenuItem>
+        <MenuItem>Mute</MenuItem>
+        <MenuItem>Kick</MenuItem>
       </MenuList>
     </Menu>
   );
 };
 
-const Participant = ({ name }) => {
+const Participant = ({ name, isModerator, isPresenter }) => {
   return (
     <Flex width="15vw" alignItems="center" gap="1">
       <Avatar name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
@@ -39,14 +40,16 @@ const Participant = ({ name }) => {
         <Heading size="md">{name}</Heading>
       </Box>
       <Spacer />
-      <ParticipantMenu />
+      {isModerator ? <ModeratorMenu isPresenter={isPresenter} /> : null}
     </Flex>
   );
 };
 
-const ParticipantsList = ({ participants }) => {
+const ParticipantsList = ({ participants, isModerator }) => {
   let parts: JSX.Element[] = [];
-  participants.map((name) => parts.push(<Participant name={name} />));
+  participants.map((name) =>
+    parts.push(<Participant key={name} name={name} isModerator={isModerator} isPresenter={false} />)
+  );
 
   return (
     <Box overflowY="auto" maxHeight="50vh">
