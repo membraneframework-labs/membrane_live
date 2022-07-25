@@ -30,7 +30,7 @@ const Event = () => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
-  const [isPresenterPopupOpen, setIsPresenterPopupOpen] = useState<boolean>(true); // will be triggered with call from server
+  const [isPresenterPopupOpen, setIsPresenterPopupOpen] = useState<boolean>(false); // will be triggered with call from server
   const [participants, setParticipants] = useState<string[]>([]);
   const socket = new Socket("/socket");
   socket.connect();
