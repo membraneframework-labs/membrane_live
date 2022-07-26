@@ -32,7 +32,7 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def join(_topic, _params, _socket) do
-    {:error, %{reason: " This link is wrong."}}
+    {:error, %{reason: "This link is wrong."}}
   end
 
   def handle_info({:after_join, name}, socket) do
