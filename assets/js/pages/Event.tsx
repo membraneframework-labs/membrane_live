@@ -6,7 +6,7 @@ import Popup from "../components/Popup";
 import PresenterPopup from "../components/PresenterPopup";
 import ParticipantsList from "../components/ParticipantsList";
 
-type EventInfo = {
+export type EventInfo = {
   username: string;
   link: string;
   title: string;
@@ -15,6 +15,16 @@ type EventInfo = {
   presenters: string[];
   is_moderator: boolean;
 };
+
+type PopupState = {
+  isOpen: boolean;
+  channelConnErr: string;
+}
+
+type PresenterPopupState = {
+  isOpen: boolean;
+  moderator: string;
+}
 
 const initEventInfo = () => {
   return {
@@ -29,16 +39,16 @@ const initEventInfo = () => {
 };
 
 const Event = () => {
-  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
-  const navigate = useNavigate();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
-  const [isPresenterPopupOpen, setIsPresenterPopupOpen] = useState<boolean>(false); // will be triggered with call from server
-  const [participants, setParticipants] = useState<string[]>([]);
+  const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({isOpen: false, moderator: ""}); // will be triggered with call from server
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [eventChannel, setEventChannel] = useState();
+  const [privateChannel, setPrivateChannel] = useState();
+  const [popupState, setPopupState] = useState<PopupState>({isOpen: true, channelConnErr: ""});
+  const navigate = useNavigate();
+  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const socket = new Socket("/socket");
   socket.connect();
-  let channel;
-  let presence;
-  let userChannel;
 
   useEffect(() => {
     fetch("http://localhost:4000/webinars/" + eventInfo.link, {
@@ -59,48 +69,63 @@ const Event = () => {
       });
   }, []);
 
-  const handleExitButton = () => {
-    navigate("/");
-  };
-
-  const connectToChannel = (
-    name: string,
-    onClose: () => void,
-    setChannelConnErr: (value: any) => void
-  ): void => {
-    setEventInfo({...eventInfo, username: name});
-    channel = socket.channel("event:" + eventInfo.link, { name: name });
-    presence = new Presence(channel);
-    channel
+  useEffect(() => {
+    if (eventChannel) {
+      eventChannel
       .join()
       .receive("ok", (resp) => {
-        presence.onSync(() => {
-          const parts: string[] = [];
-          presence.list((name, { metas: [first, ...rest] }) => {
-            parts.push(name);
+        const presence = new Presence(eventChannel);
+        presence
+          .onSync(() => {
+            const parts: any[]= [];
+            presence.list((name, metas) => {
+              let isPresenter = false;
+              for(const item of metas.metas) {
+                if(item.is_presenter) isPresenter = true;
+              }
+              parts.push({name: name, isPresenter: isPresenter});
+            });
+            setParticipants(parts);
           });
-          setParticipants(parts);
-        });
-        setChannelConnErr("");
-        onClose();
+        setPopupState({isOpen: false, channelConnErr: ""});
       })
       .receive("error", (resp) => {
-        if (resp.reason === "Viewer with this name already exists.") setChannelConnErr(resp.reason);
+        if (resp.reason === "Viewer with this name already exists.") setPopupState({...popupState, channelConnErr: resp.reason});
         else alert(resp.reason);
       });
-    userChannel = socket.channel("private:" + eventInfo.link + ":" + name, {});
-    userChannel.join()
-    .receive("ok", (resp) => {
-      channel.on("presenter_prop", (message) => {
-        console.log(message); // TODO: implement
+    }
+  }, [eventChannel]);
+
+  useEffect(() => {
+    if (privateChannel) {
+      privateChannel.join()
+      .receive("ok", (resp) => {
+        privateChannel.on("presenter_prop", (message) => {
+          setPresenterPopupState({isOpen: true, moderator: message.moderator});
+        });
+        privateChannel.on("presenter_answer", (message) => {
+          alert("User " + message.name + " " + message.answer + " your request.")
+        });
+        privateChannel.on("presenter_remove", (message) => {
+          alert("You are no longer presenter.");
+          eventChannel.push("presenter_remove", {presenter: eventInfo.username});
+        });
+      })
+      .receive("error", (resp) => {
+        alert(resp.reason);
       });
-      channel.on("presenter_answer", (message) => {
-        console.log(message); // TODO: implement
-      });
-    })
-    .receive("error", (resp) => {
-      alert(resp.reason);
-    });
+    }
+  }, [privateChannel]);
+
+  const connectToChannels = (name: string) => {
+    if (eventChannel) eventChannel.leave();
+    setEventChannel(socket.channel("event:" + eventInfo.link, { name: name }));
+    if (privateChannel) privateChannel.leave();
+    setPrivateChannel(socket.channel("private:" + eventInfo.link + ":" + name, {}));
+  }
+
+  const handleExitButton = () => {
+    navigate("/");
   };
 
   return (
@@ -117,10 +142,10 @@ const Event = () => {
           </Button>
         </Box>
         <Spacer />
-        <ParticipantsList participants={participants} isModerator={eventInfo.is_moderator} />
+        <ParticipantsList yourName={eventInfo.username} eventChannel={eventChannel} participants={participants} isModerator={eventInfo.is_moderator} />
       </Flex>
-      <Popup connectToChannel={connectToChannel} />
-      {isPresenterPopupOpen ? <PresenterPopup onAccept={() => {}} onReject={() => {}} /> : null}
+      <Popup eventInfo={eventInfo} setEventInfo={setEventInfo} isOpen={popupState.isOpen} channelConnErr={popupState.channelConnErr} connectToChannels={connectToChannels} />
+      {presenterPopupState.isOpen ? <PresenterPopup moderator={presenterPopupState.moderator} name={eventInfo.username} setPopupState={setPresenterPopupState} eventChannel={eventChannel} /> : null}
     </>
   );
 };
