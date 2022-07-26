@@ -21,19 +21,20 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
     {:ok, _reply, socket1} =
       subscribe_and_join(socket1, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-        name: "Andrzej"
+        name: "John"
       })
 
     {:ok, _reply, socket2} =
-      subscribe_and_join(socket2, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "Janusz"})
+      subscribe_and_join(socket2, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "Adam"})
 
-    assert %{"Andrzej" => %{}, "Janusz" => %{}} = Presence.list("event:#{uuid}")
+    pres = Presence.list("event:#{uuid}")
+    assert is_map_key(pres, "John") and is_map_key(pres, "Adam")
 
     Process.unlink(socket1.channel_pid)
     close(socket1)
 
     pres = Presence.list("event:#{uuid}")
-    assert is_map_key(pres, "Janusz") && !is_map_key(pres, "Andrzej")
+    assert is_map_key(pres, "Adam") and not is_map_key(pres, "John")
 
     Process.unlink(socket2.channel_pid)
     close(socket2)

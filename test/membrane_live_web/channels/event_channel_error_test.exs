@@ -6,8 +6,8 @@ defmodule MembraneLiveWeb.EventChannelErrorTest do
     return_value =
       MembraneLiveWeb.EventSocket
       |> socket("event_id", %{})
-      |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:teneventnieistnieje", %{
-        name: "Andrzej"
+      |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:invalid_event_id", %{
+        name: "John"
       })
 
     assert return_value == {:error, %{reason: "This link is wrong."}}
@@ -25,10 +25,10 @@ defmodule MembraneLiveWeb.EventChannelErrorTest do
     socket = MembraneLiveWeb.EventSocket |> socket("event_id", %{})
 
     {:ok, _reply, socket} =
-      subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "Andrzej"})
+      subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "John"})
 
     return_value =
-      subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "Andrzej"})
+      subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: "John"})
 
     assert return_value == {:error, %{reason: "Viewer with this name already exists."}}
   end
