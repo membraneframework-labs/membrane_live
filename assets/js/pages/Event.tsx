@@ -3,6 +3,7 @@ import { Button, Heading, Center, Flex, Box, Spacer } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { Socket, Presence } from "phoenix";
 import Popup from "../components/Popup";
+import ControlPanel from "../components/ControlPanel";
 import PresenterPopup from "../components/PresenterPopup";
 import ParticipantsList from "../components/ParticipantsList";
 
@@ -94,6 +95,7 @@ const Event = () => {
           <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
             Please wait for the moderator to select a presenter
           </Center>
+          <ControlPanel />
           <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
             {" "}
             EXIT{" "}

@@ -61,11 +61,11 @@ jobs:
       - run:
           command: 'mix docs && mix docs 2>&1 | (! grep -q "warning:")'
           name: Check docs generation for warnings
- 
+
   # Install dependencies and run linter on front-end, possibly run tests in the future
   lint_frontend:
     working_directory: ~/membrane_live/assets
-    docker: 
+    docker:
       - image: cimg/node:18.4.0
 
     steps:
