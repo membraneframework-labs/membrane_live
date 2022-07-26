@@ -14,7 +14,7 @@ export type EventInfo = {
   description: string;
   start_date: string;
   presenters: string[];
-  is_moderator: boolean;
+  isModerator: boolean;
 };
 
 export type PopupState = {
@@ -40,7 +40,7 @@ const initEventInfo = () => {
     description: "",
     start_date: "",
     presenters: [],
-    is_moderator: window.location.pathname.split("/")[3] != undefined,
+    isModerator: window.location.pathname.split("/")[3] != undefined,
   };
 };
 
@@ -107,7 +107,7 @@ const Event = () => {
           yourName={eventInfo.username}
           eventChannel={eventChannel}
           participants={participants}
-          isModerator={eventInfo.is_moderator}
+          isModerator={eventInfo.isModerator}
         />
       </Flex>
       <Popup

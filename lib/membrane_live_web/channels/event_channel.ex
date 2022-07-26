@@ -46,7 +46,9 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
-    Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
+    {:ok, _ref} =
+      Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
+
     {:noreply, socket}
   end
 
@@ -69,7 +71,8 @@ defmodule MembraneLiveWeb.EventChannel do
         socket
       ) do
     if answer == "accept" do
-      Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+      {:ok, _ref} =
+        Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
     end
 
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{

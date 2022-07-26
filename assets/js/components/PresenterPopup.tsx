@@ -19,13 +19,8 @@ type PresenterPopupProps = {
 const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
-  const onReject = () => {
-    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: "reject" });
-    setPopupState({ isOpen: false, moderator: "" });
-  };
-
-  const onAccept = () => {
-    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: "accept" });
+  const sendAnswer = (answer: string) => {
+    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: answer });
     setPopupState({ isOpen: false, moderator: "" });
   };
 
@@ -38,7 +33,7 @@ const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: Presen
           variant="ghost"
           onClick={() => {
             onClose();
-            onReject();
+            sendAnswer("reject");
           }}
         >
           Reject
@@ -47,7 +42,7 @@ const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: Presen
           variant="ghost"
           onClick={() => {
             onClose();
-            onAccept();
+            sendAnswer("accept");
           }}
         >
           Accept
