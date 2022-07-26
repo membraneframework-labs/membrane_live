@@ -17,14 +17,19 @@ export type EventInfo = {
   is_moderator: boolean;
 };
 
-type PopupState = {
+export type PopupState = {
   isOpen: boolean;
   channelConnErr: string;
 };
 
-type PresenterPopupState = {
+export type PresenterPopupState = {
   isOpen: boolean;
   moderator: string;
+};
+
+export type Participant = {
+  name: string;
+  isPresenter: boolean;
 };
 
 const initEventInfo = () => {
@@ -45,11 +50,10 @@ const Event = () => {
     isOpen: false,
     moderator: "",
   }); // will be triggered with call from server
-  const [participants, setParticipants] = useState<any[]>([]);
-  const [eventChannel, setEventChannel] = useState();
-  const [privateChannel, setPrivateChannel] = useState();
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [eventChannel, setEventChannel] = useState<any>();
+  const [privateChannel, setPrivateChannel] = useState<any>();
   const [popupState, setPopupState] = useState<PopupState>({ isOpen: true, channelConnErr: "" });
-  const navigate = useNavigate();
   const socket = new Socket("/socket");
   socket.connect();
 
@@ -68,21 +72,21 @@ const Event = () => {
       createPrivateChannel(
         privateChannel,
         eventChannel,
-        setPresenterPopupState,
-        eventInfo.username
+        eventInfo.username,
+        setPresenterPopupState
       );
     }
   }, [privateChannel]);
 
-  const connectToChannels = (name: string) => {
+  const connectToChannels = (name: string): void => {
     if (eventChannel) eventChannel.leave();
     setEventChannel(socket.channel("event:" + eventInfo.link, { name: name }));
     if (privateChannel) privateChannel.leave();
     setPrivateChannel(socket.channel("private:" + eventInfo.link + ":" + name, {}));
   };
 
-  const handleExitButton = () => {
-    navigate("/");
+  const handleExitButton = (): void => {
+    useNavigate()("/");
   };
 
   return (

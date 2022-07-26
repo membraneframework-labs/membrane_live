@@ -7,8 +7,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
+import type { PresenterPopupState } from "../pages/Event";
 
-const PresenterPopup = ({ setPopupState, moderator, eventChannel, name }) => {
+type PresenterPopupProps = {
+  name: string;
+  moderator: string;
+  eventChannel: any;
+  setPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>;
+};
+
+const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const onReject = () => {
