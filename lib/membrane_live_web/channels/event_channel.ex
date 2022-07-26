@@ -46,7 +46,7 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
-    Presence.update(socket, presenter, fn (map) -> Map.put(map, "is_presenter", false) end)
+    Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
     {:noreply, socket}
   end
 
@@ -56,15 +56,27 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("presenter_prop", %{"moderator" => moderator, "presenter" => presenter}, socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter, "presenter_prop", %{:moderator => moderator})
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter, "presenter_prop", %{
+      :moderator => moderator
+    })
+
     {:noreply, socket}
   end
 
-  def handle_in("presenter_answer", %{"answer" => answer, "name" => name, "moderator" => moderator}, socket) do
+  def handle_in(
+        "presenter_answer",
+        %{"answer" => answer, "name" => name, "moderator" => moderator},
+        socket
+      ) do
     if answer == "accept" do
-      Presence.update(socket, name, fn (map) -> Map.put(map, "is_presenter", true) end)
+      Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
     end
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{:name => name, :answer => answer})
+
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
+      :name => name,
+      :answer => answer
+    })
+
     {:noreply, socket}
   end
 end

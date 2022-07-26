@@ -11,7 +11,7 @@ import {
   ModalFooter,
   Button,
 } from "@chakra-ui/react";
-import type {EventInfo}  from "../pages/Event";
+import type { EventInfo } from "../pages/Event";
 import React, { useState } from "react";
 
 interface PopupProps {
@@ -22,15 +22,21 @@ interface PopupProps {
   channelConnErr: string;
 }
 
-const Popup = ({ eventInfo, setEventInfo, connectToChannels, isOpen, channelConnErr }: PopupProps) => {
+const Popup = ({
+  eventInfo,
+  setEventInfo,
+  connectToChannels,
+  isOpen,
+  channelConnErr,
+}: PopupProps) => {
   const [input, setInput] = useState<string>("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
   const handleSubmit = () => {
-    setEventInfo({...eventInfo, username: input})
+    setEventInfo({ ...eventInfo, username: input });
     connectToChannels(input);
-  }
-  
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={() => {}}>
       <ModalOverlay />

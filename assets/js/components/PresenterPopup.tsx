@@ -8,18 +8,18 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 
-const PresenterPopup = ({ setPopupState, moderator, eventChannel, name}) => {
+const PresenterPopup = ({ setPopupState, moderator, eventChannel, name }) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const onReject = () => {
-    eventChannel.push("presenter_answer", {name: name, moderator: moderator, answer: "reject"});
-    setPopupState({isOpen: false, moderator: ""});
-  }
+    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: "reject" });
+    setPopupState({ isOpen: false, moderator: "" });
+  };
 
   const onAccept = () => {
-    eventChannel.push("presenter_answer", {name: name, moderator: moderator, answer: "accept"});
-    setPopupState({isOpen: false, moderator: ""});
-  }
+    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: "accept" });
+    setPopupState({ isOpen: false, moderator: "" });
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={() => {}}>
