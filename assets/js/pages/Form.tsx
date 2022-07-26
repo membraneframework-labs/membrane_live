@@ -12,24 +12,24 @@ import {
   Link,
 } from "@chakra-ui/react";
 import React from "react";
+import { checkEventForm, sendEventForm } from "../utils/formApi";
 
-type EventInfo = {
+export type EventForm = {
   title: string;
   description: string;
   start_date: string;
   presenters: string[];
 };
 
-type Links = {
+export type Links = {
   viewer_link: string;
   moderator_link: string;
 };
 
 function Form() {
-  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
   const [links, setLinks] = useState<Links>();
   const [currParticipant, setCurrParticipant] = useState<string>("");
-  const [eventInfo, setEventInfo] = useState<EventInfo>({
+  const [eventForm, setEventForm] = useState<EventForm>({
     title: "",
     description: "",
     start_date: "",
@@ -37,49 +37,19 @@ function Form() {
   });
 
   const handleInputTitle = (event: any) =>
-    setEventInfo({ ...eventInfo, title: event.target.value });
+    setEventForm({ ...eventForm, title: event.target.value });
   const handleInputDescription = (event: any) =>
-    setEventInfo({ ...eventInfo, description: event.target.value });
+    setEventForm({ ...eventForm, description: event.target.value });
   const handleInputDate = (event: any) =>
-    setEventInfo({ ...eventInfo, start_date: event.target.value });
+    setEventForm({ ...eventForm, start_date: event.target.value });
   const handleInputParticipant = (event: any) => setCurrParticipant(event.target.value);
   const handleAddButton = () => {
-    setEventInfo({ ...eventInfo, presenters: [...eventInfo.presenters, currParticipant] });
+    setEventForm({ ...eventForm, presenters: [...eventForm.presenters, currParticipant] });
     setCurrParticipant("");
   };
-
-  const checkEventInfo = (): boolean => {
-    return eventInfo.start_date != "" && eventInfo.title != "";
-  };
-
-  const sendEventInfo = (): void => {
-    fetch("http://localhost:4000/webinars", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "X-CSRF-TOKEN": csrfToken ? csrfToken : "",
-      },
-      body: JSON.stringify({ webinar: eventInfo }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        return Promise.reject(response.status);
-      })
-      .then((data) => {
-        setLinks(data.webinar_links);
-      })
-      .catch((error) => {
-        alert("Something went wrong. Please try again in a moment.");
-        console.log(error);
-      });
-  };
-
   const handleSendButton = () => {
-    if (checkEventInfo()) {
-      sendEventInfo();
+    if (checkEventForm(eventForm)) {
+      sendEventForm(eventForm, setLinks);
     } else {
       alert("Fields title and date are necessary to create an event.");
     }
@@ -112,8 +82,8 @@ function Form() {
           </InputRightElement>
         </InputGroup>
         <UnorderedList>
-          {eventInfo.presenters &&
-            eventInfo.presenters.map((presenter, idx) => (
+          {eventForm.presenters &&
+            eventForm.presenters.map((presenter, idx) => (
               <ListItem key={idx}>{presenter}</ListItem>
             ))}
         </UnorderedList>

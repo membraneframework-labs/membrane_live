@@ -31,6 +31,10 @@ defmodule MembraneLiveWeb.EventChannel do
     Ecto.Query.CastError -> {:error, %{reason: "This link is wrong."}}
   end
 
+  def join("private:" <> _subtopic, _data, socket) do
+    {:ok, socket}
+  end
+
   def join(_topic, _params, _socket) do
     {:error, %{reason: "This link is wrong."}}
   end
@@ -38,6 +42,44 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_info({:after_join, name}, socket) do
     Presence.track(socket, name, %{})
     push(socket, "presence_state", Presence.list(socket))
+    {:noreply, socket}
+  end
+
+  def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
+    {:ok, _ref} =
+      Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
+
+    {:noreply, socket}
+  end
+
+  def handle_in("presenter_remove", %{"presenter_topic" => presenter_topic}, socket) do
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+    {:noreply, socket}
+  end
+
+  def handle_in("presenter_prop", %{"moderator" => moderator, "presenter" => presenter}, socket) do
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter, "presenter_prop", %{
+      :moderator => moderator
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_answer",
+        %{"answer" => answer, "name" => name, "moderator" => moderator},
+        socket
+      ) do
+    if answer == "accept" do
+      {:ok, _ref} =
+        Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+    end
+
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
+      :name => name,
+      :answer => answer
+    })
+
     {:noreply, socket}
   end
 end
