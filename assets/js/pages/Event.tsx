@@ -89,7 +89,6 @@ const Event = () => {
 
   return (
     <>
-
       <Flex w="100vh">
         <Box w="50%">
           <Heading>{eventInfo.title}</Heading>
