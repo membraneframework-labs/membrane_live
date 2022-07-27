@@ -12,8 +12,41 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
+import type { Participant } from "../pages/Event";
 
-const ModeratorMenu = ({ isPresenter }) => {
+type ModeratorMenuProps = {
+  yourName: string;
+  name: string;
+  isPresenter: boolean;
+  eventChannel: any;
+};
+
+type ParticipantProps = {
+  yourName: string;
+  name: string;
+  isPresenter: boolean;
+  isModerator: boolean;
+  eventChannel: any;
+};
+
+type ParticipantsListProps = {
+  yourName: string;
+  participants: Participant[];
+  isModerator: boolean;
+  eventChannel: any;
+};
+
+const ModeratorMenu = ({ yourName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+  const handleClick = (e: any) => {
+    if (e.target.value === "Set as a presenter") {
+      const link = "private:" + window.location.pathname.split("/")[2] + ":";
+      eventChannel.push("presenter_prop", { moderator: link + yourName, presenter: link + name });
+    } else {
+      const link = "private:" + window.location.pathname.split("/")[2] + ":";
+      eventChannel.push("presenter_remove", { presenter_topic: link + name });
+    }
+  };
+
   return (
     <Menu>
       <MenuButton
@@ -24,15 +57,26 @@ const ModeratorMenu = ({ isPresenter }) => {
         backgroundColor="red"
       />
       <MenuList>
-        <MenuItem>{isPresenter ? "Set as a normal participant" : "Set as a presenter"}</MenuItem>
-        <MenuItem>Mute</MenuItem>
-        <MenuItem>Kick</MenuItem>
+        <MenuItem
+          onClick={handleClick}
+          value={isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+        >
+          {isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+        </MenuItem>
+        <MenuItem value="Mute">Mute</MenuItem>
+        <MenuItem value="Kick">Kick</MenuItem>
       </MenuList>
     </Menu>
   );
 };
 
-const Participant = ({ name, isModerator, isPresenter }) => {
+const Participant = ({
+  yourName,
+  name,
+  isModerator,
+  isPresenter,
+  eventChannel,
+}: ParticipantProps) => {
   return (
     <Flex width="15vw" alignItems="center" gap="1">
       <Avatar name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
@@ -40,15 +84,36 @@ const Participant = ({ name, isModerator, isPresenter }) => {
         <Heading size="md">{name}</Heading>
       </Box>
       <Spacer />
-      {isModerator ? <ModeratorMenu isPresenter={isPresenter} /> : null}
+      {isModerator ? (
+        <ModeratorMenu
+          yourName={yourName}
+          eventChannel={eventChannel}
+          isPresenter={isPresenter}
+          name={name}
+        />
+      ) : null}
     </Flex>
   );
 };
 
-const ParticipantsList = ({ participants, isModerator }) => {
+const ParticipantsList = ({
+  yourName,
+  participants,
+  isModerator,
+  eventChannel,
+}: ParticipantsListProps) => {
   let parts: JSX.Element[] = [];
-  participants.map((name) =>
-    parts.push(<Participant key={name} name={name} isModerator={isModerator} isPresenter={false} />)
+  participants.map((participant) =>
+    parts.push(
+      <Participant
+        yourName={yourName}
+        key={participant.name}
+        name={participant.name}
+        isModerator={isModerator}
+        isPresenter={participant.isPresenter}
+        eventChannel={eventChannel}
+      />
+    )
   );
 
   return (

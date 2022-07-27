@@ -10,26 +10,31 @@ import {
   FormErrorMessage,
   ModalFooter,
   Button,
-  useDisclosure,
 } from "@chakra-ui/react";
+import type { EventInfo } from "../pages/Event";
 import React, { useState } from "react";
 
-interface connectToChannel {
-  connectToChannel: (
-    name: string,
-    onClose: () => void,
-    setChannelConnErr: (value: any) => void
-  ) => void;
+interface PopupProps {
+  eventInfo: EventInfo;
+  setEventInfo: Function;
+  connectToChannels: (name: string) => void;
+  isOpen: boolean;
+  channelConnErr: string;
 }
 
-const Popup = ({ connectToChannel }: connectToChannel) => {
+const Popup = ({
+  eventInfo,
+  setEventInfo,
+  connectToChannels,
+  isOpen,
+  channelConnErr,
+}: PopupProps) => {
   const [input, setInput] = useState<string>("");
-  const [channelConnErr, setChannelConnErr] = useState<string>("");
-  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
   const handleSubmit = () => {
-    connectToChannel(input, onClose, setChannelConnErr);
+    setEventInfo({ ...eventInfo, username: input });
+    connectToChannels(input);
   };
 
   return (
