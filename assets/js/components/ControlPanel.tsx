@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 
 type SourceInfo = {
   devices: MediaDeviceInfo[];
-  selectedId: String;
+  selectedId: string;
   isActive: boolean;
 };
 
@@ -12,43 +12,53 @@ type Sources = {
   video: SourceInfo;
 };
 
-const getDeviceLabel = (device: MediaDeviceInfo, selectedDeviceId: String) => {
-  return device.deviceId === selectedDeviceId ? <b>{device.label}</b> : device.label;
+type DropdownListProps = {
+    sources: SourceInfo;
+    itemSelectFunc: (id: string) => void;
 };
 
-const DropdownList = (props) => {
-  const devices: MediaDeviceInfo[] = props.sources.devices;
-  const selectedDeviceId: String = props.sources.selectedId;
-  const changeSelectedDevice: (id: String) => void = props.itemSelectFunc;
+const DropdownList = ({sources, itemSelectFunc}:DropdownListProps) => {
+  const devices: MediaDeviceInfo[] = sources.devices;
+  const selectedDeviceId: String = sources.selectedId;
+
+  const getDeviceLabel = (device: MediaDeviceInfo, selectedDeviceId: String) => {
+    return device.deviceId === selectedDeviceId ? <b>{device.label}</b> : device.label;
+  };
 
   const menuItems = devices.map((device) => (
-    <MenuItem key={device.deviceId} onClick={() => changeSelectedDevice(device.deviceId)}>
+    <MenuItem key={device.deviceId} onClick={() => itemSelectFunc(device.deviceId)}>
       {getDeviceLabel(device, selectedDeviceId)}
     </MenuItem>
   ));
   return <MenuList>{menuItems}</MenuList>;
 };
 
-const DropdownButton = (props) => {
+type DropdownButtonProps = {
+    sources: SourceInfo;
+    mainText: string;
+    onSelectSource: (id: string) => void;
+}
+
+const DropdownButton = ({sources, mainText, onSelectSource}: DropdownButtonProps) => {
   return (
     <Menu>
-      <MenuButton as={Button}>{props.mainText}</MenuButton>
-      <DropdownList sources={props.sources} itemSelectFunc={props.itemSelectFunc} />
+      <MenuButton as={Button}>{mainText}</MenuButton>
+      <DropdownList sources={sources} itemSelectFunc={onSelectSource} />
     </Menu>
   );
 };
 
-const PauseResumeButton = (props) => {
+type PauseResumeButtonProps = {
+    label: string;
+}
+
+const PauseResumeButton = ({label}:PauseResumeButtonProps) => {
     return (
-        <Button>
-            {props.label}
+        <Button borderRadius="500px" backgroundColor="white" border="1px" borderColor="#BFCCF8">
+            o
         </Button>
     )
 }
-
-const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
-  return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
-};
 
 const ControlPanel = () => {
   const initialSources: Sources = {
@@ -56,6 +66,10 @@ const ControlPanel = () => {
     video: { devices: [], selectedId: "", isActive: false},
   };
   const [sources, setSources] = useState(initialSources);
+
+  const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
+    return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
+  };
 
   const getSources = async () => {
     let mediaDevices: MediaDeviceInfo[];
@@ -74,33 +88,23 @@ const ControlPanel = () => {
     getSources();
   }, []);
 
-  navigator.mediaDevices.ondevicechange = (_event) => {
-    getSources();
-  };
+  useEffect(() => {
+    navigator.mediaDevices.ondevicechange = getSources;
+    
+    return () => {
+        navigator.mediaDevices.ondevicechange = null;
+        };
+    }, [getSources]);
 
-  const changeSelectedAudio = (deviceId) => {
+
+  const changeSelectedSourceHandler = (deviceId: string, sourceType: 'audio' | 'video') => {
+    const constraint = {[sourceType]: {deviceId}};
     navigator.mediaDevices
-      .getUserMedia({ audio: { deviceId: deviceId } })
+      .getUserMedia(constraint)
       .then(() => {
-        const newAudio: SourceInfo = {...sources.audio, selectedId: deviceId};
-        const newSources: Sources = {...sources, audio: newAudio};
+        const newSourceInfo: SourceInfo = {...sources[sourceType], selectedId: deviceId, isActive: true};
+        const newSources: Sources = {...sources, [sourceType]: newSourceInfo};
         setSources(newSources);
-      })
-      .catch((err) => {
-        alert(err.name + ": " + err.message);
-      });
-  };
-
-  const changeSelectedVideo = (deviceId) => {
-    navigator.mediaDevices
-      .getUserMedia({ video: { deviceId: deviceId } })
-      .then((stream) => {
-        const newVideo: SourceInfo = { ...sources.video, selectedId: deviceId};
-        const newSources: Sources = {...sources, video: newVideo};
-        setSources(newSources);
-
-        let videoElement = document.querySelector<HTMLVideoElement>("#local-video");
-        if (videoElement) videoElement.srcObject = stream;
       })
       .catch((err) => {
         alert(err.name + ": " + err.message);
@@ -112,12 +116,12 @@ const ControlPanel = () => {
       <DropdownButton
         mainText="audio source"
         sources={sources.audio}
-        itemSelectFunc={changeSelectedAudio}
+        onSelectSource={((deviceId: string) => changeSelectedSourceHandler(deviceId, 'audio'))}
       />
       <DropdownButton
         mainText="video source"
         sources={sources.video}
-        itemSelectFunc={changeSelectedVideo}
+        onSelectSource={((deviceId: string) => changeSelectedSourceHandler(deviceId, 'video'))}
       />
       <PauseResumeButton label="play/resume audio"/>
       <PauseResumeButton label="play/resume video"/>

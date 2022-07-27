@@ -87,6 +87,10 @@ const Event = () => {
       });
   };
 
+  const isPresenter = () => {   
+    return true; // TODO change to iterating over the list of participants after the refactor of array `participants` is done
+  }
+
   return (
     <>
       <Flex w="100vh">
@@ -95,7 +99,7 @@ const Event = () => {
           <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
             Please wait for the moderator to select a presenter
           </Center>
-          <ControlPanel />
+          {isPresenter() ? <ControlPanel /> : <></>}
           <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
             {" "}
             EXIT{" "}
