@@ -1,5 +1,6 @@
-import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
-import React, { useState, useEffect } from "react";
+import { Box, Button, Menu, MenuButton, MenuList, MenuItem, useBoolean } from "@chakra-ui/react";
+import React, { useState, useEffect, ReactNode } from "react";
+import {Camera, CameraDisabled, Microphone, MicrophoneDisabled} from 'react-swm-icon-pack'
 
 type SourceInfo = {
   devices: MediaDeviceInfo[];
@@ -48,16 +49,61 @@ const DropdownButton = ({sources, mainText, onSelectSource}: DropdownButtonProps
   );
 };
 
-type PauseResumeButtonProps = {
-    label: string;
+type PanelButtonProps = {
+    onClick: () => void;
+    type: "disabled" | "on" | "off";
+    sourceType: "audio" | "video";
 }
 
-const PauseResumeButton = ({label}:PauseResumeButtonProps) => {
-    return (
-        <Button borderRadius="500px" backgroundColor="white" border="1px" borderColor="#BFCCF8">
-            o
+const PanelButton = ({onClick, sourceType, type}:PanelButtonProps) => {
+    if (type === "disabled") return <DisabledPanelButton sourceType={sourceType}/>;
+    if (type === "on") return <OnPanelButton onClick={onClick} sourceType={sourceType}/>
+    if (type === "off") return <OffPanelButton onClick={onClick} sourceType={sourceType}/>
+    return <></>;
+}
+
+type DisabledPanelButtonProps = {
+    sourceType: "audio" | "video";
+}
+
+const DisabledPanelButton = ({sourceType}:DisabledPanelButtonProps) => {
+    const icon = {audio: <MicrophoneDisabled/>, video: <CameraDisabled/>};
+    return (<Button isDisabled borderRadius="500px"
+                    backgroundColor="gray.300"
+                    border="1px" 
+                    borderColor={"grey"}>
+            {icon[sourceType]}
         </Button>
-    )
+    );
+}
+
+type OnOffPanelButtonProps = {
+    sourceType: "audio" | "video";
+    onClick: () => void;
+}
+
+const OnPanelButton = ({sourceType, onClick}:OnOffPanelButtonProps) => {
+    const icon = {audio: <Microphone/>, video: <Camera/>};
+    return (<Button borderRadius="500px"
+                    backgroundColor="white" 
+                    border="1px" 
+                    borderColor="#BFCCF8"
+                    onClick={onClick}>
+            {icon[sourceType]}
+        </Button>
+    );
+}
+
+const OffPanelButton = ({sourceType, onClick}:OnOffPanelButtonProps) => {
+    const icon = {audio: <MicrophoneDisabled/>, video: <CameraDisabled/>};
+    return (<Button borderRadius="500px"
+                    backgroundColor="red.300"
+                    border="1px" 
+                    borderColor="red"
+                    onClick={onClick}>
+            {icon[sourceType]}
+        </Button>
+    );
 }
 
 const ControlPanel = () => {
@@ -111,6 +157,23 @@ const ControlPanel = () => {
       });
   };
 
+  const toggleButton = (sourceType: 'audio' | 'video') => {
+    const newActiveValue: boolean = !sources[sourceType].isActive;
+    const newSourceInfo: SourceInfo = {...sources[sourceType], isActive: newActiveValue};
+    const newSources: Sources = {...sources, [sourceType]: newSourceInfo};
+    setSources(newSources);
+  };
+
+  const dispatchPanelButtonType = (sourceType: 'audio' | 'video') => {
+    if (!sources[sourceType].selectedId) {
+        return "disabled";
+    } else if (sources[sourceType].isActive) {
+        return "on";
+    } else {
+        return "off";
+    }
+  }
+
   return (
     <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
       <DropdownButton
@@ -123,9 +186,8 @@ const ControlPanel = () => {
         sources={sources.video}
         onSelectSource={((deviceId: string) => changeSelectedSourceHandler(deviceId, 'video'))}
       />
-      <PauseResumeButton label="play/resume audio"/>
-      <PauseResumeButton label="play/resume video"/>
-      <video id="local-video" autoPlay></video>
+      <PanelButton sourceType='audio' type={dispatchPanelButtonType('audio')} onClick={() => toggleButton('audio')}/>
+      <PanelButton sourceType='video' type={dispatchPanelButtonType('video')} onClick={() => toggleButton('video')}/>
     </Box>
   );
 };

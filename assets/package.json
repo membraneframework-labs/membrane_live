@@ -11,7 +11,8 @@
     "phoenix": "^1.6.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.3.0",
+    "react-swm-icon-pack": "^1.0.13"
   },
   "devDependencies": {
     "@types/react": "^18.0.15",
