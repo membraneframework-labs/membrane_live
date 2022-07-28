@@ -26,30 +26,63 @@ defmodule MembraneLiveWeb.EventChannelTest do
     %{uuid: uuid, pub_socket: pub_socket}
   end
 
-  test "check if users are in presence", %{uuid: uuid, pub_socket: pub_socket} do
-    socket1 = MembraneLiveWeb.EventSocket |> socket("event_id1", %{})
+  describe "Joining and leaving webinar:" do
+    test "join to nonexistent webinar" do
+      return_value =
+        MembraneLiveWeb.EventSocket
+        |> socket("event_id", %{})
+        |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:invalid_event_id", %{
+          name: @user2
+        })
 
-    {:ok, _reply, socket1} =
-      subscribe_and_join(socket1, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-        name: @user2
-      })
+      assert return_value == {:error, %{reason: "This link is wrong."}}
+    end
 
-    pres = Presence.list("event:#{uuid}")
-    assert is_map_key(pres, @user2) and is_map_key(pres, @user)
+    test "join to webinar with user with the same name" do
+      {:ok, %{uuid: uuid}} =
+        Repo.insert(%Webinar{
+          description: "a",
+          presenters: [],
+          start_date: ~N[2019-10-31 23:00:07],
+          title: "Test webinar"
+        })
 
-    Process.unlink(socket1.channel_pid)
-    close(socket1)
+      socket = MembraneLiveWeb.EventSocket |> socket("event_id", %{})
 
-    pres = Presence.list("event:#{uuid}")
-    assert is_map_key(pres, @user) and not is_map_key(pres, @user2)
+      {:ok, _reply, socket} =
+        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: @user2})
 
-    Process.unlink(pub_socket.channel_pid)
-    close(pub_socket)
+      return_value =
+        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: @user2})
 
-    assert Presence.list("event:#{uuid}") == %{}
+      assert return_value == {:error, %{reason: "Viewer with this name already exists."}}
+    end
+
+    test "check if users are in presence", %{uuid: uuid, pub_socket: pub_socket} do
+      socket1 = MembraneLiveWeb.EventSocket |> socket("event_id1", %{})
+
+      {:ok, _reply, socket1} =
+        subscribe_and_join(socket1, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
+          name: @user2
+        })
+
+      pres = Presence.list("event:#{uuid}")
+      assert is_map_key(pres, @user2) and is_map_key(pres, @user)
+
+      Process.unlink(socket1.channel_pid)
+      close(socket1)
+
+      pres = Presence.list("event:#{uuid}")
+      assert is_map_key(pres, @user) and not is_map_key(pres, @user2)
+
+      Process.unlink(pub_socket.channel_pid)
+      close(pub_socket)
+
+      assert Presence.list("event:#{uuid}") == %{}
+    end
   end
 
-  describe "Presenter:" do
+  describe "Adding presenter:" do
     defp add_presenter(socket, uuid, response) do
       push(socket, "presenter_prop", %{
         "moderator" => "private:#{uuid}:#{@user}",
