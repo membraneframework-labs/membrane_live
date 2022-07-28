@@ -45,6 +45,11 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
+  # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
+  # server (sends information to presenter) -> presenter (shows alert that it's been removed
+  # and sends message back) -> server (updates presenter in Presence)
+  # such design is caused by user Presence that can be updated only with its socket-channel combination
+  # (socket parameter in function below)
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
     {:ok, _ref} =
       Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
@@ -53,7 +58,19 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("presenter_remove", %{"presenter_topic" => presenter_topic}, socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+    props = Presence.get_by_key(socket, List.last(String.split(presenter_topic, ":")))
+
+    case props do
+      %{metas: [%{"is_presenter" => true}]} ->
+        MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+
+      [] ->
+        raise "Error: Trying to remove presenter role from nonexistent participant"
+
+      %{metas: [%{}]} ->
+        raise "Error: Trying to remove presenter role from participant that is no a presenter"
+    end
+
     {:noreply, socket}
   end
 
