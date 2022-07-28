@@ -90,9 +90,12 @@ const Event = () => {
     useNavigate()("/");
   };
 
-  const isPresenter = () => {   
-    return true; // TODO change to iterating over the list of participants after the refactor of array `participants` is done
-  }
+  const isPresenter = () => {
+    const selfParticipant = participants.find(
+      (participant) => participant.name == eventInfo.username
+    );
+    return selfParticipant?.isPresenter;
+  };
 
   return (
     <>

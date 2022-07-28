@@ -1,6 +1,8 @@
 import { Box, Button, Menu, MenuButton, MenuList, MenuItem, useBoolean } from "@chakra-ui/react";
 import React, { useState, useEffect, ReactNode } from "react";
-import {Camera, CameraDisabled, Microphone, MicrophoneDisabled} from 'react-swm-icon-pack'
+import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
+
+type SourceType = "audio" | "video";
 
 type SourceInfo = {
   devices: MediaDeviceInfo[];
@@ -14,11 +16,11 @@ type Sources = {
 };
 
 type DropdownListProps = {
-    sources: SourceInfo;
-    itemSelectFunc: (id: string) => void;
+  sources: SourceInfo;
+  itemSelectFunc: (id: string) => void;
 };
 
-const DropdownList = ({sources, itemSelectFunc}:DropdownListProps) => {
+const DropdownList = ({ sources, itemSelectFunc }: DropdownListProps) => {
   const devices: MediaDeviceInfo[] = sources.devices;
   const selectedDeviceId: String = sources.selectedId;
 
@@ -35,12 +37,12 @@ const DropdownList = ({sources, itemSelectFunc}:DropdownListProps) => {
 };
 
 type DropdownButtonProps = {
-    sources: SourceInfo;
-    mainText: string;
-    onSelectSource: (id: string) => void;
-}
+  sources: SourceInfo;
+  mainText: string;
+  onSelectSource: (id: string) => void;
+};
 
-const DropdownButton = ({sources, mainText, onSelectSource}: DropdownButtonProps) => {
+const DropdownButton = ({ sources, mainText, onSelectSource }: DropdownButtonProps) => {
   return (
     <Menu>
       <MenuButton as={Button}>{mainText}</MenuButton>
@@ -50,66 +52,76 @@ const DropdownButton = ({sources, mainText, onSelectSource}: DropdownButtonProps
 };
 
 type PanelButtonProps = {
-    onClick: () => void;
-    type: "disabled" | "on" | "off";
-    sourceType: "audio" | "video";
-}
+  onClick: () => void;
+  type: "disabled" | "on" | "off";
+  sourceType: SourceType;
+};
 
-const PanelButton = ({onClick, sourceType, type}:PanelButtonProps) => {
-    if (type === "disabled") return <DisabledPanelButton sourceType={sourceType}/>;
-    if (type === "on") return <OnPanelButton onClick={onClick} sourceType={sourceType}/>
-    if (type === "off") return <OffPanelButton onClick={onClick} sourceType={sourceType}/>
-    return <></>;
-}
+const PanelButton = ({ onClick, sourceType, type }: PanelButtonProps) => {
+  if (type === "disabled") return <DisabledPanelButton sourceType={sourceType} />;
+  if (type === "on") return <OnPanelButton onClick={onClick} sourceType={sourceType} />;
+  if (type === "off") return <OffPanelButton onClick={onClick} sourceType={sourceType} />;
+  return <></>;
+};
 
 type DisabledPanelButtonProps = {
-    sourceType: "audio" | "video";
-}
+  sourceType: SourceType;
+};
 
-const DisabledPanelButton = ({sourceType}:DisabledPanelButtonProps) => {
-    const icon = {audio: <MicrophoneDisabled/>, video: <CameraDisabled/>};
-    return (<Button isDisabled borderRadius="500px"
-                    backgroundColor="gray.300"
-                    border="1px" 
-                    borderColor={"grey"}>
-            {icon[sourceType]}
-        </Button>
-    );
-}
+const DisabledPanelButton = ({ sourceType }: DisabledPanelButtonProps) => {
+  const icon = { audio: <MicrophoneDisabled />, video: <CameraDisabled /> };
+  return (
+    <Button
+      isDisabled
+      borderRadius="500px"
+      backgroundColor="gray.300"
+      border="1px"
+      borderColor={"grey"}
+    >
+      {icon[sourceType]}
+    </Button>
+  );
+};
 
 type OnOffPanelButtonProps = {
-    sourceType: "audio" | "video";
-    onClick: () => void;
-}
+  sourceType: SourceType;
+  onClick: () => void;
+};
 
-const OnPanelButton = ({sourceType, onClick}:OnOffPanelButtonProps) => {
-    const icon = {audio: <Microphone/>, video: <Camera/>};
-    return (<Button borderRadius="500px"
-                    backgroundColor="white" 
-                    border="1px" 
-                    borderColor="#BFCCF8"
-                    onClick={onClick}>
-            {icon[sourceType]}
-        </Button>
-    );
-}
+const OnPanelButton = ({ sourceType, onClick }: OnOffPanelButtonProps) => {
+  const icon = { audio: <Microphone />, video: <Camera /> };
+  return (
+    <Button
+      borderRadius="500px"
+      backgroundColor="white"
+      border="1px"
+      borderColor="#BFCCF8"
+      onClick={onClick}
+    >
+      {icon[sourceType]}
+    </Button>
+  );
+};
 
-const OffPanelButton = ({sourceType, onClick}:OnOffPanelButtonProps) => {
-    const icon = {audio: <MicrophoneDisabled/>, video: <CameraDisabled/>};
-    return (<Button borderRadius="500px"
-                    backgroundColor="red.300"
-                    border="1px" 
-                    borderColor="red"
-                    onClick={onClick}>
-            {icon[sourceType]}
-        </Button>
-    );
-}
+const OffPanelButton = ({ sourceType, onClick }: OnOffPanelButtonProps) => {
+  const icon = { audio: <MicrophoneDisabled />, video: <CameraDisabled /> };
+  return (
+    <Button
+      borderRadius="500px"
+      backgroundColor="red.300"
+      border="1px"
+      borderColor="red"
+      onClick={onClick}
+    >
+      {icon[sourceType]}
+    </Button>
+  );
+};
 
 const ControlPanel = () => {
   const initialSources: Sources = {
-    audio: { devices: [], selectedId: "", isActive: false},
-    video: { devices: [], selectedId: "", isActive: false},
+    audio: { devices: [], selectedId: "", isActive: false },
+    video: { devices: [], selectedId: "", isActive: false },
   };
   const [sources, setSources] = useState(initialSources);
 
@@ -121,9 +133,15 @@ const ControlPanel = () => {
     let mediaDevices: MediaDeviceInfo[];
     try {
       mediaDevices = await navigator.mediaDevices.enumerateDevices();
-      const audio: SourceInfo = {...sources.audio, devices: filterDevices(mediaDevices, "audioinput")};
-      const video: SourceInfo = {...sources.video, devices: filterDevices(mediaDevices, "videoinput")};
-      const newSources: Sources = {audio: audio, video: video,};
+      const audio: SourceInfo = {
+        ...sources.audio,
+        devices: filterDevices(mediaDevices, "audioinput"),
+      };
+      const video: SourceInfo = {
+        ...sources.video,
+        devices: filterDevices(mediaDevices, "videoinput"),
+      };
+      const newSources: Sources = { audio: audio, video: video };
       setSources(newSources);
     } catch (err) {
       console.log("Error during getting the media devices.");
@@ -136,20 +154,23 @@ const ControlPanel = () => {
 
   useEffect(() => {
     navigator.mediaDevices.ondevicechange = getSources;
-    
+
     return () => {
-        navigator.mediaDevices.ondevicechange = null;
-        };
-    }, [getSources]);
+      navigator.mediaDevices.ondevicechange = null;
+    };
+  }, [getSources]);
 
-
-  const changeSelectedSourceHandler = (deviceId: string, sourceType: 'audio' | 'video') => {
-    const constraint = {[sourceType]: {deviceId}};
+  const changeSelectedSourceHandler = (deviceId: string, sourceType: SourceType) => {
+    const constraint = { [sourceType]: { deviceId } };
     navigator.mediaDevices
       .getUserMedia(constraint)
       .then(() => {
-        const newSourceInfo: SourceInfo = {...sources[sourceType], selectedId: deviceId, isActive: true};
-        const newSources: Sources = {...sources, [sourceType]: newSourceInfo};
+        const newSourceInfo: SourceInfo = {
+          ...sources[sourceType],
+          selectedId: deviceId,
+          isActive: true,
+        };
+        const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
         setSources(newSources);
       })
       .catch((err) => {
@@ -157,37 +178,45 @@ const ControlPanel = () => {
       });
   };
 
-  const toggleButton = (sourceType: 'audio' | 'video') => {
+  const toggleButton = (sourceType: SourceType) => {
     const newActiveValue: boolean = !sources[sourceType].isActive;
-    const newSourceInfo: SourceInfo = {...sources[sourceType], isActive: newActiveValue};
-    const newSources: Sources = {...sources, [sourceType]: newSourceInfo};
+    const newSourceInfo: SourceInfo = { ...sources[sourceType], isActive: newActiveValue };
+    const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
     setSources(newSources);
   };
 
-  const dispatchPanelButtonType = (sourceType: 'audio' | 'video') => {
+  const dispatchPanelButtonType = (sourceType: SourceType) => {
     if (!sources[sourceType].selectedId) {
-        return "disabled";
+      return "disabled";
     } else if (sources[sourceType].isActive) {
-        return "on";
+      return "on";
     } else {
-        return "off";
+      return "off";
     }
-  }
+  };
 
   return (
     <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
       <DropdownButton
         mainText="audio source"
         sources={sources.audio}
-        onSelectSource={((deviceId: string) => changeSelectedSourceHandler(deviceId, 'audio'))}
+        onSelectSource={(deviceId: string) => changeSelectedSourceHandler(deviceId, "audio")}
       />
       <DropdownButton
         mainText="video source"
         sources={sources.video}
-        onSelectSource={((deviceId: string) => changeSelectedSourceHandler(deviceId, 'video'))}
+        onSelectSource={(deviceId: string) => changeSelectedSourceHandler(deviceId, "video")}
       />
-      <PanelButton sourceType='audio' type={dispatchPanelButtonType('audio')} onClick={() => toggleButton('audio')}/>
-      <PanelButton sourceType='video' type={dispatchPanelButtonType('video')} onClick={() => toggleButton('video')}/>
+      <PanelButton
+        sourceType="audio"
+        type={dispatchPanelButtonType("audio")}
+        onClick={() => toggleButton("audio")}
+      />
+      <PanelButton
+        sourceType="video"
+        type={dispatchPanelButtonType("video")}
+        onClick={() => toggleButton("video")}
+      />
     </Box>
   );
 };
