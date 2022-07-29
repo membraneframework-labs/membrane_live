@@ -9,6 +9,9 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLive.Repo
   alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
+  alias MembraneLive.Event
+
+  require Logger
 
   def join("event:" <> id, %{"name" => name}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
@@ -20,8 +23,8 @@ defmodule MembraneLiveWeb.EventChannel do
 
         case viewer_data do
           [] ->
-            send(self(), {:after_join, name})
-            {:ok, socket}
+            send(self(), {:after_join, name, id})
+            join_event_stream(id, socket)
 
           _viewer_exists ->
             {:error, %{reason: "Viewer with this name already exists."}}
@@ -39,10 +42,60 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  def handle_info({:after_join, name}, socket) do
+  def join_event_stream(event_id, socket) do
+    case :global.whereis_name(event_id) do
+      :undefined -> Event.start(event_id, name: {:global, event_id})
+      pid -> {:ok, pid}
+    end
+    |> case do
+      {:ok, event_pid} ->
+        do_join(socket, event_pid, event_id)
+
+      {:error, {:already_started, event_pid}} ->
+        do_join(socket, event_pid, event_id)
+
+      {:error, reason} ->
+        Logger.error("""
+        Failed to start room.
+        Room: #{inspect(event_id)}
+        Reason: #{inspect(reason)}
+        """)
+
+        {:error, %{reason: "failed to start room"}}
+    end
+  end
+
+  def handle_info({:after_join, name, event_id}, socket) do
     Presence.track(socket, name, %{})
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(
+        {:DOWN, _ref, :process, _pid, _reason},
+        socket
+      ) do
+    {:stop, :normal, socket}
+  end
+
+  @impl true
+  def handle_info({:media_event, event}, socket) do
+    push(socket, "mediaEvent", %{data: event})
+
+    {:noreply, socket}
+  end
+
+  
+
+  defp do_join(socket, event_pid, event_id) do
+    peer_id = "#{UUID.uuid4()}"
+    # TODO handle crash of room?
+    Process.monitor(event_pid)
+    send(event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok,
+     Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
   end
 
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
@@ -79,6 +132,14 @@ defmodule MembraneLiveWeb.EventChannel do
       :name => name,
       :answer => answer
     })
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("mediaEvent", %{"data" => event}, socket) do
+    IO.inspect(socket, label: :atom)
+    send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
 
     {:noreply, socket}
   end
