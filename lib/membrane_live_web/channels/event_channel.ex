@@ -12,6 +12,9 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLive.Repo
   alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
+  alias MembraneLive.Event
+
+  require Logger
 
   @impl true
   def join("event:" <> id, %{"name" => name}, socket) do
@@ -64,11 +67,11 @@ defmodule MembraneLiveWeb.EventChannel do
         Reason: #{inspect(reason)}
         """)
 
-        {:error, %{reason: "failed to start event"}}
+        {:error, %{reason: "failed to start room"}}
     end
   end
 
-  def handle_info({:after_join, name, _event_id}, socket) do
+  def handle_info({:after_join, name, event_id}, socket) do
     Presence.track(socket, name, %{})
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
@@ -98,6 +101,7 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok,
      Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
   end
+
 
   # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
   # server (sends information to presenter) -> presenter (shows alert that it's been removed
@@ -156,6 +160,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_in("mediaEvent", %{"data" => event}, socket) do
+    IO.inspect(socket, label: :atom)
     send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
 
     {:noreply, socket}
