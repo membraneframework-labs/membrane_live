@@ -3,6 +3,7 @@ defmodule MembraneLiveWeb.EventSocket do
 
   channel("event:*", MembraneLiveWeb.EventChannel)
   channel("private:*", MembraneLiveWeb.EventChannel)
+
   @impl true
   def connect(_params, socket, _connect_info) do
     {:ok, socket}
