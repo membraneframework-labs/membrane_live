@@ -160,4 +160,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_in("isPlaylistPlayable", _data, socket) do
+    {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}
+  end
 end

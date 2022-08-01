@@ -91,7 +91,8 @@ defmodule MembraneLive.Event do
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
-       trace_ctx: trace_ctx
+       trace_ctx: trace_ctx,
+       is_playlist_playable: false
      }}
   end
 
@@ -221,7 +222,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
-    # TODO: implement detecting when HLS starts
+    state = put_in(state, [:is_playlist_playable], true)
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{})
     {:noreply, state}
   end
 
@@ -229,6 +231,11 @@ defmodule MembraneLive.Event do
   def handle_info({:cleanup, _clean_function, stream_id}, state) do
     StorageCleanup.remove_directory(stream_id)
     {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_call(:is_playlist_playable, _from, state) do
+    {:reply, state.is_playlist_playable, state}
   end
 
   defp tracing_metadata(),
