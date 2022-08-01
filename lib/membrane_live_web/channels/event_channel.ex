@@ -48,7 +48,7 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  def join_event_stream(event_id, socket) do
+  defp join_event_stream(event_id, socket) do
     case :global.whereis_name(event_id) do
       :undefined -> Event.start(event_id, name: {:global, event_id})
       pid -> {:ok, pid}
@@ -69,6 +69,16 @@ defmodule MembraneLiveWeb.EventChannel do
 
         {:error, %{reason: "failed to start room"}}
     end
+  end
+
+  defp do_join(socket, event_pid, event_id) do
+    peer_id = "#{UUID.uuid4()}"
+    # TODO handle crash of room?
+    Process.monitor(event_pid)
+    send(event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok,
+     Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
   end
 
   def handle_info({:after_join, name, event_id}, socket) do
