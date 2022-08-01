@@ -6,13 +6,14 @@ defmodule MembraneLiveWeb.EventChannel do
 
   import Ecto.Query, only: [from: 2]
 
+  require Logger
+
+  alias MembraneLive.Event
   alias MembraneLive.Repo
   alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
-  alias MembraneLive.Event
 
-  require Logger
-
+  @impl true
   def join("event:" <> id, %{"name" => name}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
       false ->
@@ -34,10 +35,12 @@ defmodule MembraneLiveWeb.EventChannel do
     Ecto.Query.CastError -> {:error, %{reason: "This link is wrong."}}
   end
 
+  @impl true
   def join("private:" <> _subtopic, _data, socket) do
     {:ok, socket}
   end
 
+  @impl true
   def join(_topic, _params, _socket) do
     {:error, %{reason: "This link is wrong."}}
   end
@@ -61,11 +64,11 @@ defmodule MembraneLiveWeb.EventChannel do
         Reason: #{inspect(reason)}
         """)
 
-        {:error, %{reason: "failed to start room"}}
+        {:error, %{reason: "failed to start event"}}
     end
   end
 
-  def handle_info({:after_join, name, event_id}, socket) do
+  def handle_info({:after_join, name, _event_id}, socket) do
     Presence.track(socket, name, %{})
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
@@ -86,8 +89,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  
-
   defp do_join(socket, event_pid, event_id) do
     peer_id = "#{UUID.uuid4()}"
     # TODO handle crash of room?
@@ -98,6 +99,11 @@ defmodule MembraneLiveWeb.EventChannel do
      Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
   end
 
+  # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
+  # server (sends information to presenter) -> presenter (shows alert that it's been removed
+  # and sends message back) -> server (updates presenter in Presence)
+  # such design is caused by user Presence that can be updated only with its socket-channel combination
+  # (socket parameter in function below)
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
     {:ok, _ref} =
       Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
@@ -106,7 +112,19 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("presenter_remove", %{"presenter_topic" => presenter_topic}, socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+    props = Presence.get_by_key(socket, List.last(String.split(presenter_topic, ":")))
+
+    case props do
+      %{metas: [%{"is_presenter" => true}]} ->
+        MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+
+      [] ->
+        raise "Error: Trying to remove presenter role from nonexistent participant"
+
+      %{metas: [%{}]} ->
+        raise "Error: Trying to remove presenter role from participant that is no a presenter"
+    end
+
     {:noreply, socket}
   end
 
@@ -138,7 +156,6 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_in("mediaEvent", %{"data" => event}, socket) do
-    IO.inspect(socket, label: :atom)
     send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
 
     {:noreply, socket}
