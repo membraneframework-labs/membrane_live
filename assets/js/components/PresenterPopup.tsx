@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import type { PresenterPopupState } from "../pages/Event";
+import { connectWebrtc } from "../utils/webrtcUtils";
 
 type PresenterPopupProps = {
   name: string;
@@ -21,6 +22,8 @@ const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: Presen
 
   const sendAnswer = (answer: string) => {
     eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: answer });
+    if (answer == "accept")
+      connectWebrtc(eventChannel, name);
     setPopupState({ isOpen: false, moderator: "" });
   };
 

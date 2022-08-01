@@ -50,6 +50,7 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.17.5"},
+      # {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.6"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
@@ -61,8 +62,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine", branch: "MV-93-generate-keframe-requests"},
+      {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine", branch: "MV-93-generate-keframe-requests"},
+      # {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine"},
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
       {:cowlib, "~> 2.11.0", override: true},
@@ -73,6 +74,12 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_exporter, "~> 1.0"},
       {:opentelemetry_zipkin, "~> 1.0"},
 
+      # Benchmarks
+      {:beamchmark, "~> 0.1.0", only: :benchmark},
+      {:stampede, github: "geometerio/stampede-elixir", only: :benchmark},
+      {:httpoison, "~> 1.8", only: :benchmark},
+      {:poison, "~> 5.0.0", only: :benchmark},
+
       # HLS_Endpoint deps
       {:membrane_http_adaptive_stream_plugin, "~> 0.8.0"},
       {:membrane_mp4_plugin, "~> 0.16.0"},
@@ -80,7 +87,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_format, "~> 0.7.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, "~> 0.15.0"}
+      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true}
     ]
   end
 

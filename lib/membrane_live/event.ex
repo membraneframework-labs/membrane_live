@@ -3,16 +3,16 @@ defmodule MembraneLive.Event do
 
   use GenServer
 
+  alias Membrane.RTC.Engine
+  alias Membrane.RTC.Engine.Message
+  alias Membrane.RTC.Engine.MediaEvent
+  alias Membrane.RTC.Engine.Endpoint.{WebRTC, HLS}
+  alias Membrane.ICE.TURNManager
+  alias Membrane.WebRTC.Extension.{Mid, TWCC}
+  alias WebRTCToHLS.StorageCleanup
+
   require Membrane.Logger
   require Membrane.OpenTelemetry
-
-  alias Membrane.ICE.TURNManager
-  alias Membrane.RTC.Engine
-  alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.MediaEvent
-  alias Membrane.RTC.Engine.Message
-  alias Membrane.WebRTC.Extension.{Mid, TWCC}
-  alias MembraneLive.StorageCleanup
 
   @mix_env Mix.env()
 
@@ -97,6 +97,13 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
+  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
+    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
+    Process.monitor(peer_channel_pid)
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(%Message.MediaEvent{to: :broadcast, data: data}, state) do
     for {_peer_id, pid} <- state.peer_channels, do: send(pid, {:media_event, data})
 
@@ -171,8 +178,7 @@ defmodule MembraneLive.Event do
     Membrane.Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
     peer_channel = state.peer_channels[endpoint_id]
 
-    # TODO: handle HLS endpoint error.
-    error_message = "Endpoint has crashed."
+    error_message = "WebRTC endpoint has crashed, please refresh the page to reconnect"
     data = MediaEvent.create_error_event(error_message)
     send(peer_channel, {:media_event, data})
 
@@ -205,13 +211,6 @@ defmodule MembraneLive.Event do
 
       {:noreply, state}
     end
-  end
-
-  @impl true
-  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
-    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
-    Process.monitor(peer_channel_pid)
-    {:noreply, state}
   end
 
   @impl true
