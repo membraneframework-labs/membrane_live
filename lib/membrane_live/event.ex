@@ -8,7 +8,7 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Endpoint.{WebRTC, HLS}
   alias Membrane.ICE.TURNManager
-  alias Membrane.WebRTC.Extension.{Mid, Rid, TWCC}
+  alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias WebRTCToHLS.StorageCleanup
 
   require Membrane.Logger
@@ -213,13 +213,6 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
-    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
-    Process.monitor(peer_channel_pid)
-    {:noreply, state}
-  end
-
-  @impl true
   def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
     # TODO: implement detecting when HLS starts
     {:noreply, state}
@@ -245,20 +238,4 @@ defmodule MembraneLive.Event do
     ]
 
   defp event_span_id(id), do: "event:#{id}"
-
-  @impl true
-  def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info({:cleanup, _clean_function, stream_id}, state) do
-    StorageCleanup.remove_directory(stream_id)
-    {:stop, :normal, state}
-  end
 end

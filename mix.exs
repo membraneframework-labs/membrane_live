@@ -63,6 +63,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine", branch: "MV-93-generate-keframe-requests"},
+      # {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine"},
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
       {:cowlib, "~> 2.11.0", override: true},
@@ -86,7 +87,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_format, "~> 0.7.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, "~> 0.15.0"}
+      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true}
     ]
   end
 

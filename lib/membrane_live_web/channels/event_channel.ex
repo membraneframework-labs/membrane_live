@@ -14,8 +14,6 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
   alias MembraneLive.Event
 
-  require Logger
-
   @impl true
   def join("event:" <> id, %{"name" => name}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
@@ -28,7 +26,7 @@ defmodule MembraneLiveWeb.EventChannel do
         case viewer_data do
           [] ->
             send(self(), {:after_join, name, id})
-            join_event_stream(id, socket)
+            create_event_stream(id, socket)
 
           _viewer_exists ->
             {:error, %{reason: "Viewer with this name already exists."}}
@@ -48,17 +46,17 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  defp join_event_stream(event_id, socket) do
+  defp create_event_stream(event_id, socket) do
     case :global.whereis_name(event_id) do
       :undefined -> Event.start(event_id, name: {:global, event_id})
       pid -> {:ok, pid}
     end
     |> case do
       {:ok, event_pid} ->
-        do_join(socket, event_pid, event_id)
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
 
       {:error, {:already_started, event_pid}} ->
-        do_join(socket, event_pid, event_id)
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
 
       {:error, reason} ->
         Logger.error("""
@@ -71,17 +69,17 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp do_join(socket, event_pid, event_id) do
+  defp join_event_stream(socket) do
+    IO.inspect(socket, label: :socket)
     peer_id = "#{UUID.uuid4()}"
     # TODO handle crash of room?
-    Process.monitor(event_pid)
-    send(event_pid, {:add_peer_channel, self(), peer_id})
+    Process.monitor(socket.assigns.event_pid)
+    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
 
-    {:ok,
-     Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
+    {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
-  def handle_info({:after_join, name, event_id}, socket) do
+  def handle_info({:after_join, name, _event_id}, socket) do
     Presence.track(socket, name, %{})
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
@@ -101,17 +99,6 @@ defmodule MembraneLiveWeb.EventChannel do
 
     {:noreply, socket}
   end
-
-  defp do_join(socket, event_pid, event_id) do
-    peer_id = "#{UUID.uuid4()}"
-    # TODO handle crash of room?
-    Process.monitor(event_pid)
-    send(event_pid, {:add_peer_channel, self(), peer_id})
-
-    {:ok,
-     Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
-  end
-
 
   # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
   # server (sends information to presenter) -> presenter (shows alert that it's been removed
@@ -155,9 +142,10 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"answer" => answer, "name" => name, "moderator" => moderator},
         socket
       ) do
-    if answer == "accept" do
+    {:ok, socket} = if answer == "accept" do
       {:ok, _ref} =
         Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+      join_event_stream(socket)
     end
 
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
