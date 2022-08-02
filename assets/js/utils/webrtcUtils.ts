@@ -2,6 +2,7 @@ import {
   MembraneWebRTC,
   SerializedMediaEvent,
 } from "@membraneframework/membrane-webrtc-js";
+import { presenterStreams } from "../pages/Event";
 
 export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: true,
@@ -13,7 +14,7 @@ export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   video: { width: 1280, height: 720, frameRate: 24 },
 };
 
-export const connectWebrtc = async (webrtcChannel, name) => {
+export const connectWebrtc = async (webrtcChannel, name, streamsAvailable, setStreamsAvailable) => {
   let localAudioStream: MediaStream | null = null;
   let localVideoStream: MediaStream | null = null;
   let localStream: MediaStream = new MediaStream();
@@ -35,7 +36,6 @@ export const connectWebrtc = async (webrtcChannel, name) => {
     );
     localVideoStream.getTracks().forEach((track) => {
       localStream.addTrack(track);
-      console.log(track);
     });
   } catch (error) {
     console.error("Couldn't get camera permission:", error);
@@ -62,15 +62,15 @@ export const connectWebrtc = async (webrtcChannel, name) => {
       },
       onPeerJoined: (peer) => {
         console.log("PEER JOINED", peer.id, peer.metadata.displayName)
+        
       },
-      onTrackReady: ({ stream, peer, metadata }) => {
-        let video = document.getElementById("123123123123") as HTMLVideoElement;
-        console.log(video, peer.metadata.displayName)
-        video.autoplay = true;
-        video.playsInline = true;
-        video.muted = true;
-
-        video.srcObject = stream;
+      onTrackReady: ({ stream, peer, metadata}) => {
+        presenterStreams[peer.metadata.displayName] = stream;
+        console.log("W FUNKCJI", stream);
+        let new_elem = {};
+        new_elem[peer.metadata.displayName] = true;
+        setStreamsAvailable({...streamsAvailable, ...new_elem});
+        console.log("STREAMS AVAILABLE", streamsAvailable);
       }
     },
   });

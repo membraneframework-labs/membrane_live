@@ -15,15 +15,17 @@ type PresenterPopupProps = {
   moderator: string;
   eventChannel: any;
   setPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>;
+  streamsAvailable: object;
+  setStreamsAvailable: Function;  // TODO
 };
 
-const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: PresenterPopupProps) => {
+const PresenterPopup = ({ name, moderator, eventChannel, setPopupState, streamsAvailable, setStreamsAvailable }: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const sendAnswer = (answer: string) => {
     eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: answer });
     if (answer == "accept")
-      connectWebrtc(eventChannel, name);
+      connectWebrtc(eventChannel, name, streamsAvailable, setStreamsAvailable);
     setPopupState({ isOpen: false, moderator: "" });
   };
 
