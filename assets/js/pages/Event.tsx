@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo} from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button, Heading, Center, Flex, Box, Spacer } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { Socket } from "phoenix";
@@ -90,7 +90,7 @@ const Event = () => {
     useNavigate()("/");
   };
 
-  const isPresenter = useMemo( () => {
+  const isPresenter = useMemo(() => {
     const selfParticipant = participants.find(
       (participant) => participant.name == eventInfo.username
     );

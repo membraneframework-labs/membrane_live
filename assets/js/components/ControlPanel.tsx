@@ -1,4 +1,4 @@
-import { Box, Button, Menu, MenuButton, MenuList, MenuItem} from "@chakra-ui/react";
+import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
 
@@ -58,8 +58,11 @@ type PanelButtonProps = {
   active: boolean;
 };
 
-const PanelButton = ({ onClick, sourceType, disabled, active}: PanelButtonProps) => {
-  const icon = disabled || !active ? {audio: <Microphone/>, video: <Camera/>} : {audio: <MicrophoneDisabled/>, video: <CameraDisabled/>};
+const PanelButton = ({ onClick, sourceType, disabled, active }: PanelButtonProps) => {
+  const icon =
+    disabled || !active
+      ? { audio: <Microphone />, video: <Camera /> }
+      : { audio: <MicrophoneDisabled />, video: <CameraDisabled /> };
   return (
     <Button
       isDisabled={disabled}
@@ -70,8 +73,8 @@ const PanelButton = ({ onClick, sourceType, disabled, active}: PanelButtonProps)
       onClick={onClick}
     >
       {icon[sourceType]}
-      </Button>
-  )
+    </Button>
+  );
 };
 
 const ControlPanel = () => {
