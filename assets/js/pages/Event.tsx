@@ -7,9 +7,9 @@ import ControlPanel from "../components/ControlPanel";
 import PresenterPopup from "../components/PresenterPopup";
 import ParticipantsList from "../components/ParticipantsList";
 import { createEventChannel, createPrivateChannel, getEventInfo } from "../utils/eventApi";
+import HLSPlayer from "../components/Player";
 
 export type EventInfo = {
-  username: string;
   link: string;
   title: string;
   description: string;
@@ -35,7 +35,6 @@ export type Participant = {
 
 const initEventInfo = () => {
   return {
-    username: "",
     link: window.location.pathname.split("/")[2],
     title: "",
     description: "",
@@ -55,6 +54,7 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
   const [popupState, setPopupState] = useState<PopupState>({ isOpen: true, channelConnErr: "" });
+  const [name, setName] = useState<string>("");
   const socket = new Socket("/socket");
   socket.connect();
 
@@ -63,28 +63,26 @@ const Event = () => {
   }, []);
 
   useEffect(() => {
-    if (eventChannel) {
-      createEventChannel(eventChannel, popupState, setParticipants, setPopupState);
+    const alreadyJoined = eventChannel?.state === "joined";
+    if (name && !alreadyJoined){
+        const channel = socket.channel("event:" + eventInfo.link, { name: name });
+        createEventChannel(channel, popupState, setParticipants, setPopupState, setEventChannel);
     }
-  }, [eventChannel]);
+  }, [name, eventChannel]);
 
   useEffect(() => {
-    if (privateChannel) {
-      createPrivateChannel(
-        privateChannel,
-        eventChannel,
-        eventInfo.username,
-        setPresenterPopupState
-      );
+    const alreadyJoined = privateChannel?.state === "joined";
+    if (name && !alreadyJoined){
+        const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
+        createPrivateChannel(
+          channel,
+          eventChannel,
+          name,
+          setPresenterPopupState,
+          setPrivateChannel,
+        );
     }
-  }, [privateChannel]);
-
-  const connectToChannels = (name: string): void => {
-    if (eventChannel) eventChannel.leave();
-    setEventChannel(socket.channel("event:" + eventInfo.link, { name: name }));
-    if (privateChannel) privateChannel.leave();
-    setPrivateChannel(socket.channel("private:" + eventInfo.link + ":" + name, {}));
-  };
+  }, [name, eventChannel, privateChannel]);
 
   const handleExitButton = (): void => {
     useNavigate()("/");
@@ -106,27 +104,26 @@ const Event = () => {
         </Box>
         <Spacer />
         <ParticipantsList
-          yourName={eventInfo.username}
+          yourName={name}
           eventChannel={eventChannel}
           participants={participants}
           isModerator={eventInfo.isModerator}
         />
       </Flex>
       <Popup
-        eventInfo={eventInfo}
-        setEventInfo={setEventInfo}
+        setName={setName}
         isOpen={popupState.isOpen}
         channelConnErr={popupState.channelConnErr}
-        connectToChannels={connectToChannels}
       />
-      {presenterPopupState.isOpen ? (
+      {presenterPopupState.isOpen &&
         <PresenterPopup
           moderator={presenterPopupState.moderator}
-          name={eventInfo.username}
+          name={name}
           setPopupState={setPresenterPopupState}
           eventChannel={eventChannel}
         />
-      ) : null}
+      }
+      <HLSPlayer eventChannel={eventChannel} />
     </>
   );
 };

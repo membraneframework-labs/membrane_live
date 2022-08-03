@@ -2,12 +2,12 @@ defmodule MembraneLiveWeb.Router do
   use MembraneLiveWeb, :router
 
   pipeline :browser do
-    plug(:accepts, ["json"])
-    plug(:fetch_session)
-    plug(:fetch_live_flash)
+    # plug(:accepts, ["json"])
+    # plug(:fetch_session)
+    # plug(:fetch_live_flash)
     plug(:put_root_layout, {MembraneLiveWeb.LayoutView, :root})
     # plug(:protect_from_forgery)
-    plug(:put_secure_browser_headers)
+    # plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
@@ -19,8 +19,8 @@ defmodule MembraneLiveWeb.Router do
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
-    get("/event/*page", PageController, :index)
     get("/video/:prefix/:filename", HLSController, :index)
+    get("/event/*page", PageController, :index)
   end
 
   # if Mix.env() in [:dev, :test] do

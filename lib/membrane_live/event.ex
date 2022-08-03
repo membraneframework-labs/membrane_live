@@ -87,6 +87,7 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
+       playlist_idl: "",
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
@@ -220,9 +221,10 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
+  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
     state = put_in(state, [:is_playlist_playable], true)
-    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{})
+    state = put_in(state, [:playlist_idl], playlist_idl)
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{playlist_idl: playlist_idl})
     {:noreply, state}
   end
 
@@ -234,7 +236,7 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    {:reply, state.is_playlist_playable, state}
+    {:reply, %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
   end
 
   defp tracing_metadata(),
