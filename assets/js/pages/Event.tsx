@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button, Heading, Center, Flex, Box, Spacer } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { Socket } from "phoenix";
@@ -90,6 +90,13 @@ const Event = () => {
     useNavigate()("/");
   };
 
+  const isPresenter = useMemo(() => {
+    const selfParticipant = participants.find(
+      (participant) => participant.name == eventInfo.username
+    );
+    return selfParticipant?.isPresenter;
+  }, [participants]);
+
   return (
     <>
       <Flex w="100vh">
@@ -98,7 +105,7 @@ const Event = () => {
           <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
             Please wait for the moderator to select a presenter
           </Center>
-          <ControlPanel />
+          {isPresenter ? <ControlPanel /> : null}
           <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
             {" "}
             EXIT{" "}
