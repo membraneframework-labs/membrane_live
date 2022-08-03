@@ -55,7 +55,7 @@ const Event = () => {
     moderator: "",
   });
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [streamsAvailable, setStreamsAvailable] = useState({});  // TODO: typing
+  const [streamsAvailable, setStreamsAvailable] = useState({});
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
   const [popupState, setPopupState] = useState<PopupState>({ isOpen: true, channelConnErr: "" });
@@ -71,10 +71,6 @@ const Event = () => {
       createEventChannel(eventChannel, popupState, setParticipants, setPopupState);
     }
   }, [eventChannel]);
-
-  useEffect(() => {
-    console.log("SADASDSADSA", streamsAvailable)
-  }, [streamsAvailable])
 
   useEffect(() => {
     if (privateChannel) {
@@ -124,7 +120,7 @@ const Event = () => {
             if (participant.isPresenter) {
               return <PresenterPlayer name={participant.name} key={participant.name} stream={presenterStreams[participant.name]}/>
             }
-            return <h1 key={participant.name}>BRAK</h1>
+            return null
           })}
           <ControlPanel />
           <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>

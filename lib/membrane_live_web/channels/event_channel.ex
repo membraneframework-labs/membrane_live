@@ -146,6 +146,8 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, _ref} =
         Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
       join_event_stream(socket)
+    else
+      {:ok, socket}
     end
 
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{

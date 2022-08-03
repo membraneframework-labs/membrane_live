@@ -9,7 +9,7 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.Endpoint.{WebRTC, HLS}
   alias Membrane.ICE.TURNManager
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
-  alias WebRTCToHLS.StorageCleanup
+  # alias WebRTCToHLS.StorageCleanup
 
   require Membrane.Logger
   require Membrane.OpenTelemetry
@@ -225,8 +225,8 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:cleanup, _clean_function, stream_id}, state) do
-    StorageCleanup.remove_directory(stream_id)
+  def handle_info({:cleanup, _clean_function, _stream_id}, state) do
+    # StorageCleanup.remove_directory(stream_id)
     {:stop, :normal, state}
   end
 
