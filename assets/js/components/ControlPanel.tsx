@@ -67,9 +67,9 @@ const PanelButton = ({ onClick, sourceType, disabled, active }: PanelButtonProps
     <Button
       isDisabled={disabled}
       borderRadius="500px"
-      backgroundColor={active ? "white" : "red.300"}
+      backgroundColor={active ? "red.300" : "white"}
       border="1px"
-      borderColor={active ? "#BFCCF8" : "red"}
+      borderColor={active ? "red" : "#BFCCF8"}
       onClick={onClick}
     >
       {icon[sourceType]}
