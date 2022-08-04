@@ -30,7 +30,7 @@ const PresenterPopup = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={() => {}}>
+    <Modal isOpen={isOpen} onClose={() => { }}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>You've been assigned a presenter role by the moderator</ModalHeader>

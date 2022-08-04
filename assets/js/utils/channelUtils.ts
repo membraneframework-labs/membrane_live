@@ -5,14 +5,17 @@ import type { NamePopupState, PresenterPopupState } from "../pages/Event";
 export const createEventChannel = (
   eventChannel: any,
   namePopupState: NamePopupState,
-  setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>
+  setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>,
+  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
 ) => {
   eventChannel
     .join()
     .receive("ok", () => {
       setPopupState({ isOpen: false, channelConnErr: "" });
+      setEventChannel(eventChannel);
     })
     .receive("error", (resp: { reason: string }) => {
+      eventChannel.leave();
       if (resp.reason === "Viewer with this name already exists.")
         setPopupState({ ...namePopupState, channelConnErr: resp.reason });
       else alert(resp.reason);
@@ -50,8 +53,9 @@ export const syncEventChannel = (
 export const createPrivateChannel = (
   privateChannel: any,
   eventChannel: any,
-  username: string,
-  setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>
+  name: string,
+  setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>,
+  setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   privateChannel
     .join()
@@ -64,10 +68,12 @@ export const createPrivateChannel = (
       });
       privateChannel.on("presenter_remove", () => {
         alert("You are no longer presenter.");
-        eventChannel.push("presenter_remove", { presenter: username });
+        eventChannel.push("presenter_remove", { presenter: name });
       });
+      setPrivateChannel(privateChannel);
     })
     .receive("error", (resp: { reason: string }) => {
+      privateChannel.leave();
       alert(resp.reason);
     });
 };

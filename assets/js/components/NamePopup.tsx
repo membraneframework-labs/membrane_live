@@ -11,47 +11,45 @@ import {
   ModalFooter,
   Button,
 } from "@chakra-ui/react";
-import type { EventInfo } from "../pages/Event";
 import React, { useState } from "react";
 
-type NamePopupProps = {
-  eventInfo: EventInfo;
-  setEventInfo: Function;
-  isNamePopupOpen: boolean;
+interface PopupProps {
+  setName: (name: string) => void;
+  isOpen: boolean;
   channelConnErr: string;
-  connectToChannels: (name: string) => void;
-};
+}
 
 const NamePopup = ({
-  eventInfo,
-  setEventInfo,
-  isNamePopupOpen,
+  setName,
+  isOpen,
   channelConnErr,
-  connectToChannels,
-}: NamePopupProps) => {
+}: PopupProps) => {
   const [input, setInput] = useState<string>("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
 
-  const handleSubmit = () => {
-    setEventInfo({ ...eventInfo, username: input });
-    connectToChannels(input);
-  };
-
   return (
-    <Modal isOpen={isNamePopupOpen} onClose={() => {}}>
+    <Modal isOpen={isOpen} onClose={() => { }}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Pass your name</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl isInvalid={channelConnErr != ""}>
-            <Input type="text" placeholder="Name" value={input} onChange={handleInputChange} />
-            {channelConnErr != "" ? <FormErrorMessage>{channelConnErr}</FormErrorMessage> : null}
+            <Input
+              type="text"
+              placeholder="Name"
+              size="lg"
+              value={input}
+              onChange={handleInputChange}
+            />
+            {channelConnErr && <FormErrorMessage>{channelConnErr}</FormErrorMessage>}
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={handleSubmit}>Submit</Button>
+          <Button colorScheme="blue" mr={3} onClick={() => setName(input)}>
+            Submit
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
