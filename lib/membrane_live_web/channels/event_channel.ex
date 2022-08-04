@@ -70,7 +70,6 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   defp join_event_stream(socket) do
-    IO.inspect(socket, label: :socket)
     peer_id = "#{UUID.uuid4()}"
     # TODO handle crash of room?
     Process.monitor(socket.assigns.event_pid)
@@ -162,9 +161,15 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_in("mediaEvent", %{"data" => event}, socket) do
-    IO.inspect(socket, label: :atom)
     send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
-
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("isPlaylistPlayable", _data, socket) do
+    case :global.whereis_name(socket.assigns.event_id) do
+      :undefined -> {:reply, {:ok, false}, socket}
+      pid -> {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
+    end
   end
 end

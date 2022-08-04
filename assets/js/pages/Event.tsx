@@ -5,9 +5,9 @@ import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
+import HLSPlayer from "../components/Player";
 
 export type EventInfo = {
-  username: string;
   link: string;
   title: string;
   description: string;
@@ -28,7 +28,6 @@ export type PresenterPopupState = {
 
 const initEventInfo = () => {
   return {
-    username: "",
     link: window.location.pathname.split("/")[2],
     title: "",
     description: "",
@@ -72,6 +71,7 @@ const Event = () => {
     isOpen: false,
     moderator: "",
   });
+  const [name, setName] = useState<string>("");
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -86,57 +86,54 @@ const Event = () => {
   }, []);
 
   useEffect(() => {
-    if (eventChannel) {
-      createEventChannel(eventChannel, namePopupState, setNamePopupState);
+    const alreadyJoined = eventChannel?.state === "joined";
+    if (name && !alreadyJoined){
+        const channel = socket.channel("event:" + eventInfo.link, { name: name });
+        createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
-  }, [eventChannel]);
+  }, [name, eventChannel]);
 
   useEffect(() => {
-    if (privateChannel) {
-      createPrivateChannel(
-        privateChannel,
-        eventChannel,
-        eventInfo.username,
-        setPresenterPopupState
-      );
+    const alreadyJoined = privateChannel?.state === "joined";
+    if (name && !alreadyJoined){
+        const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
+        createPrivateChannel(
+          channel,
+          eventChannel,
+          name,
+          setPresenterPopupState,
+          setPrivateChannel
+        );
     }
-  }, [privateChannel]);
-
-  const connectToChannels = (name: string): void => {
-    if (eventChannel) eventChannel.leave();
-    setEventChannel(socket.channel("event:" + eventInfo.link, { name: name }));
-    if (privateChannel) privateChannel.leave();
-    setPrivateChannel(socket.channel("private:" + eventInfo.link + ":" + name, {}));
-  };
+  }, [name, eventChannel, privateChannel]);
 
   return (
     <>
       <PresenterStreamArea
-        username={eventInfo.username}
+        username={name}
         presenters={presenters}
         eventChannel={eventChannel}
       />
       <ParticipantsList
-        username={eventInfo.username}
+        username={name}
         isModerator={eventInfo.isModerator}
         eventChannel={eventChannel}
         setPresenters={setPresenters}
       />
       <NamePopup
-        eventInfo={eventInfo}
-        setEventInfo={setEventInfo}
-        isNamePopupOpen={namePopupState.isOpen}
+        setName={setName}
+        isOpen={namePopupState.isOpen}
         channelConnErr={namePopupState.channelConnErr}
-        connectToChannels={connectToChannels}
       />
       {presenterPopupState.isOpen && (
         <PresenterPopup
-          username={eventInfo.username}
+          username={name}
           moderator={presenterPopupState.moderator}
           eventChannel={eventChannel}
           setPopupState={setPresenterPopupState}
         />
       )}
+      <HLSPlayer eventChannel={eventChannel} />
     </>
   );
 };
