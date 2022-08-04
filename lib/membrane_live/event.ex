@@ -3,16 +3,15 @@ defmodule MembraneLive.Event do
 
   use GenServer
 
-  alias Membrane.RTC.Engine
-  alias Membrane.RTC.Engine.Message
-  alias Membrane.RTC.Engine.MediaEvent
-  alias Membrane.RTC.Engine.Endpoint.{WebRTC, HLS}
-  alias Membrane.ICE.TURNManager
-  alias Membrane.WebRTC.Extension.{Mid, TWCC}
-  # alias WebRTCToHLS.StorageCleanup
-
   require Membrane.Logger
   require Membrane.OpenTelemetry
+
+  alias Membrane.ICE.TURNManager
+  alias Membrane.RTC.Engine
+  alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
+  alias Membrane.RTC.Engine.MediaEvent
+  alias Membrane.RTC.Engine.Message
+  alias Membrane.WebRTC.Extension.{Mid, TWCC}
 
   @mix_env Mix.env()
 
@@ -224,7 +223,11 @@ defmodule MembraneLive.Event do
   def handle_info({:playlist_playable, :video, playlist_idl}, state) do
     state = put_in(state, [:is_playlist_playable], true)
     state = put_in(state, [:playlist_idl], playlist_idl)
-    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{playlist_idl: playlist_idl})
+
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
+      playlist_idl: playlist_idl
+    })
+
     {:noreply, state}
   end
 
@@ -236,7 +239,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    {:reply, %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
+    {:reply,
+     %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
   end
 
   defp tracing_metadata(),

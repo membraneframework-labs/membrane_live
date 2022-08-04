@@ -87,33 +87,23 @@ const Event = () => {
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
-    if (name && !alreadyJoined){
-        const channel = socket.channel("event:" + eventInfo.link, { name: name });
-        createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
+    if (name && !alreadyJoined) {
+      const channel = socket.channel("event:" + eventInfo.link, { name: name });
+      createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
   }, [name, eventChannel]);
 
   useEffect(() => {
     const alreadyJoined = privateChannel?.state === "joined";
-    if (name && !alreadyJoined){
-        const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
-        createPrivateChannel(
-          channel,
-          eventChannel,
-          name,
-          setPresenterPopupState,
-          setPrivateChannel
-        );
+    if (name && !alreadyJoined) {
+      const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
+      createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
   }, [name, eventChannel, privateChannel]);
 
   return (
     <>
-      <PresenterStreamArea
-        username={name}
-        presenters={presenters}
-        eventChannel={eventChannel}
-      />
+      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}
