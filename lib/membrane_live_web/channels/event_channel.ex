@@ -142,13 +142,15 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"answer" => answer, "name" => name, "moderator" => moderator},
         socket
       ) do
-    {:ok, socket} = if answer == "accept" do
-      {:ok, _ref} =
-        Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
-      join_event_stream(socket)
-    else
-      {:ok, socket}
-    end
+    {:ok, socket} =
+      if answer == "accept" do
+        {:ok, _ref} =
+          Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+
+        join_event_stream(socket)
+      else
+        {:ok, socket}
+      end
 
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
       :name => name,

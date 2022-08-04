@@ -7,25 +7,25 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
-import type { PresenterPopupState } from "../pages/Event";
-import { connectWebrtc } from "../utils/webrtcUtils";
+import { PresenterPopupState } from "../pages/Event";
 
 type PresenterPopupProps = {
-  name: string;
+  username: string;
   moderator: string;
   eventChannel: any;
   setPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>;
-  streamsAvailable: object;
-  setStreamsAvailable: Function;  // TODO
 };
 
-const PresenterPopup = ({ name, moderator, eventChannel, setPopupState, streamsAvailable, setStreamsAvailable }: PresenterPopupProps) => {
+const PresenterPopup = ({
+  username,
+  moderator,
+  eventChannel,
+  setPopupState,
+}: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const sendAnswer = (answer: string) => {
-    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: answer });
-    if (answer == "accept")
-      connectWebrtc(eventChannel, name, streamsAvailable, setStreamsAvailable);
+    eventChannel.push("presenter_answer", { name: username, moderator: moderator, answer: answer });
     setPopupState({ isOpen: false, moderator: "" });
   };
 

@@ -14,55 +14,48 @@ import {
 import type { EventInfo } from "../pages/Event";
 import React, { useState } from "react";
 
-interface PopupProps {
+type NamePopupProps = {
   eventInfo: EventInfo;
   setEventInfo: Function;
-  connectToChannels: (name: string) => void;
-  isOpen: boolean;
+  isNamePopupOpen: boolean;
   channelConnErr: string;
-}
+  connectToChannels: (name: string) => void;
+};
 
-const Popup = ({
+const NamePopup = ({
   eventInfo,
   setEventInfo,
-  connectToChannels,
-  isOpen,
+  isNamePopupOpen,
   channelConnErr,
-}: PopupProps) => {
+  connectToChannels,
+}: NamePopupProps) => {
   const [input, setInput] = useState<string>("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
+
   const handleSubmit = () => {
     setEventInfo({ ...eventInfo, username: input });
     connectToChannels(input);
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={() => {}}>
+    <Modal isOpen={isNamePopupOpen} onClose={() => {}}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Pass your name</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl isInvalid={channelConnErr != ""}>
-            <Input
-              type="text"
-              placeholder="Name"
-              size="lg"
-              value={input}
-              onChange={handleInputChange}
-            />
+            <Input type="text" placeholder="Name" value={input} onChange={handleInputChange} />
             {channelConnErr != "" ? <FormErrorMessage>{channelConnErr}</FormErrorMessage> : null}
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
-            Submit
-          </Button>
+          <Button onClick={handleSubmit}>Submit</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
   );
 };
 
-export default Popup;
+export default NamePopup;
