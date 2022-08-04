@@ -97,23 +97,13 @@ const Event = () => {
     const alreadyJoined = privateChannel?.state === "joined";
     if (name && !alreadyJoined) {
       const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
-      createPrivateChannel(
-        channel,
-        eventChannel,
-        name,
-        setPresenterPopupState,
-        setPrivateChannel
-      );
+      createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
   }, [name, eventChannel, privateChannel]);
 
   return (
     <>
-      <PresenterStreamArea
-        username={name}
-        presenters={presenters}
-        eventChannel={eventChannel}
-      />
+      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}

@@ -19,17 +19,13 @@ interface PopupProps {
   channelConnErr: string;
 }
 
-const NamePopup = ({
-  setName,
-  isOpen,
-  channelConnErr,
-}: PopupProps) => {
+const NamePopup = ({ setName, isOpen, channelConnErr }: PopupProps) => {
   const [input, setInput] = useState<string>("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
 
   return (
-    <Modal isOpen={isOpen} onClose={() => { }}>
+    <Modal isOpen={isOpen} onClose={() => {}}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Pass your name</ModalHeader>

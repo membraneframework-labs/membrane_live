@@ -24,7 +24,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
         case viewer_data do
           [] ->
-            send(self(), {:after_join, name, id})
+            Presence.track(socket, name, %{})
             create_event_stream(id, socket)
 
           _viewer_exists ->
@@ -77,12 +77,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
-  def handle_info({:after_join, name, _event_id}, socket) do
-    Presence.track(socket, name, %{})
-    push(socket, "presence_state", Presence.list(socket))
-    {:noreply, socket}
-  end
-
   @impl true
   def handle_info(
         {:DOWN, _ref, :process, _pid, _reason},
@@ -95,6 +89,11 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_info({:media_event, event}, socket) do
     push(socket, "mediaEvent", %{data: event})
 
+    {:noreply, socket}
+  end
+
+  def handle_in("sync_presence", _data, socket) do
+    push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
   end
 

@@ -6,7 +6,7 @@ export const createEventChannel = (
   eventChannel: any,
   namePopupState: NamePopupState,
   setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  setEventChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   eventChannel
     .join()
@@ -29,6 +29,7 @@ export const syncEventChannel = (
 ) => {
   if (eventChannel != undefined) {
     const presence = new Presence(eventChannel);
+    eventChannel.push("sync_presence", {});
 
     const updateStates = () => {
       const parts: any[] = [];
