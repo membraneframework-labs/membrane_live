@@ -1,7 +1,8 @@
 import Config
 
 config :membrane_live,
-  ecto_repos: [MembraneLive.Repo]
+  ecto_repos: [MembraneLive.Repo],
+  migration_primary_key: [name: :uuid, type: :binary_id]
 
 config :membrane_live, MembraneLiveWeb.Endpoint,
   url: [host: "localhost"],

@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Route, Routes, Navigate} from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Form from "../pages/Form";
 import Event from "../pages/Event";
 import Auth from "../pages/Auth";
@@ -12,7 +12,7 @@ const Router = () => {
         <Routes>
           <Route path="/" element={<Form />} />
           <Route path="/event/*" element={<Event />} />
-          <Route path="/auth/" element={<Auth/>} />
+          <Route path="/auth/" element={<Auth />} />
         </Routes>
       </BrowserRouter>
     </Container>

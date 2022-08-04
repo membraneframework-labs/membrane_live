@@ -21,6 +21,7 @@ defmodule MembraneLiveWeb.Router do
     get("/", PageController, :index)
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/event/*page", PageController, :index)
+    resources("/users", UserController, except: [:edit, :new], param: "uuid")
   end
 
   scope "/auth", MembraneLiveWeb do
