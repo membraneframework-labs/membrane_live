@@ -7,12 +7,11 @@ defmodule MembraneLive.Tokens do
     - encode: generation and signing
     - decode: verification and validation   (#TODO)
   """
+  alias MembraneLive.Tokens.CustomToken
+  alias MembraneLive.Tokens.GoogleToken
 
   @google_pems_url "https://www.googleapis.com/oauth2/v1/certs"
   @custom_secret "secret"
-
-  alias MembraneLive.Tokens.CustomToken
-  alias MembraneLive.Tokens.GoogleToken
 
   def google_decode(jwt) do
     GoogleToken.verify_and_validate(jwt, get_signer(jwt))
