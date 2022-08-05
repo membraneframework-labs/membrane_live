@@ -6,6 +6,7 @@ import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/Player";
+import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {
   link: string;
@@ -103,6 +104,7 @@ const Event = () => {
 
   return (
     <>
+      {presenters.includes(name) ? <ControlPanel /> : null}
       <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
