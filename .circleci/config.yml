@@ -72,7 +72,7 @@ jobs:
       - checkout:
           path: ~/membrane_live
       - run:
-          command: npm install
+          command: npm install --legacy-peer-deps
           name: Install front-end dependencies
       - run:
           command: npm run format:check

@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Button, Heading, Center, Flex, Box, Spacer } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
-import { Socket } from "phoenix";
-import Popup from "../components/Popup";
-import ControlPanel from "../components/ControlPanel";
-import PresenterPopup from "../components/PresenterPopup";
+import React, { useEffect, useState } from "react";
+import PresenterStreamArea from "../components/PresenterStreamArea";
 import ParticipantsList from "../components/ParticipantsList";
-import { createEventChannel, createPrivateChannel, getEventInfo } from "../utils/eventApi";
+import NamePopup from "../components/NamePopup";
+import { Socket } from "phoenix";
+import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
+import PresenterPopup from "../components/PresenterPopup";
+import HLSPlayer from "../components/Player";
+import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {
-  username: string;
   link: string;
   title: string;
   description: string;
@@ -18,7 +17,7 @@ export type EventInfo = {
   isModerator: boolean;
 };
 
-export type PopupState = {
+export type NamePopupState = {
   isOpen: boolean;
   channelConnErr: string;
 };
@@ -28,14 +27,8 @@ export type PresenterPopupState = {
   moderator: string;
 };
 
-export type Participant = {
-  name: string;
-  isPresenter: boolean;
-};
-
 const initEventInfo = () => {
   return {
-    username: "",
     link: window.location.pathname.split("/")[2],
     title: "",
     description: "",
@@ -45,16 +38,47 @@ const initEventInfo = () => {
   };
 };
 
+const getEventInfo = (
+  eventInfo: EventInfo,
+  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
+) => {
+  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
+  const link = window.location.href.split("event")[0] + "webinars/";
+  fetch(link + eventInfo.link, {
+    method: "get",
+    headers: { "X-CSRF-TOKEN": csrfToken ? csrfToken : "" },
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      return Promise.reject(response.status);
+    })
+    .then((data) => {
+      setEventInfo({ ...eventInfo, ...data.webinar });
+    })
+    .catch(() => {
+      alert("Couldn't get event information. Please reload this page.");
+    });
+};
+
 const Event = () => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const [namePopupState, setNamePopupState] = useState<NamePopupState>({
+    isOpen: true,
+    channelConnErr: "",
+  });
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
-  }); // will be triggered with call from server
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  });
+  const [name, setName] = useState<string>("");
+
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
-  const [popupState, setPopupState] = useState<PopupState>({ isOpen: true, channelConnErr: "" });
+
+  const [presenters, setPresenters] = useState<string[]>([]);
+
   const socket = new Socket("/socket");
   socket.connect();
 
@@ -63,77 +87,45 @@ const Event = () => {
   }, []);
 
   useEffect(() => {
-    if (eventChannel) {
-      createEventChannel(eventChannel, popupState, setParticipants, setPopupState);
+    const alreadyJoined = eventChannel?.state === "joined";
+    if (name && !alreadyJoined) {
+      const channel = socket.channel(`event:${eventInfo.link}`, { name: name });
+      createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
-  }, [eventChannel]);
+  }, [name, eventChannel]);
 
   useEffect(() => {
-    if (privateChannel) {
-      createPrivateChannel(
-        privateChannel,
-        eventChannel,
-        eventInfo.username,
-        setPresenterPopupState
-      );
+    const alreadyJoined = privateChannel?.state === "joined";
+    if (name && !alreadyJoined) {
+      const channel = socket.channel(`private:${eventInfo.link}:${name}`, {});
+      createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
-  }, [privateChannel]);
-
-  const connectToChannels = (name: string): void => {
-    if (eventChannel) eventChannel.leave();
-    setEventChannel(socket.channel("event:" + eventInfo.link, { name: name }));
-    if (privateChannel) privateChannel.leave();
-    setPrivateChannel(socket.channel("private:" + eventInfo.link + ":" + name, {}));
-  };
-
-  const handleExitButton = (): void => {
-    useNavigate()("/");
-  };
-
-  const isPresenter = useMemo(() => {
-    const selfParticipant = participants.find(
-      (participant) => participant.name == eventInfo.username
-    );
-    return selfParticipant?.isPresenter;
-  }, [participants]);
+  }, [name, eventChannel, privateChannel]);
 
   return (
     <>
-      <Flex w="100vh">
-        <Box w="50%">
-          <Heading>{eventInfo.title}</Heading>
-          <Center alignContent="center" bg="black" w="100%" height="50%" p={4} color="white">
-            Please wait for the moderator to select a presenter
-          </Center>
-          {isPresenter ? <ControlPanel /> : null}
-          <Button marginLeft="90%" colorScheme="red" size="lg" onClick={handleExitButton}>
-            {" "}
-            EXIT{" "}
-          </Button>
-        </Box>
-        <Spacer />
-        <ParticipantsList
-          yourName={eventInfo.username}
-          eventChannel={eventChannel}
-          participants={participants}
-          isModerator={eventInfo.isModerator}
-        />
-      </Flex>
-      <Popup
-        eventInfo={eventInfo}
-        setEventInfo={setEventInfo}
-        isOpen={popupState.isOpen}
-        channelConnErr={popupState.channelConnErr}
-        connectToChannels={connectToChannels}
+      {presenters.includes(name) ? <ControlPanel /> : null}
+      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
+      <ParticipantsList
+        username={name}
+        isModerator={eventInfo.isModerator}
+        eventChannel={eventChannel}
+        setPresenters={setPresenters}
       />
-      {presenterPopupState.isOpen ? (
+      <NamePopup
+        setName={setName}
+        isOpen={namePopupState.isOpen}
+        channelConnErr={namePopupState.channelConnErr}
+      />
+      {presenterPopupState.isOpen && (
         <PresenterPopup
+          username={name}
           moderator={presenterPopupState.moderator}
-          name={eventInfo.username}
-          setPopupState={setPresenterPopupState}
           eventChannel={eventChannel}
+          setPopupState={setPresenterPopupState}
         />
-      ) : null}
+      )}
+      <HLSPlayer eventChannel={eventChannel} />
     </>
   );
 };
