@@ -90,7 +90,6 @@ export const connectWebrtc = async (
     displayName: name,
   });
 
-  console.log(webrtcChannel);
   webrtcChannel.on("mediaEvent", (event) => {
     webrtc.receiveMediaEvent(event.data);
   });

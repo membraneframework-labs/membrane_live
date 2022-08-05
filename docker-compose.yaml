@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: swm123
       PGDATA: /data/postgres
     volumes:
-       - postgres:/data/postgres
+      - postgres:/data/postgres
     ports:
       - "5432:5432"
     restart: unless-stopped

@@ -6,6 +6,7 @@ import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/Player";
+import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {
   link: string;
@@ -42,8 +43,8 @@ const getEventInfo = (
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
-
-  fetch("http://localhost:4000/webinars/" + eventInfo.link, {
+  const link = window.location.href.split("event")[0] + "webinars/";
+  fetch(link + eventInfo.link, {
     method: "get",
     headers: { "X-CSRF-TOKEN": csrfToken ? csrfToken : "" },
   })
@@ -88,7 +89,7 @@ const Event = () => {
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
     if (name && !alreadyJoined) {
-      const channel = socket.channel("event:" + eventInfo.link, { name: name });
+      const channel = socket.channel(`event:${eventInfo.link}`, { name: name });
       createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
   }, [name, eventChannel]);
@@ -104,6 +105,7 @@ const Event = () => {
 
   return (
     <>
+      {presenters.includes(name) ? <ControlPanel /> : null}
       <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}

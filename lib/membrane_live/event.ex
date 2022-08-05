@@ -180,7 +180,7 @@ defmodule MembraneLive.Event do
     Membrane.Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
     peer_channel = state.peer_channels[endpoint_id]
 
-    error_message = "WebRTC endpoint has crashed, please refresh the page to reconnect"
+    error_message = "Endpoint has crashed."
     data = MediaEvent.create_error_event(error_message)
     send(peer_channel, {:media_event, data})
 

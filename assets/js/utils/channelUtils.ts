@@ -65,7 +65,7 @@ export const createPrivateChannel = (
         setPresenterPopupState({ isOpen: true, moderator: message.moderator });
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
-        alert("User " + message.name + " " + message.answer + "ed your request.");
+        alert(`User ${message.name} ${message.answer}ed your request.`);
       });
       privateChannel.on("presenter_remove", () => {
         alert("You are no longer presenter.");
