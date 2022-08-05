@@ -5,7 +5,7 @@ import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
-import HLSPlayer from "../components/Player";
+import HLSPlayer from "../components/HlsPlayer";
 import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {

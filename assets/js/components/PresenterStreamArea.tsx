@@ -14,7 +14,7 @@ let webrtc: any = null;
 const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterStreamAreaProps) => {
   const [streamsAvailable, setStreamsAvailable] = useState<{ [key: string]: boolean }>({});
 
-useEffect(() => {
+  useEffect(() => {
     if (webrtc == null && presenters.includes(username)) {
       webrtc = connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
     } else if (webrtc != null && !presenters.includes(username)) {
@@ -23,22 +23,22 @@ useEffect(() => {
     }
   }, [presenters]);
 
-  return (
-    presenters.includes(username) ?
-      (<>
-        {presenters.map((presenter) => {
-          return (
-            <RtcPlayer
-              username={username}
-              name={presenter}
-              presenterStreams={presenterStreams}
-              streamsAvailable={streamsAvailable}
-              key={presenter}
-            />
-          );
-        })}
-      </>)
-     : <></>
+  return presenters.includes(username) ? (
+    <>
+      {presenters.map((presenter) => {
+        return (
+          <RtcPlayer
+            username={username}
+            name={presenter}
+            presenterStreams={presenterStreams}
+            streamsAvailable={streamsAvailable}
+            key={presenter}
+          />
+        );
+      })}
+    </>
+  ) : (
+    <></>
   );
 };
 
