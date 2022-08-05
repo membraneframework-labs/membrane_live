@@ -16,6 +16,8 @@ defmodule MembraneLive.Accounts do
 
   def get_user!(uuid), do: Repo.get!(User, uuid)
 
+  def get_user_by_email(email), do: Repo.get_by(User, email: email)
+
   def create_user(attrs \\ %{}) do
     %User{}
     |> User.changeset(attrs)
@@ -35,4 +37,13 @@ defmodule MembraneLive.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
+
+  def create_user_if_not_exists(%{"email" => email} = attrs) do
+    case get_user_by_email(email) do
+      nil -> create_user(attrs)
+      user -> {:ok, user}
+    end
+  end
+
+  def create_user_id_not_exists(_attrs), do: {:error, :email_not_provided}
 end
