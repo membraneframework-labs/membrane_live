@@ -71,9 +71,4 @@ export const connectWebrtc = async (
   });
 
   webrtcChannel.on("mediaEvent", (event) => webrtc.receiveMediaEvent(event.data));
-
-  webrtcChannel.on("playlistPlayable", ({ playlistId }) => {
-    // setPlayerInfo(playlistId);
-    alert("playlistPlayable");
-  });
 };

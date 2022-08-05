@@ -26,7 +26,7 @@ const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterSt
   }, [presenters]);
 
   return (
-    <>
+    <div>
       {presenters.map((presenter) => {
         return (
           <RtcPlayer
@@ -37,7 +37,7 @@ const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterSt
           />
         );
       })}
-    </>
+    </div>
   );
 };
 

@@ -7,12 +7,12 @@ const HLSPlayer = ({ eventChannel }: any) => {
 
   useEffect(() => {
     if (eventChannel) {
+      const link = window.location.href.split("event")[0] + "video/";
       eventChannel.on("playlist_playable", (message) => {
-        setHlsUrl("http://localhost:4000/video/" + message.playlist_idl + "/video.m3u8");
+        setHlsUrl(link + message.playlist_idl + "/video.m3u8");
       });
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => {
-        if (message.is_playlist_playable)
-          setHlsUrl("http://localhost:4000/video/" + message.playlist_idl + "/video.m3u8");
+        if (message.is_playlist_playable) setHlsUrl(link + message.playlist_idl + "/video.m3u8");
       });
     }
   }, [eventChannel]);
