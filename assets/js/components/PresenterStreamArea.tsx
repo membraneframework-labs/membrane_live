@@ -18,25 +18,27 @@ const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterSt
     if (webrtc == null && presenters.includes(username)) {
       webrtc = connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
     } else if (webrtc != null && !presenters.includes(username)) {
-      leaveWebrtc(webrtc, username, streamsAvailable, setStreamsAvailable);
+      leaveWebrtc(webrtc, username, streamsAvailable, setStreamsAvailable, eventChannel);
       webrtc = null;
     }
   }, [presenters]);
 
   return (
-    <>
-      {presenters.map((presenter) => {
-        return (
-          <RtcPlayer
-            username={username}
-            name={presenter}
-            presenterStreams={presenterStreams}
-            streamsAvailable={streamsAvailable}
-            key={presenter}
-          />
-        );
-      })}
-    </>
+    presenters.includes(username) && (
+      <>
+        {presenters.map((presenter) => {
+          return (
+            <RtcPlayer
+              username={username}
+              name={presenter}
+              presenterStreams={presenterStreams}
+              streamsAvailable={streamsAvailable}
+              key={presenter}
+            />
+          );
+        })}
+      </>
+    )
   );
 };
 

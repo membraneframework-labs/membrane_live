@@ -104,7 +104,7 @@ const Event = () => {
 
   return (
     <>
-      {presenters.includes(name) && <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />}
+      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}
