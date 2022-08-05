@@ -64,7 +64,7 @@ defmodule MembraneLiveWeb.EventChannel do
         Reason: #{inspect(reason)}
         """)
 
-        {:error, %{reason: "failed to start room"}}
+        {:error, %{reason: "failed to start event"}}
     end
   end
 
