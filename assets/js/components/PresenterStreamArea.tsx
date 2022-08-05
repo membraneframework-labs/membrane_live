@@ -19,6 +19,7 @@ const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterSt
     // implement changing audio/video source
     if (!isConnected && presenters.includes(username)) {
       connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
+      console.log("TUTAJ")
       isConnected = true;
     } else if (isConnected && !presenters.includes(username)) {
       // TODO: leave WebRTC connection
@@ -30,6 +31,7 @@ const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterSt
       {presenters.map((presenter) => {
         return (
           <RtcPlayer
+            username={username}
             name={presenter}
             presenterStreams={presenterStreams}
             streamsAvailable={streamsAvailable}

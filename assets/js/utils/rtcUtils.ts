@@ -37,6 +37,15 @@ export const connectWebrtc = async (
     console.error("Couldn't get camera permission:", error);
   }
 
+  const updateStreams = (stream: MediaStream, name: string) => {
+    presenterStreams[name] = stream;
+    let new_elem = {};
+    new_elem[name] = true;
+    setStreamsAvailable({ ...streamsAvailable, ...new_elem });
+  }
+
+  updateStreams(localStream, name);
+
   const onError = (error: any) => {
     alert("ERROR");
     webrtc.leave();
@@ -56,12 +65,8 @@ export const connectWebrtc = async (
         console.log("PEER JOINED", peer.id, peer.metadata.displayName);
       },
       onTrackReady: ({ stream, peer }) => {
-        if (stream != null) {
-          presenterStreams[peer.metadata.displayName] = stream;
-          let new_elem = {};
-          new_elem[peer.metadata.displayName] = true;
-          setStreamsAvailable({ ...streamsAvailable, ...new_elem });
-        }
+        if (stream != null)
+          updateStreams(stream, peer.metadata.displayName);
       },
     },
   });
