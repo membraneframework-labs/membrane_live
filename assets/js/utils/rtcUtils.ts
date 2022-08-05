@@ -37,17 +37,19 @@ export const connectWebrtc = async (
     console.error("Couldn't get camera permission:", error);
   }
 
-  const updateStreams = (stream: MediaStream, name: string) => {
-    presenterStreams[name] = stream;
+  const updateStream = (toAdd: boolean, stream: MediaStream | null, name: string) => {
+    // adds new stream when toAdd is true, else removes the stream
+    if (toAdd && stream != null)
+      presenterStreams[name] = stream;
     let new_elem = {};
     new_elem[name] = true;
     setStreamsAvailable({ ...streamsAvailable, ...new_elem });
   }
 
-  updateStreams(localStream, name);
+  updateStream(true, localStream, name);
 
   const onError = (error: any) => {
-    alert("ERROR");
+    alert("ERROR", error);
     webrtc.leave();
   };
 
@@ -58,15 +60,33 @@ export const connectWebrtc = async (
       onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
         webrtcChannel.push("mediaEvent", { data: mediaEvent });
       },
+      onConnectionError: () => {
+        onError("Error while connecting to WebRTC")
+      },
       onJoinSuccess: (_peerId, _peersInRoom) => {
         localStream.getTracks().forEach((track) => webrtc.addTrack(track, localStream, {}));
       },
-      onPeerJoined: (peer) => {
-        console.log("PEER JOINED", peer.id, peer.metadata.displayName);
+      onJoinError: () => {
+        onError("Error while joining WebRTC connection")
       },
       onTrackReady: ({ stream, peer }) => {
         if (stream != null)
-          updateStreams(stream, peer.metadata.displayName);
+          updateStream(true, stream, peer.metadata.displayName);
+      },
+      onTrackAdded: (_ctx) => {},
+      onTrackRemoved: ({ stream, peer}) => {
+        if (stream != null)
+          updateStream(false, stream, peer.metadata.displayName);
+      },
+      onPeerJoined: (peer) => {},
+      onPeerLeft: (peer) => {
+        updateStream(false, null, peer.metadata.displayName);
+      },
+      onPeerUpdated: (_ctx) => {},
+      onRemoved: (_reason) => {
+        updateStream(false, null, name);
+        localStream.getTracks().forEach(track => track.stop())
+        onError("You were removed from WebRTC connection");
       },
     },
   });
@@ -77,8 +97,20 @@ export const connectWebrtc = async (
 
   webrtcChannel.on("mediaEvent", (event) => webrtc.receiveMediaEvent(event.data));
 
-  webrtcChannel.on("playlistPlayable", ({ playlistId }) => {
-    // setPlayerInfo(playlistId);
-    alert("playlistPlayable");
-  });
+  return webrtc;
 };
+
+export const leaveWebrtc = async (
+  webrtc: any, 
+  name: string,  
+  streamsAvailable: { [key: string]: boolean },
+  setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
+) => {
+  let new_elem = {};
+  new_elem[name] = false;
+  setStreamsAvailable({ ...streamsAvailable, ...new_elem });
+  presenterStreams[name].getTracks().forEach(track => track.stop());
+  delete presenterStreams[name];
+  const result = await webrtc;
+  result.leave()
+}

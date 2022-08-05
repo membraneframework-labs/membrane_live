@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { connectWebrtc } from "../utils/rtcUtils";
+import { connectWebrtc, leaveWebrtc } from "../utils/rtcUtils";
 import RtcPlayer from "./RtcPlayer";
 
 type PresenterStreamAreaProps = {
@@ -9,20 +9,17 @@ type PresenterStreamAreaProps = {
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
-let isConnected = false;
+let webrtc: any = null;
 
 const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterStreamAreaProps) => {
   const [streamsAvailable, setStreamsAvailable] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    // TODO: self-view
-    // implement changing audio/video source
-    if (!isConnected && presenters.includes(username)) {
-      connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
-      console.log("TUTAJ")
-      isConnected = true;
-    } else if (isConnected && !presenters.includes(username)) {
-      // TODO: leave WebRTC connection
+    if (webrtc == null && presenters.includes(username)) {
+      webrtc = connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
+    } else if (webrtc != null && !presenters.includes(username)) {
+      leaveWebrtc(webrtc, username, streamsAvailable, setStreamsAvailable);
+      webrtc = null;
     }
   }, [presenters]);
 

@@ -94,8 +94,9 @@ const Event = () => {
   }, [name, eventChannel]);
 
   useEffect(() => {
-    const alreadyJoined = privateChannel?.state === "joined";
-    if (name && !alreadyJoined) {
+    const privateAlreadyJoined = privateChannel?.state === "joined";
+    const eventAlreadyJoined = eventChannel?.state === "joined";
+    if (name && !privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
@@ -103,7 +104,7 @@ const Event = () => {
 
   return (
     <>
-      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
+      {presenters.includes(name) && <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />}
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}
