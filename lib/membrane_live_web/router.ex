@@ -27,7 +27,7 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:browser)
 
     get("/", LoginController, :index)
-    post("/login", LoginController, :create)
+    post("/", LoginController, :create)
   end
 
   if Mix.env() in [:dev, :test] do

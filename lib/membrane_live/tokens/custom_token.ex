@@ -5,8 +5,9 @@ defmodule MembraneLive.Tokens.CustomToken do
 
   use Joken.Config
 
+  @one_day 24 * 60 * 60
   @issuer "swmansion.com"
 
   @impl true
-  def token_config, do: default_claims(default_exp: 24 * 60 * 60, iss: @issuer, aud: @issuer)
+  def token_config, do: default_claims(default_exp: @one_day, iss: @issuer, aud: @issuer)
 end

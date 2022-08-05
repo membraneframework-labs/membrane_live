@@ -12,7 +12,7 @@ const Auth = () => {
       body: JSON.stringify(google_response),
     };
 
-    fetch(window.location.origin + "/auth/login", request)
+    fetch(window.location.origin + "/auth", request)
       .then((resp) => resp.json())
       .then((data) => localStorage.setItem("jwt", data["token"]));
   };
