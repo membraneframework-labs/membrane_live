@@ -183,6 +183,7 @@ assets/node_modules/*
 
 .vscode
 priv/static/assets/app.js
+output/*
 
 *.tgz
 
