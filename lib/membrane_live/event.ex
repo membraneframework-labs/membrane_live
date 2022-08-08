@@ -87,13 +87,12 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
-       playlist_idl: "",
+       playlist_idls: [],
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
        trace_ctx: trace_ctx,
-       is_playlist_playable: false
      }}
   end
 
@@ -165,13 +164,30 @@ defmodule MembraneLive.Event do
     Engine.accept_peer(rtc_engine, peer.id)
     :ok = Engine.add_endpoint(rtc_engine, endpoint, peer_id: peer.id, node: peer_node)
 
+    state = update_in(state, [:playlist_idls], fn items -> [%{peer_id: peer.id} | items] end)
+    IO.inspect(state.playlist_idls, label: :peer_join)
+
     {:noreply, state}
   end
 
   @impl true
   def handle_info(%Message.PeerLeft{peer: peer}, state) do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
-    {:noreply, state}
+    prev_playlist_idl = hd(state.playlist_idls).playlist_idl
+    state = put_in(state, [:playlist_idls], &Enum.reject(&1, fn x -> x[:peer_id] == peer.id end))
+    IO.inspect(state.playlist_idls, label: :peer_left)
+    cond do
+      length(state.playlist_idls) == 0 ->
+        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
+          playlist_idl: ""
+        })
+
+      hd(state.playlist_idls).playlist_idl != prev_playlist_idl ->
+        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
+          playlist_idl: hd(state.playlist_idls).playlist_idl
+        })
+    end
+
   end
 
   @impl true
@@ -222,12 +238,12 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :video, playlist_idl}, state) do
-    state = put_in(state, [:is_playlist_playable], true)
-    state = put_in(state, [:playlist_idl], playlist_idl)
-
+    state = put_in(state, [:playlist_idls], Enum.map(state.playlist_idls, &add_playlist_idl_to_map(&1, playlist_idl)))
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
       playlist_idl: playlist_idl
     })
+    IO.inspect(state.playlist_idls, label: :hls)
+
 
     {:noreply, state}
   end
@@ -240,8 +256,16 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    {:reply,
-     %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
+    if length(state.playlist_idls) != 0 do
+      case hd(state.playlist_idls) do
+        %{playlist_idl: playlist_idl} ->
+          {:reply, %{playlist_idl: playlist_idl}, state}
+        _no_playlist_idl ->
+          {:reply, %{playlist_idl: ""}, state}
+      end
+    else
+      {:reply, %{playlist_idl: ""}, state}
+    end
   end
 
   defp tracing_metadata(),
@@ -252,4 +276,7 @@ defmodule MembraneLive.Event do
     ]
 
   defp event_span_id(id), do: "event:#{id}"
+
+  defp add_playlist_idl_to_map(playlist_idls, playlist_idl) do
+    if !Map.has_key?(playlist_idls, :playlist_idl), do: Map.put(playlist_idls, :playlist_idl, playlist_idl), else: playlist_idls end
 end

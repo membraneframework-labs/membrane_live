@@ -9,10 +9,16 @@ const HLSPlayer = ({ eventChannel }: any) => {
     if (eventChannel) {
       const link = window.location.href.split("event")[0] + "video/";
       eventChannel.on("playlist_playable", (message) => {
-        setHlsUrl(link + message.playlist_idl + "/video.m3u8");
+        if (message.playlist_idl)
+          setHlsUrl(link + message.playlist_idl + "/video.m3u8");
+        else 
+          setHlsUrl("");
       });
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => {
-        if (message.is_playlist_playable) setHlsUrl(link + message.playlist_idl + "/video.m3u8");
+        if (message.playlist_idl)
+          setHlsUrl(link + message.playlist_idl + "/video.m3u8");
+        else 
+          setHlsUrl("");
       });
     }
   }, [eventChannel]);
