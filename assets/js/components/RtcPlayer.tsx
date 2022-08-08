@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from "react";
 
 type RtcPlayerProps = {
-  clientName: string;
+  isMyself: boolean;
   name: string;
   presenterStreams: { [key: string]: MediaStream };
   streamsAvailable: { [key: string]: boolean };
 };
 
-const RtcPlayer = ({ clientName, name, presenterStreams, streamsAvailable }: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, name, presenterStreams, streamsAvailable }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -27,7 +27,7 @@ const RtcPlayer = ({ clientName, name, presenterStreams, streamsAvailable }: Rtc
     <div>
       <video width={1000} height={700} autoPlay ref={videoRef} />
       <audio ref={audioRef} />
-      <h5>{name == clientName ? clientName + " (Me)" : name}</h5>
+      <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
 };

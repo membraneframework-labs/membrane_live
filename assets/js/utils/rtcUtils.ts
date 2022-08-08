@@ -93,14 +93,15 @@ export const connectWebrtc = async (
   });
 
   webrtcChannel.on("mediaEvent", (event) => {
+    console.log("INCONING EVENT", event);
     webrtc.receiveMediaEvent(event.data);
   });
 
   return webrtc;
 };
 
-export const leaveWebrtc = async (
-  webrtc: Promise<MembraneWebRTC>,
+export const leaveWebrtc = (
+  webrtc: MembraneWebRTC,
   name: string,
   streamsAvailable: { [key: string]: boolean },
   setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
@@ -112,6 +113,5 @@ export const leaveWebrtc = async (
   setStreamsAvailable({ ...streamsAvailable, ...new_elem });
   presenterStreams[name].getTracks().forEach((track) => track.stop());
   delete presenterStreams[name];
-  const result = await webrtc;
-  result.leave();
+  webrtc.leave();
 };

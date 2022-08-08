@@ -10,7 +10,7 @@ type PresenterStreamAreaProps = {
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
-let webrtc: Promise<MembraneWebRTC> | null = null;
+let webrtc: MembraneWebRTC | null = null;
 
 const PresenterStreamArea = ({
   clientName,
@@ -21,7 +21,11 @@ const PresenterStreamArea = ({
 
   useEffect(() => {
     if (webrtc == null && presenters.includes(clientName)) {
-      webrtc = connectWebrtc(eventChannel, clientName, streamsAvailable, setStreamsAvailable);
+      connectWebrtc(eventChannel, clientName, streamsAvailable, setStreamsAvailable).then(
+        (value) => {
+          webrtc = value;
+        }
+      );
     } else if (webrtc != null && !presenters.includes(clientName)) {
       leaveWebrtc(webrtc, clientName, streamsAvailable, setStreamsAvailable, eventChannel);
       webrtc = null;
@@ -33,7 +37,7 @@ const PresenterStreamArea = ({
       {presenters.map((presenter) => {
         return (
           <RtcPlayer
-            clientName={clientName}
+            isMyself={clientName == presenter}
             name={presenter}
             presenterStreams={presenterStreams}
             streamsAvailable={streamsAvailable}
