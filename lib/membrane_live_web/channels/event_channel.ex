@@ -115,6 +115,7 @@ defmodule MembraneLiveWeb.EventChannel do
     case props do
       %{metas: [%{"is_presenter" => true}]} ->
         MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+
       [] ->
         raise "Error: Trying to remove presenter role from nonexistent participant"
 
