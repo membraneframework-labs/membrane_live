@@ -171,6 +171,7 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_info(%Message.PeerLeft{peer: peer}, state) do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
+    {_peer_channel_pid, state} = pop_in(state, [:peer_channels, peer.id])
     {:noreply, state}
   end
 

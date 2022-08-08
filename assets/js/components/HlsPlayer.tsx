@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import ReactHlsPlayer from "react-hls-player";
 
-const HLSPlayer = ({ eventChannel }: any) => {
+const HlsPlayer = ({ eventChannel }: any) => {
   const [hlsUrl, setHlsUrl] = useState<string>("");
 
   useEffect(() => {
@@ -26,4 +26,4 @@ const HLSPlayer = ({ eventChannel }: any) => {
   );
 };
 
-export default HLSPlayer;
+export default HlsPlayer;

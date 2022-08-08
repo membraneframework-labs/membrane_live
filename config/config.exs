@@ -29,7 +29,7 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
-config :logger, level: :warn
+config :logger, level: :error
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

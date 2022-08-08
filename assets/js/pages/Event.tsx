@@ -5,7 +5,7 @@ import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
-import HLSPlayer from "../components/Player";
+import HLSPlayer from "../components/HlsPlayer";
 import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {
@@ -95,8 +95,9 @@ const Event = () => {
   }, [name, eventChannel]);
 
   useEffect(() => {
-    const alreadyJoined = privateChannel?.state === "joined";
-    if (name && !alreadyJoined) {
+    const privateAlreadyJoined = privateChannel?.state === "joined";
+    const eventAlreadyJoined = eventChannel?.state === "joined";
+    if (name && !privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${eventInfo.link}:${name}`, {});
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
@@ -105,7 +106,7 @@ const Event = () => {
   return (
     <>
       {presenters.includes(name) ? <ControlPanel /> : null}
-      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
+      <PresenterStreamArea clientName={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}
