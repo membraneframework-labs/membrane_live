@@ -46,39 +46,46 @@ if System.get_env("PHX_SERVER") do
   config :membrane_live, MembraneLiveWeb.Endpoint, server: true
 end
 
-if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
+protocol = if System.get_env("USE_TLS") == "true", do: :https, else: :http
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
-
-  config :membrane_live, MembraneLive.Repo,
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
-
-  secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
-
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
-
-  config :membrane_live, MembraneLiveWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
-    ],
-    secret_key_base: secret_key_base
+get_env = fn env, default ->
+  if config_env() == :prod do
+    System.fetch_env!(env)
+  else
+    System.get_env(env, default)
+  end
 end
+
+host = System.get_env("VIRTUAL_HOST", "localhost")
+port = 4000
+
+config :membrane_live, MembraneLive.Repo,
+  username: System.get_env("PGUSER", "swm"),
+  password: System.get_env("PGPASSWORD", "swm123"),
+  hostname: System.get_env("PGHOST", "localhost"),
+  database: System.get_env("PGDATABASE", "membrane_live_dev"),
+  port: System.get_env("PGPORT", "5432"),
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
+  ssl: false
+
+args =
+  if protocol == :https do
+    [
+      keyfile: get_env.("KEY_FILE_PATH", "priv/certs/key.pem"),
+      certfile: get_env.("CERT_FILE_PATH", "priv/certs/certificate.pem"),
+      cipher_suite: :strong
+    ]
+  else
+    []
+  end
+  |> Keyword.merge(otp_app: :membrane_live, port: port)
+
+config :membrane_live, VideoRoomWeb.Endpoint, [
+  {:url, [host: host]},
+  {protocol, args}
+]
 
 config :membrane_live,
   integrated_turn_ip:
@@ -106,26 +113,6 @@ get_env = fn env, default ->
     System.get_env(env, default)
   end
 end
-
-host = get_env.("VIRTUAL_HOST", "localhost")
-port = 4000
-
-args =
-  if protocol == :https do
-    [
-      keyfile: get_env.("KEY_FILE_PATH", "priv/certs/key.pem"),
-      certfile: get_env.("CERT_FILE_PATH", "priv/certs/certificate.pem"),
-      cipher_suite: :strong
-    ]
-  else
-    []
-  end
-  |> Keyword.merge(otp_app: :membrane_live, port: port)
-
-config :membrane_live, MembraneLiveWeb.Endpoint, [
-  {:url, [host: host]},
-  {protocol, args}
-]
 
 otel_state = :purge
 
