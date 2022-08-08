@@ -98,7 +98,7 @@ const Event = () => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (name && !privateAlreadyJoined && eventAlreadyJoined) {
-      const channel = socket.channel("private:" + eventInfo.link + ":" + name, {});
+      const channel = socket.channel(`private:${eventInfo.link}:${name}`, {});
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
   }, [name, eventChannel, privateChannel]);
@@ -106,7 +106,7 @@ const Event = () => {
   return (
     <>
       {presenters.includes(name) ? <ControlPanel /> : null}
-      <PresenterStreamArea username={name} presenters={presenters} eventChannel={eventChannel} />
+      <PresenterStreamArea clientName={name} presenters={presenters} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}

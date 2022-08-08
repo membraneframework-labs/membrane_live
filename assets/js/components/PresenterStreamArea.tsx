@@ -1,34 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { connectWebrtc, leaveWebrtc } from "../utils/rtcUtils";
+import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 
 type PresenterStreamAreaProps = {
-  username: string;
+  clientName: string;
   presenters: string[];
   eventChannel: any;
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
-let webrtc: any = null;
+let webrtc: Promise<MembraneWebRTC> | null = null;
 
-const PresenterStreamArea = ({ username, presenters, eventChannel }: PresenterStreamAreaProps) => {
+const PresenterStreamArea = ({
+  clientName,
+  presenters,
+  eventChannel,
+}: PresenterStreamAreaProps) => {
   const [streamsAvailable, setStreamsAvailable] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    if (webrtc == null && presenters.includes(username)) {
-      webrtc = connectWebrtc(eventChannel, username, streamsAvailable, setStreamsAvailable);
-    } else if (webrtc != null && !presenters.includes(username)) {
-      leaveWebrtc(webrtc, username, streamsAvailable, setStreamsAvailable, eventChannel);
+    if (webrtc == null && presenters.includes(clientName)) {
+      webrtc = connectWebrtc(eventChannel, clientName, streamsAvailable, setStreamsAvailable);
+    } else if (webrtc != null && !presenters.includes(clientName)) {
+      leaveWebrtc(webrtc, clientName, streamsAvailable, setStreamsAvailable, eventChannel);
       webrtc = null;
     }
   }, [presenters]);
 
-  return presenters.includes(username) ? (
+  return presenters.includes(clientName) ? (
     <>
       {presenters.map((presenter) => {
         return (
           <RtcPlayer
-            username={username}
+            clientName={clientName}
             name={presenter}
             presenterStreams={presenterStreams}
             streamsAvailable={streamsAvailable}

@@ -37,15 +37,17 @@ export const connectWebrtc = async (
     console.error("Couldn't get camera permission:", error);
   }
 
-  const updateStream = (toAdd: boolean, stream: MediaStream | null, name: string) => {
-    // adds new stream when toAdd is true, else removes the stream
-    if (toAdd && stream != null) presenterStreams[name] = stream;
-    let new_elem = {};
-    new_elem[name] = true;
-    setStreamsAvailable({ ...streamsAvailable, ...new_elem });
+  const addStream = (stream: MediaStream, name: string) => {
+    presenterStreams[name] = stream;
+    setStreamsAvailable({ ...streamsAvailable, ...{ [name]: true } });
   };
 
-  updateStream(true, localStream, name);
+  const removeStream = (name: string) => {
+    delete presenterStreams[name];
+    setStreamsAvailable({ ...streamsAvailable, ...{ [name]: false } });
+  };
+
+  addStream(localStream, name);
 
   const onError = (error: any) => {
     alert("ERROR " + error);
@@ -67,19 +69,19 @@ export const connectWebrtc = async (
         onError("Error while joining WebRTC connection");
       },
       onTrackReady: ({ stream, peer }) => {
-        if (stream != null) updateStream(true, stream, peer.metadata.displayName);
+        if (stream != null) addStream(stream, peer.metadata.displayName);
       },
       onTrackAdded: (_ctx) => {},
       onTrackRemoved: ({ stream, peer }) => {
-        if (stream != null) updateStream(false, stream, peer.metadata.displayName);
+        if (stream != null) removeStream(peer.metadata.displayName);
       },
       onPeerJoined: (peer) => {},
       onPeerLeft: (peer) => {
-        updateStream(false, null, peer.metadata.displayName);
+        removeStream(peer.metadata.displayName);
       },
       onPeerUpdated: (_ctx) => {},
       onRemoved: (_reason) => {
-        updateStream(false, null, name);
+        removeStream(name);
         localStream.getTracks().forEach((track) => track.stop());
         onError("You were removed from WebRTC connection");
       },
@@ -98,7 +100,7 @@ export const connectWebrtc = async (
 };
 
 export const leaveWebrtc = async (
-  webrtc: any,
+  webrtc: Promise<MembraneWebRTC>,
   name: string,
   streamsAvailable: { [key: string]: boolean },
   setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
