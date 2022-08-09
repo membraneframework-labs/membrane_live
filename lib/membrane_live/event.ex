@@ -87,7 +87,8 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
-       playlist_idls: [],
+       playlist_idls: %{},
+       peer_ids: [],
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
@@ -164,12 +165,13 @@ defmodule MembraneLive.Event do
     Engine.accept_peer(rtc_engine, peer.id)
     :ok = Engine.add_endpoint(rtc_engine, endpoint, peer_id: peer.id, node: peer_node)
 
+    state = Map.put(state, :peer_ids, [peer.id | state.peer_ids])
+
     state =
-      Map.update!(
-        state,
-        :playlist_idls,
-        &[%{peer_id: peer.id, name: peer.metadata["displayName"], playlist_idl: ""} | &1]
-      )
+      put_in(state, [:playlist_idls, peer.id], %{
+        name: peer.metadata["displayName"],
+        playlist_idl: ""
+      })
 
     {:noreply, state}
   end
@@ -233,14 +235,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :video, playlist_idl, peer_id}, state) do
-    state =
-      Map.put(
-        state,
-        :playlist_idls,
-        Enum.map(state.playlist_idls, &add_playlist_idl_to_peer(&1, playlist_idl, peer_id))
-      )
-
-    name = Enum.find(state.playlist_idls, fn map -> map[:playlist_idl] == playlist_idl end).name
+    state = put_in(state, [:playlist_idls, peer_id, :playlist_idl], playlist_idl)
+    name = state.playlist_idls[peer_id].name
 
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
       playlist_idl: playlist_idl,
@@ -258,16 +254,13 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    if length(state.playlist_idls) != 0 do
-      case hd(state.playlist_idls) do
-        %{playlist_idl: playlist_idl, name: name} ->
-          {:reply, %{playlist_idl: playlist_idl, name: name}, state}
+    case state.peer_ids do
+      [] ->
+        {:reply, %{playlist_idl: "", name: ""}, state}
 
-        _no_playlist_idl ->
-          {:reply, %{playlist_idl: "", name: ""}, state}
-      end
-    else
-      {:reply, %{playlist_idl: "", name: ""}, state}
+      [first_peer | _rest] ->
+        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[first_peer]
+        {:reply, %{playlist_idl: playlist_idl, name: name}, state}
     end
   end
 
@@ -280,33 +273,28 @@ defmodule MembraneLive.Event do
 
   defp event_span_id(id), do: "event:#{id}"
 
-  defp add_playlist_idl_to_peer(peer_hls, playlist_idl, peer_id) do
-    if peer_hls.peer_id == peer_id,
-      do: Map.put(peer_hls, :playlist_idl, playlist_idl),
-      else: peer_hls
-  end
-
   defp handle_peer_left(state, peer_id) do
-    prev_playlist_idl = hd(state.playlist_idls).playlist_idl
+    [prev_peer | _rest] = state.peer_ids
+    state = Map.update!(state, :playlist_idls, &Map.delete(&1, peer_id))
+    state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
 
-    state =
-      Map.update!(state, :playlist_idls, &Enum.reject(&1, fn x -> x[:peer_id] == peer_id end))
-
-    cond do
-      state.playlist_idls == [] ->
+    case state.peer_ids do
+      [] ->
         MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
           playlist_idl: "",
           name: ""
         })
 
-      hd(state.playlist_idls).playlist_idl != prev_playlist_idl ->
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-          playlist_idl: hd(state.playlist_idls).playlist_idl,
-          name: hd(state.playlist_idls).name
-        })
-
-      true ->
+      [^prev_peer | _] ->
         nil
+
+      [curr_peer | _] ->
+        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[curr_peer]
+
+        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
+          playlist_idl: playlist_idl,
+          name: name
+        })
     end
 
     {:ok, state}
