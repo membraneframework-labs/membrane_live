@@ -1,24 +1,23 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const axios = require("axios").default;
+
 const Auth = () => {
   const navigate = useNavigate();
   const redirectToHomePage = () => navigate("/");
 
-  const fetchToken = (google_response) => {
-    const request: RequestInit = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(google_response),
-    };
-
-    fetch(window.location.origin + "/auth", request)
-      .then((resp) => resp.json())
-      .then((data) => localStorage.setItem("jwt", data["token"]));
+  const getToken = async (google_response) => {
+    try {
+      const response = await axios.post("auth", google_response);
+      localStorage.setItem("jwt", response.data.token);
+    } catch (error) {
+      alert("Couldn't get the token. Please try again in a moment");
+    }
   };
 
   const fetchTokenAndRedirect = (response) => {
-    fetchToken(response);
+    getToken(response);
     redirectToHomePage();
   };
 
