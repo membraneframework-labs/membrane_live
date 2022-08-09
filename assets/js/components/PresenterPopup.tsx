@@ -7,20 +7,25 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
-import type { PresenterPopupState } from "../pages/Event";
+import { PresenterPopupState } from "../pages/Event";
 
 type PresenterPopupProps = {
-  name: string;
+  username: string;
   moderator: string;
   eventChannel: any;
   setPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>;
 };
 
-const PresenterPopup = ({ name, moderator, eventChannel, setPopupState }: PresenterPopupProps) => {
+const PresenterPopup = ({
+  username,
+  moderator,
+  eventChannel,
+  setPopupState,
+}: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
   const sendAnswer = (answer: string) => {
-    eventChannel.push("presenter_answer", { name: name, moderator: moderator, answer: answer });
+    eventChannel.push("presenter_answer", { name: username, moderator: moderator, answer: answer });
     setPopupState({ isOpen: false, moderator: "" });
   };
 

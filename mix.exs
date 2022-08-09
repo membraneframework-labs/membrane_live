@@ -81,7 +81,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_format, "~> 0.7.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, "~> 0.15.0"}
+      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true}
     ]
   end
 

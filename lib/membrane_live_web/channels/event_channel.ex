@@ -24,8 +24,8 @@ defmodule MembraneLiveWeb.EventChannel do
 
         case viewer_data do
           [] ->
-            send(self(), {:after_join, name, id})
-            join_event_stream(id, socket)
+            Presence.track(socket, name, %{})
+            create_event_stream(id, socket)
 
           _viewer_exists ->
             {:error, %{reason: "Viewer with this name already exists."}}
@@ -45,17 +45,17 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  def join_event_stream(event_id, socket) do
+  defp create_event_stream(event_id, socket) do
     case :global.whereis_name(event_id) do
       :undefined -> Event.start(event_id, name: {:global, event_id})
       pid -> {:ok, pid}
     end
     |> case do
       {:ok, event_pid} ->
-        do_join(socket, event_pid, event_id)
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
 
       {:error, {:already_started, event_pid}} ->
-        do_join(socket, event_pid, event_id)
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
 
       {:error, reason} ->
         Logger.error("""
@@ -68,10 +68,13 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  def handle_info({:after_join, name, _event_id}, socket) do
-    Presence.track(socket, name, %{})
-    push(socket, "presence_state", Presence.list(socket))
-    {:noreply, socket}
+  defp join_event_stream(socket) do
+    peer_id = "#{UUID.uuid4()}"
+    # TODO handle crash of room?
+    Process.monitor(socket.assigns.event_pid)
+    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
   @impl true
@@ -89,14 +92,9 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  defp do_join(socket, event_pid, event_id) do
-    peer_id = "#{UUID.uuid4()}"
-    # TODO handle crash of room?
-    Process.monitor(event_pid)
-    send(event_pid, {:add_peer_channel, self(), peer_id})
-
-    {:ok,
-     Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid, peer_id: peer_id})}
+  def handle_in("sync_presence", _data, socket) do
+    push(socket, "presence_state", Presence.list(socket))
+    {:noreply, socket}
   end
 
   # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
@@ -141,10 +139,15 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"answer" => answer, "name" => name, "moderator" => moderator},
         socket
       ) do
-    if answer == "accept" do
-      {:ok, _ref} =
-        Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
-    end
+    {:ok, socket} =
+      if answer == "accept" do
+        {:ok, _ref} =
+          Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+
+        join_event_stream(socket)
+      else
+        {:ok, socket}
+      end
 
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
       :name => name,
@@ -157,7 +160,17 @@ defmodule MembraneLiveWeb.EventChannel do
   @impl true
   def handle_in("mediaEvent", %{"data" => event}, socket) do
     send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
-
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("isPlaylistPlayable", _data, socket) do
+    case :global.whereis_name(socket.assigns.event_id) do
+      :undefined ->
+        {:reply, {:ok, false}, socket}
+
+      _pid ->
+        {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
+    end
   end
 end

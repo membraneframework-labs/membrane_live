@@ -87,12 +87,21 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
+       playlist_idl: "",
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
-       trace_ctx: trace_ctx
+       trace_ctx: trace_ctx,
+       is_playlist_playable: false
      }}
+  end
+
+  @impl true
+  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
+    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
+    Process.monitor(peer_channel_pid)
+    {:noreply, state}
   end
 
   @impl true
@@ -162,6 +171,7 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_info(%Message.PeerLeft{peer: peer}, state) do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
+    {_peer_channel_pid, state} = pop_in(state, [:peer_channels, peer.id])
     {:noreply, state}
   end
 
@@ -170,7 +180,6 @@ defmodule MembraneLive.Event do
     Membrane.Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
     peer_channel = state.peer_channels[endpoint_id]
 
-    # TODO: handle HLS endpoint error.
     error_message = "Endpoint has crashed."
     data = MediaEvent.create_error_event(error_message)
     send(peer_channel, {:media_event, data})
@@ -207,21 +216,20 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
-    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
-    Process.monitor(peer_channel_pid)
-    {:noreply, state}
-  end
-
-  @impl true
   def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
     # TODO: implement detecting when HLS starts
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
-    # TODO: implement detecting when HLS starts
+  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
+    state = put_in(state, [:is_playlist_playable], true)
+    state = put_in(state, [:playlist_idl], playlist_idl)
+
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
+      playlist_idl: playlist_idl
+    })
+
     {:noreply, state}
   end
 
@@ -229,6 +237,12 @@ defmodule MembraneLive.Event do
   def handle_info({:cleanup, _clean_function, stream_id}, state) do
     StorageCleanup.remove_directory(stream_id)
     {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_call(:is_playlist_playable, _from, state) do
+    {:reply,
+     %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
   end
 
   defp tracing_metadata(),

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SimpleGrid,
   Box,
@@ -12,17 +12,22 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
-import type { Participant } from "../pages/Event";
+import { syncEventChannel } from "../utils/channelUtils";
+
+export type Participant = {
+  name: string;
+  isPresenter: boolean;
+};
 
 type ModeratorMenuProps = {
-  yourName: string;
+  username: string;
   name: string;
   isPresenter: boolean;
   eventChannel: any;
 };
 
 type ParticipantProps = {
-  yourName: string;
+  username: string;
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
@@ -30,17 +35,17 @@ type ParticipantProps = {
 };
 
 type ParticipantsListProps = {
-  yourName: string;
-  participants: Participant[];
+  username: string;
   isModerator: boolean;
   eventChannel: any;
+  setPresenters: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const ModeratorMenu = ({ yourName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
   const handleClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
       const link = "private:" + window.location.pathname.split("/")[2] + ":";
-      eventChannel.push("presenter_prop", { moderator: link + yourName, presenter: link + name });
+      eventChannel.push("presenter_prop", { moderator: link + username, presenter: link + name });
     } else {
       const link = "private:" + window.location.pathname.split("/")[2] + ":";
       eventChannel.push("presenter_remove", { presenter_topic: link + name });
@@ -71,7 +76,7 @@ const ModeratorMenu = ({ yourName, name, isPresenter, eventChannel }: ModeratorM
 };
 
 const Participant = ({
-  yourName,
+  username,
   name,
   isModerator,
   isPresenter,
@@ -83,10 +88,11 @@ const Participant = ({
       <Box p="2">
         <Heading size="md">{name}</Heading>
       </Box>
+      {isPresenter && <b>Pres</b>}
       <Spacer />
       {isModerator ? (
         <ModeratorMenu
-          yourName={yourName}
+          username={username}
           eventChannel={eventChannel}
           isPresenter={isPresenter}
           name={name}
@@ -97,16 +103,22 @@ const Participant = ({
 };
 
 const ParticipantsList = ({
-  yourName,
-  participants,
+  username,
   isModerator,
   eventChannel,
+  setPresenters,
 }: ParticipantsListProps) => {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  useEffect(() => {
+    syncEventChannel(eventChannel, setParticipants, setPresenters);
+  }, [eventChannel]);
+
   let parts: JSX.Element[] = [];
   participants.map((participant) =>
     parts.push(
       <Participant
-        yourName={yourName}
+        username={username}
         key={participant.name}
         name={participant.name}
         isModerator={isModerator}

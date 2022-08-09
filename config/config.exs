@@ -17,6 +17,8 @@ config :membrane_live, MembraneLiveWeb.Endpoint,
 
 config :membrane_live, MembraneLive.Mailer, adapter: Swoosh.Adapters.Local
 
+config :membrane_live, hls_output_mount_path: "output"
+
 config :swoosh, :api_client, false
 
 config :esbuild,
@@ -27,6 +29,8 @@ config :esbuild,
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
+
+config :logger, level: :error
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

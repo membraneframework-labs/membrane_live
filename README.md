@@ -5,7 +5,6 @@
 
 This repository contains a project created during the Summer Internship of 2022 in Software Mansion.
 
-
 ## Copyright and License
 
 Copyright 2020, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=membrane_template_plugin)

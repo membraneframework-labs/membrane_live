@@ -5,8 +5,8 @@ defmodule MembraneLiveWeb.LoginController do
 
   use MembraneLiveWeb, :controller
 
-  alias MembraneLive.Tokens
   alias MembraneLive.Accounts
+  alias MembraneLive.Tokens
 
   def index(conn, _params) do
     render(conn, "index.html")

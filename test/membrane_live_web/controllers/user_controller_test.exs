@@ -31,12 +31,12 @@ defmodule MembraneLiveWeb.UserControllerTest do
   describe "create user" do
     test "renders user when data is valid", %{conn: conn} do
       conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"uuid" => uuid} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.user_path(conn, :show, id))
+      conn = get(conn, Routes.user_path(conn, :show, uuid))
 
       assert %{
-               "id" => ^id,
+               "uuid" => ^uuid,
                "email" => "some email",
                "name" => "some name",
                "picture" => "some picture"
@@ -52,14 +52,14 @@ defmodule MembraneLiveWeb.UserControllerTest do
   describe "update user" do
     setup [:create_user]
 
-    test "renders user when data is valid", %{conn: conn, user: %User{id: id} = user} do
+    test "renders user when data is valid", %{conn: conn, user: %User{uuid: uuid} = user} do
       conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"uuid" => ^uuid} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.user_path(conn, :show, id))
+      conn = get(conn, Routes.user_path(conn, :show, uuid))
 
       assert %{
-               "id" => ^id,
+               "uuid" => ^uuid,
                "email" => "some updated email",
                "name" => "some updated name",
                "picture" => "some updated picture"
@@ -79,13 +79,12 @@ defmodule MembraneLiveWeb.UserControllerTest do
       conn = delete(conn, Routes.user_path(conn, :delete, user))
       assert response(conn, 204)
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.user_path(conn, :show, user))
-      end
+      conn = get(conn, Routes.user_path(conn, :show, user))
+      assert response(conn, 404)
     end
   end
 
-  defp create_user(_) do
+  defp create_user(_user) do
     user = user_fixture()
     %{user: user}
   end

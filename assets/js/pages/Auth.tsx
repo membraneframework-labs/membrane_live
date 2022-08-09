@@ -6,15 +6,14 @@ const Auth = () => {
   const redirectToHomePage = () => navigate("/");
 
   const fetchToken = (google_response) => {
-    const request = {
-      // MAG: it seems like a common type - can I import it from somewhere?
+    const request: RequestInit = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(google_response),
     };
 
-    fetch("http://localhost:4000/auth/login", request) //MAG: how should I store this endpoint uri?
-      .then((resp) => resp.json()) // MAG is `then` readable enough or should I use `await`?
+    fetch(window.location.origin + "/auth", request)
+      .then((resp) => resp.json())
       .then((data) => localStorage.setItem("jwt", data["token"]));
   };
 

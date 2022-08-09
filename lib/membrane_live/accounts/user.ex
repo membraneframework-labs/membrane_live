@@ -1,4 +1,7 @@
 defmodule MembraneLive.Accounts.User do
+  @moduledoc """
+  Data about users persisted into the database
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

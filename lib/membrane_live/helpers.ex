@@ -18,7 +18,7 @@ defmodule MembraneLive.Helpers do
 
   @spec hls_output_mount_path() :: String.t()
   def hls_output_mount_path(),
-    do: Application.fetch_env!(:membrane_webrtc_to_hls_demo, :hls_output_mount_path)
+    do: Application.fetch_env!(:membrane_live, :hls_output_mount_path)
 
   defp pid_to_hash(pid) do
     :crypto.hash(:md5, :erlang.pid_to_list(pid)) |> Base.encode16(case: :lower)
