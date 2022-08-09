@@ -1,8 +1,8 @@
 import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
-
-type SourceType = "audio" | "video";
+import { changeIsTrackEnabled, addClientMediaStream } from "./PresenterStreamArea";
+export type SourceType = "audio" | "video";
 
 type SourceInfo = {
   devices: MediaDeviceInfo[];
@@ -77,7 +77,12 @@ const PanelButton = ({ onClick, sourceType, disabled, active }: PanelButtonProps
   );
 };
 
-const ControlPanel = () => {
+type ControlPanelProps = {
+  clientName: string;
+  setLastSourceTypeChange: React.Dispatch<React.SetStateAction<SourceType | null>>;
+};
+
+const ControlPanel = ({ clientName, setLastSourceTypeChange }: ControlPanelProps) => {
   const initialSources: Sources = {
     audio: { devices: [], selectedId: "", isActive: false },
     video: { devices: [], selectedId: "", isActive: false },
@@ -123,14 +128,17 @@ const ControlPanel = () => {
     const constraint = { [sourceType]: { deviceId } };
     navigator.mediaDevices
       .getUserMedia(constraint)
-      .then(() => {
+      .then((mediaStream) => {
         const newSourceInfo: SourceInfo = {
           ...sources[sourceType],
           selectedId: deviceId,
           isActive: true,
         };
-        const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
-        setSources(newSources);
+        if (newSourceInfo.selectedId != sources[sourceType].selectedId) {
+          const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
+          setSources(newSources);
+          addClientMediaStream(clientName, mediaStream, sourceType, setLastSourceTypeChange);
+        }
       })
       .catch((err) => {
         alert(err.name + ": " + err.message);
@@ -141,6 +149,7 @@ const ControlPanel = () => {
     const newActiveValue: boolean = !sources[sourceType].isActive;
     const newSourceInfo: SourceInfo = { ...sources[sourceType], isActive: newActiveValue };
     const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
+    changeIsTrackEnabled(clientName, sourceType, newActiveValue);
     setSources(newSources);
   };
 

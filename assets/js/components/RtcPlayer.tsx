@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from "react";
+import { SourceType } from "./ControlPanel";
+import { presenterStreams } from "./PresenterStreamArea";
 
 type RtcPlayerProps = {
   isMyself: boolean;
   name: string;
-  presenterStreams: { [key: string]: MediaStream };
   streamsAvailable: { [key: string]: boolean };
 };
 
-const RtcPlayer = ({ isMyself, name, presenterStreams, streamsAvailable }: RtcPlayerProps) => {
+export const RtcPlayer = ({ isMyself, name, streamsAvailable }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -26,8 +27,30 @@ const RtcPlayer = ({ isMyself, name, presenterStreams, streamsAvailable }: RtcPl
   return (
     <div>
       <video width={1000} height={700} autoPlay ref={videoRef} />
-      <audio ref={audioRef} />
+      {!isMyself && <audio ref={audioRef} />}
       <h5>{isMyself ? name + " (Me)" : name}</h5>
+    </div>
+  );
+};
+
+type RtcClientPlayerProps = {
+  name: string;
+  clientStreamAvailable: SourceType;
+};
+
+export const RtcClientPlayer = ({ name, clientStreamAvailable }: RtcClientPlayerProps) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (name in presenterStreams && clientStreamAvailable && videoRef.current != null) {
+      videoRef.current.srcObject = presenterStreams[name];
+    }
+  }, [clientStreamAvailable]);
+
+  return (
+    <div>
+      <video width={1000} height={700} autoPlay ref={videoRef} />
+      <h5>{`${name} (Me)`}</h5>
     </div>
   );
 };
