@@ -9,7 +9,7 @@ defmodule MembraneLive.Accounts.User do
   @primary_key {:uuid, :binary_id, autogenerate: true}
 
   schema "users" do
-    field(:email, :string)
+    field(:email, EctoFields.Email)
     field(:name, :string)
     field(:picture, :string)
 

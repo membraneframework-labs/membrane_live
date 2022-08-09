@@ -21,12 +21,16 @@ defmodule MembraneLive.AccountsTest do
     end
 
     test "create_user/1 with valid data creates a user" do
-      valid_attrs = %{email: "some email", name: "some name", picture: "some picture"}
+      valid_attrs = %{
+        email: "john@gmail.com",
+        name: "John Kowalski",
+        picture: "kowalski.img"
+      }
 
       assert {:ok, %User{} = user} = Accounts.create_user(valid_attrs)
-      assert user.email == "some email"
-      assert user.name == "some name"
-      assert user.picture == "some picture"
+      assert user.email == "john@gmail.com"
+      assert user.name == "John Kowalski"
+      assert user.picture == "kowalski.img"
     end
 
     test "create_user/1 with invalid data returns error changeset" do
@@ -37,15 +41,15 @@ defmodule MembraneLive.AccountsTest do
       user = user_fixture()
 
       update_attrs = %{
-        email: "some updated email",
-        name: "some updated name",
-        picture: "some updated picture"
+        email: "john-update@gmail.com",
+        name: "John Update Kowalski",
+        picture: "kowalski_update.img"
       }
 
       assert {:ok, %User{} = user} = Accounts.update_user(user, update_attrs)
-      assert user.email == "some updated email"
-      assert user.name == "some updated name"
-      assert user.picture == "some updated picture"
+      assert user.email == "john-update@gmail.com"
+      assert user.name == "John Update Kowalski"
+      assert user.picture == "kowalski_update.img"
     end
 
     test "update_user/2 with invalid data returns error changeset" do

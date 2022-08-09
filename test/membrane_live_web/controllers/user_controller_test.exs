@@ -6,16 +6,20 @@ defmodule MembraneLiveWeb.UserControllerTest do
   alias MembraneLive.Accounts.User
 
   @create_attrs %{
-    email: "some email",
-    name: "some name",
-    picture: "some picture"
+    email: "john@gmail.com",
+    name: "John Kowalski",
+    picture: "kowalski.img"
   }
   @update_attrs %{
-    email: "some updated email",
-    name: "some updated name",
-    picture: "some updated picture"
+    email: "john-update@gmail.com",
+    name: "John Update Kowalski",
+    picture: "updated_kowalski.img"
   }
-  @invalid_attrs %{email: nil, name: nil, picture: nil}
+  @invalid_attrs %{
+    email: "i_like_underscore@but_its_not_allowed_in_this_part.example.com",
+    name: nil,
+    picture: nil
+  }
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -37,9 +41,9 @@ defmodule MembraneLiveWeb.UserControllerTest do
 
       assert %{
                "uuid" => ^uuid,
-               "email" => "some email",
-               "name" => "some name",
-               "picture" => "some picture"
+               "email" => "john@gmail.com",
+               "name" => "John Kowalski",
+               "picture" => "kowalski.img"
              } = json_response(conn, 200)["data"]
     end
 
@@ -60,9 +64,9 @@ defmodule MembraneLiveWeb.UserControllerTest do
 
       assert %{
                "uuid" => ^uuid,
-               "email" => "some updated email",
-               "name" => "some updated name",
-               "picture" => "some updated picture"
+               "email" => "john-update@gmail.com",
+               "name" => "John Update Kowalski",
+               "picture" => "updated_kowalski.img"
              } = json_response(conn, 200)["data"]
     end
 

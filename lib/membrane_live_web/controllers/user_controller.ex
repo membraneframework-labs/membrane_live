@@ -49,6 +49,7 @@ defmodule MembraneLiveWeb.UserController do
     end
   end
 
+  # TODO add restriction so only the user can delete its account
   def delete_callback(conn, %{"user_db" => user}) do
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
