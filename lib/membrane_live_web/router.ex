@@ -11,12 +11,20 @@ defmodule MembraneLiveWeb.Router do
   end
 
   scope "/", MembraneLiveWeb do
+    # TODO add Plug for checking jwt and g_csrf
     pipe_through(:browser)
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
     get("/video/:prefix/:filename", HLSController, :index)
     get("/event/*page", PageController, :index)
+  end
+
+  scope "/auth", MembraneLiveWeb do
+    pipe_through(:browser)
+
+    get("/", LoginController, :index)
+    post("/", LoginController, :create)
   end
 
   if Mix.env() in [:dev, :test] do
