@@ -18,6 +18,7 @@ defmodule MembraneLiveWeb.Router do
     get("/", PageController, :index)
     get("/video/:prefix/:filename", HLSController, :index)
     get("/event/*page", PageController, :index)
+    resources("/users", UserController, except: [:edit, :new], param: "uuid")
   end
 
   scope "/auth", MembraneLiveWeb do
