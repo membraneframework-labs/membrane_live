@@ -135,8 +135,7 @@ const ControlPanel = ({ clientName, setLastSourceTypeChange }: ControlPanelProps
           isActive: true,
         };
         if (newSourceInfo.selectedId != sources[sourceType].selectedId) {
-          const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
-          setSources(newSources);
+          setSources({ ...sources, [sourceType]: newSourceInfo });
           addClientMediaStream(clientName, mediaStream, sourceType, setLastSourceTypeChange);
         }
       })

@@ -14,8 +14,12 @@ type PresenterStreamAreaProps = {
 export const presenterStreams: { [key: string]: MediaStream } = {};
 let webrtc: MembraneWebRTC | null = null;
 
+export const findTrackBySource = (clientName: string, sourceType: SourceType) => {
+  return presenterStreams[clientName].getTracks().find((track) => track.kind == sourceType);
+};
+
 export const changeIsTrackEnabled = (clientName: string, sourceType: SourceType, mode: boolean) => {
-  const track = presenterStreams[clientName].getTracks().find((track) => track.kind == sourceType);
+  const track = findTrackBySource(clientName, sourceType);
   if (track != undefined) {
     track.enabled = mode;
   }
@@ -28,13 +32,9 @@ const addMediaStreamTrack = (
 ) => {
   if (presenterStreams[clientName] == undefined) presenterStreams[clientName] = new MediaStream();
   else {
-    const curTrack = presenterStreams[clientName]
-      .getTracks()
-      .find((track) => track.kind == sourceType);
-    if (curTrack != undefined) {
-      curTrack.stop();
-      presenterStreams[clientName].removeTrack(curTrack);
-    }
+    const curTrack = findTrackBySource(clientName, sourceType);
+    curTrack?.stop();
+    curTrack && presenterStreams[clientName].removeTrack(curTrack);
   }
   mediaStream.getTracks().forEach((track) => presenterStreams[clientName].addTrack(track));
 };
@@ -89,8 +89,9 @@ const PresenterStreamArea = ({
   return presenters.includes(clientName) ? (
     <>
       <RtcClientPlayer name={clientName} clientStreamAvailable={lastSourceTypeChange!} />
-      {presenters.map((presenter) => {
-        if (presenter != clientName)
+      {presenters
+        .filter((presenter) => presenter != clientName)
+        .map((presenter) => {
           return (
             <RtcPlayer
               isMyself={clientName == presenter}
@@ -99,7 +100,7 @@ const PresenterStreamArea = ({
               key={presenter}
             />
           );
-      })}
+        })}
       <ControlPanel clientName={clientName} setLastSourceTypeChange={setLastSourceTypeChange} />
     </>
   ) : (

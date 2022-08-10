@@ -1,6 +1,10 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
 import { SourceType } from "../components/ControlPanel";
-import { addPresenterMediaStream, presenterStreams } from "../components/PresenterStreamArea";
+import {
+  addPresenterMediaStream,
+  findTrackBySource,
+  presenterStreams,
+} from "../components/PresenterStreamArea";
 
 export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: true,
@@ -85,12 +89,11 @@ export const replaceTrack = (
   mediaStream: MediaStream,
   sourceType: SourceType
 ) => {
-  const track = mediaStream.getTracks().find((track) => track.kind == sourceType);
-  if (webrtc != null && track != undefined) {
-    if (currentTracks[sourceType] == null)
-      currentTracks[sourceType] = webrtc.addTrack(track, presenterStreams[clientName], {});
-    else webrtc.replaceTrack(currentTracks[sourceType]!, track);
-  }
+  const track = findTrackBySource(clientName, sourceType);
+  if (!(webrtc != null && track != undefined)) return;
+  if (currentTracks[sourceType] == null)
+    currentTracks[sourceType] = webrtc.addTrack(track, presenterStreams[clientName], {});
+  else webrtc.replaceTrack(currentTracks[sourceType]!, track);
 };
 
 export const leaveWebrtc = (
