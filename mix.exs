@@ -65,6 +65,9 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
       {:cowlib, "~> 2.11.0", override: true},
+      {:joken, "~> 2.5"},
+      {:httpoison, "~> 1.8"},
+      {:ecto_fields, "~> 1.3.0"},
 
       # Otel
       {:opentelemetry, "~> 1.0"},
