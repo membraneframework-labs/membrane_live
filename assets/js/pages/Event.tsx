@@ -7,7 +7,7 @@ import { createPrivateChannel, createEventChannel } from "../utils/channelUtils"
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/HlsPlayer";
 
-const axios = require("axios").default;
+import axios from "../services/index";
 
 export type EventInfo = {
   link: string;
@@ -43,15 +43,14 @@ const getEventInfo = (
   eventInfo: EventInfo,
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
-
-  axios.get("/webinars/" + eventInfo.link)
-  .then((data) => {
-    console.log(data);
-    setEventInfo({...eventInfo, ...data.webinar});
-  })
-  .catch(() => {
-    alert("Couldn't get event information. Please reload this page.");
-  });
+  axios
+    .get("/webinars/" + eventInfo.link)
+    .then((response) => {
+      setEventInfo({ ...eventInfo, ...response.data.webinar });
+    })
+    .catch(() => {
+      alert("Couldn't get event information. Please reload this page.");
+    });
 };
 
 const Event = () => {
