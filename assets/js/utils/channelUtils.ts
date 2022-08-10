@@ -24,12 +24,10 @@ export const createEventChannel = (
 
 export const syncEventChannel = (
   eventChannel: any,
-  setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
-  setPresenters: React.Dispatch<React.SetStateAction<string[]>>
+  setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>
 ) => {
-  if (eventChannel != undefined) {
+  if (eventChannel) {
     const presence = new Presence(eventChannel);
-    eventChannel.push("sync_presence", {});
 
     const updateStates = () => {
       const parts: any[] = [];
@@ -41,13 +39,13 @@ export const syncEventChannel = (
         parts.push({ name: name, isPresenter: isPresenter });
       });
       setParticipants(parts);
-      setPresenters(parts.filter((part) => part.isPresenter).map((part) => part.name));
     };
 
-    updateStates();
     presence.onSync(() => {
       updateStates();
     });
+
+    eventChannel.push("sync_presence", {});
   }
 };
 
@@ -77,4 +75,29 @@ export const createPrivateChannel = (
       privateChannel.leave();
       alert(resp.reason);
     });
+};
+
+export const syncPresenters = (
+  eventChannel: any,
+  setPresenters: React.Dispatch<React.SetStateAction<string[]>>
+) => {
+  if (eventChannel) {
+    const presence = new Presence(eventChannel);
+
+    const updatePresenters = () => {
+      const presenters: string[] = [];
+      presence.list((name: string, metas: any) => {
+        for (const item of metas.metas) {
+          if (item.is_presenter) presenters.push(name);
+        }
+      });
+      setPresenters(presenters);
+    };
+
+    presence.onSync(() => {
+      updatePresenters();
+    });
+
+    eventChannel.push("sync_presence", {});
+  }
 };

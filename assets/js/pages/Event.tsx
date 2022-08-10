@@ -6,7 +6,6 @@ import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/HlsPlayer";
-import ControlPanel from "../components/ControlPanel";
 
 export type EventInfo = {
   link: string;
@@ -77,8 +76,6 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
 
-  const [presenters, setPresenters] = useState<string[]>([]);
-
   const socket = new Socket("/socket");
   socket.connect();
 
@@ -105,13 +102,11 @@ const Event = () => {
 
   return (
     <>
-      {presenters.includes(name) ? <ControlPanel /> : null}
-      <PresenterStreamArea clientName={name} presenters={presenters} eventChannel={eventChannel} />
+      <PresenterStreamArea clientName={name} eventChannel={eventChannel} />
       <ParticipantsList
         username={name}
         isModerator={eventInfo.isModerator}
         eventChannel={eventChannel}
-        setPresenters={setPresenters}
       />
       <NamePopup
         setName={setName}

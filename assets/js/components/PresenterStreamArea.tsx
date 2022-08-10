@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { connectWebrtc, leaveWebrtc } from "../utils/rtcUtils";
+import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 
 type PresenterStreamAreaProps = {
   clientName: string;
-  presenters: string[];
   eventChannel: any;
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
 let webrtc: MembraneWebRTC | null = null;
 
-const PresenterStreamArea = ({
-  clientName,
-  presenters,
-  eventChannel,
-}: PresenterStreamAreaProps) => {
+const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
   const [streamsAvailable, setStreamsAvailable] = useState<{ [key: string]: boolean }>({});
+  const [presenters, setPresenters] = useState<string[]>([]);
 
   useEffect(() => {
     if (webrtc == null && presenters.includes(clientName)) {
@@ -31,6 +28,10 @@ const PresenterStreamArea = ({
       webrtc = null;
     }
   }, [presenters]);
+
+  useEffect(() => {
+    syncPresenters(eventChannel, setPresenters);
+  }, [eventChannel]);
 
   return presenters.includes(clientName) ? (
     <>
