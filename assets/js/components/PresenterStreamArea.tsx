@@ -25,17 +25,19 @@ export const changeIsTrackEnabled = (clientName: string, sourceType: SourceType,
   }
 };
 
+const removeTrack = (clientName: string, sourceType: SourceType) => {
+  const curTrack = findTrackBySource(clientName, sourceType);
+  curTrack?.stop();
+  curTrack && presenterStreams[clientName].removeTrack(curTrack);
+};
+
 const addMediaStreamTrack = (
   clientName: string,
   mediaStream: MediaStream,
   sourceType: SourceType
 ) => {
   if (presenterStreams[clientName] == undefined) presenterStreams[clientName] = new MediaStream();
-  else {
-    const curTrack = findTrackBySource(clientName, sourceType);
-    curTrack?.stop();
-    curTrack && presenterStreams[clientName].removeTrack(curTrack);
-  }
+  else removeTrack(clientName, sourceType);
   mediaStream.getTracks().forEach((track) => presenterStreams[clientName].addTrack(track));
 };
 

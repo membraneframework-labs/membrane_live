@@ -12,15 +12,19 @@ export const RtcPlayer = ({ isMyself, name, streamsAvailable }: RtcPlayerProps) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  useEffect(() => {
-    if (
+  const isPresenterAndStreamAvailable = () => {
+    return (
       name in presenterStreams &&
       streamsAvailable[name] &&
       videoRef.current != null &&
       audioRef.current != null
-    ) {
-      videoRef.current.srcObject = presenterStreams[name];
-      audioRef.current.srcObject = presenterStreams[name];
+    );
+  };
+
+  useEffect(() => {
+    if (isPresenterAndStreamAvailable()) {
+      videoRef.current!.srcObject = presenterStreams[name];
+      audioRef.current!.srcObject = presenterStreams[name];
     }
   }, [streamsAvailable]);
 
@@ -41,9 +45,13 @@ type RtcClientPlayerProps = {
 export const RtcClientPlayer = ({ name, clientStreamAvailable }: RtcClientPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const isPresenterAndStreamAvailable = () => {
+    return name in presenterStreams && clientStreamAvailable && videoRef.current != null;
+  };
+
   useEffect(() => {
-    if (name in presenterStreams && clientStreamAvailable && videoRef.current != null) {
-      videoRef.current.srcObject = presenterStreams[name];
+    if (isPresenterAndStreamAvailable()) {
+      videoRef.current!.srcObject = presenterStreams[name];
     }
   }, [clientStreamAvailable]);
 
