@@ -38,7 +38,6 @@ type ParticipantsListProps = {
   username: string;
   isModerator: boolean;
   eventChannel: any;
-  setPresenters: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
@@ -102,16 +101,11 @@ const Participant = ({
   );
 };
 
-const ParticipantsList = ({
-  username,
-  isModerator,
-  eventChannel,
-  setPresenters,
-}: ParticipantsListProps) => {
+const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
   useEffect(() => {
-    syncEventChannel(eventChannel, setParticipants, setPresenters);
+    syncEventChannel(eventChannel, setParticipants);
   }, [eventChannel]);
 
   let parts: JSX.Element[] = [];

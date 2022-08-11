@@ -234,7 +234,8 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, playlist_idl, peer_id}, state) do
+  def handle_info({:playlist_playable, :video, playlist_idl, peer_id}, state)
+      when is_map_key(state.playlist_idls, peer_id) do
     state = put_in(state, [:playlist_idls, peer_id, :playlist_idl], playlist_idl)
     name = state.playlist_idls[peer_id].name
 
@@ -246,10 +247,13 @@ defmodule MembraneLive.Event do
     {:noreply, state}
   end
 
+  def handle_info({:playlist_playable, :video, _playlist_idl, _peer_id}, state),
+    do: {:noreply, state}
+
   @impl true
   def handle_info({:cleanup, _clean_function, stream_id}, state) do
     StorageCleanup.remove_directory(stream_id)
-    {:stop, :normal, state}
+    {:noreply, state}
   end
 
   @impl true
@@ -272,6 +276,8 @@ defmodule MembraneLive.Event do
     ]
 
   defp event_span_id(id), do: "event:#{id}"
+
+  defp handle_peer_left(%{peer_ids: []} = state, _peer_id), do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
     [prev_peer | _rest] = state.peer_ids
