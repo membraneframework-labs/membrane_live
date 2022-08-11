@@ -5,6 +5,7 @@ defmodule MembraneLiveWeb.LoginController do
 
   use MembraneLiveWeb, :controller
 
+  alias MembraneLive.Accounts
   alias MembraneLive.Tokens
 
   def index(conn, _params) do
@@ -14,8 +15,8 @@ defmodule MembraneLiveWeb.LoginController do
   # TODO add g_csrf handling
   def create(conn, %{"credential" => google_jwt}) do
     {:ok, google_claims} = Tokens.google_decode(google_jwt)
-    # todo persist user here
-    {:ok, new_token, _claims} = Tokens.custom_encode(google_claims["name"])
+    {:ok, user} = Accounts.create_user_if_not_exists(google_claims)
+    {:ok, new_token, _claims} = Tokens.custom_encode(user.uuid)
 
     conn
     |> put_status(200)
