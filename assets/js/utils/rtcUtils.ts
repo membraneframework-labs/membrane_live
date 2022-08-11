@@ -1,10 +1,5 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
-import { SourceType } from "../components/ControlPanel";
-import {
-  addPresenterMediaStream,
-  findTrackBySource,
-  presenterStreams,
-} from "../components/PresenterStreamArea";
+import { presenterStreams } from "../components/PresenterStreamArea";
 
 export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: true,
@@ -16,18 +11,43 @@ export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   video: { width: 1280, height: 720, frameRate: 24 },
 };
 
-const currentTracks: { audio: string | null; video: string | null } = { audio: null, video: null };
-
 export const connectWebrtc = async (
   webrtcChannel: any,
-  clientName: string,
+  name: string,
   streamsAvailable: { [key: string]: boolean },
   setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
 ) => {
+  let localAudioStream: MediaStream | null = null;
+  let localVideoStream: MediaStream | null = null;
+  let localStream: MediaStream = new MediaStream();
+
+  try {
+    localAudioStream = await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
+    localAudioStream.getTracks().forEach((track) => localStream.addTrack(track));
+  } catch (error) {
+    console.error("Couldn't get microphone permission:", error);
+  }
+
+  try {
+    localVideoStream = await navigator.mediaDevices.getUserMedia(VIDEO_CONSTRAINTS);
+    localVideoStream.getTracks().forEach((track) => {
+      localStream.addTrack(track);
+    });
+  } catch (error) {
+    console.error("Couldn't get camera permission:", error);
+  }
+
+  const addStream = (stream: MediaStream, name: string) => {
+    presenterStreams[name] = stream;
+    setStreamsAvailable({ ...streamsAvailable, ...{ [name]: true } });
+  };
+
   const removeStream = (name: string) => {
     delete presenterStreams[name];
     setStreamsAvailable({ ...streamsAvailable, ...{ [name]: false } });
   };
+
+  addStream(localStream, name);
 
   const onError = (error: any) => {
     alert("ERROR " + error);
@@ -42,58 +62,42 @@ export const connectWebrtc = async (
       onConnectionError: () => {
         onError("Error while connecting to WebRTC");
       },
-      onJoinSuccess: (_peerId, _peersInRoom) => {},
+      onJoinSuccess: (_peerId, _peersInRoom) => {
+        localStream.getTracks().forEach((track) => webrtc.addTrack(track, localStream, {}));
+      },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
       },
-      onTrackReady: ({ track, stream, peer }) => {
-        addPresenterMediaStream(
-          peer.metadata.displayName,
-          stream!,
-          track!.kind as SourceType,
-          streamsAvailable,
-          setStreamsAvailable
-        );
+      onTrackReady: ({ stream, peer }) => {
+        if (stream != null) addStream(stream, peer.metadata.displayName);
       },
       onTrackAdded: (_ctx) => {},
       onTrackRemoved: ({ stream, peer }) => {
         if (stream != null) removeStream(peer.metadata.displayName);
       },
-      onPeerJoined: (_peer) => {},
+      onPeerJoined: (peer) => {},
       onPeerLeft: (peer) => {
         removeStream(peer.metadata.displayName);
       },
       onPeerUpdated: (_ctx) => {},
       onRemoved: (_reason) => {
-        removeStream(clientName);
-        presenterStreams[clientName].getTracks().forEach((track) => track.stop());
+        removeStream(name);
+        localStream.getTracks().forEach((track) => track.stop());
         onError("You were removed from WebRTC connection");
       },
     },
   });
 
   webrtc.join({
-    displayName: clientName,
+    displayName: name,
   });
 
   webrtcChannel.on("mediaEvent", (event) => {
+    console.log("INCONING EVENT", event);
     webrtc.receiveMediaEvent(event.data);
   });
 
   return webrtc;
-};
-
-export const replaceTrack = (
-  webrtc: MembraneWebRTC | null,
-  clientName: string,
-  mediaStream: MediaStream,
-  sourceType: SourceType
-) => {
-  const track = findTrackBySource(clientName, sourceType);
-  if (!(webrtc != null && track != undefined)) return;
-  if (currentTracks[sourceType] == null)
-    currentTracks[sourceType] = webrtc.addTrack(track, presenterStreams[clientName], {});
-  else webrtc.replaceTrack(currentTracks[sourceType]!, track);
 };
 
 export const leaveWebrtc = (

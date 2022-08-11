@@ -87,13 +87,13 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
-       playlist_idls: %{},
-       peer_ids: [],
+       playlist_idl: "",
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
-       trace_ctx: trace_ctx
+       trace_ctx: trace_ctx,
+       is_playlist_playable: false
      }}
   end
 
@@ -165,23 +165,13 @@ defmodule MembraneLive.Event do
     Engine.accept_peer(rtc_engine, peer.id)
     :ok = Engine.add_endpoint(rtc_engine, endpoint, peer_id: peer.id, node: peer_node)
 
-    state = Map.put(state, :peer_ids, [peer.id | state.peer_ids])
-
-    state =
-      put_in(state, [:playlist_idls, peer.id], %{
-        name: peer.metadata["displayName"],
-        playlist_idl: ""
-      })
-
     {:noreply, state}
   end
 
   @impl true
   def handle_info(%Message.PeerLeft{peer: peer}, state) do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
-
-    {:ok, state} = handle_peer_left(state, peer.id)
-
+    {_peer_channel_pid, state} = pop_in(state, [:peer_channels, peer.id])
     {:noreply, state}
   end
 
@@ -216,8 +206,6 @@ defmodule MembraneLive.Event do
         state.peer_channels
         |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
-      {:ok, state} = handle_peer_left(state, peer_id)
-
       Engine.remove_peer(state.rtc_engine, peer_id)
       {_elem, state} = pop_in(state, [:peer_channels, peer_id])
 
@@ -228,19 +216,18 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :audio, _playlist_idl, _peer_id}, state) do
+  def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
     # TODO: implement detecting when HLS starts
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, playlist_idl, peer_id}, state) do
-    state = put_in(state, [:playlist_idls, peer_id, :playlist_idl], playlist_idl)
-    name = state.playlist_idls[peer_id].name
+  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
+    state = put_in(state, [:is_playlist_playable], true)
+    state = put_in(state, [:playlist_idl], playlist_idl)
 
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-      playlist_idl: playlist_idl,
-      name: name
+      playlist_idl: playlist_idl
     })
 
     {:noreply, state}
@@ -254,14 +241,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    case state.peer_ids do
-      [] ->
-        {:reply, %{playlist_idl: "", name: ""}, state}
-
-      [first_peer | _rest] ->
-        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[first_peer]
-        {:reply, %{playlist_idl: playlist_idl, name: name}, state}
-    end
+    {:reply,
+     %{is_playlist_playable: state.is_playlist_playable, playlist_idl: state.playlist_idl}, state}
   end
 
   defp tracing_metadata(),
@@ -272,31 +253,4 @@ defmodule MembraneLive.Event do
     ]
 
   defp event_span_id(id), do: "event:#{id}"
-
-  defp handle_peer_left(state, peer_id) do
-    [prev_peer | _rest] = state.peer_ids
-    state = Map.update!(state, :playlist_idls, &Map.delete(&1, peer_id))
-    state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
-
-    case state.peer_ids do
-      [] ->
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-          playlist_idl: "",
-          name: ""
-        })
-
-      [^prev_peer | _] ->
-        nil
-
-      [curr_peer | _] ->
-        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[curr_peer]
-
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-          playlist_idl: playlist_idl,
-          name: name
-        })
-    end
-
-    {:ok, state}
-  end
 end
