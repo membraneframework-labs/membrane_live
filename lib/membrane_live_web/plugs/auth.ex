@@ -1,4 +1,4 @@
-defmodule MembraneLiveWeb.Plugs.BearerPlug do
+defmodule MembraneLiveWeb.Plugs.Auth do
   @moduledoc """
   Plug responsible for fetching jwt token from HTTP request,
   decoding it and assigning decoded user_id to conn object
@@ -10,9 +10,10 @@ defmodule MembraneLiveWeb.Plugs.BearerPlug do
   def init(default), do: default
 
   def call(conn, _default) do
-    case Enum.find(conn.req_headers, fn elem -> match?({"bearer", _}, elem) end) do
-      {"bearer", jwt} ->
-        %{"user_id" => user_id} = Tokens.custom_decode(jwt)
+    case Enum.find(conn.req_headers, fn elem -> match?({"authorization", _}, elem) end) do
+      {"authorization", value} ->
+        "Bearer " <> token = value
+        %{"user_id" => user_id} = Tokens.custom_decode(token)
         assign(conn, :user_id, user_id)
 
       nil ->

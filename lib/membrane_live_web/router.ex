@@ -10,13 +10,13 @@ defmodule MembraneLiveWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  pipeline :bearer do
-    plug(MembraneLiveWeb.Plugs.BearerPlug)
+  pipeline :auth do
+    plug(MembraneLiveWeb.Plugs.Auth)
   end
 
   scope "/", MembraneLiveWeb do
     pipe_through(:browser)
-    pipe_through(:bearer)
+    pipe_through(:auth)
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
