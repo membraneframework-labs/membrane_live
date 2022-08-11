@@ -35,9 +35,4 @@ defmodule MembraneLive.Tokens do
     signer = Joken.Signer.create("HS256", @custom_secret)
     CustomToken.generate_and_sign(%{"user_id" => user_id}, signer)
   end
-
-  def custom_decode(jwt) do
-    signer = Joken.Signer.create("HS256", @custom_secret)
-    CustomToken.verify_and_validate(jwt, signer)
-  end
 end
