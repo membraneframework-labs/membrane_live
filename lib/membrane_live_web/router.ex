@@ -10,9 +10,13 @@ defmodule MembraneLiveWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :bearer do
+    plug(MembraneLiveWeb.Plugs.BearerPlug)
+  end
+
   scope "/", MembraneLiveWeb do
-    # TODO add Plug for checking jwt and g_csrf
     pipe_through(:browser)
+    pipe_through(:bearer)
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
