@@ -9,22 +9,19 @@ type PresenterStreamAreaProps = {
   eventChannel: any;
 };
 
-export const presenterStreams: { [key: string]: MediaStream } = {};
+const playerCallbacks: { [key: string]: () => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
 const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
-  const [streamsAvailable, setStreamsAvailable] = useState<{ [key: string]: boolean }>({});
   const [presenters, setPresenters] = useState<string[]>([]);
 
   useEffect(() => {
     if (webrtc == null && presenters.includes(clientName)) {
-      connectWebrtc(eventChannel, clientName, streamsAvailable, setStreamsAvailable).then(
-        (value) => {
-          webrtc = value;
-        }
-      );
+      connectWebrtc(eventChannel, clientName, playerCallbacks).then((value) => {
+        webrtc = value;
+      });
     } else if (webrtc != null && !presenters.includes(clientName)) {
-      leaveWebrtc(webrtc, clientName, streamsAvailable, setStreamsAvailable, eventChannel);
+      leaveWebrtc(webrtc, clientName, eventChannel);
       webrtc = null;
     }
   }, [presenters]);
@@ -40,8 +37,7 @@ const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaPr
           <RtcPlayer
             isMyself={clientName == presenter}
             name={presenter}
-            presenterStreams={presenterStreams}
-            streamsAvailable={streamsAvailable}
+            playerCallbacks={playerCallbacks}
             key={presenter}
           />
         );

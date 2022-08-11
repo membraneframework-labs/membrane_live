@@ -1,57 +1,113 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
-import { presenterStreams } from "../components/PresenterStreamArea";
 
-export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
+export const presenterStreams: { [key: string]: MediaStream } = {};
+
+const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback: () => void) => {
+  if (!presenterStreams[name]) presenterStreams[name] = new MediaStream();
+
+  const curTrack = presenterStreams[name].getTracks().find((elem) => elem.kind == track.kind);
+  if (curTrack) {
+    curTrack.stop(); // not sure if that is necessary
+    presenterStreams[name].removeTrack(curTrack);
+  }
+  presenterStreams[name].addTrack(track);
+  playerCallback(); // to attach MediaStream to HTMLVideoElement object in DOM
+};
+
+const removeStream = (name: string) => {
+  delete presenterStreams[name];
+};
+
+const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: true,
   video: false,
 };
 
-export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
+const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
   video: { width: 1280, height: 720, frameRate: 24 },
 };
 
+const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
+  const newConstraint: MediaStreamConstraints = { audio: {}, video: {} };
+  let type: "audio" | "video";
+  if (!constraint.audio) {
+    newConstraint.audio = false;
+    type = "video";
+  } else {
+    newConstraint.video = false;
+    type = "audio";
+  }
+  const elem = constraint[type] === true ? {} : constraint[type];
+  elem!["deviceId"] = { exact: deviceId };
+  newConstraint[type] = elem;
+
+  return newConstraint;
+};
+
+const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
+  return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
+};
+
+export const getSources = async () => {
+  const sources: { audio: MediaDeviceInfo[]; video: MediaDeviceInfo[] } = { audio: [], video: [] };
+  let mediaDevices: MediaDeviceInfo[];
+  try {
+    mediaDevices = await navigator.mediaDevices.enumerateDevices();
+    sources.audio = filterDevices(mediaDevices, "audioinput");
+    sources.video = filterDevices(mediaDevices, "videoinput");
+
+    return sources;
+  } catch (err) {
+    console.log("Error during getting the media devices.");
+  }
+};
+
 export const connectWebrtc = async (
   webrtcChannel: any,
-  name: string,
-  streamsAvailable: { [key: string]: boolean },
-  setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
+  clientName: string,
+  playerCallbacks: { [key: string]: () => void }
 ) => {
   let localAudioStream: MediaStream | null = null;
   let localVideoStream: MediaStream | null = null;
-  let localStream: MediaStream = new MediaStream();
+  presenterStreams[clientName] = new MediaStream();
 
-  try {
-    localAudioStream = await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
-    localAudioStream.getTracks().forEach((track) => localStream.addTrack(track));
-  } catch (error) {
-    console.error("Couldn't get microphone permission:", error);
-  }
-
-  try {
-    localVideoStream = await navigator.mediaDevices.getUserMedia(VIDEO_CONSTRAINTS);
-    localVideoStream.getTracks().forEach((track) => {
-      localStream.addTrack(track);
-    });
-  } catch (error) {
-    console.error("Couldn't get camera permission:", error);
-  }
-
-  const addStream = (stream: MediaStream, name: string) => {
-    presenterStreams[name] = stream;
-    setStreamsAvailable({ ...streamsAvailable, ...{ [name]: true } });
+  const sources = await getSources();
+  const defaults: { audio: MediaDeviceInfo | undefined; video: MediaDeviceInfo | undefined } = {
+    audio: sources?.audio[0],
+    video: sources?.video[0],
   };
 
-  const removeStream = (name: string) => {
-    delete presenterStreams[name];
-    setStreamsAvailable({ ...streamsAvailable, ...{ [name]: false } });
-  };
+  if (defaults.audio) {
+    try {
+      localAudioStream = await navigator.mediaDevices.getUserMedia(
+        getConstraint(AUDIO_CONSTRAINTS, defaults.audio.deviceId)
+      );
+      localAudioStream.getTracks().forEach((track) => {
+        presenterStreams[clientName].addTrack(track);
+      });
+    } catch (error) {
+      console.error("Couldn't get microphone permission:", error);
+    }
+  }
 
-  addStream(localStream, name);
+  if (defaults.video) {
+    try {
+      localVideoStream = await navigator.mediaDevices.getUserMedia(
+        getConstraint(VIDEO_CONSTRAINTS, defaults.video.deviceId)
+      );
+      localVideoStream.getTracks().forEach((track) => {
+        presenterStreams[clientName].addTrack(track);
+      });
+    } catch (error) {
+      console.error("Couldn't get camera permission:", error);
+    }
+  }
+
+  playerCallbacks[clientName]();
 
   const onError = (error: any) => {
     alert("ERROR " + error);
-    webrtc.leave();
   };
 
   const webrtc = new MembraneWebRTC({
@@ -63,55 +119,44 @@ export const connectWebrtc = async (
         onError("Error while connecting to WebRTC");
       },
       onJoinSuccess: (_peerId, _peersInRoom) => {
-        localStream.getTracks().forEach((track) => webrtc.addTrack(track, localStream, {}));
+        presenterStreams[clientName]
+          .getTracks()
+          .forEach((track) => webrtc.addTrack(track, presenterStreams[clientName], {}));
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
       },
-      onTrackReady: ({ stream, peer }) => {
-        if (stream != null) addStream(stream, peer.metadata.displayName);
+      onTrackReady: ({ track, peer }) => {
+        if (track != null)
+          addOrReplaceTrack(peer.metadata.name, track, playerCallbacks[peer.metadata.name]);
       },
       onTrackAdded: (_ctx) => {},
-      onTrackRemoved: ({ stream, peer }) => {
-        if (stream != null) removeStream(peer.metadata.displayName);
-      },
-      onPeerJoined: (peer) => {},
+      onTrackRemoved: (_ctx) => {},
+      onPeerJoined: (_peer) => {},
       onPeerLeft: (peer) => {
-        removeStream(peer.metadata.displayName);
+        removeStream(peer.metadata.name);
       },
       onPeerUpdated: (_ctx) => {},
       onRemoved: (_reason) => {
-        removeStream(name);
-        localStream.getTracks().forEach((track) => track.stop());
         onError("You were removed from WebRTC connection");
       },
     },
   });
 
   webrtc.join({
-    displayName: name,
+    name: clientName,
   });
 
-  webrtcChannel.on("mediaEvent", (event) => {
-    console.log("INCONING EVENT", event);
+  webrtcChannel.on("mediaEvent", (event: any) => {
     webrtc.receiveMediaEvent(event.data);
   });
 
   return webrtc;
 };
 
-export const leaveWebrtc = (
-  webrtc: MembraneWebRTC,
-  name: string,
-  streamsAvailable: { [key: string]: boolean },
-  setStreamsAvailable: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
-  webrtcChannel: any
-) => {
+export const leaveWebrtc = (webrtc: MembraneWebRTC, clientName: string, webrtcChannel: any) => {
   webrtcChannel.off("mediaEvent");
-  let new_elem = {};
-  new_elem[name] = false;
-  setStreamsAvailable({ ...streamsAvailable, ...new_elem });
-  presenterStreams[name].getTracks().forEach((track) => track.stop());
-  delete presenterStreams[name];
+  presenterStreams[clientName].getTracks().forEach((track) => track.stop());
+  removeStream(clientName);
   webrtc.leave();
 };
