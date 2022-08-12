@@ -1,5 +1,12 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
 
+export type Sources = {
+  audio: MediaDeviceInfo[];
+  video: MediaDeviceInfo[];
+};
+
+export type SourceType = "audio" | "video";
+
 export const presenterStreams: { [key: string]: MediaStream } = {};
 
 const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback: () => void) => {
@@ -30,7 +37,7 @@ const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
   const newConstraint: MediaStreamConstraints = { audio: {}, video: {} };
-  let type: "audio" | "video";
+  let type: SourceType;
   if (!constraint.audio) {
     newConstraint.audio = false;
     type = "video";
@@ -50,7 +57,7 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
 };
 
 export const getSources = async () => {
-  const sources: { audio: MediaDeviceInfo[]; video: MediaDeviceInfo[] } = { audio: [], video: [] };
+  const sources: Sources = { audio: [], video: [] };
   let mediaDevices: MediaDeviceInfo[];
   try {
     mediaDevices = await navigator.mediaDevices.enumerateDevices();
@@ -63,13 +70,32 @@ export const getSources = async () => {
   }
 };
 
+export const setSourceById = async (clientName: string, deviceId: string, sourceType: SourceType, playerCallback: () => void) => {
+  let localStream: MediaStream;
+  try {
+    if (sourceType == "audio") {
+      localStream = await navigator.mediaDevices.getUserMedia(
+        getConstraint(AUDIO_CONSTRAINTS, deviceId)
+      );
+    } else {
+      localStream = await navigator.mediaDevices.getUserMedia(
+        getConstraint(VIDEO_CONSTRAINTS, deviceId)
+      );
+    }
+
+    localStream.getTracks().forEach((track) => {
+      addOrReplaceTrack(clientName, track, playerCallback);
+    });
+  } catch (error) {
+    console.error("Couldn't get microphone permission:", error);
+  }
+}
+
 export const connectWebrtc = async (
   webrtcChannel: any,
   clientName: string,
   playerCallbacks: { [key: string]: () => void }
 ) => {
-  let localAudioStream: MediaStream | null = null;
-  let localVideoStream: MediaStream | null = null;
   presenterStreams[clientName] = new MediaStream();
 
   const sources = await getSources();
@@ -78,33 +104,11 @@ export const connectWebrtc = async (
     video: sources?.video[0],
   };
 
-  if (defaults.audio) {
-    try {
-      localAudioStream = await navigator.mediaDevices.getUserMedia(
-        getConstraint(AUDIO_CONSTRAINTS, defaults.audio.deviceId)
-      );
-      localAudioStream.getTracks().forEach((track) => {
-        presenterStreams[clientName].addTrack(track);
-      });
-    } catch (error) {
-      console.error("Couldn't get microphone permission:", error);
-    }
-  }
+  if (defaults.audio)
+    await setSourceById(clientName, defaults.audio.deviceId, "audio", playerCallbacks[clientName]);
 
-  if (defaults.video) {
-    try {
-      localVideoStream = await navigator.mediaDevices.getUserMedia(
-        getConstraint(VIDEO_CONSTRAINTS, defaults.video.deviceId)
-      );
-      localVideoStream.getTracks().forEach((track) => {
-        presenterStreams[clientName].addTrack(track);
-      });
-    } catch (error) {
-      console.error("Couldn't get camera permission:", error);
-    }
-  }
-
-  playerCallbacks[clientName]();
+  if (defaults.video)
+    await setSourceById(clientName, defaults.video.deviceId, "video", playerCallbacks[clientName]);
 
   const onError = (error: any) => {
     alert("ERROR " + error);

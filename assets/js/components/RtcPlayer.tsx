@@ -12,17 +12,19 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const connectStreams = () => {
-    if (name in presenterStreams && videoRef.current != null && audioRef.current != null) {
+    if (!(name in presenterStreams)) return;
+
+    if (videoRef.current)
       videoRef.current.srcObject = presenterStreams[name];
+    if (audioRef.current)
       audioRef.current.srcObject = presenterStreams[name];
-    }
   };
   playerCallbacks[name] = connectStreams;
 
   return (
     <div>
       <video width={1000} height={700} autoPlay ref={videoRef} />
-      <audio ref={audioRef} />
+      {isMyself && <audio ref={audioRef} />}
       <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
