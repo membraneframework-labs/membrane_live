@@ -2,7 +2,7 @@ version: "3.10"
 
 services:
   membrane-live-db:
-    container_name: membrane_live_db
+    container_name: postgres
     image: postgres
     environment:
       POSTGRES_USER: swm
@@ -13,19 +13,20 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-  # membrane-live:
-  #   container_name: membrane_live
-  #   build: .
-  #   ports:
-  #     - "4000:4000"
-  #   depends_on:
-  #     - membrane-live-db
-  #   environment:
-  #     PGUSER: swm
-  #     PGPASSWORD: swm123
-  #     PGDATABASE: membrane_live_dev
-  #     PGHOST: membrane-live-db
-  #     PGPORT: 5432
+
+  membrane-live:
+    container_name: membrane_live
+    build: .
+    ports:
+      - "4000:4000"
+    depends_on:
+      - membrane-live-db
+    environment:
+      PGUSER: swm
+      PGPASSWORD: swm123
+      PGDATABASE: membrane_live_dev
+      PGHOST: membrane-live-db
+      PGPORT: 5432
 
 volumes:
   postgres:

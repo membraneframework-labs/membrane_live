@@ -15,16 +15,6 @@ config :membrane_live, MembraneLiveWeb.Endpoint,
   pubsub_server: MembraneLive.PubSub,
   live_view: [signing_salt: "s4HsMuAM"]
 
-config :membrane_live, MembraneLive.Repo,
-  username: System.get_env("PGUSER", "swm"),
-  password: System.get_env("PGPASSWORD", "swm123"),
-  hostname: System.get_env("PGHOST", "localhost"),
-  database: "membrane_live_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10,
-  ssl: false
-
 config :membrane_live, MembraneLive.Mailer, adapter: Swoosh.Adapters.Local
 
 config :membrane_live, hls_output_mount_path: "output"
