@@ -13,7 +13,6 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-
   membrane-live:
     container_name: membrane_live
     build: .
@@ -27,6 +26,11 @@ services:
       PGDATABASE: membrane_live_dev
       PGHOST: membrane-live-db
       PGPORT: 5432
+      VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
+      USE_INTEGRATED_TURN: "true"
+      INTEGRATED_TURN_IP: "${INTEGRATED_TURN_IP:-127.0.0.1}"
+      INTEGRATED_TURN_PORT_RANGE: "50000-65355"
+      INTEGRATED_TCP_TURN_PORT: "49999"
 
 volumes:
   postgres:
