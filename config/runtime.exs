@@ -59,16 +59,27 @@ end
 host = System.get_env("VIRTUAL_HOST", "localhost")
 port = 4000
 
+# config :membrane_live, MembraneLive.Repo,
+#   username: System.get_env("PGUSER", "swm"),
+#   password: System.get_env("PGPASSWORD", "swm123"),
+#   hostname: System.get_env("PGHOST", "localhost"),
+#   database: System.get_env("PGDATABASE", "membrane_live_dev"),
+#   port: System.get_env("PGPORT", "5432"),
+#   stacktrace: true,
+#   show_sensitive_data_on_connection_error: true,
+#   pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
+#   ssl: false
+
+IO.inspect(System.get_env("PGHOST", "localhost"), label: :env)
+
 config :membrane_live, MembraneLive.Repo,
   username: System.get_env("PGUSER", "swm"),
   password: System.get_env("PGPASSWORD", "swm123"),
   hostname: System.get_env("PGHOST", "localhost"),
-  database: System.get_env("PGDATABASE", "membrane_live_dev"),
-  port: System.get_env("PGPORT", "5432"),
+  database: "membrane_live_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
-  ssl: false
+  pool_size: 10
 
 args =
   if protocol == :https do
