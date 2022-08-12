@@ -10,9 +10,13 @@ defmodule MembraneLiveWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :auth do
+    plug(MembraneLiveWeb.Plugs.Auth)
+  end
+
   scope "/", MembraneLiveWeb do
-    # TODO add Plug for checking jwt and g_csrf
     pipe_through(:browser)
+    pipe_through(:auth)
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
@@ -25,6 +29,7 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", LoginController, :index)
     post("/", LoginController, :create)
+    get("/check-token", LoginController, :check)
   end
 
   if Mix.env() in [:dev, :test] do

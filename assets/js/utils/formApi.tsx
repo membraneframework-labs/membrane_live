@@ -14,7 +14,8 @@ export const sendEventForm = (
     .then((response) => {
       setLinks(response.data.webinar_links);
     })
-    .catch(() => {
+    .catch((error) => {
+      console.log(error);
       alert("Something went wrong. Please try again in a moment.");
     });
 };

@@ -5,7 +5,7 @@ defmodule MembraneLive.Tokens do
   Google Token: - decode:   verification and validation
   Custom Token:
     - encode: generation and signing
-    - decode: verification and validation   (#TODO)
+    - decode: verification and validation
   """
   alias MembraneLive.Tokens.CustomToken
   alias MembraneLive.Tokens.GoogleToken
@@ -34,5 +34,10 @@ defmodule MembraneLive.Tokens do
   def custom_encode(user_id) do
     signer = Joken.Signer.create("HS256", @custom_secret)
     CustomToken.generate_and_sign(%{"user_id" => user_id}, signer)
+  end
+
+  def custom_decode(jwt) do
+    signer = Joken.Signer.create("HS256", @custom_secret)
+    CustomToken.verify_and_validate(jwt, signer)
   end
 end

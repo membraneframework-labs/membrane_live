@@ -7,6 +7,8 @@ defmodule MembraneLiveWeb.LoginController do
 
   alias MembraneLive.Tokens
 
+  plug(MembraneLiveWeb.Plugs.Auth when action in [:check])
+
   def index(conn, _params) do
     render(conn, "index.html")
   end
@@ -20,5 +22,9 @@ defmodule MembraneLiveWeb.LoginController do
     conn
     |> put_status(200)
     |> render("token.json", %{token: new_token})
+  end
+
+  def check(conn, _params) do
+    send_resp(conn, 200, "Token OK")
   end
 end
