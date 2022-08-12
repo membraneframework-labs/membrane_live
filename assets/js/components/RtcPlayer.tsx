@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { presenterStreams } from "../utils/rtcUtils";
 
 type RtcPlayerProps = {
@@ -14,12 +14,14 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const connectStreams = () => {
     if (!(name in presenterStreams)) return;
 
-    if (videoRef.current)
-      videoRef.current.srcObject = presenterStreams[name];
-    if (audioRef.current)
-      audioRef.current.srcObject = presenterStreams[name];
+    if (videoRef.current) videoRef.current.srcObject = presenterStreams[name];
+    if (audioRef.current) audioRef.current.srcObject = presenterStreams[name];
   };
   playerCallbacks[name] = connectStreams;
+
+  useEffect(() => {
+    connectStreams();
+  }, []);
 
   return (
     <div>

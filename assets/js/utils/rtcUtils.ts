@@ -9,12 +9,15 @@ export type SourceType = "audio" | "video";
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
 
+export const findTrackByType = (name: string, sourceType: SourceType) => {
+  return presenterStreams[name].getTracks().find((elem) => elem.kind == sourceType);
+};
+
 const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback: () => void) => {
   if (!presenterStreams[name]) presenterStreams[name] = new MediaStream();
-
-  const curTrack = presenterStreams[name].getTracks().find((elem) => elem.kind == track.kind);
+  const curTrack = findTrackByType(name, track.kind as SourceType);
   if (curTrack) {
-    curTrack.stop(); // not sure if that is necessary
+    curTrack.stop();
     presenterStreams[name].removeTrack(curTrack);
   }
   presenterStreams[name].addTrack(track);
@@ -23,6 +26,15 @@ const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback
 
 const removeStream = (name: string) => {
   delete presenterStreams[name];
+};
+
+export const changeTrackIsEnabled = (name: string, sourceType: SourceType) => {
+  const track = findTrackByType(name, sourceType);
+  if (track) track.enabled = !track.enabled;
+};
+
+export const getCurrentDeviceName = (clientName: string, sourceType: SourceType) => {
+  return findTrackByType(clientName, sourceType)?.label;
 };
 
 const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
@@ -70,7 +82,12 @@ export const getSources = async () => {
   }
 };
 
-export const setSourceById = async (clientName: string, deviceId: string, sourceType: SourceType, playerCallback: () => void) => {
+export const setSourceById = async (
+  clientName: string,
+  deviceId: string,
+  sourceType: SourceType,
+  playerCallback: () => void
+) => {
   let localStream: MediaStream;
   try {
     if (sourceType == "audio") {
@@ -89,7 +106,9 @@ export const setSourceById = async (clientName: string, deviceId: string, source
   } catch (error) {
     console.error("Couldn't get microphone permission:", error);
   }
-}
+};
+
+const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 
 export const connectWebrtc = async (
   webrtcChannel: any,
@@ -123,9 +142,9 @@ export const connectWebrtc = async (
         onError("Error while connecting to WebRTC");
       },
       onJoinSuccess: (_peerId, _peersInRoom) => {
-        presenterStreams[clientName]
-          .getTracks()
-          .forEach((track) => webrtc.addTrack(track, presenterStreams[clientName], {}));
+        presenterStreams[clientName].getTracks().forEach((track) => {
+          sourceIds[track.kind] = webrtc.addTrack(track, presenterStreams[clientName], {});
+        });
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
@@ -156,6 +175,21 @@ export const connectWebrtc = async (
   });
 
   return webrtc;
+};
+
+export const changeSource = (
+  webrtc: MembraneWebRTC,
+  clientName: string,
+  deviceId: string,
+  sourceType: SourceType,
+  playerCallback: () => void
+) => {
+  setSourceById(clientName, deviceId, sourceType, playerCallback).then(() => {
+    const newTrack = findTrackByType(clientName, sourceType);
+    if (!webrtc || !newTrack) return;
+    if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
+    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  });
 };
 
 export const leaveWebrtc = (webrtc: MembraneWebRTC, clientName: string, webrtcChannel: any) => {

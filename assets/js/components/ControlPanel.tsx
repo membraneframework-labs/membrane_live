@@ -1,172 +1,157 @@
 import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
 import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
-
-type SourceType = "audio" | "video";
-
-type SourceInfo = {
-  devices: MediaDeviceInfo[];
-  selectedId: string;
-  isActive: boolean;
-};
-
-type Sources = {
-  audio: SourceInfo;
-  video: SourceInfo;
-};
+import {
+  changeSource,
+  changeTrackIsEnabled,
+  findTrackByType,
+  getCurrentDeviceName,
+  getSources,
+  Sources,
+  SourceType,
+} from "../utils/rtcUtils";
 
 type DropdownListProps = {
-  sources: SourceInfo;
+  sources: MediaDeviceInfo[];
+  currentSourceName?: string;
   itemSelectFunc: (id: string) => void;
 };
 
-const DropdownList = ({ sources, itemSelectFunc }: DropdownListProps) => {
-  const devices: MediaDeviceInfo[] = sources.devices;
-  const selectedDeviceId: String = sources.selectedId;
-
-  const getDeviceLabel = (device: MediaDeviceInfo, selectedDeviceId: String) => {
-    return device.deviceId === selectedDeviceId ? <b>{device.label}</b> : device.label;
+const DropdownList = ({ sources, currentSourceName, itemSelectFunc }: DropdownListProps) => {
+  const getDeviceLabel = (source: MediaDeviceInfo, currentSourceName: String | undefined) => {
+    return source.label === currentSourceName ? <b>{source.label}</b> : source.label;
   };
 
-  const menuItems = devices.map((device) => (
-    <MenuItem key={device.deviceId} onClick={() => itemSelectFunc(device.deviceId)}>
-      {getDeviceLabel(device, selectedDeviceId)}
+  const menuItems = sources.map((source) => (
+    <MenuItem key={source.deviceId} onClick={() => itemSelectFunc(source.deviceId)}>
+      {getDeviceLabel(source, currentSourceName)}
     </MenuItem>
   ));
   return <MenuList>{menuItems}</MenuList>;
 };
 
 type DropdownButtonProps = {
-  sources: SourceInfo;
+  sources: MediaDeviceInfo[];
+  currentSourceName?: string;
   mainText: string;
   onSelectSource: (id: string) => void;
 };
 
-const DropdownButton = ({ sources, mainText, onSelectSource }: DropdownButtonProps) => {
+const DropdownButton = ({
+  sources,
+  currentSourceName,
+  mainText,
+  onSelectSource,
+}: DropdownButtonProps) => {
   return (
     <Menu>
       <MenuButton as={Button}>{mainText}</MenuButton>
-      <DropdownList sources={sources} itemSelectFunc={onSelectSource} />
+      <DropdownList
+        sources={sources}
+        currentSourceName={currentSourceName}
+        itemSelectFunc={onSelectSource}
+      />
     </Menu>
   );
 };
 
-type PanelButtonProps = {
-  onClick: () => void;
+type MuteButtonProps = {
   sourceType: SourceType;
   disabled?: boolean;
-  active: boolean;
+  active?: boolean;
+  onClick: () => void;
 };
 
-const PanelButton = ({ onClick, sourceType, disabled, active }: PanelButtonProps) => {
+const MuteButton = ({ sourceType, disabled, active, onClick }: MuteButtonProps) => {
   const icon =
     disabled || !active
-      ? { audio: <Microphone />, video: <Camera /> }
-      : { audio: <MicrophoneDisabled />, video: <CameraDisabled /> };
+      ? { audio: <MicrophoneDisabled />, video: <CameraDisabled /> }
+      : { audio: <Microphone />, video: <Camera /> };
+
   return (
     <Button
-      isDisabled={disabled}
+      isDisabled={false}
       borderRadius="500px"
-      backgroundColor={active ? "red.300" : "white"}
+      backgroundColor={active ? "white" : "red.300"}
       border="1px"
-      borderColor={active ? "red" : "#BFCCF8"}
-      onClick={onClick}
+      borderColor={active ? "#BFCCF8" : "red"}
+      onClick={() => onClick()}
     >
       {icon[sourceType]}
     </Button>
   );
 };
 
-const ControlPanel = () => {
-  const initialSources: Sources = {
-    audio: { devices: [], selectedId: "", isActive: false },
-    video: { devices: [], selectedId: "", isActive: false },
-  };
-  const [sources, setSources] = useState(initialSources);
+const useRerender = () => {
+  const [value, setValue] = useState(0);
+  return () => setValue(value + 1);
+};
 
-  const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
-    return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
-  };
+type ControlPanelProps = {
+  clientName: string;
+  webrtc: MembraneWebRTC;
+  playerCallback: () => void;
+};
 
-  const getSources = async () => {
-    let mediaDevices: MediaDeviceInfo[];
-    try {
-      mediaDevices = await navigator.mediaDevices.enumerateDevices();
-      const audio: SourceInfo = {
-        ...sources.audio,
-        devices: filterDevices(mediaDevices, "audioinput"),
-      };
-      const video: SourceInfo = {
-        ...sources.video,
-        devices: filterDevices(mediaDevices, "videoinput"),
-      };
-      const newSources: Sources = { audio: audio, video: video };
-      setSources(newSources);
-    } catch (err) {
-      console.log("Error during getting the media devices.");
-    }
+const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps) => {
+  const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
+  const rerender = useRerender();
+
+  const updateSources = async () => {
+    const sources = await getSources();
+    setSources(sources!);
   };
 
   useEffect(() => {
-    getSources();
+    updateSources();
   }, []);
 
   useEffect(() => {
-    navigator.mediaDevices.ondevicechange = getSources;
+    navigator.mediaDevices.ondevicechange = updateSources;
 
     return () => {
       navigator.mediaDevices.ondevicechange = null;
     };
   }, [getSources]);
 
-  const changeSelectedSourceHandler = (deviceId: string, sourceType: SourceType) => {
-    const constraint = { [sourceType]: { deviceId } };
-    navigator.mediaDevices
-      .getUserMedia(constraint)
-      .then(() => {
-        const newSourceInfo: SourceInfo = {
-          ...sources[sourceType],
-          selectedId: deviceId,
-          isActive: true,
-        };
-        const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
-        setSources(newSources);
-      })
-      .catch((err) => {
-        alert(err.name + ": " + err.message);
-      });
-  };
-
-  const toggleButton = (sourceType: SourceType) => {
-    const newActiveValue: boolean = !sources[sourceType].isActive;
-    const newSourceInfo: SourceInfo = { ...sources[sourceType], isActive: newActiveValue };
-    const newSources: Sources = { ...sources, [sourceType]: newSourceInfo };
-    setSources(newSources);
-  };
-
   return (
     <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
       <DropdownButton
         mainText="audio source"
+        currentSourceName={getCurrentDeviceName(clientName, "audio")}
         sources={sources.audio}
-        onSelectSource={(deviceId: string) => changeSelectedSourceHandler(deviceId, "audio")}
+        onSelectSource={(deviceId) => {
+          changeSource(webrtc, clientName, deviceId, "audio", playerCallback);
+          rerender();
+        }}
       />
       <DropdownButton
         mainText="video source"
+        currentSourceName={getCurrentDeviceName(clientName, "video")}
         sources={sources.video}
-        onSelectSource={(deviceId: string) => changeSelectedSourceHandler(deviceId, "video")}
+        onSelectSource={(deviceId) => {
+          changeSource(webrtc, clientName, deviceId, "video", playerCallback);
+          rerender();
+        }}
       />
-      <PanelButton
+      <MuteButton
         sourceType="audio"
-        onClick={() => toggleButton("audio")}
-        disabled={!sources.audio.selectedId}
-        active={sources.audio.isActive}
+        disabled={!findTrackByType(clientName, "audio")}
+        active={findTrackByType(clientName, "audio")?.enabled}
+        onClick={() => {
+          changeTrackIsEnabled(clientName, "audio");
+          rerender();
+        }}
       />
-      <PanelButton
+      <MuteButton
         sourceType="video"
-        onClick={() => toggleButton("video")}
-        disabled={!sources.video.selectedId}
-        active={sources.video.isActive}
+        disabled={!findTrackByType(clientName, "video")}
+        active={findTrackByType(clientName, "video")?.enabled}
+        onClick={() => {
+          changeTrackIsEnabled(clientName, "video");
+          rerender();
+        }}
       />
     </Box>
   );
