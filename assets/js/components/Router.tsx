@@ -7,15 +7,13 @@ import { Container } from "@chakra-ui/react";
 
 const Router = () => {
   return (
-    <Container width="100vw" height="100vh">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Form />} />
-          <Route path="/event/*" element={<Event />} />
-          <Route path="/auth/" element={<Auth />} />
-        </Routes>
-      </BrowserRouter>
-    </Container>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Form />} />
+        <Route path="/event/*" element={<Event />} />
+        <Route path="/auth/" element={<Auth />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
