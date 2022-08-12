@@ -18,8 +18,9 @@ const Auth = () => {
     }
   };
 
-  const fetchTokenAndRedirect = (response) => {
-    fetchToken(response);
+  const fetchTokenAndRedirect = async (response) => {
+    await fetchToken(response);
+    console.log(isUserAuthenticated());
     if (isUserAuthenticated()) {
       redirectToHomePage();
     }

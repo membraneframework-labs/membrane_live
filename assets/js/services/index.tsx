@@ -1,9 +1,5 @@
 const axios = require("axios").default;
 
-export const isUserAuthenticated = (): boolean => {
-  return localStorage.getItem("jwt") != null;
-};
-
 axios.interceptors.request.use(
   (config) => {
     const bearer = `Bearer ${localStorage.getItem("jwt")}`;
@@ -21,5 +17,9 @@ axios.interceptors.response.use(undefined, (error) => {
   }
   return Promise.reject(error);
 });
+
+export const isUserAuthenticated =  (): boolean => {
+  return localStorage.getItem("jwt") != null;
+};
 
 export default axios;
