@@ -6,7 +6,7 @@ defmodule MembraneLive.Release do
 
     for repo <- repos() do
       with :ok <- ensure_repo_created(repo),
-           {:ok, _, _} <- Agent Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+           {:ok, _, _} <- Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
       do
         :ok
       else
