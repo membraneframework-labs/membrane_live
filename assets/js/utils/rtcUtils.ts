@@ -177,19 +177,18 @@ export const connectWebrtc = async (
   return webrtc;
 };
 
-export const changeSource = (
+export const changeSource = async (
   webrtc: MembraneWebRTC,
   clientName: string,
   deviceId: string,
   sourceType: SourceType,
   playerCallback: () => void
 ) => {
-  setSourceById(clientName, deviceId, sourceType, playerCallback).then(() => {
-    const newTrack = findTrackByType(clientName, sourceType);
-    if (!webrtc || !newTrack) return;
-    if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
-    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
-  });
+  await setSourceById(clientName, deviceId, sourceType, playerCallback);
+  const newTrack = findTrackByType(clientName, sourceType);
+  if (!webrtc || !newTrack) return;
+  if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
+  else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
 };
 
 export const leaveWebrtc = (webrtc: MembraneWebRTC, clientName: string, webrtcChannel: any) => {

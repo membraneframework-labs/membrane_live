@@ -122,8 +122,9 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
         currentSourceName={getCurrentDeviceName(clientName, "audio")}
         sources={sources.audio}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, "audio", playerCallback);
-          rerender();
+          changeSource(webrtc, clientName, deviceId, "audio", playerCallback).then(() =>
+            rerender()
+          );
         }}
       />
       <DropdownButton
@@ -131,8 +132,9 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
         currentSourceName={getCurrentDeviceName(clientName, "video")}
         sources={sources.video}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, "video", playerCallback);
-          rerender();
+          changeSource(webrtc, clientName, deviceId, "video", playerCallback).then(() =>
+            rerender()
+          );
         }}
       />
       <MuteButton
