@@ -10,7 +10,7 @@ defmodule MembraneLive.Release do
       do
         :ok
       else
-        raise "DB problem"
+        _ -> raise "DB problem"
       end
     end
   end
