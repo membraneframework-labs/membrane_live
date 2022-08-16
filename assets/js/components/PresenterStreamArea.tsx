@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { connectWebrtc, leaveWebrtc } from "../utils/rtcUtils";
+import { connectWebrtc, leaveWebrtc, SourceType } from "../utils/rtcUtils";
 import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
@@ -10,7 +10,7 @@ type PresenterStreamAreaProps = {
   eventChannel: any;
 };
 
-const playerCallbacks: { [key: string]: () => void } = {};
+const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
 const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {

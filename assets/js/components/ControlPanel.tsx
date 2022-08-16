@@ -91,7 +91,7 @@ const useRerender = () => {
 type ControlPanelProps = {
   clientName: string;
   webrtc: MembraneWebRTC;
-  playerCallback: () => void;
+  playerCallback: (sourceType: SourceType) => void;
 };
 
 const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps) => {

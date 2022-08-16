@@ -13,7 +13,11 @@ export const findTrackByType = (name: string, sourceType: SourceType) => {
   return presenterStreams[name].getTracks().find((elem) => elem.kind == sourceType);
 };
 
-const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback: () => void) => {
+const addOrReplaceTrack = (
+  name: string,
+  track: MediaStreamTrack,
+  playerCallback: (sourceType: SourceType) => void
+) => {
   if (!presenterStreams[name]) presenterStreams[name] = new MediaStream();
   const curTrack = findTrackByType(name, track.kind as SourceType);
   if (curTrack) {
@@ -21,7 +25,7 @@ const addOrReplaceTrack = (name: string, track: MediaStreamTrack, playerCallback
     presenterStreams[name].removeTrack(curTrack);
   }
   presenterStreams[name].addTrack(track);
-  playerCallback(); // to attach MediaStream to HTMLVideoElement object in DOM
+  playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
 };
 
 const removeStream = (name: string) => {
@@ -86,7 +90,7 @@ export const setSourceById = async (
   clientName: string,
   deviceId: string,
   sourceType: SourceType,
-  playerCallback: () => void
+  playerCallback: (sourceType: SourceType) => void
 ) => {
   let localStream: MediaStream;
   try {
@@ -113,7 +117,7 @@ const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 export const connectWebrtc = async (
   webrtcChannel: any,
   clientName: string,
-  playerCallbacks: { [key: string]: () => void }
+  playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
 ) => {
   presenterStreams[clientName] = new MediaStream();
 
@@ -182,7 +186,7 @@ export const changeSource = async (
   clientName: string,
   deviceId: string,
   sourceType: SourceType,
-  playerCallback: () => void
+  playerCallback: (sourceType: SourceType) => void
 ) => {
   await setSourceById(clientName, deviceId, sourceType, playerCallback);
   const newTrack = findTrackByType(clientName, sourceType);
