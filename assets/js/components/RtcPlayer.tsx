@@ -9,13 +9,10 @@ type RtcPlayerProps = {
 
 const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const connectStreams = () => {
     if (!(name in presenterStreams)) return;
-
     if (videoRef.current) videoRef.current.srcObject = presenterStreams[name];
-    if (audioRef.current) audioRef.current.srcObject = presenterStreams[name];
   };
   playerCallbacks[name] = connectStreams;
 
@@ -25,8 +22,7 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
 
   return (
     <div>
-      <video width={1000} height={700} autoPlay ref={videoRef} />
-      {isMyself && <audio ref={audioRef} />}
+      <video width={1000} height={700} autoPlay muted={isMyself} ref={videoRef} />
       <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
