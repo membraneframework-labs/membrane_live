@@ -1,4 +1,4 @@
-version: "3.10"
+version: "3"
 
 services:
   membrane-live-db:
@@ -7,12 +7,19 @@ services:
     environment:
       POSTGRES_USER: swm
       POSTGRES_PASSWORD: swm123
-      PGDATA: /data/postgres
-    volumes:
-      - postgres:/data/postgres
+      POSTGRES_DB: membrane_live_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
     ports:
       - "5432:5432"
-    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   membrane-live:
     container_name: membrane_live
     network_mode: "host"
@@ -33,4 +40,4 @@ services:
       INTEGRATED_TCP_TURN_PORT: "49999"
 
 volumes:
-  postgres:
+  pgdata:
