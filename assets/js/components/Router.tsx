@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Form from "../pages/Form";
 import Event from "../pages/Event";
 import Auth from "../pages/Auth";
-import { Container } from "@chakra-ui/react";
 
 const Router = () => {
   return (

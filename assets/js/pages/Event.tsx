@@ -87,7 +87,10 @@ const Event = () => {
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
     if (name && !alreadyJoined) {
-      const channel = socket.channel(`event:${eventInfo.link}`, { name: name });
+      const channel = socket.channel(`event:${eventInfo.link}`, {
+        name: name,
+        isModerator: eventInfo.isModerator,
+      });
       createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
   }, [name, eventChannel]);

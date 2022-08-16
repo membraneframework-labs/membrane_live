@@ -1,22 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {
-  SimpleGrid,
-  Box,
-  Flex,
-  Heading,
-  Spacer,
-  Avatar,
-  Menu,
-  IconButton,
-  MenuButton,
-  MenuList,
-  MenuItem,
-} from "@chakra-ui/react";
+import { Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { syncEventChannel } from "../utils/channelUtils";
+import "../../css/participants.css";
+import { AiOutlineMore } from "react-icons/ai";
+import userIcon from "../../images/user.svg";
+import starIcon from "../../images/star.svg";
+import crownIcon from "../../images/crown.svg";
 
 export type Participant = {
   name: string;
   isPresenter: boolean;
+  isModerator: boolean;
 };
 
 type ModeratorMenuProps = {
@@ -31,6 +25,7 @@ type ParticipantProps = {
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
+  moderatorMode: boolean;
   eventChannel: any;
 };
 
@@ -53,13 +48,9 @@ const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorM
 
   return (
     <Menu>
-      <MenuButton
-        as={IconButton}
-        aroa-label="Options"
-        icon={"Menu Icon"}
-        variant="outline"
-        backgroundColor="red"
-      />
+      <MenuButton ml={"auto"} area-label="Options">
+        <AiOutlineMore />
+      </MenuButton>
       <MenuList>
         <MenuItem
           onClick={handleClick}
@@ -79,30 +70,32 @@ const Participant = ({
   name,
   isModerator,
   isPresenter,
+  moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
+  const iconLink = isModerator ? crownIcon : isPresenter ? starIcon : userIcon;
   return (
-    <Flex width="15vw" alignItems="center" gap="1">
-      <Avatar name="Dan Abrahmov" src="https://bit.ly/dan-abramov" />
-      <Box p="2">
-        <Heading size="md">{name}</Heading>
-      </Box>
-      {isPresenter && <b>Pres</b>}
-      <Spacer />
-      {isModerator ? (
+    <div className="Participant">
+      <img src={iconLink} />
+      <p className="ParticipantText">
+        {" "}
+        {name} {isPresenter && " (Presenter)"}
+      </p>
+      {moderatorMode && (
         <ModeratorMenu
           username={username}
           eventChannel={eventChannel}
           isPresenter={isPresenter}
           name={name}
         />
-      ) : null}
-    </Flex>
+      )}
+    </div>
   );
 };
 
 const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [listMode, setListMode] = useState<boolean>(true);
 
   useEffect(() => {
     syncEventChannel(eventChannel, setParticipants);
@@ -115,19 +108,34 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
         username={username}
         key={participant.name}
         name={participant.name}
-        isModerator={isModerator}
+        isModerator={participant.isModerator}
         isPresenter={participant.isPresenter}
+        moderatorMode={isModerator}
         eventChannel={eventChannel}
       />
     )
   );
 
   return (
-    <Box overflowY="auto" maxHeight="50vh">
-      <SimpleGrid columns={1} spacing={5}>
-        {parts}
-      </SimpleGrid>
-    </Box>
+    <>
+      <div className="ParticipantsButtons">
+        <button
+          className={`ParticipantsButton ${!listMode && "Clicked"}`}
+          onClick={() => setListMode(false)}
+          name="chat"
+        >
+          Group Chat
+        </button>
+        <button
+          className={`ParticipantsButton ${listMode && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode(true)}
+        >
+          Participants
+        </button>
+      </div>
+      {listMode && <div className="ParticipantsList">{parts}</div>}
+    </>
   );
 };
 

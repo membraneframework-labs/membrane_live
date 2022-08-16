@@ -14,7 +14,7 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
 
   @impl true
-  def join("event:" <> id, %{"name" => name}, socket) do
+  def join("event:" <> id, %{"name" => name, "isModerator" => is_moderator}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
       false ->
         {:error, %{reason: "This event doesn't exists."}}
@@ -24,7 +24,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
         case viewer_data do
           [] ->
-            Presence.track(socket, name, %{})
+            Presence.track(socket, name, %{is_moderator: is_moderator, is_presenter: false})
             create_event_stream(id, socket)
 
           _viewer_exists ->
@@ -104,7 +104,7 @@ defmodule MembraneLiveWeb.EventChannel do
   # (socket parameter in function below)
   def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
     {:ok, _ref} =
-      Presence.update(socket, presenter, fn map -> Map.put(map, "is_presenter", false) end)
+      Presence.update(socket, presenter, fn map -> Map.put(map, :is_presenter, false) end)
 
     {:noreply, socket}
   end
@@ -113,7 +113,7 @@ defmodule MembraneLiveWeb.EventChannel do
     props = Presence.get_by_key(socket, List.last(String.split(presenter_topic, ":")))
 
     case props do
-      %{metas: [%{"is_presenter" => true}]} ->
+      %{metas: [%{is_presenter: true}]} ->
         MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
 
       [] ->
@@ -142,7 +142,7 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, socket} =
       if answer == "accept" do
         {:ok, _ref} =
-          Presence.update(socket, name, fn map -> Map.put(map, "is_presenter", true) end)
+          Presence.update(socket, name, fn map -> Map.put(map, :is_presenter, true) end)
 
         join_event_stream(socket)
       else
