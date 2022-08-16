@@ -10,7 +10,7 @@ services:
       POSTGRES_DB: membrane_live_dev
       PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      test: [ "CMD", "pg_isready", "-q", "-d", "membrane_live_dev", "-U", "swm" ]
       timeout: 45s
       interval: 10s
       retries: 10
