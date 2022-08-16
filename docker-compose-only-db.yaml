@@ -1,0 +1,18 @@
+version: "3.10"
+
+services:
+  membrane-live-db:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: swm
+      POSTGRES_PASSWORD: swm123
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres:

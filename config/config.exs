@@ -1,25 +1,6 @@
 import Config
 
-config :membrane_live,
-  ecto_repos: [MembraneLive.Repo],
-  migration_primary_key: [name: :uuid, type: :binary_id]
-
-config :membrane_live, MembraneLiveWeb.Endpoint,
-  url: [host: "localhost"],
-  render_errors: [
-    view: MembraneLiveWeb.ErrorView,
-    format: "json",
-    accepts: ~w(html json),
-    layout: false
-  ],
-  pubsub_server: MembraneLive.PubSub,
-  live_view: [signing_salt: "s4HsMuAM"]
-
-config :membrane_live, MembraneLive.Mailer, adapter: Swoosh.Adapters.Local
-
-config :membrane_live, hls_output_mount_path: "output"
-
-config :swoosh, :api_client, false
+config :phoenix, :json_library, Jason
 
 config :esbuild,
   version: "0.14.29",
@@ -30,12 +11,18 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
+config :membrane_live, MembraneLiveWeb.Endpoint, pubsub_server: MembraneLive.PubSub
+
 config :logger, level: :error
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :phoenix, :json_library, Jason
-
 import_config "#{config_env()}.exs"
+
+config :membrane_live,
+  ecto_repos: [MembraneLive.Repo],
+  migration_primary_key: [name: :uuid, type: :binary_id]
+
+config :membrane_live, hls_output_mount_path: "output"
