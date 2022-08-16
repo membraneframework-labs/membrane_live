@@ -78,6 +78,13 @@ RUN apt-get update \
 
 WORKDIR /app
 
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN chmod +x docker-entrypoint.sh
+
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
+
+
 # RUN chown nobody:nobody /app
 
 # USER nobody:nobody
