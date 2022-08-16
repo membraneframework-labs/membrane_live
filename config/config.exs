@@ -21,6 +21,8 @@ config :membrane_live, hls_output_mount_path: "output", custom_secret: "secret"
 
 config :swoosh, :api_client, false
 
+config :phoenix, :json_library, Jason
+
 config :esbuild,
   version: "0.14.29",
   default: [
@@ -30,12 +32,18 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
+config :membrane_live, MembraneLiveWeb.Endpoint, pubsub_server: MembraneLive.PubSub
+
 config :logger, level: :error
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :phoenix, :json_library, Jason
-
 import_config "#{config_env()}.exs"
+
+config :membrane_live,
+  ecto_repos: [MembraneLive.Repo],
+  migration_primary_key: [name: :uuid, type: :binary_id]
+
+config :membrane_live, hls_output_mount_path: "output"
