@@ -42,9 +42,26 @@ defmodule ConfigParser do
   end
 end
 
-if System.get_env("PHX_SERVER") do
-  config :membrane_live, MembraneLiveWeb.Endpoint, server: true
-end
+config :membrane_live,
+  integrated_turn_ip:
+    System.get_env("INTEGRATED_TURN_IP", "127.0.0.1") |> ConfigParser.parse_integrated_turn_ip(),
+  integrated_turn_port_range:
+    System.get_env("INTEGRATED_TURN_PORT_RANGE", "50000-59999")
+    |> ConfigParser.parse_integrated_turn_port_range(),
+  integrated_tcp_turn_port:
+    System.get_env("INTEGRATED_TCP_TURN_PORT")
+    |> ConfigParser.parse_port_number("INTEGRATED_TCP_TURN_PORT"),
+  integrated_tls_turn_port:
+    System.get_env("INTEGRATED_TLS_TURN_PORT")
+    |> ConfigParser.parse_port_number("INTEGRATED_TLS_TURN_PORT"),
+  integrated_turn_pkey: System.get_env("INTEGRATED_TURN_PKEY"),
+  integrated_turn_cert: System.get_env("INTEGRATED_TURN_CERT"),
+  integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
+  client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com"
+
+# if System.get_env("PHX_SERVER") do
+#   config :membrane_live, MembraneLiveWeb.Endpoint, server: true
+# end
 
 protocol = if System.get_env("USE_TLS") == "true", do: :https, else: :http
 
@@ -58,19 +75,6 @@ end
 
 host = System.get_env("VIRTUAL_HOST", "localhost")
 port = 4000
-
-# config :membrane_live, MembraneLive.Repo,
-#   username: System.get_env("PGUSER", "swm"),
-#   password: System.get_env("PGPASSWORD", "swm123"),
-#   hostname: System.get_env("PGHOST", "localhost"),
-#   database: System.get_env("PGDATABASE", "membrane_live_dev"),
-#   port: System.get_env("PGPORT", "5432"),
-#   stacktrace: true,
-#   show_sensitive_data_on_connection_error: true,
-#   pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
-#   ssl: false
-
-IO.inspect(System.get_env("PGHOST", "localhost"), label: :env)
 
 config :membrane_live, MembraneLive.Repo,
   username: System.get_env("PGUSER", "swm"),
@@ -93,37 +97,15 @@ args =
   end
   |> Keyword.merge(otp_app: :membrane_live, port: port)
 
-config :membrane_live, VideoRoomWeb.Endpoint, [
+endpoint_config = [
   {:url, [host: host]},
   {protocol, args}
 ]
 
-config :membrane_live,
-  integrated_turn_ip:
-    System.get_env("INTEGRATED_TURN_IP", "127.0.0.1") |> ConfigParser.parse_integrated_turn_ip(),
-  integrated_turn_port_range:
-    System.get_env("INTEGRATED_TURN_PORT_RANGE", "50000-59999")
-    |> ConfigParser.parse_integrated_turn_port_range(),
-  integrated_tcp_turn_port:
-    System.get_env("INTEGRATED_TCP_TURN_PORT")
-    |> ConfigParser.parse_port_number("INTEGRATED_TCP_TURN_PORT"),
-  integrated_tls_turn_port:
-    System.get_env("INTEGRATED_TLS_TURN_PORT")
-    |> ConfigParser.parse_port_number("INTEGRATED_TLS_TURN_PORT"),
-  integrated_turn_pkey: System.get_env("INTEGRATED_TURN_PKEY"),
-  integrated_turn_cert: System.get_env("INTEGRATED_TURN_CERT"),
-  integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
-  client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com"
-
-protocol = if System.get_env("USE_TLS") == "true", do: :https, else: :http
-
-get_env = fn env, default ->
-  if config_env() == :prod do
-    System.fetch_env!(env)
-  else
-    System.get_env(env, default)
-  end
-end
+config :membrane_live, MembraneLiveWeb.Endpoint, [
+  {:url, [host: host]},
+  {protocol, args}
+]
 
 otel_state = :purge
 
@@ -152,7 +134,7 @@ exporter =
       {:opentelemetry_zipkin,
        %{
          address: ["http://localhost:9411/api/v2/spans"],
-         local_endpoint: %{service_name: "VideoRoom"}
+         local_endpoint: %{service_name: "Membrane Live"}
        }}
 
     _ ->

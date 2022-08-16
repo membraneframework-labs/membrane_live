@@ -15,16 +15,16 @@ services:
     restart: unless-stopped
   membrane-live:
     container_name: membrane_live
+    network_mode: "host"
     build: .
-    ports:
-      - "4000:4000"
     depends_on:
       - membrane-live-db
     environment:
       PGUSER: swm
       PGPASSWORD: swm123
       PGDATABASE: membrane_live_dev
-      PGHOST: membrane-live-db
+      # PGHOST: membrane-live-db
+      PGHOST: localhost
       PGPORT: 5432
       VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
       USE_INTEGRATED_TURN: "true"
