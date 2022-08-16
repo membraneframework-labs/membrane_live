@@ -71,7 +71,7 @@ const MuteButton = ({ sourceType, disabled, active, onClick }: MuteButtonProps) 
 
   return (
     <Button
-      isDisabled={false}
+      isDisabled={disabled}
       borderRadius="500px"
       backgroundColor={active ? "white" : "red.300"}
       border="1px"
@@ -115,46 +115,41 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
     };
   }, [getSources]);
 
+  const getDropdownButton = (sourceType: SourceType) => {
+    return (
+      <DropdownButton
+        mainText={`${sourceType} source`}
+        currentSourceName={getCurrentDeviceName(clientName, sourceType)}
+        sources={sources[sourceType]}
+        onSelectSource={(deviceId) => {
+          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() =>
+            rerender()
+          );
+        }}
+      />
+    );
+  };
+
+  const getMuteButton = (sourceType: SourceType) => {
+    return (
+      <MuteButton
+        sourceType={sourceType}
+        disabled={!findTrackByType(clientName, sourceType)}
+        active={findTrackByType(clientName, sourceType)?.enabled}
+        onClick={() => {
+          changeTrackIsEnabled(clientName, sourceType);
+          rerender();
+        }}
+      />
+    );
+  };
+
   return (
     <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
-      <DropdownButton
-        mainText="audio source"
-        currentSourceName={getCurrentDeviceName(clientName, "audio")}
-        sources={sources.audio}
-        onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, "audio", playerCallback).then(() =>
-            rerender()
-          );
-        }}
-      />
-      <DropdownButton
-        mainText="video source"
-        currentSourceName={getCurrentDeviceName(clientName, "video")}
-        sources={sources.video}
-        onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, "video", playerCallback).then(() =>
-            rerender()
-          );
-        }}
-      />
-      <MuteButton
-        sourceType="audio"
-        disabled={!findTrackByType(clientName, "audio")}
-        active={findTrackByType(clientName, "audio")?.enabled}
-        onClick={() => {
-          changeTrackIsEnabled(clientName, "audio");
-          rerender();
-        }}
-      />
-      <MuteButton
-        sourceType="video"
-        disabled={!findTrackByType(clientName, "video")}
-        active={findTrackByType(clientName, "video")?.enabled}
-        onClick={() => {
-          changeTrackIsEnabled(clientName, "video");
-          rerender();
-        }}
-      />
+      {getDropdownButton("audio")}
+      {getDropdownButton("video")}
+      {getMuteButton("audio")}
+      {getMuteButton("video")}
     </Box>
   );
 };

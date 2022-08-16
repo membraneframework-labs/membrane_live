@@ -53,14 +53,11 @@ const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
   const newConstraint: MediaStreamConstraints = { audio: {}, video: {} };
-  let type: SourceType;
-  if (!constraint.audio) {
-    newConstraint.audio = false;
-    type = "video";
-  } else {
-    newConstraint.video = false;
-    type = "audio";
-  }
+  const type: SourceType = !constraint.audio ? "video" : "audio";
+
+  if (!constraint.audio) newConstraint.audio = false;
+  else newConstraint.video = false;
+
   const elem = constraint[type] === true ? {} : constraint[type];
   elem!["deviceId"] = { exact: deviceId };
   newConstraint[type] = elem;
@@ -94,15 +91,8 @@ export const setSourceById = async (
 ) => {
   let localStream: MediaStream;
   try {
-    if (sourceType == "audio") {
-      localStream = await navigator.mediaDevices.getUserMedia(
-        getConstraint(AUDIO_CONSTRAINTS, deviceId)
-      );
-    } else {
-      localStream = await navigator.mediaDevices.getUserMedia(
-        getConstraint(VIDEO_CONSTRAINTS, deviceId)
-      );
-    }
+    const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
+    localStream = await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
 
     localStream.getTracks().forEach((track) => {
       addOrReplaceTrack(clientName, track, playerCallback);
