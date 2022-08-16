@@ -19,7 +19,10 @@
   height: 708px;
   border-radius: 24px;
 }
+
 .Participants {
+  display: grid;
+  grid-template-rows: 10% 90%;
   background-color: #f5f7fe;
   margin: 10px;
   border-radius: 24px;
@@ -29,5 +32,6 @@
 
 .MainGrid {
   display: grid;
-  grid-template-columns: 67% 33%;
+  grid-template-columns: 75% 25%;
+  justify-items: stretch;
 }

@@ -32,11 +32,12 @@ export const syncEventChannel = (
     const updateStates = () => {
       const parts: any[] = [];
       presence.list((name: string, metas: any) => {
-        let isPresenter = false;
-        for (const item of metas.metas) {
-          if (item.is_presenter) isPresenter = true;
-        }
-        parts.push({ name: name, isPresenter: isPresenter });
+        const participant = metas.metas[0];
+        parts.push({
+          name: name,
+          isPresenter: participant.is_presenter,
+          isModerator: participant.is_moderator,
+        });
       });
       setParticipants(parts);
     };

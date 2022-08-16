@@ -20,7 +20,8 @@ defmodule MembraneLiveWeb.EventChannelTest do
       MembraneLiveWeb.EventSocket
       |> socket("event_id", %{})
       |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-        name: @user
+        name: @user,
+        isModerator: false
       })
 
     %{uuid: uuid, pub_socket: pub_socket}
@@ -32,7 +33,8 @@ defmodule MembraneLiveWeb.EventChannelTest do
         MembraneLiveWeb.EventSocket
         |> socket("event_id", %{})
         |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:invalid_event_id", %{
-          name: @user2
+          name: @user2,
+          isModerator: false
         })
 
       assert return_value == {:error, %{reason: "This link is wrong."}}
@@ -50,10 +52,16 @@ defmodule MembraneLiveWeb.EventChannelTest do
       socket = MembraneLiveWeb.EventSocket |> socket("event_id", %{})
 
       {:ok, _reply, socket} =
-        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: @user2})
+        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
+          name: @user2,
+          isModerator: false
+        })
 
       return_value =
-        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{name: @user2})
+        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
+          name: @user2,
+          isModerator: false
+        })
 
       assert return_value == {:error, %{reason: "Viewer with this name already exists."}}
     end
@@ -63,7 +71,8 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
       {:ok, _reply, socket1} =
         subscribe_and_join(socket1, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-          name: @user2
+          name: @user2,
+          isModerator: false
         })
 
       pres = Presence.list("event:#{uuid}")
@@ -106,7 +115,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
       add_presenter(pub_socket, uuid, "accept")
 
       assert_broadcast("presence_diff", %{
-        joins: %{"#{@user}" => %{metas: [%{"is_presenter" => true}]}}
+        joins: %{"#{@user}" => %{metas: [%{is_presenter: true}]}}
       })
 
       # removing: see comment in lib/membrane_live_web/channels/event_channel.ex
@@ -116,7 +125,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
       push(pub_socket, "presenter_remove", %{"presenter" => "#{@user}"})
 
       assert_broadcast("presence_diff", %{
-        joins: %{"#{@user}" => %{metas: [%{"is_presenter" => false}]}}
+        joins: %{"#{@user}" => %{metas: [%{is_presenter: false}]}}
       })
     end
 
