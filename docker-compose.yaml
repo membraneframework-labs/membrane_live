@@ -30,7 +30,6 @@ services:
       PGUSER: swm
       PGPASSWORD: swm123
       PGDATABASE: membrane_live_dev
-      # PGHOST: membrane-live-db
       PGHOST: localhost
       PGPORT: 5432
       VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
