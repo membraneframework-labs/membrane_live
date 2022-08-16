@@ -1,9 +1,13 @@
 .Header {
-  background-color: #f5f7fe;
+  background-color: #ffffff;
   margin: 10px;
   height: 56px;
+  width: 100%;
   border-radius: 0px;
   padding: 0px;
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
 }
 .Mode {
   background-color: #f5f7fe;

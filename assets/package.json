@@ -15,7 +15,8 @@
     "react-hls-player": "^3.0.7",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.3.0",
-    "react-swm-icon-pack": "^1.0.14"
+    "react-swm-icon-pack": "^1.0.14",
+    "react-tooltip": "^4.2.21"
   },
   "devDependencies": {
     "@types/react": "^18.0.15",
