@@ -52,16 +52,9 @@ const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
 };
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
-  const newConstraint: MediaStreamConstraints = { audio: {}, video: {} };
+  const newConstraint: MediaStreamConstraints = { audio: false, video: false };
   const type: SourceType = !constraint.audio ? "video" : "audio";
-
-  if (!constraint.audio) newConstraint.audio = false;
-  else newConstraint.video = false;
-
-  const elem = constraint[type] === true ? {} : constraint[type];
-  elem!["deviceId"] = { exact: deviceId };
-  newConstraint[type] = elem;
-
+  newConstraint[type] = { ...(constraint[type] as Object), deviceId: { exact: deviceId } };
   return newConstraint;
 };
 
