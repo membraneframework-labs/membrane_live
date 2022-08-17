@@ -4,7 +4,7 @@ defmodule MembraneLive.Repo.Migrations.ChangingUuidToId do
   def change do
     alter table(:webinars) do
       remove(:id)
-      add(:uuid, :binary_id)
+      add(:uuid, :binary_id, primary_key: true)
     end
   end
 end
