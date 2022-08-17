@@ -61,11 +61,7 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-        env: 
-          POSTGRES_USER: membrane_postgres
-          POSTGRES_PASSWORD: membrane_W0rks!
-          POSTGRES_DB: membrane_live_db
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG \nPOSTGRES_USER=$POSTGRES_USER \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nPOSTGRES_DB=$POSTGRES_DB" > .env
+        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG" > .env
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy
@@ -74,6 +70,5 @@ jobs:
           remote_docker_host: ${{ secrets.STAGING_HOST }}
           ssh_private_key: ${{ secrets.SSH_PRIV_KEY }}
           ssh_public_key: ${{ secrets.SSH_KNOWN_HOSTS}}
-          stack_file_name: docker-compose.yml
+          stack_file_name: docker-compose-deploy.yml
           args: -p production --env-file .env up -d --remove-orphans
-
