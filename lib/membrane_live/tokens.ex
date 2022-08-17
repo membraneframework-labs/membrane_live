@@ -11,7 +11,6 @@ defmodule MembraneLive.Tokens do
   alias MembraneLive.Tokens.GoogleToken
 
   @google_pems_url "https://www.googleapis.com/oauth2/v1/certs"
-  @custom_secret "secret"
 
   def google_decode(jwt) do
     GoogleToken.verify_and_validate(jwt, get_signer(jwt))
@@ -32,12 +31,15 @@ defmodule MembraneLive.Tokens do
   end
 
   def custom_encode(user_id) do
-    signer = Joken.Signer.create("HS256", @custom_secret)
-    CustomToken.generate_and_sign(%{"user_id" => user_id}, signer)
+    CustomToken.generate_and_sign(%{"user_id" => user_id}, get_signer())
   end
 
   def custom_decode(jwt) do
-    signer = Joken.Signer.create("HS256", @custom_secret)
-    CustomToken.verify_and_validate(jwt, signer)
+    CustomToken.verify_and_validate(jwt, get_signer())
+  end
+
+  defp get_signer() do
+    custom_secret = Application.fetch_env!(:membrane_live, :hls_output_mount_path)
+    Joken.Signer.create("HS256", custom_secret)
   end
 end
