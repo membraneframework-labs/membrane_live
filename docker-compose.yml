@@ -5,12 +5,12 @@ services:
     container_name: postgres
     image: postgres
     environment:
-      POSTGRES_USER: swm
-      POSTGRES_PASSWORD: swm123
-      POSTGRES_DB: membrane_live_dev
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
       PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "membrane_live_dev", "-U", "swm" ]
+      test: [ "CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}" ]
       timeout: 45s
       interval: 10s
       retries: 10
@@ -27,9 +27,9 @@ services:
     depends_on:
       - membrane-live-db
     environment:
-      PGUSER: swm
-      PGPASSWORD: swm123
-      PGDATABASE: membrane_live_dev
+      PGUSER: "${POSTGRES_USER}"
+      PGPASSWORD: "${POSTGRES_PASSWORD}"
+      PGDATABASE: "${POSTGRES_DB}"
       PGHOST: localhost
       PGPORT: 5432
       VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
