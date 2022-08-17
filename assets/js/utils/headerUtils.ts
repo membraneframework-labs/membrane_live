@@ -1,10 +1,12 @@
 import type { EventInfo } from "../components/Header";
 import { Presence } from "phoenix";
 import { getChannelId } from "../utils/channelUtils";
-export const initEventInfo = () => {
+import axios from "../services/index";
+
+export const initEventInfo = (): EventInfo => {
   return {
-    link: window.location.pathname.split("/")[2],
-    title: "Mock",
+    link: "",
+    title: "",
     description: "",
     start_date: "",
     presenters: [],
@@ -12,24 +14,14 @@ export const initEventInfo = () => {
 };
 
 export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>) => {
-  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
-  const link = window.location.href.split("event")[0] + "webinars/";
-  fetch(link + getChannelId(), {
-    method: "get",
-    headers: { "X-CSRF-TOKEN": csrfToken ? csrfToken : "" },
-  })
+  axios
+    .get("/resources/webinars/" + getChannelId())
     .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return Promise.reject(response.status);
+      const start_date = response.data.webinar.start_date.replace("T", " ");
+      setEventInfo({ ...response.data.webinar, start_date: start_date });
     })
-    .then((data) => {
-      const start_date = data.webinar.start_date.replace("T", " ");
-      setEventInfo({ ...data.webinar, start_date: start_date });
-    })
-    .catch(() => {
-      alert("Couldn't get event information. Please reload this page.");
+    .catch((error) => {
+      console.log(error);
     });
 };
 
@@ -38,11 +30,7 @@ export const syncParticipantsNumber = (eventChannel, setParticipantsNumber) => {
     const presence = new Presence(eventChannel);
 
     const updateParticipantsNumber = () => {
-      let counter = 0;
-      presence.list((name: string, metas: any) => {
-        counter += 1;
-      });
-      setParticipantsNumber(counter);
+      setParticipantsNumber(presence.list().length);
     };
 
     presence.onSync(() => {

@@ -107,7 +107,9 @@ export const syncPresenters = (
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
 
 const compareParticipants = (x: Participant, y: Participant): number => {
-  if (x.isModerator != y.isModerator) return x.isModerator ? -1 : 1;
-  if (x.isPresenter != y.isPresenter) return x.isPresenter ? -1 : 1;
-  return 0;
+  return participantToNumber(x) - participantToNumber(y);
+};
+
+const participantToNumber = (participant: Participant): number => {
+  return participant.isModerator ? 1 : participant.isPresenter ? 2 : 3;
 };

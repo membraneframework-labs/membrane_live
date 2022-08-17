@@ -15,10 +15,9 @@ defmodule MembraneLiveWeb.FallbackController do
     |> render("error.json", changeset: changeset)
   end
 
-  # # This clause is an example of how to handle resources that cannot be found.
-  def call(conn, %{error: :not_found} = params) do
+  def call(conn, %{error: error_atom} = params) do
     conn
-    |> put_status(:not_found)
+    |> put_status(error_atom)
     |> put_view(MembraneLiveWeb.ErrorView)
     |> render("error.json", params)
   end

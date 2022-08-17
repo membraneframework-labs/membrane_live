@@ -3,8 +3,11 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
 
   import MembraneLive.WebinarsFixtures
 
+  alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
+
+  @dummy_uuid "5a2771ef-3cf2-4d86-b125-fd366e04bc29"
 
   @create_attrs %{
     "description" => "some description",
@@ -29,7 +32,12 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   @moderator_link_suffix "/moderator"
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("authorization", get_valid_bearer())
+
+    {:ok, conn: conn}
   end
 
   describe "index" do
@@ -116,5 +124,11 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
 
   defp get_uuid_from_link(viewer_link) do
     String.replace_prefix(viewer_link, "/event/", "")
+  end
+
+  defp get_valid_bearer() do
+    with {:ok, valid_token, _claims} <- Tokens.custom_encode(@dummy_uuid) do
+      "Bearer #{valid_token}"
+    end
   end
 end

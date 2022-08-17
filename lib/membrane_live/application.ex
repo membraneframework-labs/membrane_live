@@ -6,7 +6,6 @@ defmodule MembraneLive.Application do
   def start(_type, _args) do
     children = [
       MembraneLive.Repo,
-      MembraneLiveWeb.Telemetry,
       {Phoenix.PubSub, name: MembraneLive.PubSub},
       MembraneLiveWeb.Presence,
       MembraneLiveWeb.Endpoint

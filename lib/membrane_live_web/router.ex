@@ -10,14 +10,23 @@ defmodule MembraneLiveWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  pipeline :auth do
+    plug(MembraneLiveWeb.Plugs.Auth)
+  end
+
   scope "/", MembraneLiveWeb do
-    # TODO add Plug for checking jwt and g_csrf
     pipe_through(:browser)
 
-    resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     get("/", PageController, :index)
-    get("/video/:prefix/:filename", HLSController, :index)
     get("/event/*page", PageController, :index)
+    get("/video/:prefix/:filename", HLSController, :index)
+  end
+
+  scope "/resources", MembraneLiveWeb do
+    pipe_through(:browser)
+    pipe_through(:auth)
+
+    resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
     resources("/users", UserController, except: [:edit, :new], param: "uuid")
   end
 
@@ -26,15 +35,5 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", LoginController, :index)
     post("/", LoginController, :create)
-  end
-
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
-
-    scope "/" do
-      pipe_through(:browser)
-
-      live_dashboard("/dashboard", metrics: MembraneLiveWeb.Telemetry)
-    end
   end
 end

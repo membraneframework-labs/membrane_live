@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
 .ArrowIcon {
   display: inline-block;
   margin: 10px;
@@ -6,7 +8,7 @@
 .Title {
   width: 750px;
   height: 34px;
-  font-family: "Roc Grotesk";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 500;
   font-size: 24px;
@@ -43,7 +45,7 @@
   flex: none;
   order: 1;
   flex-grow: 0;
-  font-family: "Aktiv Grotesk";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -99,7 +101,7 @@
 .UserName {
   width: 148px;
   height: 36px;
-  font-family: "Aktiv Grotesk";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
   font-size: 20px;

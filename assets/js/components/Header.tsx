@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { initEventInfo, getEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
+import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
 import "../../css/header.css";
 import arrowIcon from "../../images/arrow.svg";
 import copyIcon from "../../images/copy.svg";
