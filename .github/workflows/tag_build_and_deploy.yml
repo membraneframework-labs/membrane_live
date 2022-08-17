@@ -62,9 +62,9 @@ jobs:
       - name: Prepare .env file for the deployment
         id: variables_population
         env: 
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: membrane_postgres
+          POSTGRES_PASSWORD: membrane_W0rks!
+          POSTGRES_DB: membrane_live_db
         run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG \nPOSTGRES_USER=$POSTGRES_USER \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nPOSTGRES_DB=$POSTGRES_DB" > .env
 
       - name: Deploy docker compose to a pre-configured server
