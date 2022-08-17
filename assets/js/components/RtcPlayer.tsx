@@ -1,32 +1,34 @@
 import React, { useEffect, useRef } from "react";
+import { presenterStreams, SourceType } from "../utils/rtcUtils";
 
 type RtcPlayerProps = {
   isMyself: boolean;
   name: string;
-  presenterStreams: { [key: string]: MediaStream };
-  streamsAvailable: { [key: string]: boolean };
+  playerCallbacks: { [key: string]: (sourceType: SourceType) => void };
 };
 
-const RtcPlayer = ({ isMyself, name, presenterStreams, streamsAvailable }: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  useEffect(() => {
-    if (
-      name in presenterStreams &&
-      streamsAvailable[name] &&
-      videoRef.current != null &&
-      audioRef.current != null
-    ) {
+  const connectStreams = (sourceType: SourceType) => {
+    if (!(name in presenterStreams)) return;
+    if (videoRef.current && sourceType == "video")
       videoRef.current.srcObject = presenterStreams[name];
+    if (audioRef.current && sourceType == "audio")
       audioRef.current.srcObject = presenterStreams[name];
-    }
-  }, [streamsAvailable]);
+  };
+  playerCallbacks[name] = connectStreams;
+
+  useEffect(() => {
+    connectStreams("audio");
+    connectStreams("video");
+  }, []);
 
   return (
     <div>
-      <video width={1000} height={700} autoPlay ref={videoRef} />
-      <audio ref={audioRef} />
+      <video width={1000} height={700} autoPlay muted={true} ref={videoRef} />
+      {!isMyself && <audio autoPlay ref={audioRef} />}
       <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
