@@ -17,7 +17,8 @@ defmodule MembraneLive.WebinarsFixtures do
         "start_date" => ~N[2022-07-17 10:20:00],
         "title" => "some title"
       })
-      |> MembraneLive.Webinars.create_webinar("mock_id")  # TODO needs to be replaced with real id in DB
+      # TODO needs to be replaced with real id in DB
+      |> MembraneLive.Webinars.create_webinar("mock_id")
 
     webinar
   end

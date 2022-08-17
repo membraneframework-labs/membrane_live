@@ -5,14 +5,16 @@ import type { NamePopupState, PresenterPopupState } from "../pages/Event";
 export const createEventChannel = (
   eventChannel: any,
   namePopupState: NamePopupState,
+  setIsModerator: React.Dispatch<React.SetStateAction<boolean>>,
   setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   eventChannel
     .join()
-    .receive("ok", () => {
+    .receive("ok", (resp: { is_moderator: boolean }) => {
       setPopupState({ isOpen: false, channelConnErr: "" });
       setEventChannel(eventChannel);
+      setIsModerator(resp.is_moderator);
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();

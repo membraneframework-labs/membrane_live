@@ -73,6 +73,7 @@ const Event = () => {
     moderator: "",
   });
   const [name, setName] = useState<string>("");
+  const [isModerator, setIsModerator] = useState<boolean>(false);
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -89,9 +90,14 @@ const Event = () => {
     if (name && !alreadyJoined) {
       const channel = socket.channel(`event:${eventInfo.link}`, {
         name: name,
-        isModerator: eventInfo.isModerator,
       });
-      createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
+      createEventChannel(
+        channel,
+        namePopupState,
+        setIsModerator,
+        setNamePopupState,
+        setEventChannel
+      );
     }
   }, [name, eventChannel]);
 
