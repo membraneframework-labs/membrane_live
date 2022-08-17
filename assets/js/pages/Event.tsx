@@ -8,6 +8,8 @@ import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/HlsPlayer";
 import "../../css/event.css";
 
+import axios from "../services/index";
+
 export type EventInfo = {
   link: string;
   title: string;
@@ -42,20 +44,10 @@ const getEventInfo = (
   eventInfo: EventInfo,
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
-  const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
-  const link = window.location.href.split("event")[0] + "webinars/";
-  fetch(link + eventInfo.link, {
-    method: "get",
-    headers: { "X-CSRF-TOKEN": csrfToken ? csrfToken : "" },
-  })
+  axios
+    .get("resources/webinars/" + eventInfo.link)
     .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return Promise.reject(response.status);
-    })
-    .then((data) => {
-      setEventInfo({ ...eventInfo, ...data.webinar });
+      setEventInfo({ ...eventInfo, ...response.data.webinar });
     })
     .catch(() => {
       alert("Couldn't get event information. Please reload this page.");
