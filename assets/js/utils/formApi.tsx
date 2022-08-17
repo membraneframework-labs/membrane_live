@@ -10,7 +10,7 @@ export const sendEventForm = (
   setLinks: React.Dispatch<React.SetStateAction<Links | undefined>>
 ): void => {
   axios
-    .post("/webinars", { webinar: eventForm })
+    .post("resources/webinars", { webinar: eventForm })
     .then((response) => {
       setLinks(response.data.webinar_links);
     })

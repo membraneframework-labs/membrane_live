@@ -44,7 +44,7 @@ const getEventInfo = (
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
   axios
-    .get("/webinars/" + eventInfo.link)
+    .get("resources/webinars/" + eventInfo.link)
     .then((response) => {
       setEventInfo({ ...eventInfo, ...response.data.webinar });
     })
