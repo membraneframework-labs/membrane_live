@@ -15,20 +15,19 @@ defmodule MembraneLiveWeb.Plugs.Auth do
       assign(conn, :user_id, user_id)
     else
       err ->
-        message = get_error_message(err)
-
-        FallbackController.call(
-          conn,
-          %{error: :unauthorized, message: message}
-        )
+        FallbackController.call(conn, get_error_info(err))
         |> halt()
     end
   end
 
-  defp find_bearer(headers) do
-    Enum.find(headers, fn elem -> match?({"authorization", _value}, elem) end)
-  end
+  defp find_bearer(headers),
+    do: Enum.find(headers, fn elem -> match?({"authorization", _value}, elem) end)
 
-  defp get_error_message(nil), do: "Lack of authentication data"
-  defp get_error_message({:error, :signature_error}), do: "Token has an invalid signature"
+  defp get_error_info(nil), do: %{error: :bad_request, message: "Lack of authentication data"}
+
+  defp get_error_info({:error, :signature_error}),
+    do: %{error: :unauthorized, message: "Token has an invalid signature"}
+
+  defp get_error_info({:error, _error_reason}),
+    do: %{error: :unauthorized, message: "Unknown token validation error"}
 end

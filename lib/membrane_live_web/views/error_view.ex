@@ -2,11 +2,9 @@ defmodule MembraneLiveWeb.ErrorView do
   # credo:disable-for-this-file
   use MembraneLiveWeb, :view
 
-  def render("error.json", %{error: :unauthorized, message: message}) do
-    %{status: 401, message: message}
-  end
+  alias Plug.Conn.Status
 
-  def render("error.json", %{error: :not_found, message: message}) do
-    %{status: 404, message: message}
+  def render("error.json", %{error: error_atom, message: message}) do
+    %{status: Status.code(error_atom), message: message}
   end
 end
