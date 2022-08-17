@@ -2,8 +2,9 @@ const axios = require("axios").default;
 
 axios.interceptors.request.use(
   (config) => {
-    const bearer = `Bearer ${localStorage.getItem("jwt")}`;
+    const bearer = `Bearer ${localStorage.getItem("authJwt")}`;
     config.headers.Authorization = bearer;
+    config.headers.RefreshToken = localStorage.getItem("refreshJwt");
     return config;
   },
   (error) => {
@@ -13,13 +14,13 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(undefined, (error) => {
   if ([401, 403].includes(error.response.status)) {
-    localStorage.removeItem("jwt");
+    localStorage.removeItem("authJwt");
   }
   return Promise.reject(error);
 });
 
 export const isUserAuthenticated = (): boolean => {
-  return localStorage.getItem("jwt") != null;
+  return localStorage.getItem("authJwt") != null;
 };
 
 export default axios;

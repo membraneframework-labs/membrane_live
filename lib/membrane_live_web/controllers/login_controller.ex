@@ -18,11 +18,12 @@ defmodule MembraneLiveWeb.LoginController do
   def create(conn, %{"credential" => google_jwt}) do
     {:ok, google_claims} = Tokens.google_decode(google_jwt)
     {:ok, user} = Accounts.create_user_if_not_exists(google_claims)
-    {:ok, new_token, _claims} = Tokens.custom_encode(user.uuid)
+    {:ok, auth_token, _claims} = Tokens.auth_encode(user.uuid)
+    {:ok, refresh_token, _claims} = Tokens.refresh_encode(user.uuid)
 
     conn
     |> put_status(200)
-    |> render("token.json", %{token: new_token})
+    |> render("token.json", %{auth_token: auth_token, refresh_token: refresh_token})
   end
 
   def check(conn, _params) do

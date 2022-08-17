@@ -11,7 +11,7 @@ defmodule MembraneLiveWeb.Plugs.Auth do
 
   def call(conn, _default) do
     with {"authorization", "Bearer " <> token} <- find_bearer(conn.req_headers),
-         {:ok, %{"user_id" => user_id}} <- Tokens.custom_decode(token) do
+         {:ok, %{"user_id" => user_id}} <- Tokens.auth_decode(token) do
       assign(conn, :user_id, user_id)
     else
       err ->
