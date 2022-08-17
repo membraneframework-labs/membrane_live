@@ -7,15 +7,15 @@ import GuardedRoute from "../services/GuardedRoute";
 
 const Router = () => {
   return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<GuardedRoute />}>
-            <Route path="/" element={<Form />} />
-            <Route path="/event/*" element={<Event />} />
-          </Route>
-          <Route path="/auth/" element={<Auth />} />
-        </Routes>
-      </BrowserRouter>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<GuardedRoute />}>
+          <Route path="/" element={<Form />} />
+          <Route path="/event/*" element={<Event />} />
+        </Route>
+        <Route path="/auth/" element={<Auth />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
