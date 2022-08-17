@@ -8,9 +8,6 @@ env:
   VIRTUAL_HOST: staging-live.membrane.work
   INTEGRATED_TURN_IP: 65.108.158.247
   TAG: ${{ github.ref_name }}
-  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
 jobs:
   build:
@@ -64,6 +61,10 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
+        env: 
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG \nPOSTGRES_USER=$POSTGRES_USER \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nPOSTGRES_DB=$POSTGRES_DB" > .env
 
       - name: Deploy docker compose to a pre-configured server
