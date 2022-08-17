@@ -10,7 +10,7 @@ export const sendEventForm = (
 ): void => {
   const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
 
-  fetch("http://localhost:4000/webinars", {
+  fetch(`${window.location.origin}/webinars`, {
     method: "post",
     headers: {
       "Content-Type": "application/json",
