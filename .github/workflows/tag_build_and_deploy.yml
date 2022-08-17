@@ -61,15 +61,11 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-<<<<<<< HEAD
         env: 
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG \nPOSTGRES_USER=$POSTGRES_USER \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nPOSTGRES_DB=$POSTGRES_DB" > .env
-=======
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG \nPOSTGRES_USER=${{ secrets.POSTGRES_USER }} \nPOSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \nPOSTGRES_DB=${{ secrets.POSTGRES_DB }}" > .env
->>>>>>> 78e611b (add secrets to compose)
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy
