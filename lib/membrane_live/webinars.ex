@@ -17,10 +17,10 @@ defmodule MembraneLive.Webinars do
   @spec get_webinar!(integer()) :: {:ok, Webinar.t()}
   def get_webinar!(id), do: Repo.get!(Webinar, id)
 
-  @spec create_webinar(map) :: any
-  def create_webinar(attrs \\ %{}) do
+  @spec create_webinar(map(), binary()) :: any
+  def create_webinar(attrs, moderator_id) do
     %Webinar{}
-    |> Webinar.changeset(attrs)
+    |> Webinar.changeset(Map.put(attrs, "moderator_id", moderator_id))
     |> Repo.insert()
   end
 
