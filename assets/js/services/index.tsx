@@ -18,7 +18,7 @@ axios.interceptors.response.use(undefined, (error) => {
   return Promise.reject(error);
 });
 
-export const isUserAuthenticated =  (): boolean => {
+export const isUserAuthenticated = (): boolean => {
   return localStorage.getItem("jwt") != null;
 };
 

@@ -6,6 +6,7 @@ import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/HlsPlayer";
+import "../../css/event.css";
 
 import axios from "../services/index";
 
@@ -78,7 +79,10 @@ const Event = () => {
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
     if (name && !alreadyJoined) {
-      const channel = socket.channel(`event:${eventInfo.link}`, { name: name });
+      const channel = socket.channel(`event:${eventInfo.link}`, {
+        name: name,
+        isModerator: eventInfo.isModerator,
+      });
       createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
     }
   }, [name, eventChannel]);
@@ -94,12 +98,23 @@ const Event = () => {
 
   return (
     <>
-      <PresenterStreamArea clientName={name} eventChannel={eventChannel} />
-      <ParticipantsList
-        username={name}
-        isModerator={eventInfo.isModerator}
-        eventChannel={eventChannel}
-      />
+      <div className="Header"></div>
+      <div className="MainGrid">
+        <div className="DisplayDiv">
+          <div className="Mode"></div>
+          <div className="Stream">
+            <PresenterStreamArea clientName={name} eventChannel={eventChannel} />
+            <HLSPlayer eventChannel={eventChannel} />
+          </div>
+        </div>
+        <div className="Participants">
+          <ParticipantsList
+            username={name}
+            isModerator={eventInfo.isModerator}
+            eventChannel={eventChannel}
+          />
+        </div>
+      </div>
       <NamePopup
         setName={setName}
         isOpen={namePopupState.isOpen}
@@ -113,7 +128,6 @@ const Event = () => {
           setPopupState={setPresenterPopupState}
         />
       )}
-      <HLSPlayer eventChannel={eventChannel} />
     </>
   );
 };
