@@ -17,7 +17,7 @@ config :membrane_live, MembraneLiveWeb.Endpoint,
 
 config :membrane_live, MembraneLive.Mailer, adapter: Swoosh.Adapters.Local
 
-config :membrane_live, hls_output_mount_path: "output"
+config :membrane_live, hls_output_mount_path: "output", custom_secret: "secret"
 
 config :swoosh, :api_client, false
 

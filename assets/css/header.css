@@ -1,0 +1,127 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+.ArrowIcon {
+  display: inline-block;
+  margin: 10px;
+}
+
+.Title {
+  width: 750px;
+  height: 34px;
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 36px;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.015em;
+  color: #001a72;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.InfoWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 913px;
+  height: 58px;
+  flex: none;
+  order: 1;
+  flex-grow: 1;
+}
+
+.WebinarInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  width: 423px;
+  height: 24px;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 28px;
+  color: #001a72;
+  gap: 10px;
+}
+
+.CopyLink {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px 20px;
+  gap: 12px;
+  width: 170px;
+  height: 36px;
+  background: #f5f7fe;
+  border: 1px solid #bfccf8;
+  border-radius: 24px;
+  flex: none;
+  order: 2;
+  flex-grow: 0;
+  align-self: center;
+  color: #001a72;
+}
+
+.User {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  text-align: center;
+  padding: 0px;
+  gap: 16px;
+  width: 212px;
+  height: 48px;
+  flex: none;
+  order: 3;
+  flex-grow: 0;
+}
+
+.CopyButton {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.UserIcon {
+  width: 48px;
+  height: 48px;
+  color: #001a72;
+}
+
+.UserName {
+  width: 148px;
+  height: 36px;
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 36px;
+  display: flex;
+  align-items: center;
+  color: #001a72;
+  align-self: center;
+}
+
+.Link {
+  display: block;
+  max-width: 9ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ParticipantsNumber {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}

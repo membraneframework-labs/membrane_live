@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
 .ParticipantsButtons {
   display: grid;
   grid-template-columns: 50% 50%;
@@ -18,7 +20,7 @@
   align-items: center;
   justify-self: center;
   color: #001a72;
-  font-family: "Aktiv Grotesk";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 600;
   font-size: 18px;
@@ -51,7 +53,7 @@
 
 .ParticipantText {
   color: #001a72;
-  font-family: "Aktiv Grotesk";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
   font-size: 20px;
