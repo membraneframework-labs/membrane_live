@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import PresenterStreamArea from "../components/PresenterStreamArea";
+import PresenterStreams from "../components/PresenterStreams";
 import ParticipantsList from "../components/ParticipantsList";
 import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
-import HLSPlayer from "../components/HlsPlayer";
+import HlsPlayer from "../components/HlsPlayer";
 import Header from "../components/Header";
 import "../../css/event.css";
 
@@ -21,14 +21,14 @@ export type PresenterPopupState = {
 
 const Event = () => {
   const [namePopupState, setNamePopupState] = useState<NamePopupState>({
-    isOpen: true,
+    isOpen: false,
     channelConnErr: "",
   });
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
   });
-  const [name, setName] = useState<string>("");
+  const [name, setName] = useState<string>("Andrzej");
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -65,8 +65,8 @@ const Event = () => {
         <div className="DisplayDiv">
           <div className="Mode"></div>
           <div className="Stream">
-            <PresenterStreamArea clientName={name} eventChannel={eventChannel} />
-            <HLSPlayer eventChannel={eventChannel} />
+            <PresenterStreams clientName={name} eventChannel={eventChannel} />
+            {/* <HlsPlayer eventChannel={eventChannel} /> */}
           </div>
         </div>
         <div className="Participants">

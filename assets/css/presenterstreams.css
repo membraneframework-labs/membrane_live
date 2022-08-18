@@ -1,0 +1,9 @@
+@import "./variables.css";
+
+.PresenterStreams {
+  font-family: var(--font-type);
+}
+
+.ControlPanel {
+  font-family: var(--font-type);
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { presenterStreams, SourceType } from "../utils/rtcUtils";
+import "../../css/rtcplayer.css";
 
 type RtcPlayerProps = {
   isMyself: boolean;
@@ -26,10 +27,17 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   }, []);
 
   return (
-    <div>
-      <video width={1000} height={700} autoPlay muted={true} ref={videoRef} />
+    <div className="RtcPlayer">
+      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo"/>
+      <div className="BottomBar">
+        <div className="PresenterName">
+          {isMyself ? name + " (Me)" : name}
+        </div>
+      </div>
+      <div className="TopBar">
+
+      </div>
       {!isMyself && <audio autoPlay ref={audioRef} />}
-      <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
 };

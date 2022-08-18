@@ -4,6 +4,7 @@ import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
+import "../../css/presenterstreams.css";
 
 type PresenterStreamAreaProps = {
   clientName: string;
@@ -13,7 +14,7 @@ type PresenterStreamAreaProps = {
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
-const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
+const PresenterStreams = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<string[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
@@ -36,27 +37,31 @@ const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaPr
 
   return presenters.includes(clientName) ? (
     <>
-      {presenters.map((presenter) => {
-        return (
-          <RtcPlayer
-            isMyself={clientName == presenter}
-            name={presenter}
-            playerCallbacks={playerCallbacks}
-            key={presenter}
+      <div className="PresenterStreams">
+        {presenters.map((presenter) => {
+          return (
+            <RtcPlayer
+              isMyself={clientName == presenter}
+              name={presenter}
+              playerCallbacks={playerCallbacks}
+              key={presenter}
+            />
+          );
+        })}
+      </div>
+      <div className="ControlPanel">
+        {isControlPanelAvailable && (
+          <ControlPanel
+            clientName={clientName}
+            webrtc={webrtc!}
+            playerCallback={playerCallbacks[clientName]}
           />
-        );
-      })}
-      {isControlPanelAvailable && (
-        <ControlPanel
-          clientName={clientName}
-          webrtc={webrtc!}
-          playerCallback={playerCallbacks[clientName]}
-        />
-      )}
+        )}
+      </div>
     </>
   ) : (
     <></>
   );
 };
 
-export default PresenterStreamArea;
+export default PresenterStreams;
