@@ -5,10 +5,10 @@ defmodule MembraneLiveWeb.LoginController do
 
   use MembraneLiveWeb, :controller
 
-  alias MembraneLive.Accounts
-  alias MembraneLive.Tokens
+  alias MembraneLive.{Accounts, Tokens}
+  alias MembraneLiveWeb.Helpers.TokenErrorInfo
 
-  plug(MembraneLiveWeb.Plugs.Auth when action in [:check])
+  action_fallback(MembraneLiveWeb.FallbackController)
 
   def index(conn, _params) do
     render(conn, "index.html")
@@ -16,18 +16,23 @@ defmodule MembraneLiveWeb.LoginController do
 
   # TODO add g_csrf handling
   def create(conn, %{"credential" => google_jwt}) do
-    {:ok, google_claims} = Tokens.google_decode(google_jwt)
-    {:ok, user} = Accounts.create_user_if_not_exists(google_claims)
-    {:ok, auth_token, _claims} = Tokens.auth_encode(user.uuid)
-    {:ok, refresh_token, _claims} = Tokens.refresh_encode(user.uuid)
-
-    conn
-    |> put_status(200)
-    |> render("token.json", %{auth_token: auth_token, refresh_token: refresh_token})
+    with {:ok, google_claims} <- Tokens.google_decode(google_jwt),
+         {:ok, user} <- Accounts.create_user_if_not_exists(google_claims) do
+      return_tokens(conn, user.uuid)
+    else
+      err -> TokenErrorInfo.get_error_info(err)
+    end
   end
 
   def refresh(conn, %{"refreshToken" => old_refresh_token}) do
-    {:ok, %{"user_id" => user_id}} = Tokens.refresh_decode(old_refresh_token)
+    with {:ok, %{"user_id" => user_id}} <- Tokens.refresh_decode(old_refresh_token) do
+      return_tokens(conn, user_id)
+    else
+      err -> TokenErrorInfo.get_error_info(err)
+    end
+  end
+
+  defp return_tokens(conn, user_id) do
     {:ok, auth_token, _claims} = Tokens.auth_encode(user_id)
     {:ok, refresh_token, _claims} = Tokens.refresh_encode(user_id)
 

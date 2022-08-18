@@ -16,6 +16,5 @@ export const sendEventForm = async (
     })
     .catch((error) => {
       console.log(error);
-      alert("Something went wrong. Please try again in a moment.");
     });
 };
