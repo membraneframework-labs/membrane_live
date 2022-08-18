@@ -3,6 +3,7 @@ import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
 import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
 import {
+  shareScreen,
   changeSource,
   changeTrackIsEnabled,
   findTrackByType,
@@ -145,12 +146,15 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
   };
 
   return (
-    <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
-      {getDropdownButton("audio")}
-      {getDropdownButton("video")}
-      {getMuteButton("audio")}
-      {getMuteButton("video")}
-    </Box>
+    <>
+      <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
+        {getDropdownButton("audio")}
+        {getDropdownButton("video")}
+        {getMuteButton("audio")}
+        {getMuteButton("video")}
+      </Box>
+      <button onClick={() => shareScreen(webrtc, clientName, playerCallback)}>shareScreen</button>
+    </>
   );
 };
 
