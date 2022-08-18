@@ -30,7 +30,7 @@ export const syncEventChannel = (
     const presence = new Presence(eventChannel);
 
     const updateStates = () => {
-      const parts: any[] = [];
+      const parts: Participant[] = [];
       presence.list((name: string, metas: any) => {
         const participant = metas.metas[0];
         parts.push({
@@ -39,6 +39,7 @@ export const syncEventChannel = (
           isModerator: participant.is_moderator,
         });
       });
+      parts.sort(compareParticipants);
       setParticipants(parts);
     };
 
@@ -101,4 +102,14 @@ export const syncPresenters = (
 
     eventChannel.push("sync_presence", {});
   }
+};
+
+export const getChannelId = (): string => window.location.pathname.split("/")[2];
+
+const compareParticipants = (x: Participant, y: Participant): number => {
+  return participantToNumber(x) - participantToNumber(y);
+};
+
+const participantToNumber = (participant: Participant): number => {
+  return participant.isModerator ? 1 : participant.isPresenter ? 2 : 3;
 };
