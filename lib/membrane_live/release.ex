@@ -1,4 +1,5 @@
 defmodule MembraneLive.Release do
+  @moduledoc false
   @app :membrane_live
 
   def create_and_migrate do
@@ -9,7 +10,7 @@ defmodule MembraneLive.Release do
            {:ok, _, _} <- Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true)) do
         :ok
       else
-        _ -> raise "DB problem"
+        error -> raise "DB problem: #{error}"
       end
     end
   end
@@ -18,13 +19,16 @@ defmodule MembraneLive.Release do
     load_app()
 
     for repo <- repos() do
-      {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+      {:ok, _fun_return, _apps} =
+        Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
     end
   end
 
   def rollback(repo, version) do
     load_app()
-    {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
+
+    {:ok, _fun_return, _apps} =
+      Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
   end
 
   defp repos do
