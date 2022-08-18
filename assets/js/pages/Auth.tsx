@@ -1,13 +1,10 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import axios from "../services/index";
-import { isUserAuthenticated } from "../services/index";
+import axiosWithInterceptor from "../services/index";
+import { isUserAuthenticated, setJwt} from "../services/index";
 
-export type AuthResponseData = {
-  authToken: string;
-  refreshToken: string;
-}
+
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -15,11 +12,8 @@ const Auth = () => {
 
   const fetchToken = async (googleResponse) => {
     try {
-      const response = await axios.post("auth", googleResponse);
-      const data: AuthResponseData = response.data;
-      console.log(data);
-      localStorage.setItem("authJwt", data.authToken);
-      localStorage.setItem("refreshJwt", data.refreshToken);
+      const response = await axiosWithInterceptor.post("auth", googleResponse);
+      setJwt(response.data);
     } catch (error) {
       console.log(error);
       alert("Couldn't get the token. Please try again in a moment");
@@ -28,7 +22,6 @@ const Auth = () => {
 
   const fetchTokenAndRedirect = async (response) => {
     await fetchToken(response);
-    console.log(isUserAuthenticated());
     if (isUserAuthenticated()) {
       redirectToHomePage();
     }

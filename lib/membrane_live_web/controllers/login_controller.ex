@@ -26,7 +26,13 @@ defmodule MembraneLiveWeb.LoginController do
     |> render("token.json", %{auth_token: auth_token, refresh_token: refresh_token})
   end
 
-  def check(conn, _params) do
-    send_resp(conn, 200, "Token OK")
+  def refresh(conn, %{"refreshToken" => old_refresh_token}) do
+    {:ok, %{"user_id" => user_id}} = Tokens.refresh_decode(old_refresh_token)
+    {:ok, auth_token, _claims} = Tokens.auth_encode(user_id)
+    {:ok, refresh_token, _claims} = Tokens.refresh_encode(user_id)
+
+    conn
+    |> put_status(200)
+    |> render("token.json", %{auth_token: auth_token, refresh_token: refresh_token})
   end
 end
