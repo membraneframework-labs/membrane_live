@@ -3,7 +3,8 @@ defmodule MembraneLiveWeb.Helpers.TokenErrorInfo do
   module for error infos considering tokens (mostly their validation)
   """
 
-  def get_error_info(nil), do: %{error: :bad_request, message: "Lack of authentication data"}
+  def get_error_info({:error, :no_jwt_in_header}),
+    do: %{error: :bad_request, message: "Lack of authentication data"}
 
   def get_error_info({:error, :signature_error}),
     do: %{error: :unauthorized, message: "Token has an invalid signature"}

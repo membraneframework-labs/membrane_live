@@ -14,17 +14,26 @@ defmodule MembraneLiveWeb.Plugs.Auth do
   def init(default), do: default
 
   def call(conn, _default) do
-    with {@auth_header_key, "Bearer " <> token} <-
-           find_header_value(conn.req_headers, @auth_header_key),
+    with "Bearer " <> token <- find_bearer(conn.req_headers),
          {:ok, %{"user_id" => user_id}} <- Tokens.auth_decode(token) do
       assign(conn, :user_id, user_id)
     else
       err ->
-        FallbackController.call(conn, TokenErrorInfo.get_error_info(err))
+        conn
+        |> FallbackController.call(TokenErrorInfo.get_error_info(err))
         |> halt()
     end
   end
 
-  defp find_header_value(headers, key),
-    do: Enum.find(headers, fn elem -> match?({^key, _value}, elem) end)
+  defp find_bearer(headers) do
+    headers
+    |> Enum.find(fn
+      {@auth_header_key, _value} -> true
+      _other -> false
+    end)
+    |> get_value()
+  end
+
+  defp get_value(nil), do: {:error, :no_jwt_in_header}
+  defp get_value({_key, value}), do: value
 end

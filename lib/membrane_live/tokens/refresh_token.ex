@@ -6,8 +6,10 @@ defmodule MembraneLive.Tokens.RefreshToken do
   use Joken.Config
 
   @one_week 7 * 24 * 60 * 60
-  @issuer "swmansion.com"
 
   @impl true
-  def token_config, do: default_claims(default_exp: @one_week, iss: @issuer, aud: @issuer)
+  def token_config do
+    issuer = Application.fetch_env!(:membrane_live, :token_issuer)
+    default_claims(default_exp: @one_week, iss: issuer, aud: issuer)
+  end
 end

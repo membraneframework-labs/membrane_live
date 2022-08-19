@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import axiosWithInterceptor from "../services/index";
-import { isUserAuthenticated, setJwt } from "../services/index";
+import { isUserAuthenticated, setJwt } from "../services/jwtApi";
 
 const Auth = () => {
   const navigate = useNavigate();
