@@ -1,29 +1,27 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
+import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
+import { getMergedTracks } from "./canvasUtils";
 
 export type Sources = {
   audio: MediaDeviceInfo[];
   video: MediaDeviceInfo[];
 };
-
 export type SourceType = "audio" | "video";
-export const presenterStreams: { [key: string]: MediaStream } = {};
 
-const FRAME_RATE = 24;
-const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
-  audio: true,
-  video: false,
+export type MergedScreenRef = {
+  screenTrack: MediaStreamTrack | undefined;
+  cameraTrack: MediaStreamTrack | undefined;
+  refreshId: number | undefined;
 };
 
-const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
-  audio: false,
-  video: { width: 1280, height: 720, frameRate: FRAME_RATE },
+export const presenterStreams: { [key: string]: MediaStream } = {};
+export const mergedScreenRef: MergedScreenRef = {
+  screenTrack: undefined,
+  cameraTrack: undefined,
+  refreshId: undefined,
 };
 
 const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
-const mergedScreenRef: { tracks: MediaStreamTrack[]; refreshId: number | undefined } = {
-  tracks: [],
-  refreshId: undefined,
-};
 
 export const findTrackByType = (name: string, sourceType: SourceType) => {
   return presenterStreams[name].getTracks().find((elem) => elem.kind == sourceType);
@@ -145,7 +143,7 @@ export const changeSource = async (
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  mergedScreenRef.refreshId && removeMergedStream();
+  if (mergedScreenRef.refreshId && sourceType == "video") removeMergedStream();
   await setSourceById(clientName, deviceId, sourceType, playerCallback);
   const newTrack = findTrackByType(clientName, sourceType);
   if (!webrtc || !newTrack) return;
@@ -165,8 +163,7 @@ export const shareScreen = async (
   clientName: string,
   playerCallback: (SourceType: SourceType) => void
 ) => {
-  mergedScreenRef.refreshId && removeMergedStream();
-  const mergedStream = await getMergedTracks(clientName);
+  const mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientName]);
 
   mergedStream.getTracks().forEach((track) => {
     addOrReplaceTrack(clientName, track, playerCallback);
@@ -177,70 +174,6 @@ export const shareScreen = async (
   if (!webrtc || !newTrack) return;
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
   else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
-};
-
-const getMergedTracks = async (clientName: string) => {
-  const screenStream: MediaStream = await navigator.mediaDevices.getDisplayMedia(VIDEO_CONSTRAINTS);
-  const cameraStream = new MediaStream(presenterStreams[clientName].getVideoTracks()).clone();
-
-  mergedScreenRef.tracks.push(...screenStream.getTracks(), ...cameraStream.getTracks());
-
-  const camera = await attachToDOM("justCamera", cameraStream);
-  const screen = await attachToDOM("justScreenShare", screenStream);
-
-  let canvasElement = document.createElement("canvas");
-  let canvasCtx = canvasElement.getContext("2d");
-
-  canvasCtx
-    ? await makeComposite(canvasElement, canvasCtx, camera, screen)
-    : console.error("CanvasCtx is null", canvasCtx);
-
-  return canvasElement.captureStream(FRAME_RATE);
-};
-
-const attachToDOM = async (id: string, stream: MediaStream) => {
-  let videoElem = document.createElement("video");
-  videoElem.id = id;
-  videoElem.width = 1280;
-  videoElem.height = 720;
-  videoElem.autoplay = true;
-  videoElem.setAttribute("playsinline", "true");
-  videoElem.srcObject = stream;
-  return videoElem;
-};
-
-const makeComposite = async (
-  canvasElement: HTMLCanvasElement,
-  canvasCtx: CanvasRenderingContext2D,
-  camera: HTMLVideoElement,
-  screen: HTMLVideoElement
-) => {
-  canvasCtx.save();
-  canvasElement.setAttribute("width", `${screen.width}px`);
-  canvasElement.setAttribute("height", `${screen.height}px`);
-  canvasCtx.clearRect(0, 0, screen.width, screen.height);
-  canvasCtx.drawImage(screen, 0, 0, screen.width, screen.height);
-  canvasCtx.drawImage(
-    camera,
-    0,
-    Math.floor(screen.height - screen.height / 4),
-    Math.floor(screen.width / 4),
-    Math.floor(screen.height / 4)
-  );
-
-  let imageData = canvasCtx.getImageData(0, 0, screen.width, screen.height);
-  canvasCtx.putImageData(imageData, 0, 0);
-  canvasCtx.restore();
-
-  mergedScreenRef.refreshId = requestVideoFrame(() =>
-    makeComposite(canvasElement, canvasCtx, camera, screen)
-  );
-};
-
-const requestVideoFrame = (callback: Function) => {
-  return setTimeout(() => {
-    callback();
-  }, 1000 / FRAME_RATE);
 };
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
@@ -270,8 +203,10 @@ const addOrReplaceTrack = (
 };
 
 const removeMergedStream = () => {
-  mergedScreenRef.tracks.forEach((track) => track.stop());
-  mergedScreenRef.tracks = [];
+  mergedScreenRef.screenTrack?.stop();
+  mergedScreenRef.cameraTrack?.stop();
+  mergedScreenRef.screenTrack = undefined;
+  mergedScreenRef.cameraTrack = undefined;
 
   clearTimeout(mergedScreenRef.refreshId);
   mergedScreenRef.refreshId = undefined;
