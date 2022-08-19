@@ -4,21 +4,18 @@ import type { NamePopupState, PresenterPopupState } from "../pages/Event";
 
 export const createEventChannel = (
   eventChannel: any,
-  namePopupState: NamePopupState,
-  setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>
+  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  setIsModerator: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   eventChannel
     .join()
-    .receive("ok", () => {
-      setPopupState({ isOpen: false, channelConnErr: "" });
+    .receive("ok", (resp: { is_moderator: boolean }) => {
       setEventChannel(eventChannel);
+      setIsModerator(resp.is_moderator);
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      if (resp.reason === "Viewer with this name already exists.")
-        setPopupState({ ...namePopupState, channelConnErr: resp.reason });
-      else alert(resp.reason);
+      console.error(resp.reason);
     });
 };
 

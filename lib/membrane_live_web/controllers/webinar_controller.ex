@@ -14,7 +14,8 @@ defmodule MembraneLiveWeb.WebinarController do
 
   @spec create(any, map) :: any
   def create(conn, %{"webinar" => webinar_params}) do
-    with {:ok, %Webinar{} = webinar} <- Webinars.create_webinar(webinar_params) do
+    with {:ok, %Webinar{} = webinar} <-
+      Webinars.create_webinar(webinar_params, conn.assigns.user_id) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))

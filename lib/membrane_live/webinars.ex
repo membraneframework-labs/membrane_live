@@ -11,16 +11,16 @@ defmodule MembraneLive.Webinars do
   @spec list_webinars :: list(Webinar.t())
   def list_webinars, do: Repo.all(Webinar)
 
-  @spec get_webinar(integer()) :: Webinar.t() | nil
-  def get_webinar(id), do: Repo.get(Webinar, id)
+  @spec get_webinar(binary()) :: Webinar.t() | nil
+  def get_webinar(uuid), do: Repo.get(Webinar, uuid)
 
-  @spec get_webinar!(integer()) :: {:ok, Webinar.t()}
-  def get_webinar!(id), do: Repo.get!(Webinar, id)
+  @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
+  def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
 
-  @spec create_webinar(map) :: any
-  def create_webinar(attrs \\ %{}) do
+  @spec create_webinar(map(), binary()) :: any
+  def create_webinar(attrs, moderator_id) do
     %Webinar{}
-    |> Webinar.changeset(attrs)
+    |> Webinar.changeset(Map.put(attrs, "moderator_id", moderator_id))
     |> Repo.insert()
   end
 
@@ -56,5 +56,13 @@ defmodule MembraneLive.Webinars do
       viewer_link: "/event/#{webinar.uuid}",
       moderator_link: "/event/#{webinar.uuid}/moderator"
     }
+  end
+
+  @spec check_is_user_moderator(binary(), binary()) :: boolean()
+  def check_is_user_moderator(user_uuid, webinar_uuid) do
+    case get_webinar(webinar_uuid) do
+      nil -> false
+      webinar -> user_uuid == webinar.moderator_id
+    end
   end
 end
