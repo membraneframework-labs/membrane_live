@@ -8,37 +8,31 @@ defmodule MembraneLiveWeb.EventChannel do
 
   require Logger
 
+  alias MembraneLive.Accounts
   alias MembraneLive.Event
   alias MembraneLive.Repo
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
+  alias MembraneLive.Tokens
   alias MembraneLiveWeb.Presence
 
   @impl true
-  def join("event:" <> id, %{"name" => name}, socket) do
+  def join("event:" <> id, %{"token" => token}, socket) do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
       false ->
         {:error, %{reason: "This event doesn't exists."}}
-
       true ->
-        viewer_data = Presence.get_by_key(socket, name)
-
-        case viewer_data do
-          [] ->
-            with {:ok, socket} <- create_event_stream(id, socket),
-                 # TODO mock -> socket.assigns.user_id
-                 is_moderator <-
-                   Webinars.check_is_user_moderator("a45ffd25-653f-4b1f-839e-f0ec611a5653", id) do
-              Presence.track(socket, name, %{is_moderator: is_moderator, is_presenter: false})
-              {:ok, %{is_moderator: is_moderator}, socket}
-            else
-              _error ->
-                {:error,
-                 %{reason: "Error occured while creating event stream or adding user to presence"}}
-            end
-
-          _viewer_exists ->
-            {:error, %{reason: "Viewer with this name already exists."}}
+        uuid = Tokens.custom_decode(token)
+        IO.inspect(uuid, label: :uuid)
+        with {:ok, socket} <- create_event_stream(id, socket),
+              {:ok, name} <- Accounts.get_username(uuid),
+              is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
+          Presence.track(socket, name, %{is_moderator: is_moderator, is_presenter: false})
+          {:ok, %{is_moderator: is_moderator}, socket}
+        else
+          _error ->
+            {:error,
+              %{reason: "Error occured while creating event stream or adding user to presence"}}
         end
     end
   rescue
