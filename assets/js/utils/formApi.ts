@@ -10,7 +10,7 @@ export const sendEventForm = async (
   setLink: React.Dispatch<React.SetStateAction<string>>
 ): Promise<void> => {
   axiosWithInterceptor
-    .post("resources/webinars", { webinar: eventForm })
+    .post(`${window.location.origin}/resources/webinars`, { webinar: eventForm })
     .then((response) => {
       setLink(response.data.link);
     })
