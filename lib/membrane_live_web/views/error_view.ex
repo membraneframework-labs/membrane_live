@@ -7,4 +7,8 @@ defmodule MembraneLiveWeb.ErrorView do
   def render("error.json", %{error: error_atom, message: message}) do
     %{status: Status.code(error_atom), message: message}
   end
+
+  def render(_any_error, %{error: error_atom, message: message}) do
+    %{status: Status.code(error_atom), message: message}
+  end
 end
