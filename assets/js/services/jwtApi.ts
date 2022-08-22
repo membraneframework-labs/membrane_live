@@ -10,6 +10,9 @@ export type AuthResponseData = {
 };
 
 export const setJwt = ({ authToken, refreshToken }: AuthResponseData) => {
+  if (authToken === undefined || refreshToken === undefined)
+    console.error("Token was not provided from the backend.");
+
   authToken && localStorage.setItem(authTokenKey, authToken);
   refreshToken && localStorage.setItem(refreshTokenKey, refreshToken);
 };

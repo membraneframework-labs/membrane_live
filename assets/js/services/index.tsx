@@ -21,21 +21,22 @@ axiosWithInterceptor.interceptors.response.use(
   (response) => response,
   async (error) => {
     const status = error.response ? error.response.status : null;
-    if (status === 401) {
-      const refreshToken = JwtApi.getRefreshToken();
-      try {
-        const response = await axios.post("/auth/refresh", { refreshToken });
-        JwtApi.setJwt(response.data);
-        const updatedConfig = JwtApi.addJwtToHeader(error.response.config);
-        return axiosWithInterceptor(updatedConfig);
-      } catch (err) {
-        JwtApi.destroyTokens();
-        alert("Your refresh token has expired. Please log in again.");
-        redirect("/auth");
-        return Promise.reject(err);
-      }
+    if (status != 401) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    const refreshToken = JwtApi.getRefreshToken();
+    try {
+      const response = await axios.post("/auth/refresh", { refreshToken });
+      JwtApi.setJwt(response.data);
+      const updatedConfig = JwtApi.addJwtToHeader(error.response.config);
+      return axiosWithInterceptor(updatedConfig);
+    } catch (err) {
+      JwtApi.destroyTokens();
+      alert("Your refresh token has expired. Please log in again.");
+      redirect("/auth");
+      return Promise.reject(err);
+    }
   }
 );
 
