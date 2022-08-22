@@ -11,9 +11,9 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLive.Accounts
   alias MembraneLive.Event
   alias MembraneLive.Repo
+  alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
-  alias MembraneLive.Tokens
   alias MembraneLiveWeb.Presence
 
   @impl true
@@ -21,17 +21,18 @@ defmodule MembraneLiveWeb.EventChannel do
     case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
       false ->
         {:error, %{reason: "This event doesn't exists."}}
+
       true ->
-        {:ok, %{"user_id" => uuid}} = Tokens.custom_decode(token)
-        with {:ok, socket} <- create_event_stream(id, socket),
-              {:ok, name} <- Accounts.get_username(uuid),
-              is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
+        with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
+             {:ok, socket} <- create_event_stream(id, socket),
+             {:ok, name} <- Accounts.get_username(uuid),
+             is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
           Presence.track(socket, name, %{is_moderator: is_moderator, is_presenter: false})
           {:ok, %{is_moderator: is_moderator}, socket}
         else
           _error ->
             {:error,
-              %{reason: "Error occured while creating event stream or adding user to presence"}}
+             %{reason: "Error occured while creating event stream or adding user to presence"}}
         end
     end
   rescue

@@ -6,6 +6,7 @@ import { createPrivateChannel, createEventChannel, getChannelId } from "../utils
 import PresenterPopup from "../components/PresenterPopup";
 import HLSPlayer from "../components/HlsPlayer";
 import Header from "../components/Header";
+import { storageGetName, storageGetAuthToken } from "../utils/storageUtils";
 import "../../css/event.css";
 
 export type NamePopupState = {
@@ -23,8 +24,8 @@ const Event = () => {
     isOpen: false,
     moderator: "",
   });
-  const name = "Karol";
-  const [isModerator, setIsModerator] = useState<boolean>(false)
+  const name: string = storageGetName();
+  const [isModerator, setIsModerator] = useState<boolean>(false);
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -35,7 +36,9 @@ const Event = () => {
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
     if (!alreadyJoined) {
-      const channel = socket.channel(`event:${getChannelId()}`, {token: localStorage.getItem("jwt")});
+      const channel = socket.channel(`event:${getChannelId()}`, {
+        token: storageGetAuthToken(),
+      });
       createEventChannel(channel, setEventChannel, setIsModerator);
     }
   }, [eventChannel]);
