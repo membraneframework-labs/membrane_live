@@ -1,12 +1,17 @@
 defmodule MembraneLiveWeb.LoginControllerTest do
   use MembraneLiveWeb.ConnCase
 
+  import MembraneLive.AccountsFixtures
+
+  alias MembraneLive.Accounts.User
   alias MembraneLive.Support.GoogleTokenMock
-  alias Membrane
+  alias MembraneLive.Repo
+  alias MembraneLive.Tokens
 
   describe "google auth" do
     test "[200]: jwt passes" do
-      _mock_google_token = GoogleTokenMock.get_mock_jwt(%{})
+      user = user_fixture() |> Repo.insert!()
+      _mock_google_token = GoogleTokenMock.get_mock_jwt(user)
       # NOT IMPLEMENTED YET
     end
 
@@ -17,7 +22,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
 
   describe "refresh" do
     test "[200] refresh token is valid" do
-      _mock_google_token = GoogleTokenMock.get_mock_jwt(%{})
+      user = user_fixture() |> Repo.insert!()
 
       # TODO
     end

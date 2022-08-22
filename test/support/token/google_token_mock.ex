@@ -4,6 +4,7 @@ defmodule MembraneLive.Support.GoogleTokenMock do
   """
 
   use Joken.Config
+  alias MembraneLive.Accounts.User
 
   @impl true
   def token_config, do: default_claims(iss: "accounts.google.com")
@@ -14,11 +15,10 @@ defmodule MembraneLive.Support.GoogleTokenMock do
     File.read!(public_key_location)
   end
 
-  @spec get_mock_jwt(%{optional(binary) => any}) :: binary
-  def get_mock_jwt(claims) do
+  def get_mock_jwt(%User{} = user) do
+    claims = claims_from_user(user)
     signer = get_default_signer()
-    IO.inspect(signer)
-    MembraneLive.Support.GoogleTokenMock.generate_and_sign!(claims, signer)
+    generate_and_sign!(claims, signer)
   end
 
   defp get_default_signer() do
@@ -27,5 +27,13 @@ defmodule MembraneLive.Support.GoogleTokenMock do
       |> File.read!()
 
     Joken.Signer.create("RS256", %{"pem" => private_key})
+  end
+
+  defp claims_from_user(%User{} = user) do
+    %{
+      "name" => user.name,
+      "email" => user.email,
+      "picture" => user.picture
+    }
   end
 end
