@@ -36,7 +36,8 @@ defmodule Membrane.Live.Mixfile do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  # TODO - wywalić "test/support" przed commitem!
+  defp elixirc_paths(_), do: ["lib", "test/support"]
 
   # Specifies your project dependencies.
   #
