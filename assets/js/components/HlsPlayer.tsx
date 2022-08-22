@@ -25,7 +25,7 @@ const HlsPlayer = ({ eventChannel }: any) => {
   }, [eventChannel]);
 
   return (
-    <div className="row justify-content-center">
+    <div className="HlsStream">
       {hlsUrl && (
         <>
           <ReactHlsPlayer src={hlsUrl} autoPlay={true} controls={true} width="60%" height="auto" />

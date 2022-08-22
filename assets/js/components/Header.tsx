@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
 import "../../css/header.css";
-import arrowIcon from "../../images/arrow.svg";
-import copyIcon from "../../images/copy.svg";
-import user from "../../images/userHeader.svg";
-import { AiOutlineUser } from "react-icons/ai";
+import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 
 type HeaderProps = {
   eventChannel: any;
@@ -31,9 +28,9 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
   };
 
   return (
-    <>
+    <div className="Header">
       <button>
-        <img src={arrowIcon}></img>
+        <ArrowLeft className="Arrow"/>
       </button>
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
@@ -41,7 +38,7 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
           <div> {eventInfo.start_date}</div>
           <div> | </div>
           <div className="ParticipantsNumber">
-            <img src={user}></img>
+            <Users className="UsersIcon"/>
             {participantsNumber + " participants"}
           </div>
         </div>
@@ -49,14 +46,14 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
       <div className="CopyLink">
         <p className="Link"> {window.location.pathname} </p>
         <button className="CopyButton" onClick={handleCopyButton}>
-          <img src={copyIcon} />
+          <Copy/>
         </button>
       </div>
       <div className="User">
-        <AiOutlineUser className="UserIcon"></AiOutlineUser>
+        <User1 className="UserIcon"/>
         <div className="UserName"> {name}</div>
       </div>
-    </>
+    </div>
   );
 };
 

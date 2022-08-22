@@ -36,8 +36,8 @@ const PresenterStreams = ({ clientName, eventChannel }: PresenterStreamAreaProps
   }, [eventChannel]);
 
   return presenters.includes(clientName) ? (
-    <>
-      <div className="PresenterStreams">
+    <div className="PresenterStreams">
+      <div className={`StreamsGrid Grid${presenters.length}`}>
         {presenters.map((presenter) => {
           return (
             <RtcPlayer
@@ -49,16 +49,14 @@ const PresenterStreams = ({ clientName, eventChannel }: PresenterStreamAreaProps
           );
         })}
       </div>
-      <div className="ControlPanel">
-        {isControlPanelAvailable && (
-          <ControlPanel
-            clientName={clientName}
-            webrtc={webrtc!}
-            playerCallback={playerCallbacks[clientName]}
-          />
-        )}
-      </div>
-    </>
+      {isControlPanelAvailable && (
+        <ControlPanel
+          clientName={clientName}
+          webrtc={webrtc!}
+          playerCallback={playerCallbacks[clientName]}
+        />
+      )}
+    </div>
   ) : (
     <></>
   );

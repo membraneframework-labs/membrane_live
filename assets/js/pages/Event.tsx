@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import PresenterStreams from "../components/PresenterStreams";
 import ParticipantsList from "../components/ParticipantsList";
 import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
-import HlsPlayer from "../components/HlsPlayer";
 import Header from "../components/Header";
 import "../../css/event.css";
+import StreamArea from "../components/StreamArea";
 
 export type NamePopupState = {
   isOpen: boolean;
@@ -21,14 +20,14 @@ export type PresenterPopupState = {
 
 const Event = () => {
   const [namePopupState, setNamePopupState] = useState<NamePopupState>({
-    isOpen: false,
+    isOpen: true,
     channelConnErr: "",
   });
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
   });
-  const [name, setName] = useState<string>("Andrzej");
+  const [name, setName] = useState<string>("");
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -57,21 +56,11 @@ const Event = () => {
   }, [name, eventChannel, privateChannel]);
 
   return (
-    <>
-      <div className="Header">
-        <Header name={name} eventChannel={eventChannel}></Header>
-      </div>
+    <div className="EventPage">
+      <Header name={name} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
-        <div className="DisplayDiv">
-          <div className="Mode"></div>
-          <div className="Stream">
-            <PresenterStreams clientName={name} eventChannel={eventChannel} />
-            {/* <HlsPlayer eventChannel={eventChannel} /> */}
-          </div>
-        </div>
-        <div className="Participants">
-          <ParticipantsList username={name} isModerator={true} eventChannel={eventChannel} />
-        </div>
+        <StreamArea clientName={name} eventChannel={eventChannel}/>
+        <ParticipantsList username={name} isModerator={true} eventChannel={eventChannel} />
       </div>
       <NamePopup
         setName={setName}
@@ -86,7 +75,7 @@ const Event = () => {
           setPopupState={setPresenterPopupState}
         />
       )}
-    </>
+    </div>
   );
 };
 

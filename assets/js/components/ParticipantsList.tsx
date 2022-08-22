@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { syncEventChannel } from "../utils/channelUtils";
 import "../../css/participants.css";
-import { AiOutlineMore } from "react-icons/ai";
-import userIcon from "../../images/user.svg";
-import starIcon from "../../images/star.svg";
-import crownIcon from "../../images/crown.svg";
+import {MenuVertical, User1, Crown1, Star1} from "react-swm-icon-pack";
 
 export type Participant = {
   name: string;
@@ -49,7 +46,7 @@ const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorM
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <AiOutlineMore />
+        <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
         <MenuItem
@@ -73,10 +70,10 @@ const Participant = ({
   moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
-  const iconLink = isModerator ? crownIcon : isPresenter ? starIcon : userIcon;
+  const icon = isModerator ? <Crown1/> : isPresenter ? <Star1/> : <User1/>;
   return (
     <div className="Participant">
-      <img src={iconLink} />
+      {icon}
       <p className="ParticipantText">
         {" "}
         {name} {isPresenter && " (Presenter)"}
@@ -117,7 +114,7 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
   );
 
   return (
-    <>
+    <div className="Participants">
       <div className="ParticipantsButtons">
         <button
           className={`ParticipantsButton ${!listMode && "Clicked"}`}
@@ -135,7 +132,7 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
         </button>
       </div>
       {listMode && <div className="ParticipantsList">{parts}</div>}
-    </>
+    </div>
   );
 };
 

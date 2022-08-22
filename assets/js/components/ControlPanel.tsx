@@ -1,7 +1,7 @@
 import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
-import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
+import { Cam, CamDisabled, Microphone, MicrophoneDisabled, Settings, PhoneDown, ScreenShare, MenuHorizontal, UserPlus} from "react-swm-icon-pack";
 import {
   changeSource,
   changeTrackIsEnabled,
@@ -11,6 +11,7 @@ import {
   Sources,
   SourceType,
 } from "../utils/rtcUtils";
+import "../../css/controlpanel.css"
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -56,32 +57,29 @@ const DropdownButton = ({
   );
 };
 
-type MuteButtonProps = {
-  sourceType: SourceType;
-  disabled?: boolean;
-  active?: boolean;
+
+
+
+
+
+
+
+
+
+type GenericButtonProps = {
+  icon: any;
   onClick: () => void;
 };
 
-const MuteButton = ({ sourceType, disabled, active, onClick }: MuteButtonProps) => {
-  const icon =
-    disabled || !active
-      ? { audio: <MicrophoneDisabled />, video: <CameraDisabled /> }
-      : { audio: <Microphone />, video: <Camera /> };
-
+const GenericButton = ({icon, onClick}: GenericButtonProps) => {
   return (
-    <Button
-      isDisabled={disabled}
-      borderRadius="500px"
-      backgroundColor={active ? "white" : "red.300"}
-      border="1px"
-      borderColor={active ? "#BFCCF8" : "red"}
-      onClick={() => onClick()}
+    <button
+      onClick={onClick}
     >
-      {icon[sourceType]}
-    </Button>
+      {icon}
+    </button>
   );
-};
+}
 
 const useRerender = () => {
   const [value, setValue] = useState(0);
@@ -130,27 +128,55 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
     );
   };
 
-  const getMuteButton = (sourceType: SourceType) => {
+  const getMuteButton = (sourceType: SourceType, IconEnabled: any, IconDisabled: any) => {
     return (
-      <MuteButton
-        sourceType={sourceType}
-        disabled={!findTrackByType(clientName, sourceType)}
-        active={findTrackByType(clientName, sourceType)?.enabled}
-        onClick={() => {
-          changeTrackIsEnabled(clientName, sourceType);
-          rerender();
-        }}
+      <GenericButton 
+      icon={findTrackByType(clientName, sourceType)?.enabled ? <IconEnabled className="PanelButton Enabled"/> : <IconDisabled className="PanelButton Disabled"/>}
+      onClick={() => {
+        changeTrackIsEnabled(clientName, sourceType);
+        rerender();
+      }}
       />
     );
   };
 
   return (
-    <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
-      {getDropdownButton("audio")}
-      {getDropdownButton("video")}
-      {getMuteButton("audio")}
-      {getMuteButton("video")}
-    </Box>
+    <div className="ControlPanel">
+      <GenericButton
+        icon={<Settings className="PanelButton"/>}
+        onClick={() => {
+
+        }}
+      />
+      <div className="CenterIcons">
+        {getMuteButton("video", Cam, CamDisabled)}
+        {getMuteButton("audio", Microphone, MicrophoneDisabled)}
+        <GenericButton
+          icon={<PhoneDown className="DisconnectButton" color="#FFFFFF"/>}
+          onClick={() => {
+
+          }}
+        />
+        <GenericButton
+          icon={<ScreenShare className="PanelButton"/>}
+          onClick={() => {
+
+          }}
+        />
+        <GenericButton
+          icon={<MenuHorizontal className="PanelButton"/>}
+          onClick={() => {
+
+          }}
+        />
+      </div>
+      <GenericButton
+        icon={<UserPlus className="PanelButton"/>}
+        onClick={() => {
+
+        }}
+      />
+    </div>
   );
 };
 

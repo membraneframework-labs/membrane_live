@@ -1,65 +1,57 @@
-@import url(https://fonts.googleapis.com/css?family=Roboto);
+@import "./main.css";
+
+.Participants {
+  width: 25%;
+  background: var(--bg-light-color-2);
+  display: flex;
+  flex-direction: column;
+  margin: 1em;
+  border-radius: 24px;
+  border: 1px solid var(--bg-light-color-3);
+  overflow: hidden;
+}
 
 .ParticipantsButtons {
+  padding: 1em 0;
+  width: 100%;
   display: grid;
   grid-template-columns: 50% 50%;
-  flex-direction: row;
-  align-items: center;
-  text-align: center;
 }
 
 .ParticipantsButton {
-  padding: 12px 16px;
-  gap: 8px;
   width: 80%;
-  height: 48px;
-  background: #f5f7fe;
   border-radius: 16px;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  justify-self: center;
-  color: #001a72;
-  font-family: "Roboto";
-  font-style: normal;
+  color: var(--font-dark-color);
   font-weight: 600;
-  font-size: 18px;
-  line-height: 24px;
+  font-size: 1.1em;
+  justify-self: center;
+  padding: 0.5em 0;
 }
 
-.Clicked {
-  background: #001a72;
-  color: #ffffff;
+.ParticipantsButton.Clicked {
+  background: var(--font-dark-color);
+  color: var(--bg-light-color-1);
 }
 
 .ParticipantsList {
-  height: 710px;
   overflow-y: auto;
 }
 
 .Participant {
   display: flex;
-  flex-direction: row;
   align-items: center;
   padding: 8px 24px;
   gap: 12px;
   width: 100%;
-  height: 52px;
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
 }
 
 .ParticipantText {
-  color: #001a72;
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 400;
-  font-size: 20px;
-  line-height: 36px;
+  color: var(--font-dark-color);
+  font-size: 1.2em;
 }
 
 .OptionButton {
+  height: 1.5em;
+  width: auto;
   margin-left: auto;
 }
