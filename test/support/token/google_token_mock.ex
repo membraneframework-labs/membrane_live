@@ -4,21 +4,30 @@ defmodule MembraneLive.Support.GoogleTokenMock do
   """
 
   use Joken.Config
-  alias MembraneLive.Accounts.User
+
+  @kid "1727b6b49402b9cf95be4e8fd38aa7e7c11644b1"
 
   @impl true
-  def token_config, do: default_claims(iss: "accounts.google.com")
+  def token_config,
+    do:
+      default_claims(
+        iss: "accounts.google.com",
+        aud: Application.fetch_env!(:membrane_live, :client_id)
+      )
 
-  @spec get_public_key :: binary
-  def get_public_key() do
-    public_key_location = Application.fetch_env!(:membrane_live, :google_p_key_path)
-    File.read!(public_key_location)
+  @doc """
+  Mocks the response from the www.googleapis.com/oauth2/v1/certs
+  """
+  def get_google_public_key() do
+    public_key_location = Application.fetch_env!(:membrane_live, :google_public_key_path)
+    public_key = File.read!(public_key_location)
+    %{@kid => public_key} |> Jason.encode!()
   end
 
-  def get_mock_jwt(%User{} = user) do
+  def get_mock_jwt(user) do
     claims = claims_from_user(user)
     signer = get_default_signer()
-    generate_and_sign!(claims, signer)
+    generate_and_sign(claims, signer)
   end
 
   defp get_default_signer() do
@@ -26,10 +35,10 @@ defmodule MembraneLive.Support.GoogleTokenMock do
       Application.fetch_env!(:membrane_live, :google_private_key_path)
       |> File.read!()
 
-    Joken.Signer.create("RS256", %{"pem" => private_key})
+    Joken.Signer.create("RS256", %{"pem" => private_key}, %{"kid" => @kid})
   end
 
-  defp claims_from_user(%User{} = user) do
+  defp claims_from_user(user) do
     %{
       "name" => user.name,
       "email" => user.email,
