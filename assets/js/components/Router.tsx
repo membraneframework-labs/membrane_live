@@ -7,7 +7,6 @@ import GuardedRoute from "../services/GuardedRoute";
 
 const Router = () => {
 
-  
   return (
     <BrowserRouter>
       <Routes>

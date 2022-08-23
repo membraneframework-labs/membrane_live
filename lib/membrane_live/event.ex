@@ -169,7 +169,7 @@ defmodule MembraneLive.Event do
 
     state =
       put_in(state, [:playlist_idls, peer.id], %{
-        name: peer.metadata["displayName"],
+        name: peer.metadata["name"],
         playlist_idl: ""
       })
 

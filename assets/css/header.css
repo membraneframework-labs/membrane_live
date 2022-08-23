@@ -4,7 +4,8 @@
   margin: 1rem 1rem 0rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
+  white-space: nowrap;
 }
 
 .Arrow {
@@ -38,7 +39,7 @@
 .CopyLink {
   display: flex;
   align-items: center;
-  padding: 0.3em 0.6em;
+  padding: 0.4em 1em;
   gap: 1em;
   color: var(--font-dark-color);
   background: var(--bg-light-color-2);
@@ -74,7 +75,7 @@
 }
 
 .Link {
-  max-width: 10ch;
+  max-width: 15ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -1,4 +1,4 @@
-import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { Box, Button, Menu, MenuButton, MenuList, MenuItem, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, Modal, ModalBody } from "@chakra-ui/react";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
 import { Cam, CamDisabled, Microphone, MicrophoneDisabled, Settings, PhoneDown, ScreenShare, MenuHorizontal, UserPlus} from "react-swm-icon-pack";
@@ -12,6 +12,7 @@ import {
   SourceType,
 } from "../utils/rtcUtils";
 import "../../css/controlpanel.css"
+import { Mode } from "./StreamArea";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -57,15 +58,6 @@ const DropdownButton = ({
   );
 };
 
-
-
-
-
-
-
-
-
-
 type GenericButtonProps = {
   icon: any;
   onClick: () => void;
@@ -81,6 +73,32 @@ const GenericButton = ({icon, onClick}: GenericButtonProps) => {
   );
 }
 
+type SettingsModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  elements: JSX.Element[];
+}
+
+const SettingsModal = ({isOpen, onClose, elements}: SettingsModalProps) => {
+  return (
+    <div className="SettingsModal">
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader className="SettingsModalHeader">Settings</ModalHeader>
+          <ModalCloseButton className="SettingsModalClose"/>
+          
+
+          <ModalBody className="SettingsModalBody">
+            {elements}
+          </ModalBody>
+
+        </ModalContent>
+      </Modal>
+    </div>
+  );
+}
+
 const useRerender = () => {
   const [value, setValue] = useState(0);
   return () => setValue(value + 1);
@@ -89,11 +107,14 @@ const useRerender = () => {
 type ControlPanelProps = {
   clientName: string;
   webrtc: MembraneWebRTC;
+  eventChannel: any;
   playerCallback: (sourceType: SourceType) => void;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps) => {
+const ControlPanel = ({ clientName, webrtc, eventChannel, playerCallback, setMode }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
+  const {isOpen, onOpen, onClose} = useDisclosure();
   const rerender = useRerender();
 
   const updateSources = async () => {
@@ -141,42 +162,46 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
   };
 
   return (
-    <div className="ControlPanel">
-      <GenericButton
-        icon={<Settings className="PanelButton"/>}
-        onClick={() => {
-
-        }}
-      />
-      <div className="CenterIcons">
-        {getMuteButton("video", Cam, CamDisabled)}
-        {getMuteButton("audio", Microphone, MicrophoneDisabled)}
+    <>
+      <div className="ControlPanel">
         <GenericButton
-          icon={<PhoneDown className="DisconnectButton" color="#FFFFFF"/>}
-          onClick={() => {
-
-          }}
+          icon={<Settings className="PanelButton"/>}
+          onClick={onOpen}
         />
-        <GenericButton
-          icon={<ScreenShare className="PanelButton"/>}
-          onClick={() => {
+        <div className="CenterIcons">
+          {getMuteButton("video", Cam, CamDisabled)}
+          {getMuteButton("audio", Microphone, MicrophoneDisabled)}
+          <GenericButton
+            icon={<PhoneDown className="DisconnectButton" color="#FFFFFF"/>}
+            onClick={() => {
+              eventChannel.push("presenter_remove", { presenter: clientName });
+              setMode("hls");
+            }}
+          />
+          <GenericButton
+            icon={<ScreenShare className="PanelButton"/>}
+            onClick={() => {
 
-          }}
-        />
+            }}
+          />
+          <GenericButton
+            icon={<MenuHorizontal className="PanelButton"/>}
+            onClick={() => {
+
+            }}
+          />
+        </div>
         <GenericButton
-          icon={<MenuHorizontal className="PanelButton"/>}
+          icon={<UserPlus className="PanelButton"/>}
           onClick={() => {
 
           }}
         />
       </div>
-      <GenericButton
-        icon={<UserPlus className="PanelButton"/>}
-        onClick={() => {
-
-        }}
-      />
-    </div>
+      <SettingsModal isOpen={isOpen} onClose={onClose} elements={
+        [getDropdownButton("audio"), getDropdownButton("video")]
+      }/>
+    </>
   );
 };
 

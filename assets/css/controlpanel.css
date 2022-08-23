@@ -33,3 +33,15 @@
     align-items: center;
     gap: 1.5em;
 }
+
+.SettingsModalBody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    color: var(--font-dark-color);
+}
+
+.SettingsModalHeader, .SettingsModal, .SettingsModalClose {
+    color: var(--font-dark-color);
+}

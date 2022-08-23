@@ -4,17 +4,19 @@ import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
+import {Mode} from "./StreamArea"
 import "../../css/presenterstreams.css";
 
 type PresenterStreamAreaProps = {
   clientName: string;
   eventChannel: any;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
 };
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
-const PresenterStreams = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
+const PresenterStreams = ({ clientName, eventChannel, setMode }: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<string[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
@@ -53,7 +55,9 @@ const PresenterStreams = ({ clientName, eventChannel }: PresenterStreamAreaProps
         <ControlPanel
           clientName={clientName}
           webrtc={webrtc!}
+          eventChannel={eventChannel}
           playerCallback={playerCallbacks[clientName]}
+          setMode={setMode}
         />
       )}
     </div>

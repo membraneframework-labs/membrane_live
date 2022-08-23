@@ -13,3 +13,8 @@
     min-height: 0;
     display: flex;
 }
+
+.Hidden {
+    position: absolute;
+    z-index: -1;
+}

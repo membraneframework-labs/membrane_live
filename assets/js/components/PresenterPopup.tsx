@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { PresenterPopupState } from "../pages/Event";
+import "../../css/presenterpopup.css";
 
 type PresenterPopupProps = {
   username: string;
@@ -33,8 +34,9 @@ const PresenterPopup = ({
     <Modal isOpen={isOpen} onClose={() => {}}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>You've been assigned a presenter role by the moderator</ModalHeader>
+        <ModalHeader className="PresenterPopupText">You've been assigned a presenter role by the moderator</ModalHeader>
         <Button
+          color="#001a72"
           variant="ghost"
           onClick={() => {
             onClose();
@@ -44,6 +46,8 @@ const PresenterPopup = ({
           Reject
         </Button>
         <Button
+          color="#001a72"
+          className="PresenterPopupText"
           variant="ghost"
           onClick={() => {
             onClose();

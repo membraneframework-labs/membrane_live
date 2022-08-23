@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type {Mode} from "./StreamArea";
 import { Screen } from "react-swm-icon-pack";
-import "../../css/ModePanel.css";
+import "../../css/modepanel.css";
 import { syncPresentersNumber } from "../utils/modePanelUtils";
 
 type ModeButtonProps = {
@@ -25,32 +25,38 @@ const ModeButton = ({onClick, active, name}: ModeButtonProps) => {
 type ModePanelProps = {
     mode: Mode;
     setMode: React.Dispatch<React.SetStateAction<Mode>>;
-    nowPresentingName: string;
+    presenterName: string;
     eventChannel: any;
+    clientName: string;
 };
 
-const ModePanel = ({mode, setMode, nowPresentingName, eventChannel}: ModePanelProps) => {
+const ModePanel = ({mode, setMode, presenterName, eventChannel, clientName}: ModePanelProps) => {
     const [presentersNumber, setPresentersNumber] = useState(0);
+    const [amIPresenter, setAmIPresenter] = useState(false);
 
-    useEffect(() => syncPresentersNumber(eventChannel, setPresentersNumber), [eventChannel]);
+    useEffect(() => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, clientName), [eventChannel]);
 
     return (
         <div className="ModePanel">
             <Screen className="ScreenIcon"/>
             <div className="PresentingNow">
-                {nowPresentingName} is now presenting...
+                {presenterName ? `${presenterName} is now presenting...` : "Waiting for the presenter to be chosen..."}
             </div>
             <div className="ModeButtons">
-                <ModeButton
-                    name="Main Stream"
-                    active={mode == "hls"}
-                    onClick={() => setMode("hls")}
-                />
-                <ModeButton
-                    name={`All presenters (${presentersNumber})`}
-                    active={mode == "presenters"}
-                    onClick={() => setMode("presenters")}
-                />
+                {amIPresenter && 
+                <>
+                    <ModeButton
+                        name="Main Stream"
+                        active={mode == "hls"}
+                        onClick={() => setMode("hls")}
+                    
+                    />
+                    <ModeButton
+                        name={`All presenters (${presentersNumber})`}
+                        active={mode == "presenters"}
+                        onClick={() => setMode("presenters")}
+                    />
+                </>}
             </div>
         </div>
     );

@@ -25,7 +25,8 @@
   font-weight: 600;
   font-size: 1.1em;
   justify-self: center;
-  padding: 0.5em 0;
+  padding: 0.5em 1em;
+  white-space: nowrap;
 }
 
 .ParticipantsButton.Clicked {
@@ -48,6 +49,7 @@
 .ParticipantText {
   color: var(--font-dark-color);
   font-size: 1.2em;
+  white-space: nowrap;
 }
 
 .OptionButton {
@@ -55,3 +57,9 @@
   width: auto;
   margin-left: auto;
 }
+
+.MenuText {
+  color: var(--font-dark-color);
+}
+
+/* Participant Tooltip and color of menu items styled inside js file */
