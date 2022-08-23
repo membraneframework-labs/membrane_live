@@ -26,6 +26,7 @@ import {
   UserPlus,
 } from "react-swm-icon-pack";
 import {
+  shareScreen,
   changeSource,
   changeTrackIsEnabled,
   findTrackByType,
@@ -202,7 +203,7 @@ const ControlPanel = ({
               setMode("hls");
             }}
           />
-          <GenericButton icon={<ScreenShare className="PanelButton" />} onClick={() => {}} />
+          <GenericButton icon={<ScreenShare className="PanelButton" />} onClick={() => shareScreen(webrtc, clientName, playerCallback)} />
           <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
         </div>
         <GenericButton icon={<UserPlus className="PanelButton" />} onClick={() => {}} />
