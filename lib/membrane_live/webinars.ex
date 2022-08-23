@@ -47,15 +47,9 @@ defmodule MembraneLive.Webinars do
     Webinar.changeset(webinar, attrs)
   end
 
-  @spec get_links(atom | %{:uuid => any, optional(any) => any}) :: %{
-          moderator_link: <<_::64, _::_*8>>,
-          viewer_link: <<_::64, _::_*8>>
-        }
-  def get_links(webinar) do
-    %{
-      viewer_link: "/event/#{webinar.uuid}",
-      moderator_link: "/event/#{webinar.uuid}/moderator"
-    }
+  @spec get_link(atom | %{:uuid => any, optional(any) => any}) :: String.t()
+  def get_link(webinar) do
+    "/event/#{webinar.uuid}"
   end
 
   @spec check_is_user_moderator(binary(), binary()) :: boolean()

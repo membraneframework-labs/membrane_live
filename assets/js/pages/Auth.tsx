@@ -16,8 +16,7 @@ const Auth = () => {
   const fetchToken = async (googleResponse) => {
     try {
       const response = await axiosWithInterceptor.post("auth", googleResponse);
-      if (response.data.authToken === undefined || response.data.refreshToken === undefined)
-        throw "Token is empty";
+      if (!response.data.authToken || !response.data.refreshToken) throw "Token is empty";
       storageSetJwt(response.data);
     } catch (error) {
       console.log(error);

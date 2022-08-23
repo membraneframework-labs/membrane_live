@@ -19,7 +19,7 @@ defmodule MembraneLiveWeb.WebinarController do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
-      |> render("show_links.json", webinar_links: Webinars.get_links(webinar))
+      |> render("show_link.json", link: Webinars.get_link(webinar))
     end
   end
 
