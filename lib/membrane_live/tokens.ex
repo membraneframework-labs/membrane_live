@@ -3,12 +3,14 @@ defmodule MembraneLive.Tokens do
   Module for generating, signing, verifying and validating the tokens used in the app.
 
   Google Token: - decode:   verification and validation
-  Custom Token:
+  Auth Token:
+    - encode: generation and signing
+    - decode: verification and validation
+  Refresh Token:
     - encode: generation and signing
     - decode: verification and validation
   """
-  alias MembraneLive.Tokens.CustomToken
-  alias MembraneLive.Tokens.GoogleToken
+  alias MembraneLive.Tokens.{AuthToken, GoogleToken, RefreshToken}
 
   def google_decode(jwt) do
     GoogleToken.verify_and_validate(jwt, get_signer(jwt))
@@ -29,17 +31,43 @@ defmodule MembraneLive.Tokens do
     |> then(&%{"pem" => &1})
   end
 
-  @spec custom_encode(any) :: {:error, atom | keyword} | {:ok, binary, %{optional(binary) => any}}
-  def custom_encode(user_id) do
-    CustomToken.generate_and_sign(%{"user_id" => user_id}, get_signer())
+  @spec auth_encode(any) :: {:error, atom | keyword} | {:ok, binary, %{optional(binary) => any}}
+  def auth_encode(user_id) do
+    signer = create_auth_signer()
+    AuthToken.generate_and_sign(%{"user_id" => user_id}, signer)
   end
 
-  def custom_decode(jwt) do
-    CustomToken.verify_and_validate(jwt, get_signer())
+  @spec auth_decode(binary) :: {:error, atom | keyword} | {:ok, %{optional(binary) => any}}
+  def auth_decode(jwt) do
+    signer = create_auth_signer()
+    AuthToken.verify_and_validate(jwt, signer)
   end
 
-  defp get_signer() do
-    custom_secret = Application.fetch_env!(:membrane_live, :custom_secret)
-    Joken.Signer.create("HS256", custom_secret)
+  @spec refresh_encode(any) ::
+          {:error, atom | keyword} | {:ok, binary, %{optional(binary) => any}}
+  def refresh_encode(user_id) do
+    signer = create_refresh_signer()
+    RefreshToken.generate_and_sign(%{"user_id" => user_id}, signer)
   end
+
+  @spec refresh_decode(binary) :: {:error, atom | keyword} | {:ok, %{optional(binary) => any}}
+  def refresh_decode(jwt) do
+    signer = create_refresh_signer()
+    RefreshToken.verify_and_validate(jwt, signer)
+  end
+
+  defp create_auth_signer(),
+    do: create_other_signer(:token_auth_secret)
+
+  defp create_refresh_signer(),
+    do: create_other_signer(:token_refresh_secret)
+
+  defp create_other_signer(env_variable_atom),
+    do:
+      :membrane_live
+      |> Application.fetch_env!(env_variable_atom)
+      |> create_signer()
+
+  defp create_signer(secret),
+    do: Joken.Signer.create("HS256", secret)
 end

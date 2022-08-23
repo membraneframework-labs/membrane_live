@@ -81,7 +81,7 @@ defmodule MembraneLiveWeb.UserControllerTest do
   end
 
   defp get_valid_bearer() do
-    with {:ok, valid_token, _claims} <- Tokens.custom_encode(@dummy_uuid) do
+    with {:ok, valid_token, _claims} <- Tokens.auth_encode(@dummy_uuid) do
       "Bearer #{valid_token}"
     end
   end

@@ -94,7 +94,11 @@ config :membrane_live,
     |> ConfigParser.parse_port_number("INTEGRATED_TLS_TURN_PORT"),
   integrated_turn_pkey: System.get_env("INTEGRATED_TURN_PKEY"),
   integrated_turn_cert: System.get_env("INTEGRATED_TURN_CERT"),
-  integrated_turn_domain: System.get_env("VIRTUAL_HOST")
+  integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
+  client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com",
+  token_auth_secret: "auth_secret",
+  token_refresh_secret: "refresh_secret",
+  token_issuer: "swmansion.com"
 
 protocol = if System.get_env("USE_TLS") == "true", do: :https, else: :http
 
