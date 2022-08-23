@@ -10,13 +10,19 @@ import "../../css/presenterstreams.css";
 type PresenterStreamAreaProps = {
   clientName: string;
   eventChannel: any;
+  mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
-const PresenterStreams = ({ clientName, eventChannel, setMode }: PresenterStreamAreaProps) => {
+const PresenterStreams = ({
+  clientName,
+  eventChannel,
+  mode,
+  setMode,
+}: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<string[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
@@ -38,7 +44,7 @@ const PresenterStreams = ({ clientName, eventChannel, setMode }: PresenterStream
   }, [eventChannel]);
 
   return presenters.includes(clientName) ? (
-    <div className="PresenterStreams">
+    <div className={`PresenterStreams ${mode == "hls" ? "Hidden" : ""}`}>
       <div className={`StreamsGrid Grid${presenters.length}`}>
         {presenters.map((presenter) => {
           return (
