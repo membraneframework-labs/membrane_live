@@ -32,17 +32,19 @@ type ParticipantsListProps = {
   eventChannel: any;
 };
 
-const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+export const getFontColor = (colorName: string) => {
   const style = getComputedStyle(document.body);
-  const fontColor = style.getPropertyValue("--font-dark-color");
+  return style.getPropertyValue(colorName);
+};
+
+const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+  const fontColor = getFontColor("--font-dark-color");
+  const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
   const handleClick = (e: any) => {
-    console.log(e.target.value);
     if (e.target.value === "Set as a presenter") {
-      const link = "private:" + window.location.pathname.split("/")[2] + ":";
       eventChannel.push("presenter_prop", { moderator: link + clientName, presenter: link + name });
     } else {
-      const link = "private:" + window.location.pathname.split("/")[2] + ":";
       eventChannel.push("presenter_remove", { presenter_topic: link + name });
     }
   };
@@ -79,8 +81,7 @@ const Participant = ({
   moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
-  const style = getComputedStyle(document.body);
-  const fontColor = style.getPropertyValue("--font-dark-color");
+  const fontColor = getFontColor("--font-dark-color");
 
   const icon = isModerator ? <Crown1 /> : isPresenter ? <Star1 /> : <User1 />;
   const role = isModerator ? "Moderator" : isPresenter ? "Presenter" : "Praticipant";

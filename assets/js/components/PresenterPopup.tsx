@@ -8,6 +8,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { PresenterPopupState } from "../pages/Event";
+import { getFontColor } from "./ParticipantsList";
 
 type PresenterPopupProps = {
   username: string;
@@ -23,9 +24,7 @@ const PresenterPopup = ({
   setPopupState,
 }: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
-
-  const style = getComputedStyle(document.body);
-  const fontColor = style.getPropertyValue("--font-dark-color");
+  const fontColor = getFontColor("--font-dark-color");
 
   const sendAnswer = (answer: string) => {
     eventChannel.push("presenter_answer", { name: username, moderator: moderator, answer: answer });

@@ -36,6 +36,7 @@ import {
   SourceType,
 } from "../utils/rtcUtils";
 import { Mode } from "./StreamArea";
+import { getFontColor } from "./ParticipantsList";
 import "../../css/controlpanel.css";
 
 type DropdownListProps = {
@@ -113,6 +114,15 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
+const stopBeingPresenter = (
+  eventChannel: any,
+  clientName: string,
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
+) => {
+  eventChannel.push("presenter_remove", { presenter: clientName });
+  setMode("hls");
+};
+
 const useRerender = () => {
   const [value, setValue] = useState(0);
   return () => setValue(value + 1);
@@ -137,7 +147,7 @@ const ControlPanel = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
 
-  const style = getComputedStyle(document.body);
+  const bgColor = getFontColor("--bg-light-color-1");
 
   const updateSources = async () => {
     const sources = await getSources();
@@ -198,16 +208,8 @@ const ControlPanel = ({
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
-            icon={
-              <PhoneDown
-                className="DisconnectButton"
-                color={style.getPropertyValue("--bg-light-color-1")}
-              />
-            }
-            onClick={() => {
-              eventChannel.push("presenter_remove", { presenter: clientName });
-              setMode("hls");
-            }}
+            icon={<PhoneDown className="DisconnectButton" color={bgColor} />}
+            onClick={() => stopBeingPresenter(eventChannel, clientName, setMode)}
           />
           <GenericButton
             icon={<ScreenShare className="PanelButton" />}
