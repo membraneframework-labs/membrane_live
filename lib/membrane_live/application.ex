@@ -11,6 +11,7 @@ defmodule MembraneLive.Application do
       MembraneLiveWeb.Endpoint
     ]
 
+    :ets.new(:presenters, [:public, :set, :named_table])
     opts = [strategy: :one_for_one, name: MembraneLive.Supervisor]
     Supervisor.start_link(children, opts)
   end

@@ -17,26 +17,49 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
 
   @impl true
-  def join("event:" <> id, %{"token" => token}, socket) do
-    case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
-      false ->
-        {:error, %{reason: "This event doesn't exists."}}
+  def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
+    case Ecto.UUID.cast(id) do
+      {:ok, id} ->
+        case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
+          false ->
+            {:error, %{reason: "This event doesn't exists."}}
 
-      true ->
-        with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
-             {:ok, socket} <- create_event_stream(id, socket),
-             {:ok, name} <- Accounts.get_username(uuid),
-             is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
-          Presence.track(socket, name, %{is_moderator: is_moderator, is_presenter: false})
-          {:ok, %{is_moderator: is_moderator}, socket}
-        else
-          _error ->
-            {:error,
-             %{reason: "Error occured while creating event stream or adding user to presence"}}
+          true ->
+            :ets.insert_new(:presenters, {id, []})
+
+            with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
+                 {:ok, name} <- Accounts.get_username(uuid),
+                 [] <- Presence.get_by_key(socket, name),
+                 {:ok, socket} <- create_event_stream(id, socket),
+                 {:ok, is_presenter} = check_if_presenter(name, reloaded, id),
+                 is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
+              {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
+
+              {:ok, _ref} =
+                Presence.track(socket, name, %{
+                  is_moderator: is_moderator,
+                  is_presenter: is_presenter
+                })
+
+              {:ok, %{is_moderator: is_moderator}, socket}
+            else
+              %{metas: _presence} ->
+                {:error,
+                 %{
+                   reason: "This app can be opened in only one window"
+                 }}
+
+              _error ->
+                {:error,
+                 %{
+                   reason: "Error occured while creating event stream or adding user to presence"
+                 }}
+            end
         end
+
+      :error ->
+        {:error, %{reason: "This link is wrong."}}
     end
-  rescue
-    Ecto.Query.CastError -> {:error, %{reason: "This link is wrong."}}
   end
 
   @impl true
@@ -81,6 +104,30 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
+  defp check_if_presenter(name, reloaded, id) do
+    [{_key, presenters}] = :ets.lookup(:presenters, id)
+    in_ets = if Enum.find(presenters, &(&1 == name)) != nil, do: true, else: false
+
+    case reloaded do
+      true ->
+        {:ok, in_ets}
+
+      false ->
+        if in_ets, do: remove_from_presenters(name, id)
+        {:ok, false}
+    end
+  end
+
+  defp remove_from_presenters(name, id) do
+    [{_key, presenters}] = :ets.lookup(:presenters, id)
+    :ets.insert(:presenters, {id, Enum.reject(presenters, &(&1 == name))})
+  end
+
+  defp add_to_presenters(name, id) do
+    [{_key, presenters}] = :ets.lookup(:presenters, id)
+    :ets.insert(:presenters, {id, [name, presenters]})
+  end
+
   @impl true
   def handle_info(
         {:DOWN, _ref, :process, _pid, _reason},
@@ -110,6 +157,8 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, _ref} =
       Presence.update(socket, presenter, fn map -> Map.put(map, :is_presenter, false) end)
 
+    "event:" <> id = socket.topic
+    remove_from_presenters(presenter, id)
     {:noreply, socket}
   end
 
@@ -148,6 +197,8 @@ defmodule MembraneLiveWeb.EventChannel do
         {:ok, _ref} =
           Presence.update(socket, name, fn map -> Map.put(map, :is_presenter, true) end)
 
+        "event:" <> id = socket.topic
+        add_to_presenters(name, id)
         join_event_stream(socket)
       else
         {:ok, socket}

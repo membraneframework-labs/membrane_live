@@ -15,7 +15,7 @@ type PresenterStreamAreaProps = {
 };
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
-let webrtc: MembraneWebRTC | null = null;
+let webrtc: MembraneWebRTC | null | boolean = null;
 
 const PresenterStreams = ({
   clientName,
@@ -28,12 +28,13 @@ const PresenterStreams = ({
 
   useEffect(() => {
     if (webrtc == null && presenters.includes(clientName)) {
+      webrtc = true;
       connectWebrtc(eventChannel, clientName, playerCallbacks).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
       });
     } else if (webrtc != null && !presenters.includes(clientName)) {
-      leaveWebrtc(webrtc, clientName, eventChannel);
+      leaveWebrtc(webrtc as MembraneWebRTC, clientName, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
     }

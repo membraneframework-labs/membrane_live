@@ -1,6 +1,6 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { NamePopupState, PresenterPopupState } from "../pages/Event";
+import type { PresenterPopupState } from "../pages/Event";
 
 export const createEventChannel = (
   eventChannel: any,
@@ -15,7 +15,7 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      console.error(resp.reason);
+      alert(resp.reason);
     });
 };
 
@@ -85,10 +85,10 @@ export const syncPresenters = (
 
     const updatePresenters = () => {
       const presenters: string[] = [];
+
       presence.list((name: string, metas: any) => {
-        for (const item of metas.metas) {
-          if (item.is_presenter) presenters.push(name);
-        }
+        // sometimes presence create two object in metas, for example if you open two windows with the same user.
+        metas.metas.pop().is_presenter && presenters.push(name);
       });
       setPresenters(presenters);
     };
