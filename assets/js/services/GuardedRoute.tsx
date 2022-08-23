@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import axios, { isUserAuthenticated } from ".";
+import { isUserAuthenticated } from "./jwtApi";
 
 const GuardedRoute = () => {
   const isAuthenticated = isUserAuthenticated();

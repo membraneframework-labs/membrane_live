@@ -35,5 +35,6 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", LoginController, :index)
     post("/", LoginController, :create)
+    post("/refresh", LoginController, :refresh)
   end
 end
