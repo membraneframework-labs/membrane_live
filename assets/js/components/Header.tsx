@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
 import { useNavigate } from "react-router-dom";
-import "../../css/header.css";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
+import "../../css/header.css";
 
-const monthNames = ["January", "February", "March", "April", "May", "June",
-"July", "August", "September", "October", "November", "December"
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 type HeaderProps = {
@@ -39,15 +50,13 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
     const date = new Date();
     date.setTime(Date.parse(dateString));
 
-    return `${monthNames[date.getMonth()]}, ${date.getDay()} ${date.getFullYear()}`
-  }
+    return `${monthNames[date.getMonth()]}, ${date.getDay()} ${date.getFullYear()}`;
+  };
 
   return (
     <div className="Header">
-      <button
-        onClick={redirectToHomePage}
-      >
-        <ArrowLeft className="Arrow"/>
+      <button onClick={redirectToHomePage}>
+        <ArrowLeft className="Arrow" />
       </button>
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
@@ -55,7 +64,7 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
           <div> {formatDate(eventInfo.start_date)}</div>
           <div> | </div>
           <div className="ParticipantsNumber">
-            <Users className="UsersIcon"/>
+            <Users className="UsersIcon" />
             {participantsNumber + ` participant${participantsNumber > 1 ? "s" : ""}`}
           </div>
         </div>
@@ -63,11 +72,11 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
       <div className="CopyLink">
         <p className="Link"> {window.location.href} </p>
         <button className="CopyButton" onClick={handleCopyButton}>
-          <Copy/>
+          <Copy />
         </button>
       </div>
       <div className="User">
-        <User1 className="UserIcon"/>
+        <User1 className="UserIcon" />
         <div className="UserName"> {name}</div>
       </div>
     </div>

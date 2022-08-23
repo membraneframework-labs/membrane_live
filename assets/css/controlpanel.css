@@ -1,47 +1,49 @@
 @import "./main.css";
 
 .ControlPanel {
-    width: 100%;
-    padding: 1em 1em 0em 1em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  width: 100%;
+  padding: 1em 1em 0em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .PanelButton {
-    box-sizing: content-box;
-    height: 1.5em;
-    width: auto;
-    background-color: var(--bg-light-color-2);
-    border: 1px solid var(--bg-light-color-3);
-    border-radius: 50%;
-    padding: 0.7em;
+  box-sizing: content-box;
+  height: 1.5em;
+  width: auto;
+  background-color: var(--bg-light-color-2);
+  border: 1px solid var(--bg-light-color-3);
+  border-radius: 50%;
+  padding: 0.7em;
 }
 
 .DisconnectButton {
-    box-sizing: content-box;
-    height: 2em;
-    width: auto;
-    background-color: var(--button-red);
-    border-radius: 50%;
-    padding: 0.7em;
-    /* color set inline as a prop */
+  box-sizing: content-box;
+  height: 2em;
+  width: auto;
+  background-color: var(--button-red);
+  border-radius: 50%;
+  padding: 0.7em;
+  /* color set inline as a prop */
 }
 
 .CenterIcons {
-    display: flex;
-    align-items: center;
-    gap: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
 }
 
 .SettingsModalBody {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1em;
-    color: var(--font-dark-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+  color: var(--font-dark-color);
 }
 
-.SettingsModalHeader, .SettingsModal, .SettingsModalClose {
-    color: var(--font-dark-color);
+.SettingsModalHeader,
+.SettingsModal,
+.SettingsModalClose {
+  color: var(--font-dark-color);
 }

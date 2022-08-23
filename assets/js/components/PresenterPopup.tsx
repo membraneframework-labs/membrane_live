@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Modal,
   ModalOverlay,
@@ -6,9 +7,7 @@ import {
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
-import React from "react";
 import { PresenterPopupState } from "../pages/Event";
-import "../../css/presenterpopup.css";
 
 type PresenterPopupProps = {
   username: string;
@@ -25,6 +24,9 @@ const PresenterPopup = ({
 }: PresenterPopupProps) => {
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 
+  const style = getComputedStyle(document.body);
+  const fontColor = style.getPropertyValue("--font-dark-color");
+
   const sendAnswer = (answer: string) => {
     eventChannel.push("presenter_answer", { name: username, moderator: moderator, answer: answer });
     setPopupState({ isOpen: false, moderator: "" });
@@ -34,9 +36,11 @@ const PresenterPopup = ({
     <Modal isOpen={isOpen} onClose={() => {}}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader className="PresenterPopupText">You've been assigned a presenter role by the moderator</ModalHeader>
+        <ModalHeader color={fontColor}>
+          You've been assigned a presenter role by the moderator
+        </ModalHeader>
         <Button
-          color="#001a72"
+          color={fontColor}
           variant="ghost"
           onClick={() => {
             onClose();
@@ -46,8 +50,7 @@ const PresenterPopup = ({
           Reject
         </Button>
         <Button
-          color="#001a72"
-          className="PresenterPopupText"
+          color={fontColor}
           variant="ghost"
           onClick={() => {
             onClose();

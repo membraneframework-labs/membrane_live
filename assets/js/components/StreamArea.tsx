@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
-import "../../css/streamarea.css"
+import "../../css/streamarea.css";
 
 export type Mode = "presenters" | "hls";
 
 type StreamAreaProps = {
-    clientName: string;
-    eventChannel: any;
+  clientName: string;
+  eventChannel: any;
 };
 
-const StreamArea = ({clientName, eventChannel}: StreamAreaProps) => {
+const StreamArea = ({ clientName, eventChannel }: StreamAreaProps) => {
   const [mode, setMode] = useState<Mode>("hls");
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
@@ -34,17 +34,23 @@ const StreamArea = ({clientName, eventChannel}: StreamAreaProps) => {
     }
   }, [eventChannel]);
 
-    return (
-        <div className="StreamArea">
-          <ModePanel mode={mode} setMode={setMode} presenterName={presenterName} eventChannel={eventChannel} clientName={clientName}/>
-          <div className="Stream">
-            {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} />}
-            <div className={mode == "hls" ? "Hidden" : ""}>
-              <PresenterStreams clientName={clientName} eventChannel={eventChannel} setMode={setMode}/>
-            </div>
-          </div>
+  return (
+    <div className="StreamArea">
+      <ModePanel
+        mode={mode}
+        setMode={setMode}
+        presenterName={presenterName}
+        eventChannel={eventChannel}
+        clientName={clientName}
+      />
+      <div className="Stream">
+        {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} />}
+        <div className={mode == "hls" ? "Hidden" : ""}>
+          <PresenterStreams clientName={clientName} eventChannel={eventChannel} setMode={setMode} />
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default StreamArea;

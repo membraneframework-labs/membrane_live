@@ -1,7 +1,30 @@
-import { Box, Button, Menu, MenuButton, MenuList, MenuItem, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, Modal, ModalBody } from "@chakra-ui/react";
-import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
-import { Cam, CamDisabled, Microphone, MicrophoneDisabled, Settings, PhoneDown, ScreenShare, MenuHorizontal, UserPlus} from "react-swm-icon-pack";
+import {
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useDisclosure,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  Modal,
+  ModalBody,
+} from "@chakra-ui/react";
+import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
+import {
+  Cam,
+  CamDisabled,
+  Microphone,
+  MicrophoneDisabled,
+  Settings,
+  PhoneDown,
+  ScreenShare,
+  MenuHorizontal,
+  UserPlus,
+} from "react-swm-icon-pack";
 import {
   changeSource,
   changeTrackIsEnabled,
@@ -11,8 +34,8 @@ import {
   Sources,
   SourceType,
 } from "../utils/rtcUtils";
-import "../../css/controlpanel.css"
 import { Mode } from "./StreamArea";
+import "../../css/controlpanel.css";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -63,41 +86,31 @@ type GenericButtonProps = {
   onClick: () => void;
 };
 
-const GenericButton = ({icon, onClick}: GenericButtonProps) => {
-  return (
-    <button
-      onClick={onClick}
-    >
-      {icon}
-    </button>
-  );
-}
+const GenericButton = ({ icon, onClick }: GenericButtonProps) => {
+  return <button onClick={onClick}>{icon}</button>;
+};
 
 type SettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   elements: JSX.Element[];
-}
+};
 
-const SettingsModal = ({isOpen, onClose, elements}: SettingsModalProps) => {
+const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   return (
     <div className="SettingsModal">
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader className="SettingsModalHeader">Settings</ModalHeader>
-          <ModalCloseButton className="SettingsModalClose"/>
-          
+          <ModalCloseButton className="SettingsModalClose" />
 
-          <ModalBody className="SettingsModalBody">
-            {elements}
-          </ModalBody>
-
+          <ModalBody className="SettingsModalBody">{elements}</ModalBody>
         </ModalContent>
       </Modal>
     </div>
   );
-}
+};
 
 const useRerender = () => {
   const [value, setValue] = useState(0);
@@ -112,10 +125,18 @@ type ControlPanelProps = {
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const ControlPanel = ({ clientName, webrtc, eventChannel, playerCallback, setMode }: ControlPanelProps) => {
+const ControlPanel = ({
+  clientName,
+  webrtc,
+  eventChannel,
+  playerCallback,
+  setMode,
+}: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
-  const {isOpen, onOpen, onClose} = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
+
+  const style = getComputedStyle(document.body);
 
   const updateSources = async () => {
     const sources = await getSources();
@@ -151,12 +172,18 @@ const ControlPanel = ({ clientName, webrtc, eventChannel, playerCallback, setMod
 
   const getMuteButton = (sourceType: SourceType, IconEnabled: any, IconDisabled: any) => {
     return (
-      <GenericButton 
-      icon={findTrackByType(clientName, sourceType)?.enabled ? <IconEnabled className="PanelButton Enabled"/> : <IconDisabled className="PanelButton Disabled"/>}
-      onClick={() => {
-        changeTrackIsEnabled(clientName, sourceType);
-        rerender();
-      }}
+      <GenericButton
+        icon={
+          findTrackByType(clientName, sourceType)?.enabled ? (
+            <IconEnabled className="PanelButton Enabled" />
+          ) : (
+            <IconDisabled className="PanelButton Disabled" />
+          )
+        }
+        onClick={() => {
+          changeTrackIsEnabled(clientName, sourceType);
+          rerender();
+        }}
       />
     );
   };
@@ -164,43 +191,27 @@ const ControlPanel = ({ clientName, webrtc, eventChannel, playerCallback, setMod
   return (
     <>
       <div className="ControlPanel">
-        <GenericButton
-          icon={<Settings className="PanelButton"/>}
-          onClick={onOpen}
-        />
+        <GenericButton icon={<Settings className="PanelButton" />} onClick={onOpen} />
         <div className="CenterIcons">
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
-            icon={<PhoneDown className="DisconnectButton" color="#FFFFFF"/>}
+            icon={<PhoneDown className="DisconnectButton" color={style.getPropertyValue("--bg-light-color-1")} />}
             onClick={() => {
               eventChannel.push("presenter_remove", { presenter: clientName });
               setMode("hls");
             }}
           />
-          <GenericButton
-            icon={<ScreenShare className="PanelButton"/>}
-            onClick={() => {
-
-            }}
-          />
-          <GenericButton
-            icon={<MenuHorizontal className="PanelButton"/>}
-            onClick={() => {
-
-            }}
-          />
+          <GenericButton icon={<ScreenShare className="PanelButton" />} onClick={() => {}} />
+          <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
         </div>
-        <GenericButton
-          icon={<UserPlus className="PanelButton"/>}
-          onClick={() => {
-
-          }}
-        />
+        <GenericButton icon={<UserPlus className="PanelButton" />} onClick={() => {}} />
       </div>
-      <SettingsModal isOpen={isOpen} onClose={onClose} elements={
-        [getDropdownButton("audio"), getDropdownButton("video")]
-      }/>
+      <SettingsModal
+        isOpen={isOpen}
+        onClose={onClose}
+        elements={[getDropdownButton("audio"), getDropdownButton("video")]}
+      />
     </>
   );
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../utils/channelUtils";
 import "../../css/participants.css";
-import {MenuVertical, User1, Crown1, Star1} from "react-swm-icon-pack";
+import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
 
 export type Participant = {
   name: string;
@@ -33,6 +33,9 @@ type ParticipantsListProps = {
 };
 
 const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+  const style = getComputedStyle(document.body);
+  const fontColor = style.getPropertyValue("--font-dark-color");
+
   const handleClick = (e: any) => {
     console.log(e.target.value);
     if (e.target.value === "Set as a presenter") {
@@ -47,18 +50,22 @@ const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: Moderato
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton"/>
+        <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
         <MenuItem
-          color="#001a72"
+          color={fontColor}
           onClick={handleClick}
           value={isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         >
           {isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         </MenuItem>
-        <MenuItem color="#001a72" value="Mute">Mute</MenuItem>
-        <MenuItem color="#001a72" value="Kick">Kick</MenuItem>
+        <MenuItem color={fontColor} value="Mute">
+          Mute
+        </MenuItem>
+        <MenuItem color={fontColor} value="Kick">
+          Kick
+        </MenuItem>
       </MenuList>
     </Menu>
   );
@@ -72,17 +79,22 @@ const Participant = ({
   moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
-  const icon = isModerator ? <Crown1/> : isPresenter ? <Star1/> : <User1/>;
+  const style = getComputedStyle(document.body);
+  const fontColor = style.getPropertyValue("--font-dark-color");
+
+  const icon = isModerator ? <Crown1 /> : isPresenter ? <Star1 /> : <User1 />;
   const role = isModerator ? "Moderator" : isPresenter ? "Presenter" : "Praticipant";
-  
+
   return (
     <div className="Participant">
-      <Tooltip label={`${role}${clientName == name ? " (You)" : ""}`} bg="#001a72" borderRadius="25px">
+      <Tooltip
+        label={`${role}${clientName == name ? " (You)" : ""}`}
+        bg={fontColor}
+        borderRadius="25px"
+      >
         {icon}
       </Tooltip>
-      <p className="ParticipantText">
-        {name}
-      </p>
+      <p className="ParticipantText">{name}</p>
       {moderatorMode && (
         <ModeratorMenu
           clientName={clientName}

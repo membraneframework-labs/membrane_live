@@ -23,12 +23,14 @@
   grid-template-columns: 1fr 1fr;
 }
 
-.Grid3, .Grid4 {
+.Grid3,
+.Grid4 {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
 
-.Grid5, .Grid6 {
+.Grid5,
+.Grid6 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr;

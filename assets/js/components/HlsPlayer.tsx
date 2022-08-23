@@ -6,27 +6,24 @@ import "../../css/hlsplayer.css";
 type HlsPlayerProps = {
   hlsUrl: string;
   presenterName: string;
-}
+};
 
 const HlsPlayer = ({ hlsUrl, presenterName }: HlsPlayerProps) => {
-
   return (
     <div className="HlsStream">
-      {hlsUrl ? 
+      {hlsUrl ? (
         <div className="HlsPlayerWrapper">
-          <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer"/>
+          <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer" />
           <div className="HlsTopBar">
-            <div className="HlsPresenterName">
-              {presenterName}
-            </div>
+            <div className="HlsPresenterName">{presenterName}</div>
           </div>
         </div>
-      : 
-      <div className="WaitText">
-        <RotateLeft/>
-        Waiting for the live stream to start...
-      </div>
-      }
+      ) : (
+        <div className="WaitText">
+          <RotateLeft />
+          Waiting for the live stream to start...
+        </div>
+      )}
     </div>
   );
 };

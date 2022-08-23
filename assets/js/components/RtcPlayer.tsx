@@ -28,15 +28,11 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
 
   return (
     <div className="RtcPlayer">
-      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo"/>
+      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
       <div className="BottomBar">
-        <div className="PresenterName">
-          {isMyself ? name + " (Me)" : name}
-        </div>
+        <div className="PresenterName">{isMyself ? name + " (Me)" : name}</div>
       </div>
-      <div className="TopBar">
-
-      </div>
+      <div className="TopBar"></div>
       {!isMyself && <audio autoPlay ref={audioRef} />}
     </div>
   );

@@ -4,13 +4,13 @@ import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import {Mode} from "./StreamArea"
+import { Mode } from "./StreamArea";
 import "../../css/presenterstreams.css";
 
 type PresenterStreamAreaProps = {
   clientName: string;
   eventChannel: any;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};

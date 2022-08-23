@@ -59,7 +59,7 @@ const Event = () => {
     <div className="EventPage">
       <Header name={name} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
-        <StreamArea clientName={name} eventChannel={eventChannel}/>
+        <StreamArea clientName={name} eventChannel={eventChannel} />
         <ParticipantsList clientName={name} isModerator={true} eventChannel={eventChannel} />
       </div>
       <NamePopup
