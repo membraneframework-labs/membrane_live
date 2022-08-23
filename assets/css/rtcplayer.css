@@ -27,6 +27,8 @@
 }
 
 .PresenterName {
+  display: flex;
+  gap: 0.5em;
   position: absolute;
   margin: 2em;
   border-radius: 16px;
