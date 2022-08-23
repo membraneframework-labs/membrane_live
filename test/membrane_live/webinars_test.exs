@@ -1,13 +1,18 @@
 defmodule MembraneLive.WebinarsTest do
   use MembraneLive.DataCase
+  import MembraneLive.AccountsFixtures
+  import MembraneLive.WebinarsFixtures
 
   alias MembraneLive.Webinars
+  alias MembraneLive.Webinars.Webinar
+
+  setup do
+    user = user_fixture()
+
+    %{user_uuid: user.uuid}
+  end
 
   describe "webinars" do
-    alias MembraneLive.Webinars.Webinar
-
-    import MembraneLive.WebinarsFixtures
-
     @invalid_attrs %{
       "description" => nil,
       "presenters" => nil,
@@ -25,7 +30,7 @@ defmodule MembraneLive.WebinarsTest do
       assert Webinars.get_webinar!(webinar.uuid) == webinar
     end
 
-    test "create_webinar/1 with valid data creates a webinar" do
+    test "create_webinar/1 with valid data creates a webinar", %{user_uuid: user_uuid} do
       valid_attrs = %{
         "description" => "some description",
         "presenters" => [],
@@ -33,15 +38,15 @@ defmodule MembraneLive.WebinarsTest do
         "title" => "some title"
       }
 
-      assert {:ok, %Webinar{} = webinar} = Webinars.create_webinar(valid_attrs)
+      assert {:ok, %Webinar{} = webinar} = Webinars.create_webinar(valid_attrs, user_uuid)
       assert webinar.description == "some description"
       assert webinar.presenters == []
       assert webinar.start_date == ~N[2022-07-17 10:20:00]
       assert webinar.title == "some title"
     end
 
-    test "create_webinar/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Webinars.create_webinar(@invalid_attrs)
+    test "create_webinar/1 with invalid data returns error changeset", %{user_uuid: user_uuid} do
+      assert {:error, %Ecto.Changeset{}} = Webinars.create_webinar(@invalid_attrs, user_uuid)
     end
 
     test "update_webinar/2 with valid data updates the webinar" do

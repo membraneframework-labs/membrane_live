@@ -20,6 +20,7 @@ defmodule MembraneLive.Webinars.Webinar do
     field(:presenters, {:array, :string})
     field(:start_date, :naive_datetime)
     field(:title, :string)
+    belongs_to(:moderator, MembraneLive.Webinars.Webinar, references: :uuid, type: :binary_id)
 
     timestamps()
   end
@@ -27,7 +28,7 @@ defmodule MembraneLive.Webinars.Webinar do
   @doc false
   def changeset(webinar, attrs) do
     webinar
-    |> cast(attrs, [:title, :start_date, :description, :presenters])
-    |> validate_required([:title, :start_date])
+    |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id])
+    |> validate_required([:title, :start_date, :moderator_id])
   end
 end

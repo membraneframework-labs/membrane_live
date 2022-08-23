@@ -1,25 +1,9 @@
-type AuthTokenKey = "authJwt";
-type RefreshTokenKey = "refreshJwt";
-
-const authTokenKey: AuthTokenKey = "authJwt";
-const refreshTokenKey: RefreshTokenKey = "refreshJwt";
-
-export type AuthResponseData = {
-  authToken: AuthTokenKey;
-  refreshToken: RefreshTokenKey;
-};
-
-export const setJwt = ({ authToken, refreshToken }: AuthResponseData) => {
-  if (authToken === undefined || refreshToken === undefined)
-    console.error("Token was not provided from the backend.");
-
-  authToken && localStorage.setItem(authTokenKey, authToken);
-  refreshToken && localStorage.setItem(refreshTokenKey, refreshToken);
-};
+import { authTokenKey, refreshTokenKey } from "../utils/storageUtils";
+import { storageGetRefreshToken, storageGetAuthToken } from "../utils/storageUtils";
 
 export const addJwtToHeader = (config) => {
   config.headers.Authorization = getAuthBearer();
-  config.headers.RefreshToken = getRefreshToken();
+  config.headers.RefreshToken = storageGetRefreshToken();
   return config;
 };
 
@@ -32,14 +16,6 @@ export const destroyTokens = (): void => {
   localStorage.removeItem(refreshTokenKey);
 };
 
-export const getAuthToken = (): string | null => {
-  return localStorage.getItem(authTokenKey);
-};
-
-export const getRefreshToken = (): string | null => {
-  return localStorage.getItem(refreshTokenKey);
-};
-
 export const getAuthBearer = (): string => {
-  return `Bearer ${getAuthToken()}`;
+  return `Bearer ${storageGetAuthToken()}`;
 };

@@ -1,4 +1,4 @@
-import type { EventForm, Links } from "../pages/Form";
+import type { EventForm } from "../pages/Form";
 import axiosWithInterceptor from "../services/index";
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
@@ -7,12 +7,12 @@ export const checkEventForm = (eventForm: EventForm): boolean => {
 
 export const sendEventForm = async (
   eventForm: EventForm,
-  setLinks: React.Dispatch<React.SetStateAction<Links | undefined>>
+  setLink: React.Dispatch<React.SetStateAction<string>>
 ): Promise<void> => {
   axiosWithInterceptor
     .post("resources/webinars", { webinar: eventForm })
     .then((response) => {
-      setLinks(response.data.webinar_links);
+      setLink(response.data.link);
     })
     .catch((error) => {
       console.log(error);

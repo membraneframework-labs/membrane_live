@@ -12,8 +12,8 @@ defmodule MembraneLiveWeb.WebinarView do
     %{webinar: render_one(webinar, WebinarView, "webinar.json")}
   end
 
-  def render("show_links.json", %{webinar_links: webinar_links}) do
-    %{webinar_links: webinar_links}
+  def render("show_link.json", %{link: link}) do
+    %{link: link}
   end
 
   def render("webinar.json", %{webinar: webinar}) do
