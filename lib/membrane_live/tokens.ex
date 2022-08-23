@@ -9,26 +9,45 @@ defmodule MembraneLive.Tokens do
   Refresh Token:
     - encode: generation and signing
     - decode: verification and validation
+
+  FYI: pem = Privacy-Enhanced Mail - format for storing cryptographic keys. In this case: google public keys
   """
   alias MembraneLive.Tokens.{AuthToken, GoogleToken, RefreshToken}
 
   def google_decode(jwt) do
-    GoogleToken.verify_and_validate(jwt, get_signer(jwt))
+    with {:ok, signer} <- get_signer(jwt) do
+      GoogleToken.verify_and_validate(jwt, signer)
+    else
+      err -> err
+    end
   end
 
   defp get_signer(jwt) do
-    Joken.Signer.create("RS256", get_public_keys(jwt))
+    with {:ok, public_keys} <- get_public_keys(jwt) do
+      {:ok, Joken.Signer.create("RS256", public_keys)}
+    else
+      err -> err
+    end
   end
 
   defp get_public_keys(jwt) do
-    {:ok, %{"kid" => key_id}} = Joken.peek_header(jwt)
+    with {:ok, %{"kid" => key_id}} <- Joken.peek_header(jwt),
+         {:ok, pem_response} <- fetch_google_public_pems() do
+      pem_response
+      |> Map.get(:body)
+      |> Jason.decode!()
+      |> Map.get(key_id)
+      |> then(&{:ok, %{"pem" => &1}})
+    else
+      {:error, :token_malformed} -> {:error, :invalid_jwt_header}
+      err -> err |> IO.inspect()
+    end
+  end
 
-    Application.fetch_env!(:membrane_live, :google_pems_url)
-    |> HTTPoison.get!()
-    |> Map.get(:body)
-    |> Jason.decode!()
-    |> Map.get(key_id)
-    |> then(&%{"pem" => &1})
+  defp fetch_google_public_pems() do
+    :membrane_live
+    |> Application.fetch_env!(:google_pems_url)
+    |> HTTPoison.get()
   end
 
   @spec auth_encode(any) :: {:error, atom | keyword} | {:ok, binary, %{optional(binary) => any}}

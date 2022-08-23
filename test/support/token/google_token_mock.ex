@@ -45,4 +45,19 @@ defmodule MembraneLive.Support.GoogleTokenMock do
       "picture" => user.picture
     }
   end
+
+  def wrongly_signed_jwt() do
+    signer = get_invalid_signer()
+    generate_and_sign(%{}, signer)
+  end
+
+  defp get_invalid_signer() do
+    get_signer(:google_invalid_priv_key_path)
+  end
+
+  defp get_signer(env_key) do
+    private_key = Application.fetch_env!(:membrane_live, env_key) |> File.read!()
+
+    Joken.Signer.create("RS256", %{"pem" => private_key}, %{"kid" => @kid})
+  end
 end

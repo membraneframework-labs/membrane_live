@@ -8,11 +8,6 @@ defmodule MembraneLiveWeb.UserControllerTest do
 
   @dummy_uuid "5a2771ef-3cf2-4d86-b125-fd366e04bc29"
 
-  @create_attrs %{
-    email: "john@gmail.com",
-    name: "John Kowalski",
-    picture: "kowalski.img"
-  }
   @update_attrs %{
     email: "john-update@gmail.com",
     name: "John Update Kowalski",
