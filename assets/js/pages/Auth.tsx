@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated, setJwt } from "../services/jwtApi";
 
+import "../../css/authpage.css";
+
 const Auth = () => {
   const navigate = useNavigate();
   const redirectToHomePage = () => navigate("/");
@@ -40,7 +42,11 @@ const Auth = () => {
     google.accounts.id.prompt();
   }, []);
 
-  return <div id="google-sign-in-button" />;
+  return (
+    <div className="AuthPage">
+      <div id="google-sign-in-button" />
+    </div>
+  );
 };
 
 export default Auth;

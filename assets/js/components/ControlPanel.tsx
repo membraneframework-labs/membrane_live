@@ -159,6 +159,7 @@ const ControlPanel = ({
   const getDropdownButton = (sourceType: SourceType) => {
     return (
       <DropdownButton
+        key={sourceType}
         mainText={`${sourceType} source`}
         currentSourceName={getCurrentDeviceName(clientName, sourceType)}
         sources={sources[sourceType]}
@@ -197,13 +198,21 @@ const ControlPanel = ({
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
-            icon={<PhoneDown className="DisconnectButton" color={style.getPropertyValue("--bg-light-color-1")} />}
+            icon={
+              <PhoneDown
+                className="DisconnectButton"
+                color={style.getPropertyValue("--bg-light-color-1")}
+              />
+            }
             onClick={() => {
               eventChannel.push("presenter_remove", { presenter: clientName });
               setMode("hls");
             }}
           />
-          <GenericButton icon={<ScreenShare className="PanelButton" />} onClick={() => shareScreen(webrtc, clientName, playerCallback)} />
+          <GenericButton
+            icon={<ScreenShare className="PanelButton" />}
+            onClick={() => shareScreen(webrtc, clientName, playerCallback)}
+          />
           <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
         </div>
         <GenericButton icon={<UserPlus className="PanelButton" />} onClick={() => {}} />
