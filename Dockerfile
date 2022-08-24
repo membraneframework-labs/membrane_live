@@ -9,18 +9,10 @@ RUN apt-get update \
     python3 \
     make \
     cmake \
-    # openssl-dev \
     libssl-dev \ 
-    # libsrtp-dev \
-    # libsrtp0-dev \
     libsrtp2-dev \
     ffmpeg \
     clang-format \ 
-    # fdk-aac \ 
-    # fdk-aac-dev \
-    # libfdk-aac1 \
-    # opus \
-    # opus-dev \
     libopus-dev \
     pkgconf
 
@@ -52,29 +44,23 @@ RUN mix setup
 RUN mix deps.compile
 
 RUN mix assets.deploy
-# RUN mix phx.digest
 
 # compile and build release
-
-
 RUN mix do compile, release
 
 # prepare release image
-FROM membraneframeworklabs/docker_membrane AS app
-
+FROM ubuntu:22.04 AS app
 
 # install runtime dependencies
 RUN apt-get update \ 
     && apt-get install -y \
     openssl \
-    # ncurses-libs \
     libncurses5-dev \
     libncursesw5-dev \
     libsrtp2-dev \
     ffmpeg \
     clang-format \ 
     curl
-# libfdk-aac1
 
 WORKDIR /app
 
@@ -84,10 +70,11 @@ RUN chmod +x docker-entrypoint.sh
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
+RUN groupadd -r membrane && useradd --no-log-init -r -g membrane membrane
 
-# RUN chown nobody:nobody /app
+RUN chown membrane:membrane /app
 
-# USER nobody:nobody
+USER membrane:membrane
 
 COPY --from=build /app/_build/prod/rel/membrane_live ./
 
