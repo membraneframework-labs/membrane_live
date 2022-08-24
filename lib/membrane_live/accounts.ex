@@ -46,4 +46,11 @@ defmodule MembraneLive.Accounts do
   end
 
   def create_user_id_not_exists(_attrs), do: {:error, :email_not_provided}
+
+  def get_username(uuid) do
+    case get_user(uuid) do
+      nil -> {:error, "User with this id #{uuid} doesn't exist."}
+      user -> {:ok, user.name}
+    end
+  end
 end

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ParticipantsList from "../components/ParticipantsList";
-import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import Header from "../components/Header";
+import { storageGetName, storageGetAuthToken } from "../utils/storageUtils";
 import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
 
@@ -19,15 +19,12 @@ export type PresenterPopupState = {
 };
 
 const Event = () => {
-  const [namePopupState, setNamePopupState] = useState<NamePopupState>({
-    isOpen: true,
-    channelConnErr: "",
-  });
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
   });
-  const [name, setName] = useState<string>("");
+  const name: string = storageGetName();
+  const [isModerator, setIsModerator] = useState<boolean>(false);
 
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
@@ -37,23 +34,22 @@ const Event = () => {
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
-    if (name && !alreadyJoined) {
+    if (!alreadyJoined) {
       const channel = socket.channel(`event:${getChannelId()}`, {
-        name: name,
-        isModerator: true,
+        token: storageGetAuthToken(),
       });
-      createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
+      createEventChannel(channel, setEventChannel, setIsModerator);
     }
-  }, [name, eventChannel]);
+  }, [eventChannel]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
-    if (name && !privateAlreadyJoined && eventAlreadyJoined) {
+    if (!privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${getChannelId()}:${name}`, {});
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
-  }, [name, eventChannel, privateChannel]);
+  }, [eventChannel, privateChannel]);
 
   return (
     <div className="EventPage">
@@ -62,11 +58,6 @@ const Event = () => {
         <StreamArea clientName={name} eventChannel={eventChannel} />
         <ParticipantsList clientName={name} isModerator={true} eventChannel={eventChannel} />
       </div>
-      <NamePopup
-        setName={setName}
-        isOpen={namePopupState.isOpen}
-        channelConnErr={namePopupState.channelConnErr}
-      />
       {presenterPopupState.isOpen && (
         <PresenterPopup
           username={name}
