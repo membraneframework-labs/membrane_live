@@ -40,7 +40,7 @@ defmodule MembraneLive.Tokens do
       |> then(&{:ok, %{"pem" => &1}})
     else
       {:error, :token_malformed} -> {:error, :invalid_jwt_header}
-      err -> err |> IO.inspect()
+      err -> err
     end
   end
 
@@ -71,8 +71,14 @@ defmodule MembraneLive.Tokens do
 
   @spec refresh_decode(binary) :: {:error, atom | keyword} | {:ok, %{optional(binary) => any}}
   def refresh_decode(jwt) do
-    signer = create_refresh_signer()
-    RefreshToken.verify_and_validate(jwt, signer)
+    case RefreshToken.has_uuid(jwt) do
+      true ->
+        signer = create_refresh_signer()
+        RefreshToken.verify_and_validate(jwt, signer)
+
+      _ ->
+        {:error, :no_uuid_in_header}
+    end
   end
 
   defp create_auth_signer(),

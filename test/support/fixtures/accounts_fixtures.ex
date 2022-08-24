@@ -4,6 +4,12 @@ defmodule MembraneLive.AccountsFixtures do
   entities via the `MembraneLive.Accounts` context.
   """
 
+  @default_user_attrs %{
+    email: "john@gmail.com",
+    name: "John Kowalski",
+    picture: "kowalski.img"
+  }
+
   @doc """
   Generate a user.
   """
@@ -19,4 +25,6 @@ defmodule MembraneLive.AccountsFixtures do
 
     user
   end
+
+  def user_attrs(), do: @default_user_attrs
 end

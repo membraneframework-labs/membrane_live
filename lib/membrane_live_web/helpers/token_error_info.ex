@@ -12,6 +12,9 @@ defmodule MembraneLiveWeb.Helpers.TokenErrorInfo do
   def get_error_info({:error, :signature_error}),
     do: %{error: :unauthorized, message: "Token has an invalid signature"}
 
+  def get_error_info({:error, :no_uuid_in_header}),
+    do: %{error: :bad_request, message: "User id was not provided in the jwt"}
+
   def get_error_info({:error, [{:message, "Invalid token"} | [{:claim, "exp"} | _tail]]}),
     do: %{error: :unauthorized, message: "Auth token expiration time exceeded"}
 

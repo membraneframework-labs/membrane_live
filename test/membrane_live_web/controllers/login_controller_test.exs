@@ -4,7 +4,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   import MembraneLive.AccountsFixtures
 
   alias MembraneLive.Accounts.User
-  alias MembraneLive.Support.GoogleTokenMock
+  alias MembraneLive.Support.{GoogleTokenMock, RefreshTokenMock}
   alias MembraneLive.Repo
   alias MembraneLive.Tokens
 
@@ -26,7 +26,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   describe "google auth" do
     test "[200]: jwt passes", %{bypass: bypass, conn: conn} do
       # given
-      user_to_add = user_fixture()
+      user_to_add = user_attrs()
       {:ok, mock_google_token, _claims} = GoogleTokenMock.get_mock_jwt(user_to_add)
 
       expect_google_pem(bypass)
@@ -80,13 +80,43 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   end
 
   describe "refresh" do
-    test "[200] refresh token is valid" do
-      # user = user_fixture() |> Repo.insert!()
+    test "[200] refresh token is valid", %{conn: conn} do
+      # given
+      user = user_fixture()
+      {:ok, old_refresh_token, _claims} = Tokens.refresh_encode(user.uuid)
 
-      # TODO
+      # when
+      conn = post(conn, Routes.login_path(conn, :refresh), refreshToken: old_refresh_token)
+
+      # then
+      assert %{"authToken" => auth_token, "refreshToken" => new_refresh_token} =
+               json_response(conn, 200)
+
+      assert {:ok, %{"user_id" => user_id}} = Tokens.auth_decode(auth_token)
+      assert {:ok, _claims} = Tokens.refresh_decode(new_refresh_token)
+
+      assert old_refresh_token != new_refresh_token
+
+      assert user_in_db = Repo.get!(User, user_id)
+      assert user_in_db.name == user.name
+      assert user_in_db.email == user.email
+      assert user_in_db.picture == user.picture
     end
 
-    test "[401] refresh token is invalid" do
+    test "[400] empty claims", %{conn: conn} do
+      empty_jwt = RefreshTokenMock.empty_jwt()
+
+      conn = post(conn, Routes.login_path(conn, :refresh), refreshToken: empty_jwt)
+
+      assert conn.status == 400
+    end
+
+    test "[401] refresh token is invalid", %{conn: conn} do
+      invalid_jwt = RefreshTokenMock.wrongly_signed_jwt("iNvAlId_SeCrEt")
+
+      conn = post(conn, Routes.login_path(conn, :refresh), refreshToken: invalid_jwt)
+
+      assert conn.status == 401
     end
   end
 
