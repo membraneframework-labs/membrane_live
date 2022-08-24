@@ -9,6 +9,8 @@ import {
   storageSetPicture,
 } from "../utils/storageUtils";
 
+import "../../css/authpage.css";
+
 const Auth = () => {
   const navigate = useNavigate();
   const redirectToHomePage = () => navigate("/");
@@ -58,7 +60,11 @@ const Auth = () => {
     google.accounts.id.prompt();
   }, []);
 
-  return <div id="google-sign-in-button" />;
+  return (
+    <div className="AuthPage">
+      <div id="google-sign-in-button" />
+    </div>
+  );
 };
 
 export default Auth;

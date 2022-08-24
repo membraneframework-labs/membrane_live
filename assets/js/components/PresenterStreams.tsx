@@ -4,16 +4,25 @@ import { syncPresenters } from "../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
+import { Mode } from "./StreamArea";
+import "../../css/presenterstreams.css";
 
 type PresenterStreamAreaProps = {
   clientName: string;
   eventChannel: any;
+  mode: Mode;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 
-const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaProps) => {
+const PresenterStreams = ({
+  clientName,
+  eventChannel,
+  mode,
+  setMode,
+}: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<string[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
@@ -35,28 +44,32 @@ const PresenterStreamArea = ({ clientName, eventChannel }: PresenterStreamAreaPr
   }, [eventChannel]);
 
   return presenters.includes(clientName) ? (
-    <>
-      {presenters.map((presenter) => {
-        return (
-          <RtcPlayer
-            isMyself={clientName == presenter}
-            name={presenter}
-            playerCallbacks={playerCallbacks}
-            key={presenter}
-          />
-        );
-      })}
+    <div className={`PresenterStreams ${mode == "hls" ? "Hidden" : ""}`}>
+      <div className={`StreamsGrid Grid${presenters.length}`}>
+        {presenters.map((presenter) => {
+          return (
+            <RtcPlayer
+              isMyself={clientName == presenter}
+              name={presenter}
+              playerCallbacks={playerCallbacks}
+              key={presenter}
+            />
+          );
+        })}
+      </div>
       {isControlPanelAvailable && (
         <ControlPanel
           clientName={clientName}
           webrtc={webrtc!}
+          eventChannel={eventChannel}
           playerCallback={playerCallbacks[clientName]}
+          setMode={setMode}
         />
       )}
-    </>
+    </div>
   ) : (
     <></>
   );
 };
 
-export default PresenterStreamArea;
+export default PresenterStreams;

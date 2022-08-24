@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { presenterStreams, SourceType } from "../utils/rtcUtils";
+import { User1 } from "react-swm-icon-pack";
+import "../../css/rtcplayer.css";
 
 type RtcPlayerProps = {
   isMyself: boolean;
@@ -10,6 +12,9 @@ type RtcPlayerProps = {
 const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const style = getComputedStyle(document.body);
+  const font = style.getPropertyValue("--font-light-color");
 
   const connectStreams = (sourceType: SourceType) => {
     if (!(name in presenterStreams)) return;
@@ -26,10 +31,16 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   }, []);
 
   return (
-    <div>
-      <video width={1000} height={700} autoPlay muted={true} ref={videoRef} />
+    <div className="RtcPlayer">
+      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
+      <div className="BottomBar">
+        <div className="PresenterName">
+          {isMyself && <User1 color={font} />}
+          {isMyself ? "You" : name}
+        </div>
+      </div>
+      <div className="TopBar"></div>
       {!isMyself && <audio autoPlay ref={audioRef} />}
-      <h5>{isMyself ? name + " (Me)" : name}</h5>
     </div>
   );
 };

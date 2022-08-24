@@ -1,0 +1,22 @@
+@import "./main.css";
+
+.StreamArea {
+  flex: 1;
+  min-width: 0;
+  margin: 1em 0 1em 1em;
+  display: flex;
+  flex-direction: column;
+}
+
+.Stream {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.Hidden {
+  position: absolute;
+  z-index: -1;
+}

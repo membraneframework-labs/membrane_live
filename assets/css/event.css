@@ -1,41 +1,14 @@
-.Header {
-  background-color: #ffffff;
-  margin: 10px;
-  height: 56px;
-  width: 100%;
-  border-radius: 0px;
-  padding: 0px;
+.EventPage {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  flex-direction: row;
-  gap: 32px;
-}
-.Mode {
-  background-color: #f5f7fe;
-  height: 96px;
-  border-radius: 24px;
-  margin: 10px;
-  border: 1px solid #bfccf8;
-  padding: 10px;
-}
-.Stream {
-  background-color: #bfccf8;
-  margin: 10px;
-  height: 708px;
-  border-radius: 24px;
-}
-
-.Participants {
-  display: grid;
-  grid-template-rows: 10% 90%;
-  background-color: #f5f7fe;
-  margin: 10px;
-  border-radius: 24px;
-  border: 1px solid #bfccf8;
-  padding: 0px 0px 24px;
+  flex-direction: column;
+  background: var(--bg-light-color-1);
 }
 
 .MainGrid {
-  display: grid;
-  grid-template-columns: 75% 25%;
-  justify-items: stretch;
+  flex: 1;
+  min-height: 0;
+  display: flex;
 }

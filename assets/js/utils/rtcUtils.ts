@@ -162,18 +162,42 @@ export const shareScreen = async (
   webrtc: MembraneWebRTC,
   clientName: string,
   playerCallback: (SourceType: SourceType) => void
-) => {
-  const mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientName]);
+): Promise<boolean> => {
+  let mergedStream: MediaStream;
 
-  mergedStream.getTracks().forEach((track) => {
+  try {
+    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientName]);
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+
+  mergedStream!.getTracks().forEach((track) => {
     addOrReplaceTrack(clientName, track, playerCallback);
   });
 
   const newTrack = findTrackByType(clientName, "video");
 
-  if (!webrtc || !newTrack) return;
+  if (!webrtc || !newTrack) return false;
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
   else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  return true;
+};
+
+export const stopShareScreen = (
+  webrtc: MembraneWebRTC,
+  clientName: string,
+  playerCallback: (sourceType: SourceType) => void
+) => {
+  if (mergedScreenRef.cameraTrack) {
+    const newCameraStream: MediaStream = new MediaStream([mergedScreenRef.cameraTrack]).clone();
+    addOrReplaceTrack(clientName, newCameraStream.getTracks()[0], playerCallback);
+    removeMergedStream();
+    const newTrack = findTrackByType(clientName, "video");
+    if (!webrtc || !newTrack) return;
+    if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
+    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  }
 };
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {

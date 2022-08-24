@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../utils/channelUtils";
+import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
+import { getFontColor } from "../utils/styleUtils";
 import "../../css/participants.css";
-import { AiOutlineMore } from "react-icons/ai";
-import userIcon from "../../images/user.svg";
-import starIcon from "../../images/star.svg";
-import crownIcon from "../../images/crown.svg";
 
 export type Participant = {
   name: string;
@@ -14,14 +12,14 @@ export type Participant = {
 };
 
 type ModeratorMenuProps = {
-  username: string;
+  clientName: string;
   name: string;
   isPresenter: boolean;
   eventChannel: any;
 };
 
 type ParticipantProps = {
-  username: string;
+  clientName: string;
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
@@ -30,18 +28,19 @@ type ParticipantProps = {
 };
 
 type ParticipantsListProps = {
-  username: string;
+  clientName: string;
   isModerator: boolean;
   eventChannel: any;
 };
 
-const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+  const fontColor = getFontColor("--font-dark-color");
+  const link = "private:" + window.location.pathname.split("/")[2] + ":";
+
   const handleClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
-      const link = "private:" + window.location.pathname.split("/")[2] + ":";
-      eventChannel.push("presenter_prop", { moderator: link + username, presenter: link + name });
+      eventChannel.push("presenter_prop", { moderator: link + clientName, presenter: link + name });
     } else {
-      const link = "private:" + window.location.pathname.split("/")[2] + ":";
       eventChannel.push("presenter_remove", { presenter_topic: link + name });
     }
   };
@@ -49,41 +48,53 @@ const ModeratorMenu = ({ username, name, isPresenter, eventChannel }: ModeratorM
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <AiOutlineMore />
+        <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
         <MenuItem
+          color={fontColor}
           onClick={handleClick}
           value={isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         >
           {isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         </MenuItem>
-        <MenuItem value="Mute">Mute</MenuItem>
-        <MenuItem value="Kick">Kick</MenuItem>
+        <MenuItem color={fontColor} value="Mute">
+          Mute
+        </MenuItem>
+        <MenuItem color={fontColor} value="Kick">
+          Kick
+        </MenuItem>
       </MenuList>
     </Menu>
   );
 };
 
 const Participant = ({
-  username,
+  clientName,
   name,
   isModerator,
   isPresenter,
   moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
-  const iconLink = isModerator ? crownIcon : isPresenter ? starIcon : userIcon;
+  const fontColor = getFontColor("--font-dark-color");
+
+  const icon = isModerator ? <Crown1 /> : isPresenter ? <Star1 /> : <User1 />;
+  const role = isModerator ? "Moderator" : isPresenter ? "Presenter" : "Praticipant";
+
   return (
     <div className="Participant">
-      <img src={iconLink} />
-      <p className="ParticipantText">
-        {" "}
-        {name} {isPresenter && " (Presenter)"}
-      </p>
+      <Tooltip
+        label={`${role}${clientName == name ? " (You)" : ""}`}
+        bg={fontColor}
+        borderRadius="25px"
+      >
+        {icon}
+      </Tooltip>
+      <p className="ParticipantText">{name}</p>
       {moderatorMode && (
         <ModeratorMenu
-          username={username}
+          clientName={clientName}
           eventChannel={eventChannel}
           isPresenter={isPresenter}
           name={name}
@@ -93,7 +104,7 @@ const Participant = ({
   );
 };
 
-const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsListProps) => {
+const ParticipantsList = ({ clientName, isModerator, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
 
@@ -105,7 +116,7 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
   participants.map((participant) =>
     parts.push(
       <Participant
-        username={username}
+        clientName={clientName}
         key={participant.name}
         name={participant.name}
         isModerator={participant.isModerator}
@@ -117,7 +128,7 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
   );
 
   return (
-    <>
+    <div className="Participants">
       <div className="ParticipantsButtons">
         <button
           className={`ParticipantsButton ${!listMode && "Clicked"}`}
@@ -135,7 +146,7 @@ const ParticipantsList = ({ username, isModerator, eventChannel }: ParticipantsL
         </button>
       </div>
       {listMode && <div className="ParticipantsList">{parts}</div>}
-    </>
+    </div>
   );
 };
 

@@ -1,7 +1,31 @@
-import { Box, Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
-import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import React, { useState, useEffect } from "react";
-import { Camera, CameraDisabled, Microphone, MicrophoneDisabled } from "react-swm-icon-pack";
+import {
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useDisclosure,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  Modal,
+  ModalBody,
+} from "@chakra-ui/react";
+import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
+import {
+  Cam,
+  CamDisabled,
+  Microphone,
+  MicrophoneDisabled,
+  Settings,
+  PhoneDown,
+  ScreenShare,
+  ScreenDisabled,
+  MenuHorizontal,
+  UserPlus,
+} from "react-swm-icon-pack";
 import {
   shareScreen,
   changeSource,
@@ -11,7 +35,11 @@ import {
   getSources,
   Sources,
   SourceType,
+  stopShareScreen,
 } from "../utils/rtcUtils";
+import { Mode } from "./StreamArea";
+import { getFontColor } from "../utils/styleUtils";
+import "../../css/controlpanel.css";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -57,31 +85,44 @@ const DropdownButton = ({
   );
 };
 
-type MuteButtonProps = {
-  sourceType: SourceType;
-  disabled?: boolean;
-  active?: boolean;
+type GenericButtonProps = {
+  icon: any;
   onClick: () => void;
 };
 
-const MuteButton = ({ sourceType, disabled, active, onClick }: MuteButtonProps) => {
-  const icon =
-    disabled || !active
-      ? { audio: <MicrophoneDisabled />, video: <CameraDisabled /> }
-      : { audio: <Microphone />, video: <Camera /> };
+const GenericButton = ({ icon, onClick }: GenericButtonProps) => {
+  return <button onClick={onClick}>{icon}</button>;
+};
 
+type SettingsModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  elements: JSX.Element[];
+};
+
+const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   return (
-    <Button
-      isDisabled={disabled}
-      borderRadius="500px"
-      backgroundColor={active ? "white" : "red.300"}
-      border="1px"
-      borderColor={active ? "#BFCCF8" : "red"}
-      onClick={() => onClick()}
-    >
-      {icon[sourceType]}
-    </Button>
+    <div className="SettingsModal">
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader className="SettingsModalHeader">Settings</ModalHeader>
+          <ModalCloseButton className="SettingsModalClose" />
+
+          <ModalBody className="SettingsModalBody">{elements}</ModalBody>
+        </ModalContent>
+      </Modal>
+    </div>
   );
+};
+
+const stopBeingPresenter = (
+  eventChannel: any,
+  clientName: string,
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
+) => {
+  eventChannel.push("presenter_remove", { presenter: clientName });
+  setMode("hls");
 };
 
 const useRerender = () => {
@@ -92,12 +133,24 @@ const useRerender = () => {
 type ControlPanelProps = {
   clientName: string;
   webrtc: MembraneWebRTC;
+  eventChannel: any;
   playerCallback: (sourceType: SourceType) => void;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps) => {
+const ControlPanel = ({
+  clientName,
+  webrtc,
+  eventChannel,
+  playerCallback,
+  setMode,
+}: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
+  const [sharingScreen, setSharingScreen] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
+
+  const bgColor = getFontColor("--bg-light-color-1");
 
   const updateSources = async () => {
     const sources = await getSources();
@@ -119,24 +172,30 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
   const getDropdownButton = (sourceType: SourceType) => {
     return (
       <DropdownButton
+        key={sourceType}
         mainText={`${sourceType} source`}
         currentSourceName={getCurrentDeviceName(clientName, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() =>
-            rerender()
-          );
+          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() => {
+            rerender();
+            setSharingScreen(false);
+          });
         }}
       />
     );
   };
 
-  const getMuteButton = (sourceType: SourceType) => {
+  const getMuteButton = (sourceType: SourceType, IconEnabled: any, IconDisabled: any) => {
     return (
-      <MuteButton
-        sourceType={sourceType}
-        disabled={!findTrackByType(clientName, sourceType)}
-        active={findTrackByType(clientName, sourceType)?.enabled}
+      <GenericButton
+        icon={
+          findTrackByType(clientName, sourceType)?.enabled ? (
+            <IconEnabled className="PanelButton Enabled" />
+          ) : (
+            <IconDisabled className="PanelButton Disabled" />
+          )
+        }
         onClick={() => {
           changeTrackIsEnabled(clientName, sourceType);
           rerender();
@@ -147,13 +206,41 @@ const ControlPanel = ({ clientName, webrtc, playerCallback }: ControlPanelProps)
 
   return (
     <>
-      <Box borderWidth="1px" width="100%" min-height="40px" padding="10px">
-        {getDropdownButton("audio")}
-        {getDropdownButton("video")}
-        {getMuteButton("audio")}
-        {getMuteButton("video")}
-      </Box>
-      <button onClick={() => shareScreen(webrtc, clientName, playerCallback)}>shareScreen</button>
+      <div className="ControlPanel">
+        <GenericButton icon={<Settings className="PanelButton" />} onClick={onOpen} />
+        <div className="CenterIcons">
+          {getMuteButton("video", Cam, CamDisabled)}
+          {getMuteButton("audio", Microphone, MicrophoneDisabled)}
+          <GenericButton
+            icon={<PhoneDown className="DisconnectButton" color={bgColor} />}
+            onClick={() => stopBeingPresenter(eventChannel, clientName, setMode)}
+          />
+          <GenericButton
+            icon={
+              !sharingScreen ? (
+                <ScreenShare className="PanelButton" />
+              ) : (
+                <ScreenDisabled className="PanelButton" />
+              )
+            }
+            onClick={() => {
+              if (!sharingScreen)
+                shareScreen(webrtc, clientName, playerCallback).then((value) =>
+                  setSharingScreen(value)
+                );
+              else stopShareScreen(webrtc, clientName, playerCallback);
+              setSharingScreen(false);
+            }}
+          />
+          <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
+        </div>
+        <GenericButton icon={<UserPlus className="PanelButton" />} onClick={() => {}} />
+      </div>
+      <SettingsModal
+        isOpen={isOpen}
+        onClose={onClose}
+        elements={[getDropdownButton("audio"), getDropdownButton("video")]}
+      />
     </>
   );
 };

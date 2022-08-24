@@ -181,8 +181,13 @@ $RECYCLE.BIN/
 # node_module in assets
 assets/node_modules/*
 
+# vs code config
 .vscode
-priv/static/assets/app.js
+
+# static assets served by Phoenix
+priv/static/assets/*
+
+# HLS files served by Phoenix
 output/*
 
 *.tgz

@@ -1,90 +1,61 @@
-@import url(https://fonts.googleapis.com/css?family=Roboto);
+@import "./main.css";
 
-.ArrowIcon {
-  display: inline-block;
-  margin: 10px;
+.Header {
+  margin: 1rem 1rem 0rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  white-space: nowrap;
+}
+
+.Arrow {
+  box-sizing: content-box;
+  height: 2em;
+  width: auto;
+  padding: 1em;
+  border-radius: 50%;
+  background: var(--bg-light-color-2);
 }
 
 .Title {
-  width: 750px;
-  height: 34px;
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 500;
-  font-size: 24px;
-  line-height: 36px;
-  display: flex;
-  align-items: center;
+  font-size: 1.5rem;
   letter-spacing: 0.015em;
-  color: #001a72;
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
+  color: var(--font-dark-color);
 }
 
 .InfoWrapper {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 0px;
-  width: 913px;
-  height: 58px;
-  flex: none;
-  order: 1;
-  flex-grow: 1;
+  margin-right: auto;
 }
 
 .WebinarInfo {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 0px;
-  width: 423px;
-  height: 24px;
-  flex: none;
-  order: 1;
-  flex-grow: 0;
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 28px;
-  color: #001a72;
-  gap: 10px;
+  gap: 0.75em;
+  color: var(--font-dark-color);
 }
 
 .CopyLink {
-  box-sizing: border-box;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 4px 20px;
-  gap: 12px;
-  width: 170px;
-  height: 36px;
-  background: #f5f7fe;
-  border: 1px solid #bfccf8;
+  padding: 0.4em 1em;
+  gap: 1em;
+  color: var(--font-dark-color);
+  background: var(--bg-light-color-2);
+  border: 1px solid var(--bg-light-color-3);
   border-radius: 24px;
-  flex: none;
-  order: 2;
-  flex-grow: 0;
-  align-self: center;
-  color: #001a72;
 }
 
 .User {
   display: flex;
-  flex-direction: row;
-  align-self: center;
-  text-align: center;
-  padding: 0px;
-  gap: 16px;
-  width: 212px;
-  height: 48px;
-  flex: none;
-  order: 3;
-  flex-grow: 0;
+  align-items: center;
+  gap: 0.75em;
+}
+
+.UsersIcon {
+  height: 1.2em;
+  width: auto;
 }
 
 .CopyButton {
@@ -93,28 +64,18 @@
 }
 
 .UserIcon {
-  width: 48px;
-  height: 48px;
-  color: #001a72;
+  height: 3em;
+  width: auto;
+  color: var(--font-dark-color);
 }
 
 .UserName {
-  width: 148px;
-  height: 36px;
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 400;
-  font-size: 20px;
-  line-height: 36px;
-  display: flex;
-  align-items: center;
-  color: #001a72;
-  align-self: center;
+  font-size: 1.3em;
+  color: var(--font-dark-color);
 }
 
 .Link {
-  display: block;
-  max-width: 9ch;
+  max-width: 15ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -122,6 +83,6 @@
 
 .ParticipantsNumber {
   display: flex;
-  flex-direction: row;
-  gap: 5px;
+  align-items: center;
+  gap: 0.4em;
 }
