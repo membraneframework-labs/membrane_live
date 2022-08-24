@@ -3,7 +3,7 @@ FROM membraneframeworklabs/docker_membrane AS build
 
 # install build dependencies
 RUN apt-get update \
-    && apt-get install -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     npm \
     git \
     python3 \
@@ -49,18 +49,32 @@ RUN mix assets.deploy
 RUN mix do compile, release
 
 # prepare release image
-FROM ubuntu:22.04 AS app
+FROM ubuntu:20.04 AS app
 
 # install runtime dependencies
 RUN apt-get update \ 
-    && apt-get install -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     openssl \
     libncurses5-dev \
     libncursesw5-dev \
     libsrtp2-dev \
     ffmpeg \
     clang-format \ 
-    curl
+    curl \
+    wget \
+    build-essential
+
+RUN cd /tmp/ \
+    && wget https://downloads.sourceforge.net/opencore-amr/fdk-aac-2.0.0.tar.gz \
+    && tar -xf fdk-aac-2.0.0.tar.gz && cd fdk-aac-2.0.0 \
+    && ./configure --prefix=/usr --disable-static \
+    && make && make install \
+    && cd / \
+    && rm -rf /tmp/*
+
+RUN apt remove build-essential -y \
+    wget \
+    && apt autoremove -y
 
 WORKDIR /app
 
