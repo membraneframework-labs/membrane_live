@@ -158,12 +158,12 @@ export const changeSource = async (
   playerCallback: (sourceType: SourceType) => void
 ) => {
   await setSourceById(clientName, deviceId, sourceType, playerCallback);
+  if (!webrtc) return;
   if (mergedScreenRef.refreshId && sourceType == "video") {
-    if (!webrtc) return;
     shareScreen(webrtc, clientName, playerCallback);
   } else {
     const newTrack = findTrackByType(clientName, sourceType);
-    if (!webrtc || !newTrack) return;
+    if (!newTrack) return;
     if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
     else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
   }
