@@ -22,6 +22,7 @@ import {
   Settings,
   PhoneDown,
   ScreenShare,
+  ScreenDisabled,
   MenuHorizontal,
   UserPlus,
 } from "react-swm-icon-pack";
@@ -34,6 +35,7 @@ import {
   getSources,
   Sources,
   SourceType,
+  stopShareScreen,
 } from "../utils/rtcUtils";
 import { Mode } from "./StreamArea";
 import { getFontColor } from "../utils/styleUtils";
@@ -144,6 +146,7 @@ const ControlPanel = ({
   setMode,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
+  const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
 
@@ -174,9 +177,10 @@ const ControlPanel = ({
         currentSourceName={getCurrentDeviceName(clientName, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() =>
-            rerender()
-          );
+          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() => {
+            rerender();
+            setSharingScreen(false);
+          });
         }}
       />
     );
@@ -212,8 +216,21 @@ const ControlPanel = ({
             onClick={() => stopBeingPresenter(eventChannel, clientName, setMode)}
           />
           <GenericButton
-            icon={<ScreenShare className="PanelButton" />}
-            onClick={() => shareScreen(webrtc, clientName, playerCallback)}
+            icon={
+              !sharingScreen ? (
+                <ScreenShare className="PanelButton" />
+              ) : (
+                <ScreenDisabled className="PanelButton" />
+              )
+            }
+            onClick={() => {
+              if (!sharingScreen)
+                shareScreen(webrtc, clientName, playerCallback).then((value) =>
+                  setSharingScreen(value)
+                );
+              else stopShareScreen(webrtc, clientName, playerCallback);
+              setSharingScreen(false);
+            }}
           />
           <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
         </div>
