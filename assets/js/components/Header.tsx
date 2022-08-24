@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
+import { Avatar } from "@chakra-ui/react";
+import { storageGetPicture } from "../utils/storageUtils";
 import "../../css/header.css";
 
 const monthNames = [
@@ -33,6 +35,7 @@ export type EventInfo = {
 };
 
 const Header = ({ name, eventChannel }: HeaderProps) => {
+  const picture: string = storageGetPicture();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
 
@@ -76,8 +79,12 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
         </button>
       </div>
       <div className="User">
-        <User1 className="UserIcon" />
-        <div className="UserName"> {name}</div>
+        {picture ? (
+          <Avatar name={name} src={picture} className="UserIcon" />
+        ) : (
+          <User1 className="UserIcon" />
+        )}
+        <div className="UserName">{name}</div>
       </div>
     </div>
   );

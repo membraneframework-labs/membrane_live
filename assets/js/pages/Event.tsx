@@ -19,15 +19,14 @@ export type PresenterPopupState = {
 };
 
 const Event = () => {
+  const name: string = storageGetName();
+  const [isModerator, setIsModerator] = useState<boolean>(false);
+  const [eventChannel, setEventChannel] = useState<any>();
+  const [privateChannel, setPrivateChannel] = useState<any>();
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
   });
-  const name: string = storageGetName();
-  const [isModerator, setIsModerator] = useState<boolean>(false);
-
-  const [eventChannel, setEventChannel] = useState<any>();
-  const [privateChannel, setPrivateChannel] = useState<any>();
 
   const socket = new Socket("/socket");
   socket.connect();
@@ -56,7 +55,7 @@ const Event = () => {
       <Header name={name} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
         <StreamArea clientName={name} eventChannel={eventChannel} />
-        <ParticipantsList clientName={name} isModerator={true} eventChannel={eventChannel} />
+        <ParticipantsList clientName={name} isModerator={isModerator} eventChannel={eventChannel} />
       </div>
       {presenterPopupState.isOpen && (
         <PresenterPopup
