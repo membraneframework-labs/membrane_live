@@ -179,7 +179,6 @@ const ControlPanel = ({
         onSelectSource={(deviceId) => {
           changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() => {
             rerender();
-            setSharingScreen(false);
           });
         }}
       />
