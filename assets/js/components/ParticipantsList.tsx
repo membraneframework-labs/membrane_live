@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../utils/channelUtils";
-import "../../css/participants.css";
 import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
+import { getFontColor } from "../utils/styleUtils";
+import "../../css/participants.css";
 
 export type Participant = {
   name: string;
@@ -30,11 +31,6 @@ type ParticipantsListProps = {
   clientName: string;
   isModerator: boolean;
   eventChannel: any;
-};
-
-export const getFontColor = (colorName: string) => {
-  const style = getComputedStyle(document.body);
-  return style.getPropertyValue(colorName);
 };
 
 const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {

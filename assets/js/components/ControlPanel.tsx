@@ -36,7 +36,7 @@ import {
   SourceType,
 } from "../utils/rtcUtils";
 import { Mode } from "./StreamArea";
-import { getFontColor } from "./ParticipantsList";
+import { getFontColor } from "../utils/styleUtils";
 import "../../css/controlpanel.css";
 
 type DropdownListProps = {

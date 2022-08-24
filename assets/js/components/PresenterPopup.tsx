@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { PresenterPopupState } from "../pages/Event";
-import { getFontColor } from "./ParticipantsList";
+import { getFontColor } from "../utils/styleUtils";
 
 type PresenterPopupProps = {
   username: string;
