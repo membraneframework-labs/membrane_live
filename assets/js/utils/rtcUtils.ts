@@ -30,8 +30,19 @@ export const findTrackByType = (name: string, sourceType: SourceType) => {
 };
 
 export const changeTrackIsEnabled = (name: string, sourceType: SourceType) => {
-  const track = findTrackByType(name, sourceType);
+  const track =
+    sourceType == "video" && mergedScreenRef.cameraTrack
+      ? mergedScreenRef.cameraTrack
+      : findTrackByType(name, sourceType);
   if (track) track.enabled = !track.enabled;
+};
+
+export const checkTrackIsEnabled = (name: string, sourceType: SourceType) => {
+  const track =
+    sourceType == "video" && mergedScreenRef.cameraTrack
+      ? mergedScreenRef.cameraTrack
+      : findTrackByType(name, sourceType);
+  return track?.enabled;
 };
 
 export const getCurrentDeviceName = (clientName: string, sourceType: SourceType) => {

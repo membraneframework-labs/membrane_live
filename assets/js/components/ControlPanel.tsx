@@ -30,12 +30,12 @@ import {
   shareScreen,
   changeSource,
   changeTrackIsEnabled,
-  findTrackByType,
   getCurrentDeviceName,
   getSources,
   Sources,
   SourceType,
   stopShareScreen,
+  checkTrackIsEnabled,
 } from "../utils/rtcUtils";
 import { Mode } from "./StreamArea";
 import { getFontColor } from "../utils/styleUtils";
@@ -189,7 +189,7 @@ const ControlPanel = ({
     return (
       <GenericButton
         icon={
-          findTrackByType(clientName, sourceType)?.enabled ? (
+          checkTrackIsEnabled(clientName, sourceType) ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
