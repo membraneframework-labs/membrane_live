@@ -53,5 +53,5 @@ export const storageSetReloaded = (): void => {
   sessionStorage.setItem(RELOAD, "true");
 };
 export const storageGetReloaded = (): boolean => {
-  return sessionStorage.getItem(RELOAD) ? true : false;
+  return !!sessionStorage.getItem(RELOAD);
 };

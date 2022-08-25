@@ -18,46 +18,43 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
-    case Ecto.UUID.cast(id) do
-      {:ok, id} ->
-        case Repo.exists?(from(w in Webinar, where: w.uuid == ^id)) do
-          false ->
-            {:error, %{reason: "This event doesn't exists."}}
+    case webinar_exists(id) do
+      {:ok, false} ->
+        {:error, %{reason: "This event doesn't exists."}}
 
-          true ->
-            :ets.insert_new(:presenters, {id, []})
+      {:ok, true} ->
+        :ets.insert_new(:presenters, {id, []})
 
-            with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
-                 {:ok, name} <- Accounts.get_username(uuid),
-                 [] <- Presence.get_by_key(socket, name),
-                 {:ok, socket} <- create_event_stream(id, socket),
-                 {:ok, is_presenter} = check_if_presenter(name, reloaded, id),
-                 is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
-              {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
+        with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
+             {:ok, name} <- Accounts.get_username(uuid),
+             [] <- Presence.get_by_key(socket, name),
+             {:ok, socket} <- create_event_stream(id, socket),
+             {:ok, is_presenter} = check_if_presenter(name, reloaded, id),
+             is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
+          {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
 
-              {:ok, _ref} =
-                Presence.track(socket, name, %{
-                  is_moderator: is_moderator,
-                  is_presenter: is_presenter
-                })
+          {:ok, _ref} =
+            Presence.track(socket, name, %{
+              is_moderator: is_moderator,
+              is_presenter: is_presenter
+            })
 
-              {:ok, %{is_moderator: is_moderator}, socket}
-            else
-              %{metas: _presence} ->
-                {:error,
-                 %{
-                   reason: "This app can be opened in only one window"
-                 }}
+          {:ok, %{is_moderator: is_moderator}, socket}
+        else
+          %{metas: _presence} ->
+            {:error,
+             %{
+               reason: "This app can be opened in only one window"
+             }}
 
-              _error ->
-                {:error,
-                 %{
-                   reason: "Error occured while creating event stream or adding user to presence"
-                 }}
-            end
+          _error ->
+            {:error,
+             %{
+               reason: "Error occured while creating event stream or adding user to presence"
+             }}
         end
 
-      :error ->
+      {:error, _error} ->
         {:error, %{reason: "This link is wrong."}}
     end
   end
@@ -70,6 +67,16 @@ defmodule MembraneLiveWeb.EventChannel do
   @impl true
   def join(_topic, _params, _socket) do
     {:error, %{reason: "This link is wrong."}}
+  end
+
+  defp webinar_exists(id) do
+    case Ecto.UUID.cast(id) do
+      {:ok, id} ->
+        {:ok, Repo.exists?(from(w in Webinar, where: w.uuid == ^id))}
+
+      _error ->
+        {:error, "id is not binary_id"}
+    end
   end
 
   defp create_event_stream(event_id, socket) do
@@ -106,14 +113,17 @@ defmodule MembraneLiveWeb.EventChannel do
 
   defp check_if_presenter(name, reloaded, id) do
     [{_key, presenters}] = :ets.lookup(:presenters, id)
-    in_ets = if Enum.find(presenters, &(&1 == name)) != nil, do: true, else: false
+    in_ets = Enum.find(presenters, &(&1 == name)) != nil
 
-    case reloaded do
-      true ->
+    case {reloaded, in_ets} do
+      {true, _in_ets} ->
         {:ok, in_ets}
 
-      false ->
-        if in_ets, do: remove_from_presenters(name, id)
+      {false, true} ->
+        remove_from_presenters(name, id)
+        {:ok, false}
+
+      {false, false} ->
         {:ok, false}
     end
   end
