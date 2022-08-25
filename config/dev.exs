@@ -1,14 +1,5 @@
 import Config
 
-config :membrane_live, MembraneLive.Repo,
-  username: "swm",
-  password: "swm123",
-  hostname: "localhost",
-  database: "membrane_live_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 config :membrane_live, MembraneLiveWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4000],
   check_origin: false,
