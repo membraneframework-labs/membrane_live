@@ -3,19 +3,22 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
   import MembraneLive.AccountsFixtures
 
-  alias MembraneLive.{Repo, Webinars.Webinar}
+  alias MembraneLive.{Accounts.User, Repo, Webinars.Webinar}
   alias MembraneLiveWeb.EventChannel
   alias MembraneLiveWeb.Presence
 
   @user "mock_user"
 
   setup do
+    %User{uuid: user_uuid} = user_fixture()
+
     {:ok, %{uuid: uuid}} =
       Repo.insert(%Webinar{
         description: "a",
         presenters: [],
         start_date: ~N[2019-10-31 23:00:07],
-        title: "Test webinar"
+        title: "Test webinar",
+        moderator_id: user_uuid
       })
 
     google_claims = %{

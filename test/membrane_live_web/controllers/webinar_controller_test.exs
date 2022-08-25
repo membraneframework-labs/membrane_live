@@ -119,7 +119,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   end
 
   defp create_webinar(_webinar) do
-    webinar = webinar_fixture()
+    user = user_fixture()
+    webinar = webinar_fixture(user)
     %{webinar: webinar}
   end
 
