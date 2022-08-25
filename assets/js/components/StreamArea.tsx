@@ -21,7 +21,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
-      setHlsUrl(`${link}${message.playlist_idl}/video.m3u8`);
+      setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);
       setPresenterName(message.name);
     } else {
       setHlsUrl("");
