@@ -4,14 +4,14 @@ import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
 import Header from "../components/Header";
-import { storageGetName, storageGetAuthToken } from "../utils/storageUtils";
+import {
+  storageGetName,
+  storageGetAuthToken,
+  storageGetReloaded,
+  storageSetReloaded,
+} from "../utils/storageUtils";
 import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
-
-export type NamePopupState = {
-  isOpen: boolean;
-  channelConnErr: string;
-};
 
 export type PresenterPopupState = {
   isOpen: boolean;
@@ -36,6 +36,7 @@ const Event = () => {
     if (!alreadyJoined) {
       const channel = socket.channel(`event:${getChannelId()}`, {
         token: storageGetAuthToken(),
+        reloaded: storageGetReloaded(),
       });
       createEventChannel(channel, setEventChannel, setIsModerator);
     }
@@ -49,6 +50,13 @@ const Event = () => {
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
   }, [eventChannel, privateChannel]);
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", storageSetReloaded);
+    return () => {
+      window.removeEventListener("beforeunload", storageSetReloaded);
+    };
+  }, []);
 
   return (
     <div className="EventPage">

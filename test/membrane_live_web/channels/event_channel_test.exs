@@ -149,7 +149,8 @@ defmodule MembraneLiveWeb.EventChannelTest do
     MembraneLiveWeb.EventSocket
     |> socket("event_id", %{})
     |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-      token: token
+      token: token,
+      reloaded: false
     })
   end
 end

@@ -2,6 +2,7 @@ const NAME = "name";
 const TOKEN = "jwt";
 const EMAIL = "email";
 const PICTURE = "picture";
+const RELOAD = "reloaded";
 
 type AuthTokenKey = "authJwt";
 type RefreshTokenKey = "refreshJwt";
@@ -46,4 +47,11 @@ export const storageSetEmail = (email: string): void => {
 
 export const storageSetPicture = (picture: string): void => {
   localStorage.setItem(PICTURE, picture);
+};
+
+export const storageSetReloaded = (): void => {
+  sessionStorage.setItem(RELOAD, "true");
+};
+export const storageGetReloaded = (): boolean => {
+  return !!sessionStorage.getItem(RELOAD);
 };
