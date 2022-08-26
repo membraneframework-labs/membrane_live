@@ -23,6 +23,7 @@ export const mergedScreenRef: MergedScreenRef = {
   refreshId: undefined,
 };
 
+
 const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 
 export const findTrackByType = (name: string, sourceType: SourceType) => {
@@ -89,6 +90,7 @@ export const connectWebrtc = async (
   clientName: string,
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
 ) => {
+  await askForPermissions()
   presenterStreams[clientName] = new MediaStream();
 
   const sources = await getSources();
@@ -127,13 +129,13 @@ export const connectWebrtc = async (
         if (track != null)
           addOrReplaceTrack(peer.metadata.name, track, playerCallbacks[peer.metadata.name]);
       },
-      onTrackAdded: (_ctx) => {},
-      onTrackRemoved: (_ctx) => {},
-      onPeerJoined: (_peer) => {},
+      onTrackAdded: (_ctx) => { },
+      onTrackRemoved: (_ctx) => { },
+      onPeerJoined: (_peer) => { },
       onPeerLeft: (peer) => {
         removeStream(peer.metadata.name);
       },
-      onPeerUpdated: (_ctx) => {},
+      onPeerUpdated: (_ctx) => { },
       onRemoved: (_reason) => {
         onError("You were removed from WebRTC connection");
       },
@@ -265,4 +267,21 @@ const removeMergedStream = () => {
 
 const removeStream = (name: string) => {
   delete presenterStreams[name];
+};
+
+
+const askForPermissions = async (): Promise<void> => {
+  const hasVideoInput: boolean = (
+    await navigator.mediaDevices.enumerateDevices()
+  ).some((device) => device.kind === "videoinput");
+
+  let tmpVideoStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: hasVideoInput,
+  });
+
+  // stop tracks
+  // in other case, next call to getUserMedia may fail
+  // or won't respect media constraints
+  tmpVideoStream.getTracks().forEach((track) => track.stop());
 };
