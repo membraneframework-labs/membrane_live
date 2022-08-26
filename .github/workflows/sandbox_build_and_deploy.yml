@@ -1,14 +1,14 @@
-name: Staging Build and Deploy
+name: Sandbox Build and Deploy
 on:
   push:
     branches: 
-      - "master"
-      - "staging"
+      - "sandbox"
 
 env: 
-  VIRTUAL_HOST: live.membrane.work
-  INTEGRATED_TURN_IP: 65.108.158.247
+  VIRTUAL_HOST: live.membrane.ovh
+  INTEGRATED_TURN_IP: 95.217.215.156
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  TAG: sandbox
 
 jobs:
   build:
@@ -42,7 +42,7 @@ jobs:
           file: Dockerfile
           push: true
           build-args: VERSION= ${{ github.ref_name }}
-          tags: membraneframeworklabs/membrane_live:latest
+          tags: membraneframeworklabs/membrane_live:${{ env.TAG }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,14 +52,14 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD" > .env
+        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nTAG=$TAG" > .env
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy
         uses: TapTap21/docker-remote-deployment-action@v1.1
         with:
-          remote_docker_host: ${{ secrets.STAGING_HOST }}
-          ssh_private_key: ${{ secrets.SSH_PRIV_KEY }}
+          remote_docker_host: ${{ secrets.SANDBOX_HOST }}
+          ssh_private_key: ${{ secrets.SSH_PRIV_KEY_GA }}
           ssh_public_key: ${{ secrets.SSH_KNOWN_HOSTS}}
           stack_file_name: docker-compose.yml
-          args: -p staging --env-file .env up -d --remove-orphans
+          args: -p sandbox --env-file .env up -d --remove-orphans
