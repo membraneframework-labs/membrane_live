@@ -1,4 +1,4 @@
-name: Tag Build and Deploy
+name: Staging Build and Deploy
 on:
   push:
     branches: 
