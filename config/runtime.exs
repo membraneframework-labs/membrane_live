@@ -80,11 +80,11 @@ host = System.get_env("VIRTUAL_HOST", "localhost")
 port = 4000
 
 config :membrane_live, MembraneLive.Repo,
-  username: System.get_env("PGUSER", "swm"),
-  password: System.get_env("PGPASSWORD", "swm123"),
-  hostname: System.get_env("PGHOST", "localhost"),
-  database: System.get_env("PGDATABASE", "membrane_live_db"),
-  port: System.get_env("PGPORT", "5432"),
+  username: System.get_env("POSTGRES_USER", "swm"),
+  password: System.get_env("POSTGRES_PASSWORD", "swm123"),
+  hostname: System.get_env("POSTGRES_HOST", "localhost"),
+  database: System.get_env("POSTGRES_DB", "membrane_live_db"),
+  port: System.get_env("POSTGRES_PORT", "5432"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10

@@ -10,7 +10,16 @@ services:
       POSTGRES_DB: "${POSTGRES_DB:-live_db}"
       PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB:-live_db}", "-U", "${POSTGRES_USER:-membrane}" ]
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-q",
+          "-d",
+          "${POSTGRES_DB:-live_db}",
+          "-U",
+          "${POSTGRES_USER:-membrane}"
+        ]
       timeout: 45s
       interval: 10s
       retries: 10
@@ -28,11 +37,11 @@ services:
     depends_on:
       - membrane-live-db
     environment:
-      PGUSER: "${POSTGRES_USER:-membrane}"
-      PGPASSWORD: "${POSTGRES_PASSWORD}"
-      PGDATABASE: "${POSTGRES_DB:-live_db}"
-      PGHOST: localhost
-      PGPORT: 5432
+      POSTGRES_USER: "${POSTGRES_USER:-membrane}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB:-live_db}"
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
       VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
       USE_INTEGRATED_TURN: "true"
       INTEGRATED_TURN_IP: "${INTEGRATED_TURN_IP:-127.0.0.1}"

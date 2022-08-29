@@ -1,4 +1,5 @@
 import * as JwtApi from "./jwtApi";
+import { storageGetAuthToken, storageSetJwt } from "../utils/storageUtils";
 
 const axios = require("axios").default;
 
@@ -25,10 +26,10 @@ axiosWithInterceptor.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const refreshToken = JwtApi.getRefreshToken();
+    const refreshToken = storageGetAuthToken();
     try {
       const response = await axios.post("/auth/refresh", { refreshToken });
-      JwtApi.setJwt(response.data);
+      storageSetJwt(response.data);
       const updatedConfig = JwtApi.addJwtToHeader(error.response.config);
       return axiosWithInterceptor(updatedConfig);
     } catch (err) {

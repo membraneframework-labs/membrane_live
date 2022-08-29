@@ -89,6 +89,7 @@ export const connectWebrtc = async (
   clientName: string,
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
 ) => {
+  await askForPermissions();
   presenterStreams[clientName] = new MediaStream();
 
   const sources = await getSources();
@@ -265,4 +266,20 @@ const removeMergedStream = () => {
 
 const removeStream = (name: string) => {
   delete presenterStreams[name];
+};
+
+const askForPermissions = async (): Promise<void> => {
+  const hasVideoInput: boolean = (await navigator.mediaDevices.enumerateDevices()).some(
+    (device) => device.kind === "videoinput"
+  );
+
+  const tmpVideoStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: hasVideoInput,
+  });
+
+  // stop tracks
+  // in other case, next call to getUserMedia may fail
+  // or won't respect media constraints
+  tmpVideoStream.getTracks().forEach((track) => track.stop());
 };

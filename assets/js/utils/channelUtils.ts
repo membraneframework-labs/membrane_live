@@ -88,7 +88,7 @@ export const syncPresenters = (
 
       presence.list((name: string, metas: any) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
-        metas.metas.pop().is_presenter && presenters.push(name);
+        metas.metas[0].is_presenter && presenters.push(name);
       });
       setPresenters(presenters);
     };
