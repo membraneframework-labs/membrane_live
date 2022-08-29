@@ -273,7 +273,7 @@ const askForPermissions = async (): Promise<void> => {
     (device) => device.kind === "videoinput"
   );
 
-  let tmpVideoStream = await navigator.mediaDevices.getUserMedia({
+  const tmpVideoStream = await navigator.mediaDevices.getUserMedia({
     audio: true,
     video: hasVideoInput,
   });

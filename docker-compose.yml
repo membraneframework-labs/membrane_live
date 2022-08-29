@@ -40,8 +40,8 @@ services:
       POSTGRES_USER: "${POSTGRES_USER:-membrane}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_DB: "${POSTGRES_DB:-live_db}"
-      PGHOST: localhost
-      PGPORT: 5432
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
       VIRTUAL_HOST: "${VIRTUAL_HOST:-localhost}"
       USE_INTEGRATED_TURN: "true"
       INTEGRATED_TURN_IP: "${INTEGRATED_TURN_IP:-127.0.0.1}"
