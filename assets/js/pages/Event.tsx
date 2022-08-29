@@ -9,23 +9,29 @@ import {
   storageGetAuthToken,
   storageGetReloaded,
   storageSetReloaded,
+  storageGetEmail,
 } from "../utils/storageUtils";
 import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
 
 export type PresenterPopupState = {
   isOpen: boolean;
-  moderator: string;
+  moderatorTopic: string;
 };
 
+export type Client = {
+  name: string;
+  email: string;
+}
+
 const Event = () => {
-  const name: string = storageGetName();
+  const client: Client = {name: storageGetName(), email: storageGetEmail()};
   const [isModerator, setIsModerator] = useState<boolean>(false);
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
-    moderator: "",
+    moderatorTopic: "",
   });
 
   const socket = new Socket("/socket");
@@ -46,8 +52,8 @@ const Event = () => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (!privateAlreadyJoined && eventAlreadyJoined) {
-      const channel = socket.channel(`private:${getChannelId()}:${name}`, {});
-      createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
+      const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
+      createPrivateChannel(channel, eventChannel, client.email, setPresenterPopupState, setPrivateChannel);
     }
   }, [eventChannel, privateChannel]);
 
@@ -60,15 +66,15 @@ const Event = () => {
 
   return (
     <div className="EventPage">
-      <Header name={name} eventChannel={eventChannel}></Header>
+      <Header client={client} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
-        <StreamArea clientName={name} eventChannel={eventChannel} />
-        <ParticipantsList clientName={name} isModerator={isModerator} eventChannel={eventChannel} />
+        <StreamArea client={client} eventChannel={eventChannel} />
+        <ParticipantsList client={client} isModerator={isModerator} eventChannel={eventChannel} />
       </div>
       {presenterPopupState.isOpen && (
         <PresenterPopup
-          username={name}
-          moderator={presenterPopupState.moderator}
+          client={client}
+          moderatorTopic={presenterPopupState.moderatorTopic}
           eventChannel={eventChannel}
           setPopupState={setPresenterPopupState}
         />

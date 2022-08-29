@@ -2,16 +2,17 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
+import type { Client } from "../pages/Event";
 import "../../css/streamarea.css";
 
 export type Mode = "presenters" | "hls";
 
 type StreamAreaProps = {
-  clientName: string;
+  client: Client;
   eventChannel: any;
 };
 
-const StreamArea = ({ clientName, eventChannel }: StreamAreaProps) => {
+const StreamArea = ({ client, eventChannel }: StreamAreaProps) => {
   const [mode, setMode] = useState<Mode>("hls");
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
@@ -41,12 +42,12 @@ const StreamArea = ({ clientName, eventChannel }: StreamAreaProps) => {
         setMode={setMode}
         presenterName={presenterName}
         eventChannel={eventChannel}
-        clientName={clientName}
+        client={client}
       />
       <div className="Stream">
         {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} />}
         <PresenterStreams
-          clientName={clientName}
+          client={client}
           eventChannel={eventChannel}
           mode={mode}
           setMode={setMode}

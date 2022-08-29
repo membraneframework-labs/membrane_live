@@ -39,6 +39,7 @@ import {
 } from "../utils/rtcUtils";
 import { Mode } from "./StreamArea";
 import { getFontColor } from "../utils/styleUtils";
+import type { Client } from "../pages/Event";
 import "../../css/controlpanel.css";
 
 type DropdownListProps = {
@@ -118,10 +119,10 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
 
 const stopBeingPresenter = (
   eventChannel: any,
-  clientName: string,
+  email: string,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
-  eventChannel.push("presenter_remove", { presenter: clientName });
+  eventChannel.push("presenter_remove", { email: email });
   setMode("hls");
 };
 
@@ -131,7 +132,7 @@ const useRerender = () => {
 };
 
 type ControlPanelProps = {
-  clientName: string;
+  client: Client;
   webrtc: MembraneWebRTC;
   eventChannel: any;
   playerCallback: (sourceType: SourceType) => void;
@@ -139,7 +140,7 @@ type ControlPanelProps = {
 };
 
 const ControlPanel = ({
-  clientName,
+  client,
   webrtc,
   eventChannel,
   playerCallback,
@@ -174,10 +175,10 @@ const ControlPanel = ({
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(clientName, sourceType)}
+        currentSourceName={getCurrentDeviceName(client.email, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, clientName, deviceId, sourceType, playerCallback).then(() => {
+          changeSource(webrtc, client.email, deviceId, sourceType, playerCallback).then(() => {
             rerender();
           });
         }}
@@ -189,14 +190,14 @@ const ControlPanel = ({
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(clientName, sourceType) ? (
+          checkTrackIsEnabled(client.email, sourceType) ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(clientName, sourceType);
+          changeTrackIsEnabled(client.email, sourceType);
           rerender();
         }}
       />
@@ -212,7 +213,7 @@ const ControlPanel = ({
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
             icon={<PhoneDown className="DisconnectButton" color={bgColor} />}
-            onClick={() => stopBeingPresenter(eventChannel, clientName, setMode)}
+            onClick={() => stopBeingPresenter(eventChannel, client.email, setMode)}
           />
           <GenericButton
             icon={
@@ -224,10 +225,10 @@ const ControlPanel = ({
             }
             onClick={() => {
               if (!sharingScreen)
-                shareScreen(webrtc, clientName, playerCallback).then((value) =>
+                shareScreen(webrtc, client.email, playerCallback).then((value) =>
                   setSharingScreen(value)
                 );
-              else stopShareScreen(webrtc, clientName, playerCallback);
+              else stopShareScreen(webrtc, client.email, playerCallback);
               setSharingScreen(false);
             }}
           />

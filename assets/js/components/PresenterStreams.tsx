@@ -5,10 +5,17 @@ import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Mode } from "./StreamArea";
+import type { Client } from "../pages/Event";
 import "../../css/presenterstreams.css";
+import { Skeleton } from "@chakra-ui/react";
+
+export type Presenter = {
+  name: string;
+  email: string;
+}
 
 type PresenterStreamAreaProps = {
-  clientName: string;
+  client: Client;
   eventChannel: any;
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
@@ -19,24 +26,24 @@ let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting: boolean = false;
 
 const PresenterStreams = ({
-  clientName,
+  client,
   eventChannel,
   mode,
   setMode,
 }: PresenterStreamAreaProps) => {
-  const [presenters, setPresenters] = useState<string[]>([]);
+  const [presenters, setPresenters] = useState<Presenter[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
   useEffect(() => {
-    if (!webrtcConnecting && webrtc == null && presenters.includes(clientName)) {
+    if (!webrtcConnecting && webrtc == null && presenters.some(e => e.email === client.email)) {
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, clientName, playerCallbacks).then((value) => {
+      connectWebrtc(eventChannel, client, playerCallbacks).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
-    } else if (webrtc != null && !presenters.includes(clientName)) {
-      leaveWebrtc(webrtc, clientName, eventChannel);
+    } else if (webrtc != null && !presenters.some(e => e.email === client.email)) {
+      leaveWebrtc(webrtc, client.email, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
     }
@@ -46,26 +53,26 @@ const PresenterStreams = ({
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
 
-  return presenters.includes(clientName) ? (
+  return presenters.some(e => e.name === client.name) ? (
     <div className={`PresenterStreams ${mode == "hls" ? "Hidden" : ""}`}>
       <div className={`StreamsGrid Grid${presenters.length}`}>
         {presenters.map((presenter) => {
           return (
             <RtcPlayer
-              isMyself={clientName == presenter}
-              name={presenter}
+              isMyself={client == presenter}
+              presenter={presenter}
               playerCallbacks={playerCallbacks}
-              key={presenter}
+              key={presenter.name}
             />
           );
         })}
       </div>
       {isControlPanelAvailable && (
         <ControlPanel
-          clientName={clientName}
+          client={client}
           webrtc={webrtc!}
           eventChannel={eventChannel}
-          playerCallback={playerCallbacks[clientName]}
+          playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
         />
       )}

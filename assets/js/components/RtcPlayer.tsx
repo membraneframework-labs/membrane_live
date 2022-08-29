@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import { presenterStreams, SourceType } from "../utils/rtcUtils";
 import { User1 } from "react-swm-icon-pack";
+import type { Presenter } from "./PresenterStreams";
 import "../../css/rtcplayer.css";
 
 type RtcPlayerProps = {
   isMyself: boolean;
-  name: string;
+  presenter: Presenter;
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void };
 };
 
-const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -17,13 +18,13 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
   const font = style.getPropertyValue("--font-light-color");
 
   const connectStreams = (sourceType: SourceType) => {
-    if (!(name in presenterStreams)) return;
+    if (!(presenter.email in presenterStreams)) return;
     if (videoRef.current && sourceType == "video")
-      videoRef.current.srcObject = presenterStreams[name];
+      videoRef.current.srcObject = presenterStreams[presenter.email];
     if (audioRef.current && sourceType == "audio")
-      audioRef.current.srcObject = presenterStreams[name];
+      audioRef.current.srcObject = presenterStreams[presenter.email];
   };
-  playerCallbacks[name] = connectStreams;
+  playerCallbacks[presenter.email] = connectStreams;
 
   useEffect(() => {
     connectStreams("audio");
@@ -36,7 +37,7 @@ const RtcPlayer = ({ isMyself, name, playerCallbacks }: RtcPlayerProps) => {
       <div className="BottomBar">
         <div className="PresenterName">
           {isMyself && <User1 color={font} />}
-          {isMyself ? "You" : name}
+          {isMyself ? "You" : presenter.name}
         </div>
       </div>
       <div className="TopBar"></div>

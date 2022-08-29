@@ -32,6 +32,10 @@ export const storageGetName = (): string => {
   return name ? name : "";
 };
 
+export const storageGetEmail = (): string => {
+  const email: string | null = localStorage.getItem(EMAIL);
+  return email ? email : "";
+};
 export const storageGetPicture = (): string => {
   const picture: string | null = localStorage.getItem(PICTURE);
   return picture ? picture : "";
