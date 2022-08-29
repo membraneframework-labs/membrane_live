@@ -6,7 +6,7 @@ on:
 
 env: 
   VIRTUAL_HOST: live.membrane.stream
-  INTEGRATED_TURN_IP: 65.108.158.247
+  INTEGRATED_TURN_IP: 95.217.177.119
   TAG: ${{ github.ref_name }}
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
