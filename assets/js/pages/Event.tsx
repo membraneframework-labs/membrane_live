@@ -23,10 +23,14 @@ export type Client = {
   name: string;
   email: string;
   isModerator: boolean;
-}
+};
 
 const Event = () => {
-  const [client, setClient] = useState<Client>({name: storageGetName(), email: storageGetEmail(), isModerator: false});
+  const [client, setClient] = useState<Client>({
+    name: storageGetName(),
+    email: storageGetEmail(),
+    isModerator: false,
+  });
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
@@ -53,7 +57,13 @@ const Event = () => {
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (!privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
-      createPrivateChannel(channel, eventChannel, client.email, setPresenterPopupState, setPrivateChannel);
+      createPrivateChannel(
+        channel,
+        eventChannel,
+        client.email,
+        setPresenterPopupState,
+        setPrivateChannel
+      );
     }
   }, [eventChannel, privateChannel]);
 

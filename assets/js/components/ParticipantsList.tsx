@@ -36,7 +36,10 @@ const ModeratorMenu = ({ client, participant, eventChannel }: ModeratorMenuProps
 
   const handleClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
-      eventChannel.push("presenter_prop", { moderatorTopic: link + client.email, presenterTopic: link + participant.email });
+      eventChannel.push("presenter_prop", {
+        moderatorTopic: link + client.email,
+        presenterTopic: link + participant.email,
+      });
     } else {
       eventChannel.push("presenter_remove", { presenterTopic: link + participant.email });
     }
@@ -66,15 +69,21 @@ const ModeratorMenu = ({ client, participant, eventChannel }: ModeratorMenuProps
   );
 };
 
-const Participant = ({
-  client,
-  participant,
-  eventChannel,
-}: ParticipantProps) => {
+const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
   const fontColor = getFontColor("--font-dark-color");
 
-  const icon = participant.isModerator ? <Crown1 /> : participant.isPresenter ? <Star1 /> : <User1 />;
-  const role = participant.isModerator ? "Moderator" : participant.isPresenter ? "Presenter" : "Praticipant";
+  const icon = participant.isModerator ? (
+    <Crown1 />
+  ) : participant.isPresenter ? (
+    <Star1 />
+  ) : (
+    <User1 />
+  );
+  const role = participant.isModerator
+    ? "Moderator"
+    : participant.isPresenter
+    ? "Presenter"
+    : "Praticipant";
 
   return (
     <div className="Participant">
@@ -87,11 +96,7 @@ const Participant = ({
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
       {client.isModerator && (
-        <ModeratorMenu
-          client={client}
-          eventChannel={eventChannel}
-          participant={participant}
-        />
+        <ModeratorMenu client={client} eventChannel={eventChannel} participant={participant} />
       )}
     </div>
   );

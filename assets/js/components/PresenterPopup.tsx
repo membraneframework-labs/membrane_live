@@ -27,7 +27,11 @@ const PresenterPopup = ({
   const fontColor = getFontColor("--font-dark-color");
 
   const sendAnswer = (answer: string) => {
-    eventChannel.push("presenter_answer", { email: client.email, moderatorTopic: moderatorTopic, answer: answer });
+    eventChannel.push("presenter_answer", {
+      email: client.email,
+      moderatorTopic: moderatorTopic,
+      answer: answer,
+    });
     setPopupState({ isOpen: false, moderatorTopic: "" });
   };
 

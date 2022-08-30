@@ -13,7 +13,7 @@ export const createEventChannel = (
     .join()
     .receive("ok", (resp: { is_moderator: boolean }) => {
       setEventChannel(eventChannel);
-      setClient({...client, isModerator: resp.is_moderator});
+      setClient({ ...client, isModerator: resp.is_moderator });
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
@@ -91,7 +91,7 @@ export const syncPresenters = (
 
       presence.list((email: string, metas: any) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
-        metas.metas[0].is_presenter && presenters.push({name: metas.metas[0].name, email: email});
+        metas.metas[0].is_presenter && presenters.push({ name: metas.metas[0].name, email: email });
       });
       setPresenters(presenters);
     };

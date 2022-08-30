@@ -5,7 +5,7 @@ export const syncPresentersNumber = (
   eventChannel: any,
   setPresentersNumber: React.Dispatch<React.SetStateAction<number>>,
   setAmIPresenter: React.Dispatch<React.SetStateAction<boolean>>,
-  client: Client,
+  client: Client
 ): void => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);

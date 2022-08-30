@@ -100,10 +100,20 @@ export const connectWebrtc = async (
   };
 
   if (defaults.audio)
-    await setSourceById(client.email, defaults.audio.deviceId, "audio", playerCallbacks[client.email]);
+    await setSourceById(
+      client.email,
+      defaults.audio.deviceId,
+      "audio",
+      playerCallbacks[client.email]
+    );
 
   if (defaults.video)
-    await setSourceById(client.email, defaults.video.deviceId, "video", playerCallbacks[client.email]);
+    await setSourceById(
+      client.email,
+      defaults.video.deviceId,
+      "video",
+      playerCallbacks[client.email]
+    );
 
   const onError = (error: any) => {
     alert("ERROR " + error);

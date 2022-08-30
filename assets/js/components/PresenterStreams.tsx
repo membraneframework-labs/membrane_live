@@ -12,7 +12,7 @@ import { Skeleton } from "@chakra-ui/react";
 export type Presenter = {
   name: string;
   email: string;
-}
+};
 
 type PresenterStreamAreaProps = {
   client: Client;
@@ -25,24 +25,19 @@ const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting: boolean = false;
 
-const PresenterStreams = ({
-  client,
-  eventChannel,
-  mode,
-  setMode,
-}: PresenterStreamAreaProps) => {
+const PresenterStreams = ({ client, eventChannel, mode, setMode }: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<Presenter[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
   useEffect(() => {
-    if (!webrtcConnecting && webrtc == null && presenters.some(e => e.email === client.email)) {
+    if (!webrtcConnecting && webrtc == null && presenters.some((e) => e.email === client.email)) {
       webrtcConnecting = true;
       connectWebrtc(eventChannel, client, playerCallbacks).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
-    } else if (webrtc != null && !presenters.some(e => e.email === client.email)) {
+    } else if (webrtc != null && !presenters.some((e) => e.email === client.email)) {
       leaveWebrtc(webrtc, client.email, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
@@ -53,7 +48,7 @@ const PresenterStreams = ({
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
 
-  return presenters.some(e => e.name === client.name) ? (
+  return presenters.some((e) => e.name === client.name) ? (
     <div className={`PresenterStreams ${mode == "hls" ? "Hidden" : ""}`}>
       <div className={`StreamsGrid Grid${presenters.length}`}>
         {presenters.map((presenter) => {
