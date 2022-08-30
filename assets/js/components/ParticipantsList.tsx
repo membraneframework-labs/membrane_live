@@ -22,13 +22,11 @@ type ModeratorMenuProps = {
 type ParticipantProps = {
   client: Client;
   participant: Participant;
-  moderatorMode: boolean;
   eventChannel: any;
 };
 
 type ParticipantsListProps = {
   client: Client;
-  isModerator: boolean;
   eventChannel: any;
 };
 
@@ -71,7 +69,6 @@ const ModeratorMenu = ({ client, participant, eventChannel }: ModeratorMenuProps
 const Participant = ({
   client,
   participant,
-  moderatorMode,
   eventChannel,
 }: ParticipantProps) => {
   const fontColor = getFontColor("--font-dark-color");
@@ -89,7 +86,7 @@ const Participant = ({
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
-      {moderatorMode && (
+      {client.isModerator && (
         <ModeratorMenu
           client={client}
           eventChannel={eventChannel}
@@ -100,7 +97,7 @@ const Participant = ({
   );
 };
 
-const ParticipantsList = ({ client, isModerator, eventChannel }: ParticipantsListProps) => {
+const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
 
@@ -115,7 +112,6 @@ const ParticipantsList = ({ client, isModerator, eventChannel }: ParticipantsLis
         client={client}
         key={participant.name}
         participant={participant}
-        moderatorMode={isModerator}
         eventChannel={eventChannel}
       />
     )

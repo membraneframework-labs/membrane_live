@@ -188,13 +188,16 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_info(%Message.EndpointCrashed{endpoint_id: endpoint_id}, state) do
     Membrane.Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
-    peer_channel = state.peer_channels[endpoint_id]
 
-    error_message = "Endpoint has crashed."
-    data = MediaEvent.create_error_event(error_message)
-    send(peer_channel, {:media_event, data})
-
-    {:noreply, state}
+    case state.peer_channels[endpoint_id] do
+      nil ->
+        {:noreply, state}
+      peer_channel ->
+        error_message = "Endpoint has crashed."
+        data = MediaEvent.create_error_event(error_message)
+        send(peer_channel, {:media_event, data})
+        {:noreply, state}
+      end
   end
 
   # media_event coming from client

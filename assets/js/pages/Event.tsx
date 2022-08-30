@@ -22,11 +22,11 @@ export type PresenterPopupState = {
 export type Client = {
   name: string;
   email: string;
+  isModerator: boolean;
 }
 
 const Event = () => {
-  const client: Client = {name: storageGetName(), email: storageGetEmail()};
-  const [isModerator, setIsModerator] = useState<boolean>(false);
+  const [client, setClient] = useState<Client>({name: storageGetName(), email: storageGetEmail(), isModerator: false});
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
@@ -44,7 +44,7 @@ const Event = () => {
         token: storageGetAuthToken(),
         reloaded: storageGetReloaded(),
       });
-      createEventChannel(channel, setEventChannel, setIsModerator);
+      createEventChannel(client, channel, setEventChannel, setClient);
     }
   }, [eventChannel]);
 
@@ -69,7 +69,7 @@ const Event = () => {
       <Header client={client} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
         <StreamArea client={client} eventChannel={eventChannel} />
-        <ParticipantsList client={client} isModerator={isModerator} eventChannel={eventChannel} />
+        <ParticipantsList client={client} eventChannel={eventChannel} />
       </div>
       {presenterPopupState.isOpen && (
         <PresenterPopup

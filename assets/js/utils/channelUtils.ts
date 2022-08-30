@@ -1,18 +1,19 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { PresenterPopupState } from "../pages/Event";
+import type { Client, PresenterPopupState } from "../pages/Event";
 import type { Presenter } from "../components/PresenterStreams";
 
 export const createEventChannel = (
+  client: Client,
   eventChannel: any,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>,
-  setIsModerator: React.Dispatch<React.SetStateAction<boolean>>
+  setClient: React.Dispatch<React.SetStateAction<Client>>
 ) => {
   eventChannel
     .join()
     .receive("ok", (resp: { is_moderator: boolean }) => {
       setEventChannel(eventChannel);
-      setIsModerator(resp.is_moderator);
+      setClient({...client, isModerator: resp.is_moderator});
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
