@@ -5,6 +5,26 @@
 
 This repository contains a project created during the Summer Internship of 2022 in Software Mansion.
 
+## Running app locally
+
+To run the app locally you need to set environment variables. File `.env.sample` contains all required environment variables with example values.
+
+After setting all needed environment variables, you have to start a database. To do this you can use this command: 
+```sh
+docker-compose up membrane-live-db
+```
+
+Next you have to initialize database with commands:
+```sh
+mix ecto.create
+mix ecto.migrate
+```
+
+On the end you can start phoenix app:
+```sh
+mix phx.server
+```
+
 ## Copyright and License
 
 Copyright 2020, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=membrane_template_plugin)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Input,
@@ -21,13 +21,8 @@ export type EventForm = {
   presenters: string[];
 };
 
-export type Links = {
-  viewer_link: string;
-  moderator_link: string;
-};
-
 function Form() {
-  const [links, setLinks] = useState<Links>();
+  const [link, setLink] = useState<string>("");
   const [currParticipant, setCurrParticipant] = useState<string>("");
   const [eventForm, setEventForm] = useState<EventForm>({
     title: "",
@@ -49,7 +44,7 @@ function Form() {
   };
   const handleSendButton = () => {
     if (checkEventForm(eventForm)) {
-      sendEventForm(eventForm, setLinks);
+      sendEventForm(eventForm, setLink);
     } else {
       alert("Fields title and date are necessary to create an event.");
     }
@@ -90,10 +85,9 @@ function Form() {
         <Button h="1.75rem" size="sm" onClick={handleSendButton}>
           Send
         </Button>
-        {links ? (
+        {link ? (
           <>
-            <Link href={links?.moderator_link}>Moderator link</Link>
-            <Link href={links?.viewer_link}>Viewer link</Link>
+            <Link href={link}>Link</Link>
           </>
         ) : null}
       </Stack>

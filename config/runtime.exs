@@ -42,44 +42,6 @@ defmodule ConfigParser do
   end
 end
 
-if System.get_env("PHX_SERVER") do
-  config :membrane_live, MembraneLiveWeb.Endpoint, server: true
-end
-
-if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
-
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
-
-  config :membrane_live, MembraneLive.Repo,
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
-
-  secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
-
-  host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
-
-  config :membrane_live, MembraneLiveWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
-    ],
-    secret_key_base: secret_key_base
-end
-
 config :membrane_live,
   integrated_turn_ip:
     System.get_env("INTEGRATED_TURN_IP", "127.0.0.1") |> ConfigParser.parse_integrated_turn_ip(),
@@ -100,6 +62,10 @@ config :membrane_live,
   token_refresh_secret: "refresh_secret",
   token_issuer: "swmansion.com"
 
+# if System.get_env("PHX_SERVER") do
+#   config :membrane_live, MembraneLiveWeb.Endpoint, server: true
+# end
+
 protocol = if System.get_env("USE_TLS") == "true", do: :https, else: :http
 
 get_env = fn env, default ->
@@ -110,8 +76,18 @@ get_env = fn env, default ->
   end
 end
 
-host = get_env.("VIRTUAL_HOST", "localhost")
+host = System.get_env("VIRTUAL_HOST", "localhost")
 port = 4000
+
+config :membrane_live, MembraneLive.Repo,
+  username: System.get_env("POSTGRES_USER", "swm"),
+  password: System.get_env("POSTGRES_PASSWORD", "swm123"),
+  hostname: System.get_env("POSTGRES_HOST", "localhost"),
+  database: System.get_env("POSTGRES_DB", "membrane_live_db"),
+  port: System.get_env("POSTGRES_PORT", "5432"),
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
 
 args =
   if protocol == :https do
@@ -124,6 +100,11 @@ args =
     []
   end
   |> Keyword.merge(otp_app: :membrane_live, port: port)
+
+endpoint_config = [
+  {:url, [host: host]},
+  {protocol, args}
+]
 
 config :membrane_live, MembraneLiveWeb.Endpoint, [
   {:url, [host: host]},
@@ -157,7 +138,7 @@ exporter =
       {:opentelemetry_zipkin,
        %{
          address: ["http://localhost:9411/api/v2/spans"],
-         local_endpoint: %{service_name: "VideoRoom"}
+         local_endpoint: %{service_name: "Membrane Live"}
        }}
 
     _ ->

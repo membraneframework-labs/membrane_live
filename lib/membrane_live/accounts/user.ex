@@ -21,5 +21,6 @@ defmodule MembraneLive.Accounts.User do
     user
     |> cast(attrs, [:name, :email, :picture])
     |> validate_required([:name, :email, :picture])
+    |> unique_constraint(:email)
   end
 end

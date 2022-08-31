@@ -181,10 +181,18 @@ $RECYCLE.BIN/
 # node_module in assets
 assets/node_modules/*
 
+# vs code config
 .vscode
-priv/static/assets/app.js
+
+# static assets served by Phoenix
+priv/static/assets/*
+
+# HLS files served by Phoenix
 output/*
 
 *.tgz
 
 client_secret_1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com.json
+
+# Environment variables file
+.env 

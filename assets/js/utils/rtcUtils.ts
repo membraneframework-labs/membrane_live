@@ -11,6 +11,7 @@ export type SourceType = "audio" | "video";
 export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;
   cameraTrack: MediaStreamTrack | undefined;
+  deviceName: string;
   refreshId: number | undefined;
 };
 
@@ -18,6 +19,7 @@ export const presenterStreams: { [key: string]: MediaStream } = {};
 export const mergedScreenRef: MergedScreenRef = {
   screenTrack: undefined,
   cameraTrack: undefined,
+  deviceName: "",
   refreshId: undefined,
 };
 
@@ -28,12 +30,25 @@ export const findTrackByType = (name: string, sourceType: SourceType) => {
 };
 
 export const changeTrackIsEnabled = (name: string, sourceType: SourceType) => {
-  const track = findTrackByType(name, sourceType);
+  const track =
+    sourceType == "video" && mergedScreenRef.cameraTrack
+      ? mergedScreenRef.cameraTrack
+      : findTrackByType(name, sourceType);
   if (track) track.enabled = !track.enabled;
 };
 
+export const checkTrackIsEnabled = (name: string, sourceType: SourceType) => {
+  const track =
+    sourceType == "video" && mergedScreenRef.cameraTrack
+      ? mergedScreenRef.cameraTrack
+      : findTrackByType(name, sourceType);
+  return track?.enabled;
+};
+
 export const getCurrentDeviceName = (clientName: string, sourceType: SourceType) => {
-  return findTrackByType(clientName, sourceType)?.label;
+  return mergedScreenRef.deviceName
+    ? mergedScreenRef.deviceName
+    : findTrackByType(clientName, sourceType)?.label;
 };
 
 export const getSources = async () => {
@@ -74,6 +89,7 @@ export const connectWebrtc = async (
   clientName: string,
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
 ) => {
+  await askForPermissions();
   presenterStreams[clientName] = new MediaStream();
 
   const sources = await getSources();
@@ -132,7 +148,6 @@ export const connectWebrtc = async (
   webrtcChannel.on("mediaEvent", (event: any) => {
     webrtc.receiveMediaEvent(event.data);
   });
-
   return webrtc;
 };
 
@@ -143,17 +158,23 @@ export const changeSource = async (
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  if (mergedScreenRef.refreshId && sourceType == "video") removeMergedStream();
   await setSourceById(clientName, deviceId, sourceType, playerCallback);
-  const newTrack = findTrackByType(clientName, sourceType);
-  if (!webrtc || !newTrack) return;
-  if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
-  else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  if (!webrtc) return;
+  if (mergedScreenRef.refreshId && sourceType == "video") {
+    shareScreen(webrtc, clientName, playerCallback);
+  } else {
+    const newTrack = findTrackByType(clientName, sourceType);
+    if (!newTrack) return;
+    if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
+    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  }
 };
 
 export const leaveWebrtc = (webrtc: MembraneWebRTC, clientName: string, webrtcChannel: any) => {
   webrtcChannel.off("mediaEvent");
   presenterStreams[clientName].getTracks().forEach((track) => track.stop());
+  mergedScreenRef.cameraTrack?.stop();
+  removeMergedStream();
   removeStream(clientName);
   webrtc.leave();
 };
@@ -162,18 +183,47 @@ export const shareScreen = async (
   webrtc: MembraneWebRTC,
   clientName: string,
   playerCallback: (SourceType: SourceType) => void
-) => {
-  const mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientName]);
+): Promise<boolean> => {
+  let mergedStream: MediaStream;
+  mergedScreenRef.deviceName = presenterStreams[clientName].getVideoTracks().pop()!.label;
 
-  mergedStream.getTracks().forEach((track) => {
+  try {
+    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientName]);
+  } catch (err) {
+    console.log(err, "(Propably clicked cancel on the screen sharing window)");
+    removeMergedStream();
+    return false;
+  }
+
+  mergedStream!.getTracks().forEach((track) => {
     addOrReplaceTrack(clientName, track, playerCallback);
   });
 
   const newTrack = findTrackByType(clientName, "video");
 
-  if (!webrtc || !newTrack) return;
+  if (!webrtc || !newTrack) {
+    removeMergedStream();
+    return false;
+  }
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
   else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  return true;
+};
+
+export const stopShareScreen = (
+  webrtc: MembraneWebRTC,
+  clientName: string,
+  playerCallback: (sourceType: SourceType) => void
+) => {
+  if (mergedScreenRef.cameraTrack) {
+    const newCameraStream: MediaStream = new MediaStream([mergedScreenRef.cameraTrack]).clone();
+    addOrReplaceTrack(clientName, newCameraStream.getTracks()[0], playerCallback);
+    removeMergedStream();
+    const newTrack = findTrackByType(clientName, "video");
+    if (!webrtc || !newTrack) return;
+    if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
+    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientName]);
+  }
 };
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
@@ -210,8 +260,26 @@ const removeMergedStream = () => {
 
   clearTimeout(mergedScreenRef.refreshId);
   mergedScreenRef.refreshId = undefined;
+
+  mergedScreenRef.deviceName = "";
 };
 
 const removeStream = (name: string) => {
   delete presenterStreams[name];
+};
+
+const askForPermissions = async (): Promise<void> => {
+  const hasVideoInput: boolean = (await navigator.mediaDevices.enumerateDevices()).some(
+    (device) => device.kind === "videoinput"
+  );
+
+  const tmpVideoStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: hasVideoInput,
+  });
+
+  // stop tracks
+  // in other case, next call to getUserMedia may fail
+  // or won't respect media constraints
+  tmpVideoStream.getTracks().forEach((track) => track.stop());
 };

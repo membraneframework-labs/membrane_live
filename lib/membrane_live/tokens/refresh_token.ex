@@ -22,7 +22,7 @@ defmodule MembraneLive.Tokens.RefreshToken do
   def has_uuid(jwt) do
     case Joken.peek_claims(jwt) do
       {:ok, %{"user_id" => _user_id}} -> true
-      _ -> false
+      _error -> false
     end
   end
 end

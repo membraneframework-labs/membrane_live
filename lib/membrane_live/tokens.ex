@@ -76,7 +76,7 @@ defmodule MembraneLive.Tokens do
         signer = create_refresh_signer()
         RefreshToken.verify_and_validate(jwt, signer)
 
-      _ ->
+      _false ->
         {:error, :no_uuid_in_header}
     end
   end

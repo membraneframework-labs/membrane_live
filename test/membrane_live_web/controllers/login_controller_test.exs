@@ -4,8 +4,8 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   import MembraneLive.AccountsFixtures
 
   alias MembraneLive.Accounts.User
-  alias MembraneLive.Support.{GoogleTokenMock, RefreshTokenMock}
   alias MembraneLive.Repo
+  alias MembraneLive.Support.{GoogleTokenMock, RefreshTokenMock}
   alias MembraneLive.Tokens
 
   setup do

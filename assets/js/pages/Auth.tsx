@@ -1,8 +1,15 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import axiosWithInterceptor from "../services/index";
-import { isUserAuthenticated, setJwt } from "../services/jwtApi";
+import { isUserAuthenticated } from "../services/jwtApi";
+import {
+  storageSetJwt,
+  storageSetName,
+  storageSetEmail,
+  storageSetPicture,
+} from "../utils/storageUtils";
+
+import "../../css/authpage.css";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -11,7 +18,8 @@ const Auth = () => {
   const fetchToken = async (googleResponse) => {
     try {
       const response = await axiosWithInterceptor.post("auth", googleResponse);
-      setJwt(response.data);
+      if (!response.data.authToken || !response.data.refreshToken) throw "Token is empty";
+      storageSetJwt(response.data);
     } catch (error) {
       console.log(error);
       alert("Couldn't get the token. Please try again in a moment");
@@ -21,7 +29,19 @@ const Auth = () => {
   const fetchTokenAndRedirect = async (response) => {
     await fetchToken(response);
     if (isUserAuthenticated()) {
-      redirectToHomePage();
+      axiosWithInterceptor
+        .get("/me")
+        .then((response) => {
+          if (!response.data.name || !response.data.email) throw "User information aren't correct";
+          storageSetName(response.data.name);
+          storageSetEmail(response.data.email);
+          storageSetPicture(response.data.picture);
+          redirectToHomePage();
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Couldn't get the user information. Please try again in a moment");
+        });
     }
   };
 
@@ -40,7 +60,11 @@ const Auth = () => {
     google.accounts.id.prompt();
   }, []);
 
-  return <div id="google-sign-in-button" />;
+  return (
+    <div className="AuthPage">
+      <div id="google-sign-in-button" />
+    </div>
+  );
 };
 
 export default Auth;

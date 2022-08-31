@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -11,7 +12,6 @@ import {
   ModalFooter,
   Button,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
 
 interface PopupProps {
   setName: (name: string) => void;

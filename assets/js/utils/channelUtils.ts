@@ -1,24 +1,21 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { NamePopupState, PresenterPopupState } from "../pages/Event";
+import type { PresenterPopupState } from "../pages/Event";
 
 export const createEventChannel = (
   eventChannel: any,
-  namePopupState: NamePopupState,
-  setPopupState: React.Dispatch<React.SetStateAction<NamePopupState>>,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>
+  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  setIsModerator: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   eventChannel
     .join()
-    .receive("ok", () => {
-      setPopupState({ isOpen: false, channelConnErr: "" });
+    .receive("ok", (resp: { is_moderator: boolean }) => {
       setEventChannel(eventChannel);
+      setIsModerator(resp.is_moderator);
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      if (resp.reason === "Viewer with this name already exists.")
-        setPopupState({ ...namePopupState, channelConnErr: resp.reason });
-      else alert(resp.reason);
+      alert(resp.reason);
     });
 };
 
@@ -88,10 +85,10 @@ export const syncPresenters = (
 
     const updatePresenters = () => {
       const presenters: string[] = [];
+
       presence.list((name: string, metas: any) => {
-        for (const item of metas.metas) {
-          if (item.is_presenter) presenters.push(name);
-        }
+        // sometimes presence create two object in metas, for example if you open two windows with the same user.
+        metas.metas[0].is_presenter && presenters.push(name);
       });
       setPresenters(presenters);
     };

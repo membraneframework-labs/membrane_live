@@ -2,12 +2,10 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   use MembraneLiveWeb.ConnCase
 
   import MembraneLive.WebinarsFixtures
+  import MembraneLive.AccountsFixtures
 
-  alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
-
-  @dummy_uuid "5a2771ef-3cf2-4d86-b125-fd366e04bc29"
 
   @create_attrs %{
     "description" => "some description",
@@ -29,13 +27,20 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   }
 
   @link_prefix "/event/"
-  @moderator_link_suffix "/moderator"
 
   setup %{conn: conn} do
+    google_claims = %{
+      "name" => "mock_user",
+      "email" => "mock_email@gmail.com",
+      "picture" => "https://google.com"
+    }
+
+    {:ok, _user, token} = create_user_with_token(google_claims)
+
     conn =
       conn
       |> put_req_header("accept", "application/json")
-      |> put_req_header("authorization", get_valid_bearer())
+      |> put_req_header("authorization", get_valid_bearer(token))
 
     {:ok, conn: conn}
   end
@@ -51,15 +56,11 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     test "renders webinar when data is valid", %{conn: conn} do
       conn = post(conn, Routes.webinar_path(conn, :create), webinar: @create_attrs)
 
-      assert %{"viewer_link" => viewer_link, "moderator_link" => moderator_link} =
-               json_response(conn, 201)["webinar_links"]
+      assert %{"link" => link} = json_response(conn, 201)
 
-      assert String.starts_with?(viewer_link, @link_prefix)
-      assert String.starts_with?(moderator_link, @link_prefix)
+      assert String.starts_with?(link, @link_prefix)
 
-      assert String.ends_with?(moderator_link, @moderator_link_suffix)
-
-      uuid = get_uuid_from_link(viewer_link)
+      uuid = get_uuid_from_link(link)
       webinar = Webinars.get_webinar(uuid)
 
       conn = get(conn, Routes.webinar_path(conn, :show, webinar.uuid))
@@ -118,7 +119,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   end
 
   defp create_webinar(_webinar) do
-    webinar = webinar_fixture()
+    user = user_fixture()
+    webinar = webinar_fixture(user)
     %{webinar: webinar}
   end
 
@@ -126,9 +128,7 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     String.replace_prefix(viewer_link, "/event/", "")
   end
 
-  defp get_valid_bearer() do
-    with {:ok, valid_token, _claims} <- Tokens.auth_encode(@dummy_uuid) do
-      "Bearer #{valid_token}"
-    end
+  defp get_valid_bearer(token) do
+    "Bearer #{token}"
   end
 end

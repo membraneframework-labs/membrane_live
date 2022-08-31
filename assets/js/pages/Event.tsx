@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
-import PresenterStreamArea from "../components/PresenterStreamArea";
 import ParticipantsList from "../components/ParticipantsList";
-import NamePopup from "../components/NamePopup";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import PresenterPopup from "../components/PresenterPopup";
-import HLSPlayer from "../components/HlsPlayer";
 import Header from "../components/Header";
+import {
+  storageGetName,
+  storageGetAuthToken,
+  storageGetReloaded,
+  storageSetReloaded,
+} from "../utils/storageUtils";
 import "../../css/event.css";
-
-export type NamePopupState = {
-  isOpen: boolean;
-  channelConnErr: string;
-};
+import StreamArea from "../components/StreamArea";
 
 export type PresenterPopupState = {
   isOpen: boolean;
@@ -20,64 +19,52 @@ export type PresenterPopupState = {
 };
 
 const Event = () => {
-  const [namePopupState, setNamePopupState] = useState<NamePopupState>({
-    isOpen: true,
-    channelConnErr: "",
-  });
+  const name: string = storageGetName();
+  const [isModerator, setIsModerator] = useState<boolean>(false);
+  const [eventChannel, setEventChannel] = useState<any>();
+  const [privateChannel, setPrivateChannel] = useState<any>();
   const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
     isOpen: false,
     moderator: "",
   });
-  const [name, setName] = useState<string>("");
-
-  const [eventChannel, setEventChannel] = useState<any>();
-  const [privateChannel, setPrivateChannel] = useState<any>();
 
   const socket = new Socket("/socket");
   socket.connect();
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
-    if (name && !alreadyJoined) {
+    if (!alreadyJoined) {
       const channel = socket.channel(`event:${getChannelId()}`, {
-        name: name,
-        isModerator: true,
+        token: storageGetAuthToken(),
+        reloaded: storageGetReloaded(),
       });
-      createEventChannel(channel, namePopupState, setNamePopupState, setEventChannel);
+      createEventChannel(channel, setEventChannel, setIsModerator);
     }
-  }, [name, eventChannel]);
+  }, [eventChannel]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
-    if (name && !privateAlreadyJoined && eventAlreadyJoined) {
+    if (!privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${getChannelId()}:${name}`, {});
       createPrivateChannel(channel, eventChannel, name, setPresenterPopupState, setPrivateChannel);
     }
-  }, [name, eventChannel, privateChannel]);
+  }, [eventChannel, privateChannel]);
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", storageSetReloaded);
+    return () => {
+      window.removeEventListener("beforeunload", storageSetReloaded);
+    };
+  }, []);
 
   return (
-    <>
-      <div className="Header">
-        <Header name={name} eventChannel={eventChannel}></Header>
-      </div>
+    <div className="EventPage">
+      <Header name={name} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
-        <div className="DisplayDiv">
-          <div className="Mode"></div>
-          <div className="Stream">
-            <PresenterStreamArea clientName={name} eventChannel={eventChannel} />
-            <HLSPlayer eventChannel={eventChannel} />
-          </div>
-        </div>
-        <div className="Participants">
-          <ParticipantsList username={name} isModerator={true} eventChannel={eventChannel} />
-        </div>
+        <StreamArea clientName={name} eventChannel={eventChannel} />
+        <ParticipantsList clientName={name} isModerator={isModerator} eventChannel={eventChannel} />
       </div>
-      <NamePopup
-        setName={setName}
-        isOpen={namePopupState.isOpen}
-        channelConnErr={namePopupState.channelConnErr}
-      />
       {presenterPopupState.isOpen && (
         <PresenterPopup
           username={name}
@@ -86,7 +73,7 @@ const Event = () => {
           setPopupState={setPresenterPopupState}
         />
       )}
-    </>
+    </div>
   );
 };
 

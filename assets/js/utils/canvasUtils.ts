@@ -7,12 +7,11 @@ export const getMergedTracks = async (
 ) => {
   mergedScreenRef.refreshId && stopRefreshingAndRemovePreviousScreen(mergedScreenRef);
 
-  const screenStream: MediaStream = await navigator.mediaDevices.getDisplayMedia(
-    SCREEN_CONSTRAINTS
-  );
-  const cameraStream: MediaStream = new MediaStream(
-    mergedScreenRef.cameraTrack ? [mergedScreenRef.cameraTrack] : presenterStream.getVideoTracks()
-  ).clone();
+  const screenStream: MediaStream = mergedScreenRef.screenTrack
+    ? new MediaStream([mergedScreenRef.screenTrack])
+    : await navigator.mediaDevices.getDisplayMedia(SCREEN_CONSTRAINTS);
+
+  const cameraStream: MediaStream = new MediaStream(presenterStream.getVideoTracks()).clone();
 
   mergedScreenRef.screenTrack = screenStream.getVideoTracks().pop();
   mergedScreenRef.cameraTrack = cameraStream.getVideoTracks().pop();
@@ -71,8 +70,6 @@ const makeComposite = async (
 };
 
 const stopRefreshingAndRemovePreviousScreen = (mergedScreenRef: MergedScreenRef): void => {
-  mergedScreenRef.screenTrack?.stop();
-  mergedScreenRef.screenTrack = undefined;
   clearTimeout(mergedScreenRef.refreshId);
   mergedScreenRef.refreshId = undefined;
 };

@@ -1,88 +1,69 @@
 defmodule MembraneLiveWeb.EventChannelTest do
   use MembraneLiveWeb.ChannelCase
-  alias MembraneLive.{Repo, Webinars.Webinar}
+
+  import MembraneLive.AccountsFixtures
+
+  alias MembraneLive.{Accounts.User, Repo, Webinars.Webinar}
   alias MembraneLiveWeb.EventChannel
   alias MembraneLiveWeb.Presence
 
-  @user "Mark"
-  @user2 "John"
+  @user "mock_user"
 
   setup do
+    %User{uuid: user_uuid} = user_fixture()
+
     {:ok, %{uuid: uuid}} =
       Repo.insert(%Webinar{
         description: "a",
         presenters: [],
         start_date: ~N[2019-10-31 23:00:07],
-        title: "Test webinar"
+        title: "Test webinar",
+        moderator_id: user_uuid
       })
 
-    {:ok, _reply, pub_socket} =
-      MembraneLiveWeb.EventSocket
-      |> socket("event_id", %{})
-      |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-        name: @user,
-        isModerator: false
-      })
+    google_claims = %{
+      "name" => "mock_user",
+      "email" => "mock_email@gmail.com",
+      "picture" => "https://google.com"
+    }
 
-    %{uuid: uuid, pub_socket: pub_socket}
+    {:ok, user, token} = create_user_with_token(google_claims)
+    {:ok, _reply, pub_socket} = create_channel_connection(uuid, token)
+
+    %{user: user, token: token, uuid: uuid, pub_socket: pub_socket}
   end
 
   describe "Joining and leaving webinar:" do
-    test "join to nonexistent webinar" do
+    test "join to nonexistent webinar", %{token: token} do
       return_value =
         MembraneLiveWeb.EventSocket
         |> socket("event_id", %{})
         |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:invalid_event_id", %{
-          name: @user2,
-          isModerator: false
+          token: token
         })
 
       assert return_value == {:error, %{reason: "This link is wrong."}}
     end
 
-    test "join to webinar with user with the same name" do
-      {:ok, %{uuid: uuid}} =
-        Repo.insert(%Webinar{
-          description: "a",
-          presenters: [],
-          start_date: ~N[2019-10-31 23:00:07],
-          title: "Test webinar"
-        })
+    test "check if users are in presence", %{user: user, uuid: uuid, pub_socket: pub_socket} do
+      google_claims = %{
+        "name" => "mock_user2",
+        "email" => "mock_email2@gmail.com",
+        "picture" => "https://google.com/2"
+      }
 
-      socket = MembraneLiveWeb.EventSocket |> socket("event_id", %{})
+      {:ok, user2, token} = create_user_with_token(google_claims)
 
-      {:ok, _reply, socket} =
-        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-          name: @user2,
-          isModerator: false
-        })
-
-      return_value =
-        subscribe_and_join(socket, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-          name: @user2,
-          isModerator: false
-        })
-
-      assert return_value == {:error, %{reason: "Viewer with this name already exists."}}
-    end
-
-    test "check if users are in presence", %{uuid: uuid, pub_socket: pub_socket} do
-      socket1 = MembraneLiveWeb.EventSocket |> socket("event_id1", %{})
-
-      {:ok, _reply, socket1} =
-        subscribe_and_join(socket1, MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
-          name: @user2,
-          isModerator: false
-        })
+      {:ok, _reply, socket2} = create_channel_connection(uuid, token)
 
       pres = Presence.list("event:#{uuid}")
-      assert is_map_key(pres, @user2) and is_map_key(pres, @user)
+      assert is_map_key(pres, user2.name) and is_map_key(pres, user.name)
 
-      Process.unlink(socket1.channel_pid)
-      close(socket1)
+      Process.unlink(socket2.channel_pid)
+      close(socket2)
 
       pres = Presence.list("event:#{uuid}")
-      assert is_map_key(pres, @user) and not is_map_key(pres, @user2)
+      assert is_map_key(pres, user.name) and not is_map_key(pres, user2.name)
 
       Process.unlink(pub_socket.channel_pid)
       close(pub_socket)
@@ -162,5 +143,14 @@ defmodule MembraneLiveWeb.EventChannelTest do
         end
       )
     end
+  end
+
+  defp create_channel_connection(uuid, token) do
+    MembraneLiveWeb.EventSocket
+    |> socket("event_id", %{})
+    |> subscribe_and_join(MembraneLiveWeb.EventChannel, "event:#{uuid}", %{
+      token: token,
+      reloaded: false
+    })
   end
 end

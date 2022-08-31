@@ -22,6 +22,12 @@ defmodule MembraneLiveWeb.Router do
     get("/video/:prefix/:filename", HLSController, :index)
   end
 
+  scope "/", MembraneLiveWeb do
+    pipe_through(:browser)
+    pipe_through(:auth)
+    get("/me", UserInfoController, :index)
+  end
+
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
     pipe_through(:auth)

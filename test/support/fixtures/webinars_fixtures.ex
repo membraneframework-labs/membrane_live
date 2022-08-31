@@ -3,8 +3,9 @@ defmodule MembraneLive.WebinarsFixtures do
   This module defines test helpers for creating
   entities via the `MembraneLive.Webinars` context.
   """
+  alias MembraneLive.Accounts.User
 
-  @default_webinar_atrrs %{
+  @default_webinar_attrs %{
     "description" => "some description",
     "presenters" => [],
     "start_date" => ~N[2022-07-17 10:20:00],
@@ -15,14 +16,17 @@ defmodule MembraneLive.WebinarsFixtures do
   @doc """
   Generate a webinar.
   """
-  def webinar_fixture(attrs \\ %{}) do
+  def webinar_fixture(attrs \\ %{}, %User{} = user) do
     {:ok, webinar} =
       attrs
-      |> Enum.into(@default_webinar_atrrs)
-      |> MembraneLive.Webinars.create_webinar()
+      |> Enum.into(@default_webinar_attrs)
+      |> MembraneLive.Webinars.create_webinar(user.uuid)
 
     webinar
   end
 
-  def webinar_attrs(), do: @default_webinar_atrrs
+  def webinar_attrs(), do: @default_webinar_attrs
+
+  def webinar_attrs(moderator_uuid),
+    do: @default_webinar_attrs |> Enum.into(%{"moderator" => moderator_uuid})
 end

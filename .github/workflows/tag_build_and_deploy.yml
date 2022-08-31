@@ -5,9 +5,10 @@ on:
       - "*.*.*"
 
 env: 
-  VIRTUAL_HOST: staging-live.membrane.work
-  INTEGRATED_TURN_IP: 65.108.158.247
+  VIRTUAL_HOST: live.membrane.stream
+  INTEGRATED_TURN_IP: 95.217.177.119
   TAG: ${{ github.ref_name }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
 jobs:
   build:
@@ -61,14 +62,14 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nTAG=$TAG" > .env
+        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nTAG=$TAG" > .env
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy
         uses: TapTap21/docker-remote-deployment-action@v1.1
         with:
-          remote_docker_host: ${{ secrets.STAGING_HOST }}
+          remote_docker_host: ${{ secrets.PRODUCTION_HOST }}
           ssh_private_key: ${{ secrets.SSH_PRIV_KEY }}
           ssh_public_key: ${{ secrets.SSH_KNOWN_HOSTS}}
-          stack_file_name: docker-compose-deploy.yml
+          stack_file_name: docker-compose.yml
           args: -p production --env-file .env up -d --remove-orphans
