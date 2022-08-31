@@ -14,7 +14,7 @@ export type Participant = {
 };
 
 type ModeratorMenuProps = {
-  client: Client;
+  moderatorClient: Client;
   participant: Participant;
   eventChannel: any;
 };
@@ -30,14 +30,14 @@ type ParticipantsListProps = {
   eventChannel: any;
 };
 
-const ModeratorMenu = ({ client, participant, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const fontColor = getFontColor("--font-dark-color");
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
   const handleClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
       eventChannel.push("presenter_prop", {
-        moderatorTopic: link + client.email,
+        moderatorTopic: link + moderatorClient.email,
         presenterTopic: link + participant.email,
       });
     } else {
@@ -96,7 +96,11 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
       {client.isModerator && (
-        <ModeratorMenu client={client} eventChannel={eventChannel} participant={participant} />
+        <ModeratorMenu
+          moderatorClient={client}
+          eventChannel={eventChannel}
+          participant={participant}
+        />
       )}
     </div>
   );

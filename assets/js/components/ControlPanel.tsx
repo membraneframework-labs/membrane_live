@@ -119,10 +119,10 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
 
 const stopBeingPresenter = (
   eventChannel: any,
-  email: string,
+  client: Client,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
-  eventChannel.push("presenter_remove", { email: email });
+  eventChannel.push("presenter_remove", { email: client.email });
   setMode("hls");
 };
 
@@ -175,10 +175,10 @@ const ControlPanel = ({
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(client.email, sourceType)}
+        currentSourceName={getCurrentDeviceName(client, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, client.email, deviceId, sourceType, playerCallback).then(() => {
+          changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
             rerender();
           });
         }}
@@ -190,14 +190,14 @@ const ControlPanel = ({
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(client.email, sourceType) ? (
+          checkTrackIsEnabled(client, sourceType) ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(client.email, sourceType);
+          changeTrackIsEnabled(client, sourceType);
           rerender();
         }}
       />
@@ -213,7 +213,7 @@ const ControlPanel = ({
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
             icon={<PhoneDown className="DisconnectButton" color={bgColor} />}
-            onClick={() => stopBeingPresenter(eventChannel, client.email, setMode)}
+            onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
           />
           <GenericButton
             icon={
@@ -225,10 +225,10 @@ const ControlPanel = ({
             }
             onClick={() => {
               if (!sharingScreen)
-                shareScreen(webrtc, client.email, playerCallback).then((value) =>
+                shareScreen(webrtc, client, playerCallback).then((value) =>
                   setSharingScreen(value)
                 );
-              else stopShareScreen(webrtc, client.email, playerCallback);
+              else stopShareScreen(webrtc, client, playerCallback);
               setSharingScreen(false);
             }}
           />

@@ -191,6 +191,7 @@ defmodule MembraneLive.Event do
 
     case state.peer_channels[endpoint_id] do
       nil ->
+        Membrane.Logger.error("Endpoint crashed handling error: This peer doesn't exist already!")
         {:noreply, state}
 
       peer_channel ->

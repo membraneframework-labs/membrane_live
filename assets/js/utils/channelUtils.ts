@@ -54,7 +54,7 @@ export const syncEventChannel = (
 export const createPrivateChannel = (
   privateChannel: any,
   eventChannel: any,
-  email: string,
+  client: Client,
   setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>,
   setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
@@ -69,7 +69,7 @@ export const createPrivateChannel = (
       });
       privateChannel.on("presenter_remove", () => {
         alert("You are no longer presenter.");
-        eventChannel.push("presenter_remove", { email: email });
+        eventChannel.push("presenter_remove", { email: client.email });
       });
       setPrivateChannel(privateChannel);
     })

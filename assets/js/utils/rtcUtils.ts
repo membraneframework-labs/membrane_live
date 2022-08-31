@@ -26,30 +26,30 @@ export const mergedScreenRef: MergedScreenRef = {
 
 const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 
-export const findTrackByType = (email: string, sourceType: SourceType) => {
-  return presenterStreams[email].getTracks().find((elem) => elem.kind == sourceType);
+export const findTrackByType = (client: Client, sourceType: SourceType) => {
+  return presenterStreams[client.email].getTracks().find((elem) => elem.kind == sourceType);
 };
 
-export const changeTrackIsEnabled = (email: string, sourceType: SourceType) => {
+export const changeTrackIsEnabled = (client: Client, sourceType: SourceType) => {
   const track =
     sourceType == "video" && mergedScreenRef.cameraTrack
       ? mergedScreenRef.cameraTrack
-      : findTrackByType(email, sourceType);
+      : findTrackByType(client, sourceType);
   if (track) track.enabled = !track.enabled;
 };
 
-export const checkTrackIsEnabled = (email: string, sourceType: SourceType) => {
+export const checkTrackIsEnabled = (client: Client, sourceType: SourceType) => {
   const track =
     sourceType == "video" && mergedScreenRef.cameraTrack
       ? mergedScreenRef.cameraTrack
-      : findTrackByType(email, sourceType);
+      : findTrackByType(client, sourceType);
   return track?.enabled;
 };
 
-export const getCurrentDeviceName = (clientEmail: string, sourceType: SourceType) => {
+export const getCurrentDeviceName = (client: Client, sourceType: SourceType) => {
   return mergedScreenRef.deviceName
     ? mergedScreenRef.deviceName
-    : findTrackByType(clientEmail, sourceType)?.label;
+    : findTrackByType(client, sourceType)?.label;
 };
 
 export const getSources = async () => {
@@ -67,7 +67,7 @@ export const getSources = async () => {
 };
 
 export const setSourceById = async (
-  clientEmail: string,
+  client: Client,
   deviceId: string,
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
@@ -78,7 +78,7 @@ export const setSourceById = async (
     localStream = await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
 
     localStream.getTracks().forEach((track) => {
-      addOrReplaceTrack(clientEmail, track, playerCallback);
+      addOrReplaceTrack(client, track, playerCallback);
     });
   } catch (error) {
     console.error("Couldn't get microphone permission:", error);
@@ -100,20 +100,10 @@ export const connectWebrtc = async (
   };
 
   if (defaults.audio)
-    await setSourceById(
-      client.email,
-      defaults.audio.deviceId,
-      "audio",
-      playerCallbacks[client.email]
-    );
+    await setSourceById(client, defaults.audio.deviceId, "audio", playerCallbacks[client.email]);
 
   if (defaults.video)
-    await setSourceById(
-      client.email,
-      defaults.video.deviceId,
-      "video",
-      playerCallbacks[client.email]
-    );
+    await setSourceById(client, defaults.video.deviceId, "video", playerCallbacks[client.email]);
 
   const onError = (error: any) => {
     alert("ERROR " + error);
@@ -165,42 +155,42 @@ export const connectWebrtc = async (
 
 export const changeSource = async (
   webrtc: MembraneWebRTC,
-  clientEmail: string,
+  client: Client,
   deviceId: string,
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  await setSourceById(clientEmail, deviceId, sourceType, playerCallback);
+  await setSourceById(client, deviceId, sourceType, playerCallback);
   if (!webrtc) return;
   if (mergedScreenRef.refreshId && sourceType == "video") {
-    shareScreen(webrtc, clientEmail, playerCallback);
+    shareScreen(webrtc, client, playerCallback);
   } else {
-    const newTrack = findTrackByType(clientEmail, sourceType);
+    const newTrack = findTrackByType(client, sourceType);
     if (!newTrack) return;
     if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
-    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[clientEmail]);
+    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   }
 };
 
-export const leaveWebrtc = (webrtc: MembraneWebRTC, clientEmail: string, webrtcChannel: any) => {
+export const leaveWebrtc = (webrtc: MembraneWebRTC, client: Client, webrtcChannel: any) => {
   webrtcChannel.off("mediaEvent");
-  presenterStreams[clientEmail].getTracks().forEach((track) => track.stop());
+  presenterStreams[client.email].getTracks().forEach((track) => track.stop());
   mergedScreenRef.cameraTrack?.stop();
   removeMergedStream();
-  removeStream(clientEmail);
+  removeStream(client);
   webrtc.leave();
 };
 
 export const shareScreen = async (
   webrtc: MembraneWebRTC,
-  clientEmail: string,
+  client: Client,
   playerCallback: (SourceType: SourceType) => void
 ): Promise<boolean> => {
   let mergedStream: MediaStream;
-  mergedScreenRef.deviceName = presenterStreams[clientEmail].getVideoTracks().pop()!.label;
+  mergedScreenRef.deviceName = presenterStreams[client.email].getVideoTracks().pop()!.label;
 
   try {
-    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[clientEmail]);
+    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[client.email]);
   } catch (err) {
     console.log(err, "(Propably clicked cancel on the screen sharing window)");
     removeMergedStream();
@@ -208,33 +198,33 @@ export const shareScreen = async (
   }
 
   mergedStream!.getTracks().forEach((track) => {
-    addOrReplaceTrack(clientEmail, track, playerCallback);
+    addOrReplaceTrack(client, track, playerCallback);
   });
 
-  const newTrack = findTrackByType(clientEmail, "video");
+  const newTrack = findTrackByType(client, "video");
 
   if (!webrtc || !newTrack) {
     removeMergedStream();
     return false;
   }
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-  else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientEmail]);
+  else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   return true;
 };
 
 export const stopShareScreen = (
   webrtc: MembraneWebRTC,
-  clientEmail: string,
+  client: Client,
   playerCallback: (sourceType: SourceType) => void
 ) => {
   if (mergedScreenRef.cameraTrack) {
     const newCameraStream: MediaStream = new MediaStream([mergedScreenRef.cameraTrack]).clone();
-    addOrReplaceTrack(clientEmail, newCameraStream.getTracks()[0], playerCallback);
+    addOrReplaceTrack(client, newCameraStream.getTracks()[0], playerCallback);
     removeMergedStream();
-    const newTrack = findTrackByType(clientEmail, "video");
+    const newTrack = findTrackByType(client, "video");
     if (!webrtc || !newTrack) return;
     if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[clientEmail]);
+    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   }
 };
 
@@ -250,17 +240,17 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
 };
 
 const addOrReplaceTrack = (
-  email: string,
+  client: Client,
   track: MediaStreamTrack,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  if (!presenterStreams[email]) presenterStreams[email] = new MediaStream();
-  const curTrack = findTrackByType(email, track.kind as SourceType);
+  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
+  const curTrack = findTrackByType(client, track.kind as SourceType);
   if (curTrack) {
     curTrack.stop();
-    presenterStreams[email].removeTrack(curTrack);
+    presenterStreams[client.email].removeTrack(curTrack);
   }
-  presenterStreams[email].addTrack(track);
+  presenterStreams[client.email].addTrack(track);
   playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
 };
 
@@ -276,8 +266,8 @@ const removeMergedStream = () => {
   mergedScreenRef.deviceName = "";
 };
 
-const removeStream = (email: string) => {
-  delete presenterStreams[email];
+const removeStream = (client: Client) => {
+  delete presenterStreams[client.email];
 };
 
 const askForPermissions = async (): Promise<void> => {

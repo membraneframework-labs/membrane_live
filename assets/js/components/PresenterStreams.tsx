@@ -7,7 +7,6 @@ import ControlPanel from "./ControlPanel";
 import { Mode } from "./StreamArea";
 import type { Client } from "../pages/Event";
 import "../../css/presenterstreams.css";
-import { Skeleton } from "@chakra-ui/react";
 
 export type Presenter = {
   name: string;
@@ -25,20 +24,25 @@ const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting: boolean = false;
 
+const includeKey = (storage: Presenter[], key: string): boolean => {
+  return storage.some((e) => e.email === key);
+};
+
 const PresenterStreams = ({ client, eventChannel, mode, setMode }: PresenterStreamAreaProps) => {
   const [presenters, setPresenters] = useState<Presenter[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
 
   useEffect(() => {
-    if (!webrtcConnecting && webrtc == null && presenters.some((e) => e.email === client.email)) {
+    const clientIsPresenter = includeKey(presenters, client.email);
+    if (!webrtcConnecting && webrtc == null && clientIsPresenter) {
       webrtcConnecting = true;
       connectWebrtc(eventChannel, client, playerCallbacks).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
-    } else if (webrtc != null && !presenters.some((e) => e.email === client.email)) {
-      leaveWebrtc(webrtc, client.email, eventChannel);
+    } else if (webrtc != null && !clientIsPresenter) {
+      leaveWebrtc(webrtc, client, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
     }
@@ -48,16 +52,16 @@ const PresenterStreams = ({ client, eventChannel, mode, setMode }: PresenterStre
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
 
-  return presenters.some((e) => e.name === client.name) ? (
+  return includeKey(presenters, client.email) ? (
     <div className={`PresenterStreams ${mode == "hls" ? "Hidden" : ""}`}>
       <div className={`StreamsGrid Grid${presenters.length}`}>
         {presenters.map((presenter) => {
           return (
             <RtcPlayer
-              isMyself={client == presenter}
+              isMyself={client.email == presenter.email}
               presenter={presenter}
               playerCallbacks={playerCallbacks}
-              key={presenter.name}
+              key={presenter.email}
             />
           );
         })}

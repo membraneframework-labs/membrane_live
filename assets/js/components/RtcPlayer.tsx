@@ -18,7 +18,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => 
   const font = style.getPropertyValue("--font-light-color");
 
   const connectStreams = (sourceType: SourceType) => {
-    if (!(presenter.email in presenterStreams)) return;
+    if (!presenterStreams[presenter.email]) return;
     if (videoRef.current && sourceType == "video")
       videoRef.current.srcObject = presenterStreams[presenter.email];
     if (audioRef.current && sourceType == "audio")

@@ -60,7 +60,7 @@ const Event = () => {
       createPrivateChannel(
         channel,
         eventChannel,
-        client.email,
+        client,
         setPresenterPopupState,
         setPrivateChannel
       );
