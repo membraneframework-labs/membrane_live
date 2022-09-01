@@ -166,7 +166,7 @@ defmodule MembraneLiveWeb.EventChannel do
   # such design is caused by user Presence that can be updated only with its socket-channel combination
   # (socket parameter in function below)
   def handle_in("presenter_remove", %{"email" => email}, socket) do
-    {:ok, _ref} = Presence.update(socket, email, fn map -> Map.put(map, :is_presenter, false) end)
+    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, false))
 
     "event:" <> id = socket.topic
     remove_from_presenters(email, id)
