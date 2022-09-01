@@ -8,6 +8,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
   alias MembraneLiveWeb.Presence
 
   @user "mock_user"
+  @email "mock_email@gmail.com"
 
   setup do
     %User{uuid: user_uuid} = user_fixture()
@@ -57,13 +58,13 @@ defmodule MembraneLiveWeb.EventChannelTest do
       {:ok, _reply, socket2} = create_channel_connection(uuid, token)
 
       pres = Presence.list("event:#{uuid}")
-      assert is_map_key(pres, user2.name) and is_map_key(pres, user.name)
+      assert is_map_key(pres, user2.email) and is_map_key(pres, user.email)
 
       Process.unlink(socket2.channel_pid)
       close(socket2)
 
       pres = Presence.list("event:#{uuid}")
-      assert is_map_key(pres, user.name) and not is_map_key(pres, user2.name)
+      assert is_map_key(pres, user.email) and not is_map_key(pres, user2.email)
 
       Process.unlink(pub_socket.channel_pid)
       close(pub_socket)
@@ -75,15 +76,15 @@ defmodule MembraneLiveWeb.EventChannelTest do
   describe "Adding presenter:" do
     defp add_presenter(socket, uuid, response) do
       push(socket, "presenter_prop", %{
-        "moderator" => "private:#{uuid}:#{@user}",
-        "presenter" => "private:#{uuid}:#{@user}"
+        "moderatorTopic" => "private:#{uuid}:#{@email}",
+        "presenterTopic" => "private:#{uuid}:#{@email}"
       })
 
-      assert_broadcast("presenter_prop", %{moderator: _})
+      assert_broadcast("presenter_prop", %{moderator_topic: _})
 
       push(socket, "presenter_answer", %{
-        "moderator" => "private:#{uuid}:#{@user}",
-        "name" => "#{@user}",
+        "moderatorTopic" => "private:#{uuid}:#{@email}",
+        "email" => "#{@email}",
         "answer" => response
       })
 
@@ -91,27 +92,27 @@ defmodule MembraneLiveWeb.EventChannelTest do
     end
 
     test "set and remove presenter", %{uuid: uuid, pub_socket: pub_socket} do
-      @endpoint.subscribe("private:#{uuid}:#{@user}")
+      @endpoint.subscribe("private:#{uuid}:#{@email}")
 
       add_presenter(pub_socket, uuid, "accept")
 
       assert_broadcast("presence_diff", %{
-        joins: %{"#{@user}" => %{metas: [%{is_presenter: true}]}}
+        joins: %{"#{@email}" => %{metas: [%{is_presenter: true}]}}
       })
 
       # removing: see comment in lib/membrane_live_web/channels/event_channel.ex
-      push(pub_socket, "presenter_remove", %{"presenter_topic" => "private:#{uuid}:#{@user}"})
+      push(pub_socket, "presenter_remove", %{"presenterTopic" => "private:#{uuid}:#{@email}"})
       assert_broadcast("presenter_remove", %{})
 
-      push(pub_socket, "presenter_remove", %{"presenter" => "#{@user}"})
+      push(pub_socket, "presenter_remove", %{"presenter" => "#{@email}"})
 
       assert_broadcast("presence_diff", %{
-        joins: %{"#{@user}" => %{metas: [%{is_presenter: false}]}}
+        joins: %{"#{@email}" => %{metas: [%{is_presenter: false}]}}
       })
     end
 
     test "set presenter who rejects", %{uuid: uuid, pub_socket: pub_socket} do
-      @endpoint.subscribe("private:#{uuid}:#{@user}")
+      @endpoint.subscribe("private:#{uuid}:#{@email}")
 
       add_presenter(pub_socket, uuid, "reject")
     end
@@ -125,7 +126,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
         fn ->
           EventChannel.handle_in(
             "presenter_remove",
-            %{"presenter_topic" => "private:#{uuid}:invalid"},
+            %{"presenterTopic" => "private:#{uuid}:invalid"},
             pub_socket
           )
         end
@@ -137,7 +138,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
         fn ->
           EventChannel.handle_in(
             "presenter_remove",
-            %{"presenter_topic" => "private:#{uuid}:#{@user}"},
+            %{"presenterTopic" => "private:#{uuid}:#{@email}"},
             pub_socket
           )
         end

@@ -7,19 +7,19 @@ import {
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
-import { PresenterPopupState } from "../pages/Event";
+import { Client, PresenterPopupState } from "../pages/Event";
 import { getFontColor } from "../utils/styleUtils";
 
 type PresenterPopupProps = {
-  username: string;
-  moderator: string;
+  client: Client;
+  moderatorTopic: string;
   eventChannel: any;
   setPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>;
 };
 
 const PresenterPopup = ({
-  username,
-  moderator,
+  client,
+  moderatorTopic,
   eventChannel,
   setPopupState,
 }: PresenterPopupProps) => {
@@ -27,8 +27,12 @@ const PresenterPopup = ({
   const fontColor = getFontColor("--font-dark-color");
 
   const sendAnswer = (answer: string) => {
-    eventChannel.push("presenter_answer", { name: username, moderator: moderator, answer: answer });
-    setPopupState({ isOpen: false, moderator: "" });
+    eventChannel.push("presenter_answer", {
+      email: client.email,
+      moderatorTopic: moderatorTopic,
+      answer: answer,
+    });
+    setPopupState({ isOpen: false, moderatorTopic: "" });
   };
 
   return (
