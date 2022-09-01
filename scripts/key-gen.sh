@@ -2,7 +2,7 @@
 DIR="./test/files/keys"
 ORGIN_DIR=`pwd`
 
-mkdir $DIR
+mkdir -p $DIR
 cd $DIR
 
 FILENAME="jwtRS256"

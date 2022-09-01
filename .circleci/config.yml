@@ -33,6 +33,9 @@ jobs:
           command: mix ecto.migrate
           name: Migrate database schema
       - run:
+          command: chmod +x ./scripts/key-gen.sh
+          name: Change permissions of script generating google auth keys
+      - run:
           command: ./scripts/key-gen.sh
           name: Add google auth keys for tests
       - run:
