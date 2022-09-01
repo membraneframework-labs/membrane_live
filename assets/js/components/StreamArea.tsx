@@ -10,9 +10,10 @@ export type Mode = "presenters" | "hls";
 type StreamAreaProps = {
   client: Client;
   eventChannel: any;
+  privateChannel: any;
 };
 
-const StreamArea = ({ client, eventChannel }: StreamAreaProps) => {
+const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) => {
   const [mode, setMode] = useState<Mode>("hls");
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
@@ -29,11 +30,12 @@ const StreamArea = ({ client, eventChannel }: StreamAreaProps) => {
   };
 
   useEffect(() => {
-    if (eventChannel) {
+    if (eventChannel && privateChannel) {
+      privateChannel.on("presenter_remove", () => setMode("hls"));
       eventChannel.on("playlist_playable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
     }
-  }, [eventChannel]);
+  }, [eventChannel, privateChannel]);
 
   return (
     <div className="StreamArea">

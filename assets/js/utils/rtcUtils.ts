@@ -127,7 +127,7 @@ export const connectWebrtc = async (
       },
       onTrackReady: ({ track, peer }) => {
         if (track != null)
-          addOrReplaceTrack(peer.metadata.email, track, playerCallbacks[peer.metadata.email]);
+          addOrReplaceTrack(peer.metadata, track, playerCallbacks[peer.metadata.email]);
       },
       onTrackAdded: (_ctx) => {},
       onTrackRemoved: (_ctx) => {},
@@ -142,10 +142,7 @@ export const connectWebrtc = async (
     },
   });
 
-  webrtc.join({
-    name: client.name,
-    email: client.email,
-  });
+  webrtc.join(client);
 
   webrtcChannel.on("mediaEvent", (event: any) => {
     webrtc.receiveMediaEvent(event.data);

@@ -78,7 +78,7 @@ const Event = () => {
     <div className="EventPage">
       <Header client={client} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
-        <StreamArea client={client} eventChannel={eventChannel} />
+        <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
         <ParticipantsList client={client} eventChannel={eventChannel} />
       </div>
       {presenterPopupState.isOpen && (
