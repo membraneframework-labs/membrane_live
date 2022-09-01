@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ParticipantsList from "../components/ParticipantsList";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
-import PresenterPopup from "../components/PresenterPopup";
 import Header from "../components/Header";
 import {
   storageGetName,
@@ -13,6 +12,8 @@ import {
 } from "../utils/storageUtils";
 import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
+import { useToast } from "@chakra-ui/react";
+import { presenterPopup } from "../utils/popupUtils";
 
 export type PresenterPopupState = {
   isOpen: boolean;

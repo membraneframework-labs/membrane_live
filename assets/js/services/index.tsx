@@ -1,6 +1,8 @@
 import * as JwtApi from "./jwtApi";
 import { storageGetAuthToken, storageSetJwt } from "../utils/storageUtils";
+import { useToast } from "@chakra-ui/react";
 
+// const toast = useToast();
 const axios = require("axios").default;
 
 const redirect = (suffix: string) => {
@@ -34,7 +36,11 @@ axiosWithInterceptor.interceptors.response.use(
       return axiosWithInterceptor(updatedConfig);
     } catch (err) {
       JwtApi.destroyTokens();
-      alert("Your refresh token has expired. Please log in again.");
+      // toast({
+      //   title: "Your refresh token has expired. Please log in again.",
+      //   status: "info",
+      //   isClosable: false,
+      // })
       redirect("/auth");
       return Promise.reject(err);
     }

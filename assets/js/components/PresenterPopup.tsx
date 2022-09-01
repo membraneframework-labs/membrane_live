@@ -10,6 +10,7 @@ import {
 import { Client, PresenterPopupState } from "../pages/Event";
 import { getFontColor } from "../utils/styleUtils";
 
+// const toast = useToast();
 type PresenterPopupProps = {
   client: Client;
   moderatorTopic: string;

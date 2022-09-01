@@ -17,7 +17,13 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      alert(resp.reason);
+      // toast({
+      //   title: "Error while joining event",
+      //   description: resp.reason,
+      //   status: "error",
+      //   isClosable: false,
+      //   position: "top"
+      // })
     });
 };
 
@@ -65,7 +71,12 @@ export const createPrivateChannel = (
         setPresenterPopupState({ isOpen: true, moderatorTopic: message.moderator_topic });
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
-        alert(`User ${message.name} ${message.answer}ed your request.`);
+        // toast({
+        //   title: `User ${message.name} ${message.answer}ed your request.`,
+        //   status: "info",
+        //   isClosable: false,
+        //   position: "top"
+        // })
       });
       privateChannel.on("presenter_remove", () => {
         alert("You are no longer presenter.");
@@ -75,7 +86,13 @@ export const createPrivateChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       privateChannel.leave();
-      alert(resp.reason);
+      // toast({
+      //   title: "Error while joining event",
+      //   description: resp.reason,
+      //   status: "error",
+      //   isClosable: false,
+      //   position: "top"
+      // })
     });
 };
 
