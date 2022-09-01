@@ -18,11 +18,7 @@ defmodule MembraneLive.AccountsFixtures do
   def user_fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
-      |> Enum.into(%{
-        email: "john@gmail.com",
-        name: "John Kowalski",
-        picture: "kowalski.img"
-      })
+      |> Enum.into(@default_user_attrs)
       |> MembraneLive.Accounts.create_user()
 
     user

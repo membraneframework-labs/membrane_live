@@ -7,5 +7,6 @@ defmodule MembraneLive do
   if it comes from the database, an external API or others.
   """
 
+  @spec get_env(atom) :: any
   def get_env(key), do: Application.fetch_env!(:membrane_live, key)
 end

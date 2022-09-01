@@ -10,23 +10,19 @@ defmodule MembraneLive.Tokens do
     - encode: generation and signing
     - decode: verification and validation
 
-  FYI: pem = Privacy-Enhanced Mail - format for storing cryptographic keys. In this case: google public keys
+  Google public keys are stored in pem format.
   """
   alias MembraneLive.Tokens.{AuthToken, GoogleToken, RefreshToken}
 
   def google_decode(jwt) do
     with {:ok, signer} <- get_signer(jwt) do
       GoogleToken.verify_and_validate(jwt, signer)
-    else
-      err -> err
     end
   end
 
   defp get_signer(jwt) do
     with {:ok, public_keys} <- get_public_keys(jwt) do
       {:ok, Joken.Signer.create("RS256", public_keys)}
-    else
-      err -> err
     end
   end
 
@@ -45,8 +41,8 @@ defmodule MembraneLive.Tokens do
   end
 
   defp fetch_google_public_pems() do
-    :membrane_live
-    |> Application.fetch_env!(:google_pems_url)
+    :google_pems_url
+    |> MembraneLive.get_env()
     |> HTTPoison.get()
   end
 
@@ -71,13 +67,11 @@ defmodule MembraneLive.Tokens do
 
   @spec refresh_decode(binary) :: {:error, atom | keyword} | {:ok, %{optional(binary) => any}}
   def refresh_decode(jwt) do
-    case RefreshToken.has_uuid(jwt) do
-      true ->
-        signer = create_refresh_signer()
-        RefreshToken.verify_and_validate(jwt, signer)
-
-      _false ->
-        {:error, :no_uuid_in_header}
+    if RefreshToken.has_uuid?(jwt) do
+      signer = create_refresh_signer()
+      RefreshToken.verify_and_validate(jwt, signer)
+    else
+      {:error, :no_uuid_in_header}
     end
   end
 

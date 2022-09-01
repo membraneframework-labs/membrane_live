@@ -28,7 +28,7 @@ defmodule MembraneLive.Event do
   def init(event_id) do
     Membrane.Logger.info("Spawning room process: #{inspect(self())}")
 
-    turn_mock_ip = Application.fetch_env!(:membrane_live, :integrated_turn_ip)
+    turn_mock_ip = MembraneLive.get_env(:integrated_turn_ip)
     turn_ip = if @mix_env == :prod, do: {0, 0, 0, 0}, else: turn_mock_ip
 
     trace_ctx = Membrane.OpenTelemetry.new_ctx()
@@ -53,13 +53,13 @@ defmodule MembraneLive.Event do
     integrated_turn_options = [
       ip: turn_ip,
       mock_ip: turn_mock_ip,
-      ports_range: Application.fetch_env!(:membrane_live, :integrated_turn_port_range),
+      ports_range: MembraneLive.get_env(:integrated_turn_port_range),
       cert_file: turn_cert_file
     ]
 
     network_options = [
       integrated_turn_options: integrated_turn_options,
-      integrated_turn_domain: Application.fetch_env!(:membrane_live, :integrated_turn_domain),
+      integrated_turn_domain: MembraneLive.get_env(:integrated_turn_domain),
       dtls_pkey: Application.get_env(:membrane_live, :dtls_pkey),
       dtls_cert: Application.get_env(:membrane_live, :dtls_cert)
     ]

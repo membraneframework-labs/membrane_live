@@ -9,16 +9,14 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   alias MembraneLive.Tokens
 
   setup do
-    port = Application.fetch_env!(:membrane_live, :bypass_port)
+    port = MembraneLive.get_env(:bypass_port)
     bypass = Bypass.open(port: port)
 
     {:ok, bypass: bypass}
   end
 
   setup %{conn: conn} do
-    conn =
-      conn
-      |> put_req_header("accept", "application/json")
+    conn = put_req_header(conn, "accept", "application/json")
 
     {:ok, conn: conn}
   end
@@ -108,7 +106,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
 
       conn = post(conn, Routes.login_path(conn, :refresh), refreshToken: empty_jwt)
 
-      assert conn.status == 400
+      assert %{"message" => "User id was not provided in the jwt"} = json_response(conn, 400)
     end
 
     test "[401] refresh token is invalid", %{conn: conn} do
@@ -116,7 +114,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
 
       conn = post(conn, Routes.login_path(conn, :refresh), refreshToken: invalid_jwt)
 
-      assert conn.status == 401
+      assert %{"message" => "Token has an invalid signature"} = json_response(conn, 401)
     end
   end
 
