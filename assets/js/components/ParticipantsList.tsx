@@ -4,44 +4,44 @@ import { syncEventChannel } from "../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
 import { getFontColor } from "../utils/styleUtils";
 import "../../css/participants.css";
+import { Client } from "../pages/Event";
 
 export type Participant = {
+  email: string;
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
 };
 
 type ModeratorMenuProps = {
-  clientName: string;
-  name: string;
-  isPresenter: boolean;
+  moderatorClient: Client;
+  participant: Participant;
   eventChannel: any;
 };
 
 type ParticipantProps = {
-  clientName: string;
-  name: string;
-  isPresenter: boolean;
-  isModerator: boolean;
-  moderatorMode: boolean;
+  client: Client;
+  participant: Participant;
   eventChannel: any;
 };
 
 type ParticipantsListProps = {
-  clientName: string;
-  isModerator: boolean;
+  client: Client;
   eventChannel: any;
 };
 
-const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const fontColor = getFontColor("--font-dark-color");
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
   const handleClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
-      eventChannel.push("presenter_prop", { moderator: link + clientName, presenter: link + name });
+      eventChannel.push("presenter_prop", {
+        moderatorTopic: link + moderatorClient.email,
+        presenterTopic: link + participant.email,
+      });
     } else {
-      eventChannel.push("presenter_remove", { presenter_topic: link + name });
+      eventChannel.push("presenter_remove", { presenterTopic: link + participant.email });
     }
   };
 
@@ -54,9 +54,9 @@ const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: Moderato
         <MenuItem
           color={fontColor}
           onClick={handleClick}
-          value={isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+          value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         >
-          {isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+          {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         </MenuItem>
         <MenuItem color={fontColor} value="Mute">
           Mute
@@ -69,42 +69,44 @@ const ModeratorMenu = ({ clientName, name, isPresenter, eventChannel }: Moderato
   );
 };
 
-const Participant = ({
-  clientName,
-  name,
-  isModerator,
-  isPresenter,
-  moderatorMode,
-  eventChannel,
-}: ParticipantProps) => {
+const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
   const fontColor = getFontColor("--font-dark-color");
 
-  const icon = isModerator ? <Crown1 /> : isPresenter ? <Star1 /> : <User1 />;
-  const role = isModerator ? "Moderator" : isPresenter ? "Presenter" : "Praticipant";
+  const icon = participant.isModerator ? (
+    <Crown1 />
+  ) : participant.isPresenter ? (
+    <Star1 />
+  ) : (
+    <User1 />
+  );
+  const role = participant.isModerator
+    ? "Moderator"
+    : participant.isPresenter
+    ? "Presenter"
+    : "Praticipant";
 
   return (
     <div className="Participant">
       <Tooltip
-        label={`${role}${clientName == name ? " (You)" : ""}`}
+        label={`${role}${client.name == participant.name ? " (You)" : ""}`}
         bg={fontColor}
         borderRadius="25px"
       >
         {icon}
       </Tooltip>
-      <p className="ParticipantText">{name}</p>
-      {moderatorMode && (
+      <p className="ParticipantText">{participant.name}</p>
+      {client.isModerator && (
         <ModeratorMenu
-          clientName={clientName}
+          moderatorClient={client}
           eventChannel={eventChannel}
-          isPresenter={isPresenter}
-          name={name}
+          participant={participant}
         />
       )}
     </div>
   );
 };
 
-const ParticipantsList = ({ clientName, isModerator, eventChannel }: ParticipantsListProps) => {
+const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
 
@@ -116,12 +118,9 @@ const ParticipantsList = ({ clientName, isModerator, eventChannel }: Participant
   participants.map((participant) =>
     parts.push(
       <Participant
-        clientName={clientName}
+        client={client}
         key={participant.name}
-        name={participant.name}
-        isModerator={participant.isModerator}
-        isPresenter={participant.isPresenter}
-        moderatorMode={isModerator}
+        participant={participant}
         eventChannel={eventChannel}
       />
     )

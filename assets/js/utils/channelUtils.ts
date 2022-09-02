@@ -1,17 +1,19 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { PresenterPopupState } from "../pages/Event";
+import type { Client, PresenterPopupState } from "../pages/Event";
+import type { Presenter } from "../components/PresenterStreams";
 
 export const createEventChannel = (
+  client: Client,
   eventChannel: any,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>,
-  setIsModerator: React.Dispatch<React.SetStateAction<boolean>>
+  setClient: React.Dispatch<React.SetStateAction<Client>>
 ) => {
   eventChannel
     .join()
     .receive("ok", (resp: { is_moderator: boolean }) => {
       setEventChannel(eventChannel);
-      setIsModerator(resp.is_moderator);
+      setClient({ ...client, isModerator: resp.is_moderator });
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
@@ -28,10 +30,11 @@ export const syncEventChannel = (
 
     const updateStates = () => {
       const parts: Participant[] = [];
-      presence.list((name: string, metas: any) => {
+      presence.list((email: string, metas: any) => {
         const participant = metas.metas[0];
         parts.push({
-          name: name,
+          email: email,
+          name: participant.name,
           isPresenter: participant.is_presenter,
           isModerator: participant.is_moderator,
         });
@@ -51,22 +54,22 @@ export const syncEventChannel = (
 export const createPrivateChannel = (
   privateChannel: any,
   eventChannel: any,
-  name: string,
+  client: Client,
   setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>,
   setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   privateChannel
     .join()
     .receive("ok", () => {
-      privateChannel.on("presenter_prop", (message: { moderator: string }) => {
-        setPresenterPopupState({ isOpen: true, moderator: message.moderator });
+      privateChannel.on("presenter_prop", (message: { moderator_topic: string }) => {
+        setPresenterPopupState({ isOpen: true, moderatorTopic: message.moderator_topic });
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
         alert(`User ${message.name} ${message.answer}ed your request.`);
       });
       privateChannel.on("presenter_remove", () => {
         alert("You are no longer presenter.");
-        eventChannel.push("presenter_remove", { presenter: name });
+        eventChannel.push("presenter_remove", { email: client.email });
       });
       setPrivateChannel(privateChannel);
     })
@@ -78,17 +81,17 @@ export const createPrivateChannel = (
 
 export const syncPresenters = (
   eventChannel: any,
-  setPresenters: React.Dispatch<React.SetStateAction<string[]>>
+  setPresenters: React.Dispatch<React.SetStateAction<Presenter[]>>
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 
     const updatePresenters = () => {
-      const presenters: string[] = [];
+      const presenters: Presenter[] = [];
 
-      presence.list((name: string, metas: any) => {
+      presence.list((email: string, metas: any) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
-        metas.metas[0].is_presenter && presenters.push(name);
+        metas.metas[0].is_presenter && presenters.push({ name: metas.metas[0].name, email: email });
       });
       setPresenters(presenters);
     };

@@ -70,14 +70,11 @@ defmodule Membrane.Live.Mixfile do
       # Otel
       {:opentelemetry, "~> 1.0"},
       {:opentelemetry_api, "~> 1.0"},
-      {:opentelemetry_exporter, "~> 1.0"},
+      {:opentelemetry_exporter, "1.0.4"},
       {:opentelemetry_zipkin, "~> 1.0"},
 
       # HLS_Endpoint deps
-      {:membrane_http_adaptive_stream_plugin,
-       github: "membraneframework/membrane_http_adaptive_stream_plugin",
-       branch: "static_video_manifest_name",
-       override: true},
+      {:membrane_http_adaptive_stream_plugin, "~> 0.8.0"},
       {:membrane_mp4_plugin, "~> 0.16.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.21.5"},
       {:membrane_aac_plugin, "~> 0.12.0"},
@@ -120,6 +117,10 @@ defmodule Membrane.Live.Mixfile do
       "assets.deploy": [
         "esbuild default --minify",
         "phx.digest"
+      ],
+      test: [
+        "cmd ./scripts/key-gen.sh",
+        "test --warnings-as-errors"
       ]
     ]
   end

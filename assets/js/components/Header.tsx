@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 import { Avatar } from "@chakra-ui/react";
 import { storageGetPicture } from "../utils/storageUtils";
+import type { Client } from "../pages/Event";
 import "../../css/header.css";
 
 const monthNames = [
@@ -23,7 +24,7 @@ const monthNames = [
 
 type HeaderProps = {
   eventChannel: any;
-  name: string;
+  client: Client;
 };
 
 export type EventInfo = {
@@ -34,7 +35,7 @@ export type EventInfo = {
   presenters: string[];
 };
 
-const Header = ({ name, eventChannel }: HeaderProps) => {
+const Header = ({ client, eventChannel }: HeaderProps) => {
   const picture: string = storageGetPicture();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
@@ -80,11 +81,11 @@ const Header = ({ name, eventChannel }: HeaderProps) => {
       </div>
       <div className="User">
         {picture ? (
-          <Avatar name={name} src={picture} className="UserIcon" />
+          <Avatar name={client.name} src={picture} className="UserIcon" />
         ) : (
           <User1 className="UserIcon" />
         )}
-        <div className="UserName">{name}</div>
+        <div className="UserName">{client.name}</div>
       </div>
     </div>
   );

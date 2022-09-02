@@ -1,11 +1,12 @@
 import { Presence } from "phoenix";
+import { Client } from "../pages/Event";
 
 export const syncPresentersNumber = (
-  eventChannel,
-  setPresentersNumber,
-  setAmIPresenter,
-  clientName
-) => {
+  eventChannel: any,
+  setPresentersNumber: React.Dispatch<React.SetStateAction<number>>,
+  setAmIPresenter: React.Dispatch<React.SetStateAction<boolean>>,
+  client: Client
+): void => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 
@@ -15,8 +16,8 @@ export const syncPresentersNumber = (
 
     const upadteAmIPresenter = () => {
       let newAmIPresenter = false;
-      presence.list((name: string, metas: any) => {
-        if (metas.metas[0].is_presenter && name == clientName) newAmIPresenter = true;
+      presence.list((email: string, metas: any) => {
+        if (metas.metas[0].is_presenter && email == client.email) newAmIPresenter = true;
       });
       setAmIPresenter(newAmIPresenter);
     };

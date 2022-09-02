@@ -3,6 +3,7 @@ import type { Mode } from "./StreamArea";
 import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../utils/modePanelUtils";
 import "../../css/modepanel.css";
+import { Client } from "../pages/Event";
 
 type ModeButtonProps = {
   onClick: () => void;
@@ -23,15 +24,15 @@ type ModePanelProps = {
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   presenterName: string;
   eventChannel: any;
-  clientName: string;
+  client: Client;
 };
 
-const ModePanel = ({ mode, setMode, presenterName, eventChannel, clientName }: ModePanelProps) => {
+const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
 
   useEffect(
-    () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, clientName),
+    () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
     [eventChannel]
   );
 

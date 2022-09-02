@@ -23,18 +23,20 @@ defmodule MembraneLiveWeb.EventChannel do
         {:error, %{reason: "This event doesn't exists."}}
 
       {:ok, true} ->
-        :ets.insert_new(:presenters, {id, []})
+        :ets.insert_new(:presenters, {id, MapSet.new()})
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
-             [] <- Presence.get_by_key(socket, name),
+             {:ok, email} <- Accounts.get_email(uuid),
+             [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event_stream(id, socket),
-             {:ok, is_presenter} = check_if_presenter(name, reloaded, id),
+             {:ok, is_presenter} = check_if_presenter(email, reloaded, id),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
           {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
 
           {:ok, _ref} =
-            Presence.track(socket, name, %{
+            Presence.track(socket, email, %{
+              name: name,
               is_moderator: is_moderator,
               is_presenter: is_presenter
             })
@@ -111,16 +113,16 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
-  defp check_if_presenter(name, reloaded, id) do
+  defp check_if_presenter(email, reloaded, id) do
     [{_key, presenters}] = :ets.lookup(:presenters, id)
-    in_ets = Enum.find(presenters, &(&1 == name)) != nil
+    in_ets = MapSet.member?(presenters, email)
 
     case {reloaded, in_ets} do
       {true, _in_ets} ->
         {:ok, in_ets}
 
       {false, true} ->
-        remove_from_presenters(name, id)
+        remove_from_presenters(email, id)
         {:ok, false}
 
       {false, false} ->
@@ -128,14 +130,14 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp remove_from_presenters(name, id) do
+  defp remove_from_presenters(email, id) do
     [{_key, presenters}] = :ets.lookup(:presenters, id)
-    :ets.insert(:presenters, {id, Enum.reject(presenters, &(&1 == name))})
+    :ets.insert(:presenters, {id, MapSet.delete(presenters, email)})
   end
 
-  defp add_to_presenters(name, id) do
+  defp add_to_presenters(email, id) do
     [{_key, presenters}] = :ets.lookup(:presenters, id)
-    :ets.insert(:presenters, {id, [name, presenters]})
+    :ets.insert(:presenters, {id, MapSet.put(presenters, email)})
   end
 
   @impl true
@@ -163,17 +165,20 @@ defmodule MembraneLiveWeb.EventChannel do
   # and sends message back) -> server (updates presenter in Presence)
   # such design is caused by user Presence that can be updated only with its socket-channel combination
   # (socket parameter in function below)
-  def handle_in("presenter_remove", %{"presenter" => presenter}, socket) do
-    {:ok, _ref} =
-      Presence.update(socket, presenter, fn map -> Map.put(map, :is_presenter, false) end)
+  def handle_in("presenter_remove", %{"email" => email}, socket) do
+    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, false))
 
     "event:" <> id = socket.topic
-    remove_from_presenters(presenter, id)
+    remove_from_presenters(email, id)
     {:noreply, socket}
   end
 
-  def handle_in("presenter_remove", %{"presenter_topic" => presenter_topic}, socket) do
-    props = Presence.get_by_key(socket, List.last(String.split(presenter_topic, ":")))
+  def handle_in("presenter_remove", %{"presenterTopic" => presenter_topic}, socket) do
+    props =
+      presenter_topic
+      |> String.split(":")
+      |> List.last()
+      |> then(&Presence.get_by_key(socket, &1))
 
     case props do
       %{metas: [%{is_presenter: true}]} ->
@@ -189,9 +194,13 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in("presenter_prop", %{"moderator" => moderator, "presenter" => presenter}, socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter, "presenter_prop", %{
-      :moderator => moderator
+  def handle_in(
+        "presenter_prop",
+        %{"moderatorTopic" => moderator_topic, "presenterTopic" => presenter_topic},
+        socket
+      ) do
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
+      moderator_topic: moderator_topic
     })
 
     {:noreply, socket}
@@ -199,22 +208,23 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def handle_in(
         "presenter_answer",
-        %{"answer" => answer, "name" => name, "moderator" => moderator},
+        %{"answer" => answer, "email" => email, "moderatorTopic" => moderator_topic},
         socket
       ) do
     {:ok, socket} =
       if answer == "accept" do
-        {:ok, _ref} =
-          Presence.update(socket, name, fn map -> Map.put(map, :is_presenter, true) end)
+        {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, true))
 
         "event:" <> id = socket.topic
-        add_to_presenters(name, id)
+        add_to_presenters(email, id)
         join_event_stream(socket)
       else
         {:ok, socket}
       end
 
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator, "presenter_answer", %{
+    %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
+
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "presenter_answer", %{
       :name => name,
       :answer => answer
     })
