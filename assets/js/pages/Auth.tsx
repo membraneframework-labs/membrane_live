@@ -12,7 +12,7 @@ import { useToast } from "@chakra-ui/react";
 import "../../css/authpage.css";
 
 const Auth = () => {
-  // const toast = useToast();
+  const toast = useToast();
   const navigate = useNavigate();
   const redirectToHomePage = () => navigate("/");
 
@@ -23,11 +23,11 @@ const Auth = () => {
       storageSetJwt(response.data);
     } catch (error) {
       console.log(error);
-      // toast({
-      //   title: "Couldn't get the token. Please try again in a moment",
-      //   status: "error",
-      //   isClosable: false,
-      // })
+      toast({
+        title: "Couldn't get the token. Please try again in a moment",
+        status: "error",
+        isClosable: false,
+      })
     }
   };
 
@@ -45,11 +45,11 @@ const Auth = () => {
         })
         .catch((error) => {
           console.error(error);
-          // toast({
-          //   title: "Couldn't get the user information. Please try again in a moment",
-          //   status: "error",
-          //   isClosable: false,
-          // })
+          toast({
+            title: "Couldn't get the user information. Please try again in a moment",
+            status: "error",
+            isClosable: false,
+          })
         });
     }
   };

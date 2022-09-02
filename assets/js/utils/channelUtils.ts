@@ -4,6 +4,7 @@ import type { Client, PresenterPopupState } from "../pages/Event";
 import type { Presenter } from "../components/PresenterStreams";
 
 export const createEventChannel = (
+  toast: any,
   client: Client,
   eventChannel: any,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>,
@@ -17,13 +18,13 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      // toast({
-      //   title: "Error while joining event",
-      //   description: resp.reason,
-      //   status: "error",
-      //   isClosable: false,
-      //   position: "top"
-      // })
+      toast({
+        title: "Error while joining event",
+        description: resp.reason,
+        status: "error",
+        isClosable: false,
+        position: "top"
+      })
     });
 };
 
@@ -58,41 +59,47 @@ export const syncEventChannel = (
 };
 
 export const createPrivateChannel = (
+  toast: any,
   privateChannel: any,
   eventChannel: any,
   client: Client,
-  setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>,
+  presenterPopup: (toast: any, moderatorTopic: string) => void,
   setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   privateChannel
     .join()
     .receive("ok", () => {
       privateChannel.on("presenter_prop", (message: { moderator_topic: string }) => {
-        setPresenterPopupState({ isOpen: true, moderatorTopic: message.moderator_topic });
+        presenterPopup(toast, message.moderator_topic);
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
-        // toast({
-        //   title: `User ${message.name} ${message.answer}ed your request.`,
-        //   status: "info",
-        //   isClosable: false,
-        //   position: "top"
-        // })
+        toast({
+          title: `User ${message.name} ${message.answer}ed your request.`,
+          status: "info",
+          isClosable: false,
+          position: "top"
+        })
       });
       privateChannel.on("presenter_remove", () => {
-        alert("You are no longer presenter.");
+        toast({
+          title: `"You are no longer presenter."`,
+          status: "info",
+          isClosable: false,
+          position: "top"
+        })
         eventChannel.push("presenter_remove", { email: client.email });
       });
       setPrivateChannel(privateChannel);
     })
     .receive("error", (resp: { reason: string }) => {
       privateChannel.leave();
-      // toast({
-      //   title: "Error while joining event",
-      //   description: resp.reason,
-      //   status: "error",
-      //   isClosable: false,
-      //   position: "top"
-      // })
+      toast({
+        title: "Error while joining event",
+        description: resp.reason,
+        status: "error",
+        isClosable: false,
+        position: "top"
+      })
     });
 };
 

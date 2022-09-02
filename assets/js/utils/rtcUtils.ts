@@ -24,7 +24,6 @@ export const mergedScreenRef: MergedScreenRef = {
   refreshId: undefined,
 };
 
-// const toast = useToast();
 const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 
 export const findTrackByType = (client: Client, sourceType: SourceType) => {
@@ -107,12 +106,7 @@ export const connectWebrtc = async (
     await setSourceById(client, defaults.video.deviceId, "video", playerCallbacks[client.email]);
 
   const onError = (error: string) => {
-    // toast({
-    //   title: error,
-    //   status: "error",
-    //   isClosable: false,
-    //   position: "top"
-    // })
+    console.log(error);
   };
 
   const webrtc = new MembraneWebRTC({

@@ -14,7 +14,7 @@ import {
 import React from "react";
 import { checkEventForm, sendEventForm } from "../utils/formApi";
 import { useToast } from "@chakra-ui/react";
-import { infoPopup } from "../utils/popupUtils";
+
 export type EventForm = {
   title: string;
   description: string;
@@ -48,7 +48,12 @@ function Form() {
     if (checkEventForm(eventForm)) {
       sendEventForm(eventForm, setLink);
     } else {
-      infoPopup(toast, "Fields title and date are necessary to create an event");
+      toast({
+        title: "Fields title and date are necessary to create an event",
+        status: "info",
+        isClosable: false,
+        position: "bottom"
+      })
     }
   };
 

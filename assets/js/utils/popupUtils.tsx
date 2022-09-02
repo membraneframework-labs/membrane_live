@@ -1,6 +1,9 @@
 import { UseToastOptions, ToastId } from "@chakra-ui/react";
 import React from "react";
+import type { Client } from "../pages/Event"
 import "../../css/event.css";
+
+let presenterToast;
 
 export const presenterPopup = (
   toast: (options?: UseToastOptions | undefined) => ToastId,
@@ -8,21 +11,21 @@ export const presenterPopup = (
   eventChannel: any,
   moderatorTopic: string
 ) => {
-  toast({
+  presenterToast = toast({
     duration: 15000,
     render: () => (
       <div className="PresenterPopup">
         <div className="PresenterPopupText">Do you want to be a presenter</div>
         <button
           className="PresenterPopupButton"
-          onClick={() => sendAnswer(eventChannel, "accept", client.email, moderatorTopic)}
+          onClick={() => sendAnswer(toast, eventChannel, "accept", client.email, moderatorTopic)}
         >
           {" "}
           YES{" "}
         </button>
         <button
           className="PresenterPopupButton"
-          onClick={() => sendAnswer(eventChannel, "reject", client.email, moderatorTopic)}
+          onClick={() => sendAnswer(toast, eventChannel, "reject", client.email, moderatorTopic)}
         >
           {" "}
           NO{" "}
@@ -32,25 +35,14 @@ export const presenterPopup = (
   });
 };
 
-export const infoPopup = (
-  toast: (options?: UseToastOptions | undefined) => ToastId,
-  title: string,
-  position: string,
-) => {
-  toast({
-    duration: 3000,
-    render: () => (
-      <div className="PresenterPopup">
-        <div className="PresenterPopupText">{title}</div>
-      </div>
-    ),
-  });
-};
-
-const sendAnswer = (eventChannel: any, answer: string, email: string, moderatorTopic: string) => {
+const sendAnswer = (toast: any, eventChannel: any, answer: string, email: string, moderatorTopic: string) => {
   eventChannel.push("presenter_answer", {
     email: email,
     moderatorTopic: moderatorTopic,
     answer: answer,
   });
+  if (presenterToast) {
+    console.log("siema")
+    toast.close(presenterToast)
+  }
 };
