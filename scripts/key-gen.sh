@@ -7,9 +7,9 @@ cd $DIR
 
 FILENAME="jwtRS256"
 
-ssh-keygen -t rsa -P "" -b 4096 -m PEM -f "${FILENAME}.key"
+ssh-keygen -t rsa -P "" -b 4096 -m PEM -f "${FILENAME}.key" <<< y
 ssh-keygen -e -m PEM -f "${FILENAME}.key" > "${FILENAME}.key.pub"
-ssh-keygen -t rsa -P "" -b 4096 -m PEM -f "${FILENAME}-invalid.key"
+ssh-keygen -t rsa -P "" -b 4096 -m PEM -f "${FILENAME}-invalid.key" <<< y
 rm "${FILENAME}-invalid.key.pub"
 
 cd $ORGIN_DIR

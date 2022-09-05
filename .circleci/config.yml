@@ -36,9 +36,6 @@ jobs:
           command: chmod +x ./scripts/key-gen.sh
           name: Change permissions of script generating google auth keys
       - run:
-          command: ./scripts/key-gen.sh
-          name: Add google auth keys for tests
-      - run:
           command: mix test --warnings-as-errors
           name: Run all tests
 
