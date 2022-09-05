@@ -60,7 +60,8 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, moderatorTopic: string) => presenterPopup(toast, client, eventChannel, moderatorTopic),
+        (toast, moderatorTopic: string) =>
+          presenterPopup(toast, client, eventChannel, moderatorTopic),
         setPrivateChannel
       );
     }

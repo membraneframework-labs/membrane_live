@@ -34,7 +34,7 @@ axiosWithInterceptor.interceptors.response.use(
       return axiosWithInterceptor(updatedConfig);
     } catch (err) {
       JwtApi.destroyTokens();
-      alert("Your refresh token has expired. Please log in again.")
+      alert("Your refresh token has expired. Please log in again.");
       redirect("/auth");
       return Promise.reject(err);
     }

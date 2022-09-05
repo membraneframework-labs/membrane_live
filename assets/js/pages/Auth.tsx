@@ -9,6 +9,7 @@ import {
   storageSetPicture,
 } from "../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
+import { getErrorToast } from "../utils/popupUtils";
 import "../../css/authpage.css";
 
 const Auth = () => {
@@ -23,11 +24,7 @@ const Auth = () => {
       storageSetJwt(response.data);
     } catch (error) {
       console.log(error);
-      toast({
-        title: "Couldn't get the token. Please try again in a moment",
-        status: "error",
-        isClosable: false,
-      })
+      getErrorToast(toast, "Couldn't get the token. Please try again in a moment.");
     }
   };
 
@@ -45,11 +42,7 @@ const Auth = () => {
         })
         .catch((error) => {
           console.error(error);
-          toast({
-            title: "Couldn't get the user information. Please try again in a moment",
-            status: "error",
-            isClosable: false,
-          })
+          getErrorToast(toast, "Couldn't get the user information. Please try again in a moment.");
         });
     }
   };

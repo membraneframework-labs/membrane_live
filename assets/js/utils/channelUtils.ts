@@ -1,7 +1,8 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { Client, PresenterPopupState } from "../pages/Event";
+import type { Client } from "../pages/Event";
 import type { Presenter } from "../components/PresenterStreams";
+import { getErrorToast, getInfoToast } from "./popupUtils";
 
 export const createEventChannel = (
   toast: any,
@@ -18,13 +19,7 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      toast({
-        title: "Error while joining event",
-        description: resp.reason,
-        status: "error",
-        isClosable: false,
-        position: "top"
-      })
+      getErrorToast(toast, "Error while joining the event.");
     });
 };
 
@@ -73,33 +68,17 @@ export const createPrivateChannel = (
         presenterPopup(toast, message.moderator_topic);
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
-        toast({
-          title: `User ${message.name} ${message.answer}ed your request.`,
-          status: "info",
-          isClosable: false,
-          position: "top"
-        })
+        getInfoToast(toast, `User ${message.name} ${message.answer}ed your request.`);
       });
       privateChannel.on("presenter_remove", () => {
-        toast({
-          title: `"You are no longer presenter."`,
-          status: "info",
-          isClosable: false,
-          position: "top"
-        })
+        getInfoToast(toast, "You are no longer a presenter.");
         eventChannel.push("presenter_remove", { email: client.email });
       });
       setPrivateChannel(privateChannel);
     })
     .receive("error", (resp: { reason: string }) => {
       privateChannel.leave();
-      toast({
-        title: "Error while joining event",
-        description: resp.reason,
-        status: "error",
-        isClosable: false,
-        position: "top"
-      })
+      getErrorToast(toast, "Error while joining the event.");
     });
 };
 
