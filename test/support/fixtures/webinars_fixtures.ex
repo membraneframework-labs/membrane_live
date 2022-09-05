@@ -28,5 +28,5 @@ defmodule MembraneLive.WebinarsFixtures do
   def webinar_attrs(), do: @default_webinar_attrs
 
   def webinar_attrs(moderator_uuid),
-    do: @default_webinar_attrs |> Enum.into(%{"moderator" => moderator_uuid})
+    do: Enum.into(@default_webinar_attrs, %{"moderator" => moderator_uuid})
 end

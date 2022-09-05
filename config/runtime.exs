@@ -57,10 +57,10 @@ config :membrane_live,
   integrated_turn_pkey: System.get_env("INTEGRATED_TURN_PKEY"),
   integrated_turn_cert: System.get_env("INTEGRATED_TURN_CERT"),
   integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
-  client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com",
+  client_id: System.get_env("GOOGLE_CLIENT_ID"),
   token_auth_secret: "auth_secret",
   token_refresh_secret: "refresh_secret",
-  token_issuer: "swmansion.com"
+  token_issuer: System.get_env("TOKEN_ISSUER", "swmansion.com")
 
 # if System.get_env("PHX_SERVER") do
 #   config :membrane_live, MembraneLiveWeb.Endpoint, server: true
