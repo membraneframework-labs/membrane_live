@@ -12,6 +12,12 @@ defmodule MembraneLive.AccountsFixtures do
     picture: "kowalski.img"
   }
 
+  @fake_user_attrs %{
+    email: "fake@gmail.com",
+    name: "Fake Fakeston",
+    picture: "fakeimage.img"
+  }
+
   @doc """
   Generate a user.
   """
@@ -23,6 +29,8 @@ defmodule MembraneLive.AccountsFixtures do
 
     user
   end
+
+  def fake_user_fixture(), do: user_fixture(@fake_user_attrs)
 
   def user_attrs(), do: @default_user_attrs
 
