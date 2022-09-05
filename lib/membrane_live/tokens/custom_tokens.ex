@@ -11,7 +11,7 @@ defmodule MembraneLive.Tokens.AuthToken do
 
   def token_config do
     :token_issuer
-    |> MembraneLive.get_env()
+    |> MembraneLive.get_env!()
     |> then(&default_claims(default_exp: @one_day, iss: &1, aud: &1))
     |> add_claim("user_id", nil, &is_valid_uuid/1)
   end
@@ -31,7 +31,7 @@ defmodule MembraneLive.Tokens.RefreshToken do
   @impl true
   def token_config do
     :token_issuer
-    |> MembraneLive.get_env()
+    |> MembraneLive.get_env!()
     |> then(&default_claims(default_exp: @one_week, iss: &1, aud: &1))
     |> add_claim("user_id", nil, &is_valid_uuid/1)
   end

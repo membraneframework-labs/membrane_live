@@ -42,7 +42,7 @@ defmodule MembraneLive.Tokens do
 
   defp fetch_google_public_pems() do
     :google_pems_url
-    |> MembraneLive.get_env()
+    |> MembraneLive.get_env!()
     |> HTTPoison.get()
   end
 
