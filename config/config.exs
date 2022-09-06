@@ -20,7 +20,8 @@ config :membrane_live, MembraneLive.Mailer, adapter: Swoosh.Adapters.Local
 config :membrane_live,
   hls_output_mount_path: "output",
   custom_secret: "secret",
-  google_pems_url: "https://www.googleapis.com/oauth2/v1/certs"
+  google_pems_url: "https://www.googleapis.com/oauth2/v1/certs",
+  client_id: System.get_env("GOOGLE_CLIENT_ID")
 
 config :swoosh, :api_client, false
 

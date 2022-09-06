@@ -18,6 +18,12 @@ defmodule MembraneLiveWeb.Helpers.TokenErrorInfo do
   def get_error_info({:error, [{:message, "Invalid token"} | [{:claim, "exp"} | _tail]]}),
     do: %{error: :unauthorized, message: "Auth token expiration time exceeded"}
 
+  def get_error_info({:error, [{:message, "Invalid token"} | [{:claim, "aud"} | _tail]]}),
+    do: %{
+      error: :unauthorized,
+      message: "Audience (aud) claim is invalid. Did you set correct GOOGLE_CLIENT_ID env?"
+    }
+
   def get_error_info({:error, %HTTPoison.Error{} = error}),
     do: %{error: :service_unavailable, message: HTTPoison.Error.message(error)}
 

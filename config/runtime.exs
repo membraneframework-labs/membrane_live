@@ -57,7 +57,6 @@ config :membrane_live,
   integrated_turn_pkey: System.get_env("INTEGRATED_TURN_PKEY"),
   integrated_turn_cert: System.get_env("INTEGRATED_TURN_CERT"),
   integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
-  client_id: System.get_env("GOOGLE_CLIENT_ID"),
   token_auth_secret: "auth_secret",
   token_refresh_secret: "refresh_secret",
   token_issuer: System.get_env("TOKEN_ISSUER", "swmansion.com")
