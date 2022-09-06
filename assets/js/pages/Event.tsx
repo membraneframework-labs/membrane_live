@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ParticipantsList from "../components/ParticipantsList";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
-import PresenterPopup from "../components/PresenterPopup";
 import Header from "../components/Header";
 import {
   storageGetName,
@@ -11,8 +10,10 @@ import {
   storageSetReloaded,
   storageGetEmail,
 } from "../utils/storageUtils";
-import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
+import { useToast } from "@chakra-ui/react";
+import { presenterPopup } from "../utils/popupUtils";
+import "../../css/event.css";
 
 export type PresenterPopupState = {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export type Client = {
 };
 
 const Event = () => {
+  const toast = useToast();
   const [client, setClient] = useState<Client>({
     name: storageGetName(),
     email: storageGetEmail(),
@@ -33,10 +35,6 @@ const Event = () => {
   });
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
-  const [presenterPopupState, setPresenterPopupState] = useState<PresenterPopupState>({
-    isOpen: false,
-    moderatorTopic: "",
-  });
 
   const socket = new Socket("/socket");
   socket.connect();
@@ -48,7 +46,7 @@ const Event = () => {
         token: storageGetAuthToken(),
         reloaded: storageGetReloaded(),
       });
-      createEventChannel(client, channel, setEventChannel, setClient);
+      createEventChannel(toast, client, channel, setEventChannel, setClient);
     }
   }, [eventChannel]);
 
@@ -58,10 +56,12 @@ const Event = () => {
     if (!privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
+        toast,
         channel,
         eventChannel,
         client,
-        setPresenterPopupState,
+        (toast, moderatorTopic: string) =>
+          presenterPopup(toast, client, eventChannel, moderatorTopic),
         setPrivateChannel
       );
     }
@@ -81,14 +81,6 @@ const Event = () => {
         <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
         <ParticipantsList client={client} eventChannel={eventChannel} />
       </div>
-      {presenterPopupState.isOpen && (
-        <PresenterPopup
-          client={client}
-          moderatorTopic={presenterPopupState.moderatorTopic}
-          eventChannel={eventChannel}
-          setPopupState={setPresenterPopupState}
-        />
-      )}
     </div>
   );
 };

@@ -9,9 +9,12 @@ import {
   storageSetPicture,
 } from "../utils/storageUtils";
 import type { LocationState } from "../services/GuardedRoute";
+import { useToast } from "@chakra-ui/react";
+import { getErrorToast } from "../utils/popupUtils";
 import "../../css/authpage.css";
 
 const Auth = () => {
+  const toast = useToast();
   const navigate = useNavigate();
   const state = useLocation().state;
   const { pathToReturnTo } = state ? (state as LocationState) : { pathToReturnTo: "/" };
@@ -25,7 +28,7 @@ const Auth = () => {
       storageSetJwt(response.data);
     } catch (error) {
       console.log(error);
-      alert("Couldn't get the token. Please try again in a moment");
+      getErrorToast(toast, "Couldn't get the token. Please try again in a moment.");
     }
   };
 
@@ -43,7 +46,7 @@ const Auth = () => {
         })
         .catch((error) => {
           console.error(error);
-          alert("Couldn't get the user information. Please try again in a moment");
+          getErrorToast(toast, "Couldn't get the user information. Please try again in a moment.");
         });
     }
   };
