@@ -34,13 +34,9 @@ defmodule Membrane.Live.Mixfile do
     ]
   end
 
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:phoenix, "~> 1.6.11"},
@@ -58,13 +54,19 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine"},
+      {:membrane_rtc_engine,
+       github: "membraneframework/membrane_rtc_engine", branch: "add_transcoding_to_hls_endpoint"},
+      {:membrane_rtp_plugin,
+       github: "membraneframework/membrane_rtp_plugin",
+       branch: "feature/outbound-retransmissions",
+       override: true},
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
       {:cowlib, "~> 2.11.0", override: true},
       {:joken, "~> 2.5"},
       {:httpoison, "~> 1.8"},
       {:ecto_fields, "~> 1.3.0"},
+      {:bimap, "~> 1.2", override: true},
 
       # Otel
       {:opentelemetry, "~> 1.0"},
@@ -73,13 +75,14 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "~> 1.0"},
 
       # HLS_Endpoint deps
-      {:membrane_http_adaptive_stream_plugin, "~> 0.8.0"},
+      {:membrane_http_adaptive_stream_plugin, "~> 0.8.1"},
       {:membrane_mp4_plugin, "~> 0.16.0"},
-      {:membrane_h264_ffmpeg_plugin, "~> 0.21.5"},
       {:membrane_aac_plugin, "~> 0.12.0"},
-      {:membrane_aac_format, "~> 0.7.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true}
+      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
+      {:membrane_h264_ffmpeg_plugin, "~> 0.21.5"},
+      {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
+      {:membrane_framerate_converter_plugin, "~> 0.5.0"}
     ]
   end
 
