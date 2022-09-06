@@ -10,10 +10,10 @@ import {
   storageSetReloaded,
   storageGetEmail,
 } from "../utils/storageUtils";
-import "../../css/event.css";
 import StreamArea from "../components/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/popupUtils";
+import "../../css/event.css";
 
 export type PresenterPopupState = {
   isOpen: boolean;

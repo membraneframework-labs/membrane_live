@@ -65,9 +65,9 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
-const getToast = (toast: any, icon: any, text: string, fontColor: string) => {
+const getToast = (toast: any, icon: any, text: string, fontColor: string, duration: number) => {
   const thisToast = toast({
-    duration: 10_000,
+    duration: duration,
     position: "top",
     render: () => (
       <div className="Popup NormalPopup">
@@ -83,12 +83,24 @@ const getToast = (toast: any, icon: any, text: string, fontColor: string) => {
   });
 };
 
-export const getErrorToast = (toast: any, text: string) => {
+export const getErrorToast = (toast: any, text: string, duration: number = 10_000) => {
   const fontColor = getFontColor("--bg-light-color-1");
-  getToast(toast, <WarningCircle className="PopupIcon" color={fontColor} />, text, fontColor);
+  getToast(
+    toast,
+    <WarningCircle className="PopupIcon" color={fontColor} />,
+    text,
+    fontColor,
+    duration
+  );
 };
 
-export const getInfoToast = (toast: any, text: string) => {
+export const getInfoToast = (toast: any, text: string, duration: number) => {
   const fontColor = getFontColor("--bg-light-color-1");
-  getToast(toast, <InfoCircle className="PopupIcon" color={fontColor} />, text, fontColor);
+  getToast(
+    toast,
+    <InfoCircle className="PopupIcon" color={fontColor} />,
+    text,
+    fontColor,
+    duration
+  );
 };
