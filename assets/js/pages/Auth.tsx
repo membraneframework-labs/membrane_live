@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
 import {
@@ -8,12 +8,18 @@ import {
   storageSetEmail,
   storageSetPicture,
 } from "../utils/storageUtils";
-
+import type { LocationState } from "../services/GuardedRoute";
+import { useToast } from "@chakra-ui/react";
+import { getErrorToast } from "../utils/popupUtils";
 import "../../css/authpage.css";
 
 const Auth = () => {
+  const toast = useToast();
   const navigate = useNavigate();
-  const redirectToHomePage = () => navigate("/");
+  const state = useLocation().state;
+  const { pathToReturnTo } = state ? (state as LocationState) : { pathToReturnTo: "/" };
+
+  const redirectToPreviousPage = () => navigate(pathToReturnTo, { replace: true });
 
   const fetchToken = async (googleResponse) => {
     try {
@@ -22,7 +28,7 @@ const Auth = () => {
       storageSetJwt(response.data);
     } catch (error) {
       console.log(error);
-      alert("Couldn't get the token. Please try again in a moment");
+      getErrorToast(toast, "Couldn't get the token. Please try again in a moment.");
     }
   };
 
@@ -36,11 +42,11 @@ const Auth = () => {
           storageSetName(response.data.name);
           storageSetEmail(response.data.email);
           storageSetPicture(response.data.picture);
-          redirectToHomePage();
+          redirectToPreviousPage();
         })
         .catch((error) => {
           console.error(error);
-          alert("Couldn't get the user information. Please try again in a moment");
+          getErrorToast(toast, "Couldn't get the user information. Please try again in a moment.");
         });
     }
   };
