@@ -53,8 +53,7 @@ defmodule MembraneLiveWeb.WebinarController do
       {:error, :forbidden} ->
         %{
           error: :forbidden,
-          message:
-            "User with uuid #{conn.assigns[:user_id]} does not have access to webinar with uuid #{uuid}"
+          message: "User with uuid #{user_id} does not have access to webinar with uuid #{uuid}"
         }
     end
   end

@@ -4,10 +4,7 @@ defmodule MembraneLiveWeb.UserControllerTest do
   import MembraneLive.AccountsFixtures
   import MembraneLive.Support.CustomTokenHelperFunctions
 
-  alias MembraneLive.Tokens
   alias MembraneLive.Accounts.User
-
-  @dummy_uuid "5a2771ef-3cf2-4d86-b125-fd366e04bc29"
 
   @update_attrs %{
     email: "john-update@gmail.com",
@@ -32,7 +29,7 @@ defmodule MembraneLiveWeb.UserControllerTest do
   describe "index" do
     test "lists all users", %{conn: conn, user: %{uuid: user_uuid}} do
       conn = get(conn, Routes.user_path(conn, :index))
-      assert [%{"uuid" => user_uuid}] = json_response(conn, 200)["data"]
+      assert [%{"uuid" => ^user_uuid}] = json_response(conn, 200)["data"]
     end
   end
 
@@ -46,14 +43,9 @@ defmodule MembraneLiveWeb.UserControllerTest do
              } = json_response(conn, 200)["data"]
     end
 
-    test "different user in header", %{conn: conn, user: %{uuid: user_uuid}} do
-      fake_user = fake_user_fixture()
-      expected_message = unauthorized_error_message(fake_user.uuid, user_uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> get(Routes.user_path(conn, :show, user_uuid))
-      |> unauthorize_assert(expected_message)
+    test "different user in header", %{conn: conn, user: user} = context do
+      callback = &get(&1, Routes.user_path(conn, :show, user))
+      test_unauthorized_user_request(callback, context)
     end
   end
 
@@ -77,14 +69,9 @@ defmodule MembraneLiveWeb.UserControllerTest do
       assert json_response(conn, 422)["errors"] != %{}
     end
 
-    test "reject if updating not the given user", %{conn: conn, user: %{uuid: user_uuid} = user} do
-      fake_user = fake_user_fixture()
-      expected_msg = unauthorized_error_message(fake_user.uuid, user_uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> put(Routes.user_path(conn, :update, user), user: @update_attrs)
-      |> unauthorize_assert(expected_msg)
+    test "reject if updating not the given user", %{conn: conn, user: user} = context do
+      callback = &put(&1, Routes.user_path(conn, :update, user), user: @update_attrs)
+      test_unauthorized_user_request(callback, context)
     end
   end
 
@@ -97,21 +84,23 @@ defmodule MembraneLiveWeb.UserControllerTest do
       assert response(conn, 404)
     end
 
-    test "reject if deleting not the given user", %{conn: conn, user: %{uuid: user_uuid} = user} do
-      fake_user = fake_user_fixture()
-      expected_msg = unauthorized_error_message(fake_user.uuid, user_uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> delete(Routes.user_path(conn, :delete, user))
-      |> unauthorize_assert(expected_msg)
+    test "reject if deleting not the given user", %{conn: conn, user: user} = context do
+      conn_callback = &delete(&1, Routes.user_path(conn, :delete, user))
+      test_unauthorized_user_request(conn_callback, context)
     end
   end
 
-  defp get_valid_bearer() do
-    with {:ok, valid_token, _claims} <- Tokens.auth_encode(@dummy_uuid) do
-      "Bearer #{valid_token}"
-    end
+  defp test_unauthorized_user_request(conn_callback, %{
+         conn: conn,
+         user: %{uuid: user_uuid}
+       }) do
+    fake_user = fake_user_fixture()
+    expected_msg = unauthorized_error_message(fake_user.uuid, user_uuid)
+
+    conn
+    |> put_user_in_auth_header(fake_user)
+    |> then(conn_callback)
+    |> unauthorize_assert(expected_msg)
   end
 
   def unauthorize_assert(conn, expected_msg) do

@@ -5,7 +5,6 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
   import MembraneLive.AccountsFixtures
   import MembraneLive.Support.CustomTokenHelperFunctions
 
-  alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
 
@@ -93,18 +92,9 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
              } = json_response(conn, 200)["webinar"]
     end
 
-    test "reject if user is not authorized", %{
-      conn: conn,
-      webinar: %{uuid: webinar_id} = webinar,
-      user: %{uuid: user_id}
-    } do
-      fake_user = fake_user_fixture()
-      expected_msg = unauthorized_error_message(webinar_id, fake_user.uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> get(Routes.webinar_path(conn, :show, webinar))
-      |> unauthorize_assert(expected_msg)
+    test "reject if user is not authorized", %{conn: conn, webinar: webinar} = context do
+      callback = &get(&1, Routes.webinar_path(conn, :show, webinar))
+      test_unauthorized_webinar_request(callback, context)
     end
   end
 
@@ -134,18 +124,9 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
       assert json_response(conn, 422)["errors"] != %{}
     end
 
-    test "rejects when user not authorized", %{
-      conn: conn,
-      webinar: %Webinar{uuid: webinar_id} = webinar,
-      user: %{uuid: user_id}
-    } do
-      fake_user = fake_user_fixture()
-      expected_msg = unauthorized_error_message(webinar_id, fake_user.uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> put(Routes.webinar_path(conn, :update, webinar), webinar: @update_attrs)
-      |> unauthorize_assert(expected_msg)
+    test "rejects when user not authorized", %{conn: conn, webinar: webinar} = context do
+      callback = &put(&1, Routes.webinar_path(conn, :update, webinar), webinar: @update_attrs)
+      test_unauthorized_webinar_request(callback, context)
     end
   end
 
@@ -160,17 +141,10 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
       assert response(conn, 404)
     end
 
-    test "rejects deleting when user in not authorized", %{
-      conn: conn,
-      webinar: %Webinar{uuid: webinar_id} = webinar
-    } do
-      fake_user = fake_user_fixture()
-      expected_msg = unauthorized_error_message(webinar_id, fake_user.uuid)
-
-      conn
-      |> put_user_in_auth_header(fake_user)
-      |> delete(Routes.webinar_path(conn, :delete, webinar), webinar: webinar)
-      |> unauthorize_assert(expected_msg)
+    test "rejects deleting when user in not authorized",
+         %{conn: conn, webinar: webinar} = context do
+      callback = &delete(&1, Routes.webinar_path(conn, :delete, webinar), webinar: webinar)
+      test_unauthorized_webinar_request(callback, context)
     end
   end
 
@@ -183,10 +157,23 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     String.replace_prefix(viewer_link, "/event/", "")
   end
 
+  defp test_unauthorized_webinar_request(conn_callback, %{
+         conn: conn,
+         webinar: %{uuid: webinar_uuid}
+       }) do
+    fake_user = fake_user_fixture()
+    expected_msg = unauthorized_error_message(fake_user.uuid, webinar_uuid)
+
+    conn
+    |> put_user_in_auth_header(fake_user)
+    |> then(conn_callback)
+    |> unauthorize_assert(expected_msg)
+  end
+
   def unauthorize_assert(conn, expected_msg) do
     assert %{"message" => ^expected_msg} = json_response(conn, 403)
   end
 
-  defp unauthorized_error_message(webinar_id, user_id),
+  defp unauthorized_error_message(user_id, webinar_id),
     do: "User with uuid #{user_id} does not have access to webinar with uuid #{webinar_id}"
 end
