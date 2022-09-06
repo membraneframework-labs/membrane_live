@@ -12,16 +12,18 @@ defmodule MembraneLive.Support.GoogleTokenMock do
     do:
       default_claims(
         iss: "accounts.google.com",
-        aud: MembraneLive.get_env(:client_id)
+        aud: MembraneLive.get_env!(:client_id)
       )
 
   @doc """
   Mocks the response from the www.googleapis.com/oauth2/v1/certs
   """
   def get_google_public_key() do
-    public_key_location = MembraneLive.get_env(:google_public_key_path)
-    public_key = File.read!(public_key_location)
-    %{@kid => public_key} |> Jason.encode!()
+    :google_public_key_path
+    |> MembraneLive.get_env!()
+    |> File.read!()
+    |> then(fn pem -> %{@kid => pem} end)
+    |> Jason.encode!()
   end
 
   def get_mock_jwt(user) do
@@ -32,7 +34,7 @@ defmodule MembraneLive.Support.GoogleTokenMock do
 
   defp get_default_signer() do
     private_key =
-      MembraneLive.get_env(:google_private_key_path)
+      MembraneLive.get_env!(:google_private_key_path)
       |> File.read!()
 
     Joken.Signer.create("RS256", %{"pem" => private_key}, %{"kid" => @kid})
@@ -61,7 +63,7 @@ defmodule MembraneLive.Support.GoogleTokenMock do
 
   defp get_private_key(env_key) do
     env_key
-    |> MembraneLive.get_env()
+    |> MembraneLive.get_env!()
     |> File.read!()
   end
 end

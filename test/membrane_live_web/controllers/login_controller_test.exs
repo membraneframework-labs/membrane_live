@@ -9,7 +9,7 @@ defmodule MembraneLiveWeb.LoginControllerTest do
   alias MembraneLive.Tokens
 
   setup do
-    port = MembraneLive.get_env(:bypass_port)
+    port = MembraneLive.get_env!(:bypass_port)
     bypass = Bypass.open(port: port)
 
     {:ok, bypass: bypass}
