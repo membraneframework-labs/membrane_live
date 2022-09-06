@@ -1,9 +1,11 @@
 import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
-import type { Client, PresenterPopupState } from "../pages/Event";
+import type { Client } from "../pages/Event";
 import type { Presenter } from "../components/PresenterStreams";
+import { getErrorToast, getInfoToast } from "./popupUtils";
 
 export const createEventChannel = (
+  toast: any,
   client: Client,
   eventChannel: any,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>,
@@ -17,7 +19,7 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      alert(resp.reason);
+      getErrorToast(toast, "Error while joining the event.");
     });
 };
 
@@ -52,30 +54,31 @@ export const syncEventChannel = (
 };
 
 export const createPrivateChannel = (
+  toast: any,
   privateChannel: any,
   eventChannel: any,
   client: Client,
-  setPresenterPopupState: React.Dispatch<React.SetStateAction<PresenterPopupState>>,
+  presenterPopup: (toast: any, moderatorTopic: string) => void,
   setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
 ) => {
   privateChannel
     .join()
     .receive("ok", () => {
       privateChannel.on("presenter_prop", (message: { moderator_topic: string }) => {
-        setPresenterPopupState({ isOpen: true, moderatorTopic: message.moderator_topic });
+        presenterPopup(toast, message.moderator_topic);
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
-        alert(`User ${message.name} ${message.answer}ed your request.`);
+        getInfoToast(toast, `User ${message.name} ${message.answer}ed your request.`);
       });
       privateChannel.on("presenter_remove", () => {
-        alert("You are no longer presenter.");
+        getInfoToast(toast, "You are no longer a presenter.");
         eventChannel.push("presenter_remove", { email: client.email });
       });
       setPrivateChannel(privateChannel);
     })
     .receive("error", (resp: { reason: string }) => {
       privateChannel.leave();
-      alert(resp.reason);
+      getErrorToast(toast, "Error while joining the event.");
     });
 };
 
