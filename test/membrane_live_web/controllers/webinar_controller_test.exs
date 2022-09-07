@@ -93,7 +93,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     end
 
     test "reject if user is not authorized", %{conn: conn, webinar: webinar} = context do
-      callback = &get(&1, Routes.webinar_path(conn, :show, webinar))
+      webinar_path = Routes.webinar_path(conn, :show, webinar)
+      callback = &get(&1, webinar_path)
       test_unauthorized_webinar_request(callback, context)
     end
   end
@@ -125,7 +126,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     end
 
     test "rejects when user not authorized", %{conn: conn, webinar: webinar} = context do
-      callback = &put(&1, Routes.webinar_path(conn, :update, webinar), webinar: @update_attrs)
+      webinar_path = Routes.webinar_path(conn, :update, webinar)
+      callback = &put(&1, webinar_path, webinar: @update_attrs)
       test_unauthorized_webinar_request(callback, context)
     end
   end
@@ -143,7 +145,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
 
     test "rejects deleting when user in not authorized",
          %{conn: conn, webinar: webinar} = context do
-      callback = &delete(&1, Routes.webinar_path(conn, :delete, webinar), webinar: webinar)
+      webinar_path = Routes.webinar_path(conn, :delete, webinar)
+      callback = &delete(&1, webinar_path, webinar: webinar)
       test_unauthorized_webinar_request(callback, context)
     end
   end
