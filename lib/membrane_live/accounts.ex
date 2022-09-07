@@ -12,7 +12,12 @@ defmodule MembraneLive.Accounts do
     Repo.all(User)
   end
 
-  def get_user(uuid), do: Repo.get(User, uuid)
+  def get_user(uuid) do
+    case Repo.get(User, uuid) do
+      nil -> {:error, :no_user}
+      user -> {:ok, user}
+    end
+  end
 
   def get_user!(uuid), do: Repo.get!(User, uuid)
 
@@ -47,17 +52,21 @@ defmodule MembraneLive.Accounts do
 
   def create_user_id_not_exists(_attrs), do: {:error, :email_not_provided}
 
+  @spec get_username(String.t()) :: {:ok, String.t()} | {:error, String.t()}
   def get_username(uuid) do
-    case get_user(uuid) do
-      nil -> {:error, "User with this id #{uuid} doesn't exist."}
-      user -> {:ok, user.name}
+    with {:ok, %{name: name}} <- get_user(uuid) do
+      {:ok, name}
+    else
+      {:error, :no_user} -> {:error, "User with this id #{uuid} doesn't exist."}
     end
   end
 
+  @spec get_email(String.t()) :: {:ok, String.t()} | {:error, String.t()}
   def get_email(uuid) do
-    case get_user(uuid) do
-      nil -> {:error, "User with this id #{uuid} doesn't exist."}
-      user -> {:ok, user.email}
+    with {:ok, %{email: email}} <- get_user(uuid) do
+      {:ok, email}
+    else
+      {:error, :no_user} -> {:error, "User with this id #{uuid} doesn't exist."}
     end
   end
 end

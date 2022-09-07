@@ -23,10 +23,23 @@ defmodule MembraneLiveWeb.UserController do
     get_with_callback(conn, params, &delete_callback/2)
   end
 
-  defp get_with_callback(conn, %{"uuid" => uuid} = params, callback) do
-    case Accounts.get_user(uuid) do
-      nil -> %{error: :not_found, message: "Account with uuid #{uuid} could not be found"}
-      user -> callback.(conn, Map.put(params, "user_db", user))
+  defp get_with_callback(
+         %{assigns: %{user_id: jwt_user_id}} = conn,
+         %{"uuid" => uuid} = params,
+         callback
+       ) do
+    with {:ok, user} <- Accounts.get_user(uuid),
+         {:ok, user} <- return_user_if_is_authorized(user, jwt_user_id) do
+      callback.(conn, Map.put(params, "user_db", user))
+    else
+      {:error, :no_user} ->
+        %{error: :not_found, message: "Account with uuid #{uuid} could not be found"}
+
+      {:error, :forbidden} ->
+        %{
+          error: :forbidden,
+          message: "User with uuid #{jwt_user_id} does not have access to user with uuid #{uuid}"
+        }
     end
   end
 
@@ -40,10 +53,12 @@ defmodule MembraneLiveWeb.UserController do
     end
   end
 
-  # TODO add restriction so only the user can delete its account
   def delete_callback(conn, %{"user_db" => user}) do
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
     end
   end
+
+  defp return_user_if_is_authorized(user, jwt_uuid) when user.uuid == jwt_uuid, do: {:ok, user}
+  defp return_user_if_is_authorized(_user, _jwt_uuid), do: {:error, :forbidden}
 end
