@@ -13,7 +13,7 @@ defmodule MembraneLive.Tokens.GoogleToken do
 
   defp get_claims() do
     %{}
-    |> Config.add_claim("aud", nil, &(&1 == Application.fetch_env!(:membrane_live, :client_id)))
+    |> Config.add_claim("aud", nil, &(&1 == MembraneLive.get_env!(:client_id)))
     |> Config.add_claim("exp", nil, &(Joken.current_time() <= &1))
     |> Config.add_claim("iss", nil, &Enum.member?(@possible_issuers, &1))
   end

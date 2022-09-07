@@ -11,8 +11,13 @@ defmodule MembraneLive.Webinars do
   @spec list_webinars :: list(Webinar.t())
   def list_webinars, do: Repo.all(Webinar)
 
-  @spec get_webinar(binary()) :: Webinar.t() | nil
-  def get_webinar(uuid), do: Repo.get(Webinar, uuid)
+  @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
+  def get_webinar(uuid) do
+    case Repo.get(Webinar, uuid) do
+      nil -> {:error, :no_webinar}
+      webinar -> {:ok, webinar}
+    end
+  end
 
   @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
@@ -55,8 +60,8 @@ defmodule MembraneLive.Webinars do
   @spec check_is_user_moderator(binary(), binary()) :: boolean()
   def check_is_user_moderator(user_uuid, webinar_uuid) do
     case get_webinar(webinar_uuid) do
-      nil -> false
-      webinar -> user_uuid == webinar.moderator_id
+      {:ok, webinar} -> user_uuid == webinar.moderator_id
+      {:error, :no_webinar} -> false
     end
   end
 end

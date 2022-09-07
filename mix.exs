@@ -66,6 +66,7 @@ defmodule Membrane.Live.Mixfile do
       {:joken, "~> 2.5"},
       {:httpoison, "~> 1.8"},
       {:ecto_fields, "~> 1.3.0"},
+      {:bypass, "~> 2.1.0"},
       {:bimap, "~> 1.2", override: true},
 
       # Otel
@@ -115,10 +116,14 @@ defmodule Membrane.Live.Mixfile do
         "test --warnings-as-errors",
         "credo"
       ],
-      setup: ["deps.get", "cmd --cd assets npm ci"],
+      setup: ["deps.get", "cmd --cd assets npm ci", "cmd ./scripts/key-gen.sh"],
       "assets.deploy": [
         "esbuild default --minify",
         "phx.digest"
+      ],
+      test: [
+        "cmd ./scripts/key-gen.sh",
+        "test --warnings-as-errors"
       ]
     ]
   end

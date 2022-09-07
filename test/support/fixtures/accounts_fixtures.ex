@@ -6,21 +6,33 @@ defmodule MembraneLive.AccountsFixtures do
   alias MembraneLive.Accounts
   alias MembraneLive.Tokens
 
+  @default_user_attrs %{
+    email: "john@gmail.com",
+    name: "John Kowalski",
+    picture: "kowalski.img"
+  }
+
+  @fake_user_attrs %{
+    email: "fake@gmail.com",
+    name: "Fake Fakeston",
+    picture: "fakeimage.img"
+  }
+
   @doc """
   Generate a user.
   """
   def user_fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
-      |> Enum.into(%{
-        email: "john@gmail.com",
-        name: "John Kowalski",
-        picture: "kowalski.img"
-      })
+      |> Enum.into(@default_user_attrs)
       |> MembraneLive.Accounts.create_user()
 
     user
   end
+
+  def fake_user_fixture(), do: user_fixture(@fake_user_attrs)
+
+  def user_attrs(), do: @default_user_attrs
 
   def create_user_with_token(google_claims) do
     {:ok, user} = Accounts.create_user_if_not_exists(google_claims)

@@ -18,9 +18,13 @@ defmodule MembraneLive.Helpers do
 
   @spec hls_output_mount_path() :: String.t()
   def hls_output_mount_path(),
-    do: Application.fetch_env!(:membrane_live, :hls_output_mount_path)
+    do: MembraneLive.get_env!(:hls_output_mount_path)
 
   defp pid_to_hash(pid) do
     :crypto.hash(:md5, :erlang.pid_to_list(pid)) |> Base.encode16(case: :lower)
+  end
+
+  def is_valid_uuid(uuid) do
+    String.match?(uuid, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   end
 end

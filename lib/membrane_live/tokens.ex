@@ -9,27 +9,41 @@ defmodule MembraneLive.Tokens do
   Refresh Token:
     - encode: generation and signing
     - decode: verification and validation
+
+  Google public keys are stored in pem format.
   """
   alias MembraneLive.Tokens.{AuthToken, GoogleToken, RefreshToken}
 
-  @google_pems_url "https://www.googleapis.com/oauth2/v1/certs"
-
   def google_decode(jwt) do
-    GoogleToken.verify_and_validate(jwt, get_signer(jwt))
+    with {:ok, signer} <- get_signer(jwt) do
+      GoogleToken.verify_and_validate(jwt, signer)
+    end
   end
 
   defp get_signer(jwt) do
-    Joken.Signer.create("RS256", get_public_keys(jwt))
+    with {:ok, public_keys} <- get_public_keys(jwt) do
+      {:ok, Joken.Signer.create("RS256", public_keys)}
+    end
   end
 
   defp get_public_keys(jwt) do
-    {:ok, %{"kid" => key_id}} = Joken.peek_header(jwt)
+    with {:ok, %{"kid" => key_id}} <- Joken.peek_header(jwt),
+         {:ok, pem_response} <- fetch_google_public_pems() do
+      pem_response
+      |> Map.get(:body)
+      |> Jason.decode!()
+      |> Map.get(key_id)
+      |> then(&{:ok, %{"pem" => &1}})
+    else
+      {:error, :token_malformed} -> {:error, :invalid_jwt_header}
+      err -> err
+    end
+  end
 
-    HTTPoison.get!(@google_pems_url)
-    |> Map.get(:body)
-    |> Jason.decode!()
-    |> Map.get(key_id)
-    |> then(&%{"pem" => &1})
+  defp fetch_google_public_pems() do
+    :google_pems_url
+    |> MembraneLive.get_env!()
+    |> HTTPoison.get()
   end
 
   @spec auth_encode(any) :: {:error, atom | keyword} | {:ok, binary, %{optional(binary) => any}}
@@ -53,8 +67,12 @@ defmodule MembraneLive.Tokens do
 
   @spec refresh_decode(binary) :: {:error, atom | keyword} | {:ok, %{optional(binary) => any}}
   def refresh_decode(jwt) do
-    signer = create_refresh_signer()
-    RefreshToken.verify_and_validate(jwt, signer)
+    if RefreshToken.has_uuid?(jwt) do
+      signer = create_refresh_signer()
+      RefreshToken.verify_and_validate(jwt, signer)
+    else
+      {:error, :no_uuid_in_header}
+    end
   end
 
   defp create_auth_signer(),
