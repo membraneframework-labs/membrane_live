@@ -157,23 +157,13 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     String.replace_prefix(viewer_link, "/event/", "")
   end
 
-  defp test_unauthorized_webinar_request(conn_callback, %{
-         conn: conn,
-         webinar: %{uuid: webinar_uuid}
-       }) do
+  defp test_unauthorized_webinar_request(conn_callback, %{conn: conn, webinar: webinar}) do
     fake_user = fake_user_fixture()
-    expected_msg = unauthorized_error_message(fake_user.uuid, webinar_uuid)
+    expected_msg = unauthorized_error_message(fake_user.uuid, webinar)
 
     conn
     |> put_user_in_auth_header(fake_user)
     |> then(conn_callback)
     |> unauthorize_assert(expected_msg)
   end
-
-  def unauthorize_assert(conn, expected_msg) do
-    assert %{"message" => ^expected_msg} = json_response(conn, 403)
-  end
-
-  defp unauthorized_error_message(user_id, webinar_id),
-    do: "User with uuid #{user_id} does not have access to webinar with uuid #{webinar_id}"
 end

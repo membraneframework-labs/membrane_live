@@ -44,7 +44,8 @@ defmodule MembraneLiveWeb.UserControllerTest do
     end
 
     test "different user in header", %{conn: conn, user: user} = context do
-      callback = &get(&1, Routes.user_path(conn, :show, user))
+      user_path = Routes.user_path(conn, :show, user)
+      callback = &get(&1, user_path)
       test_unauthorized_user_request(callback, context)
     end
   end
@@ -70,7 +71,8 @@ defmodule MembraneLiveWeb.UserControllerTest do
     end
 
     test "reject if updating not the given user", %{conn: conn, user: user} = context do
-      callback = &put(&1, Routes.user_path(conn, :update, user), user: @update_attrs)
+      user_path = Routes.user_path(conn, :update, user)
+      callback = &put(&1, user_path, user: @update_attrs)
       test_unauthorized_user_request(callback, context)
     end
   end
@@ -85,28 +87,19 @@ defmodule MembraneLiveWeb.UserControllerTest do
     end
 
     test "reject if deleting not the given user", %{conn: conn, user: user} = context do
-      conn_callback = &delete(&1, Routes.user_path(conn, :delete, user))
+      user_path = Routes.user_path(conn, :delete, user)
+      conn_callback = &delete(&1, user_path)
       test_unauthorized_user_request(conn_callback, context)
     end
   end
 
-  defp test_unauthorized_user_request(conn_callback, %{
-         conn: conn,
-         user: %{uuid: user_uuid}
-       }) do
+  defp test_unauthorized_user_request(conn_callback, %{conn: conn, user: user}) do
     fake_user = fake_user_fixture()
-    expected_msg = unauthorized_error_message(fake_user.uuid, user_uuid)
+    expected_msg = unauthorized_error_message(fake_user.uuid, user)
 
     conn
     |> put_user_in_auth_header(fake_user)
     |> then(conn_callback)
     |> unauthorize_assert(expected_msg)
   end
-
-  def unauthorize_assert(conn, expected_msg) do
-    assert %{"message" => ^expected_msg} = json_response(conn, 403)
-  end
-
-  defp unauthorized_error_message(fake_id, user_id),
-    do: "User with uuid #{fake_id} does not have access to user with uuid #{user_id}"
 end

@@ -38,8 +38,14 @@ defmodule MembraneLive.Support.CustomTokenHelperFunctions do
   @moduledoc """
   Module with helper functions when testing auth token and refresh token
   """
+
+  import Phoenix.ConnTest
   import Plug.Conn
   import MembraneLive.AccountsFixtures
+  import ExUnit.Assertions
+
+  alias MembraneLive.Webinars.Webinar
+  alias MembraneLive.Accounts.User
 
   alias MembraneLive.Accounts.User
   alias MembraneLive.Tokens
@@ -66,4 +72,16 @@ defmodule MembraneLive.Support.CustomTokenHelperFunctions do
   defp get_valid_bearer(token) do
     "Bearer #{token}"
   end
+
+  @spec unauthorize_assert(Plug.Conn.t(), String.t()) :: true
+  def unauthorize_assert(conn, expected_msg) do
+    assert %{"message" => expected_msg, "status" => 403} == json_response(conn, 403)
+  end
+
+  @spec unauthorized_error_message(String.t(), User.t() | Webinar.t()) :: String.t()
+  def unauthorized_error_message(jwt_user_id, %Webinar{uuid: webinar_id}),
+    do: "User with uuid #{jwt_user_id} does not have access to webinar with uuid #{webinar_id}"
+
+  def unauthorized_error_message(jwt_user_id, %User{uuid: user_id}),
+    do: "User with uuid #{jwt_user_id} does not have access to user with uuid #{user_id}"
 end

@@ -11,6 +11,7 @@ defmodule MembraneLive.Webinars do
   @spec list_webinars :: list(Webinar.t())
   def list_webinars, do: Repo.all(Webinar)
 
+  @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
   def get_webinar(uuid) do
     case Repo.get(Webinar, uuid) do
       nil -> {:error, :no_webinar}

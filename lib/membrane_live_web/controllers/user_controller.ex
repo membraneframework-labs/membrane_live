@@ -53,18 +53,12 @@ defmodule MembraneLiveWeb.UserController do
     end
   end
 
-  # TODO add restriction so only the user can delete its account
   def delete_callback(conn, %{"user_db" => user}) do
     with {:ok, %User{}} <- Accounts.delete_user(user) do
       send_resp(conn, :no_content, "")
     end
   end
 
-  defp return_user_if_is_authorized(user, jwt_uuid) do
-    if user.uuid == jwt_uuid do
-      {:ok, user}
-    else
-      {:error, :forbidden}
-    end
-  end
+  defp return_user_if_is_authorized(user, jwt_uuid) when user.uuid == jwt_uuid, do: {:ok, user}
+  defp return_user_if_is_authorized(_user, _jwt_uuid), do: {:error, :forbidden}
 end

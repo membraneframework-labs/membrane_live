@@ -74,11 +74,8 @@ defmodule MembraneLiveWeb.WebinarController do
     end
   end
 
-  defp is_user_authorized(webinar, jwt_user_uuid) do
-    if jwt_user_uuid == webinar.moderator_id do
-      {:ok, webinar}
-    else
-      {:error, :forbidden}
-    end
-  end
+  defp is_user_authorized(webinar, jwt_user_uuid) when jwt_user_uuid == webinar.moderator_id,
+    do: {:ok, webinar}
+
+  defp is_user_authorized(_webinar, _jwt_user_uuid), do: {:error, :forbidden}
 end
