@@ -44,8 +44,8 @@ defmodule MembraneLive.Support.CustomTokenHelperFunctions do
   import MembraneLive.AccountsFixtures
   import ExUnit.Assertions
 
-  alias MembraneLive.Webinars.Webinar
   alias MembraneLive.Accounts.User
+  alias MembraneLive.Webinars.Webinar
 
   alias MembraneLive.Accounts.User
   alias MembraneLive.Tokens

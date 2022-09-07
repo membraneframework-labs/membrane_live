@@ -9,8 +9,7 @@ defmodule MembraneLiveWeb.AuthPlugIntegrationTest do
   @dummy_uuid "5a2771ef-3cf2-4d86-b125-fd366e04bc29"
 
   @endpoint_atoms [:create, :index, :update, :delete, :show]
-  @arity_2_endpoints [:create, :index]
-  @arity_3_endpoints [:update, :delete, :show]
+  @endpoints_with_id [:update, :delete, :show]
 
   setup %{conn: conn} do
     conn_with_wrong_bearer =
@@ -32,19 +31,9 @@ defmodule MembraneLiveWeb.AuthPlugIntegrationTest do
 
     Enum.map(@webinar_endpoint_infos, fn %{endpoint_atom: atom} = info ->
       test "[401] #{atom} webinar", %{conn: conn_with_wrong_bearer} do
-        test_webinar_endpoint(conn_with_wrong_bearer, unquote(Macro.escape(info)))
+        test_endpoint(conn_with_wrong_bearer, :webinar_path, unquote(Macro.escape(info)))
       end
     end)
-
-    defp test_webinar_endpoint(conn, %{endpoint_atom: atom} = endpoint_info)
-         when atom in @arity_2_endpoints do
-      test_endpoint(&Routes.webinar_path/2, conn, endpoint_info)
-    end
-
-    defp test_webinar_endpoint(conn, %{endpoint_atom: atom} = endpoint_info)
-         when atom in @arity_3_endpoints do
-      test_endpoint(&Routes.webinar_path/3, conn, endpoint_info)
-    end
   end
 
   describe "user" do
@@ -57,24 +46,19 @@ defmodule MembraneLiveWeb.AuthPlugIntegrationTest do
 
     Enum.map(@user_endpoint_infos, fn %{endpoint_atom: atom} = info ->
       test "[401] user #{atom} resources test", %{conn: conn_with_wrong_bearer} do
-        test_user_endpoint(conn_with_wrong_bearer, unquote(Macro.escape(info)))
+        test_endpoint(conn_with_wrong_bearer, :user_path, unquote(Macro.escape(info)))
       end
     end)
-
-    defp test_user_endpoint(conn, %{endpoint_atom: atom} = endpoint_info)
-         when atom in @arity_2_endpoints do
-      test_endpoint(&Routes.user_path/2, conn, endpoint_info)
-    end
-
-    defp test_user_endpoint(conn, %{endpoint_atom: atom} = endpoint_info)
-         when atom in @arity_3_endpoints do
-      test_endpoint(&Routes.user_path/3, conn, endpoint_info)
-    end
   end
 
-  defp test_endpoint(routing_function, conn, %{endpoint_atom: atom} = endpoint_info)
+  defp test_endpoint(conn, routing_atom, %{endpoint_atom: atom} = endpoint_info)
        when atom in @endpoint_atoms do
-    req_args = compute_req_args(routing_function, conn, endpoint_info)
+    default_req_args = [conn, compute_path(conn, routing_atom, atom)]
+
+    req_args =
+      if Map.has_key?(endpoint_info, :body),
+        do: default_req_args ++ [endpoint_info[:body]],
+        else: default_req_args
 
     atom
     |> endpoint_atom_to_function()
@@ -82,19 +66,15 @@ defmodule MembraneLiveWeb.AuthPlugIntegrationTest do
     |> assert_status_is_401()
   end
 
-  defp compute_req_args(routing_function, conn, %{endpoint_atom: atom, body: body}) do
-    [conn, compute_routing_function(routing_function, conn, atom), body]
-  end
+  defp compute_path(conn, routing_atom, endpoint_atom) do
+    default_args = [conn, endpoint_atom]
 
-  defp compute_req_args(routing_function, conn, %{endpoint_atom: atom}) do
-    [conn, compute_routing_function(routing_function, conn, atom)]
-  end
+    args =
+      if endpoint_atom in @endpoints_with_id,
+        do: default_args ++ [@dummy_uuid],
+        else: default_args
 
-  defp compute_routing_function(routing_function, conn, atom) do
-    case :erlang.fun_info(routing_function)[:arity] do
-      2 -> routing_function.(conn, atom)
-      3 -> routing_function.(conn, atom, @dummy_uuid)
-    end
+    apply(Routes, routing_atom, args)
   end
 
   # since we return a function, this cannot be converted to a module attribute map

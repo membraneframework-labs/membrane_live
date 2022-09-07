@@ -105,8 +105,8 @@ export const connectWebrtc = async (
   if (defaults.video)
     await setSourceById(client, defaults.video.deviceId, "video", playerCallbacks[client.email]);
 
-  const onError = (error: any) => {
-    alert("ERROR " + error);
+  const onError = (error: string) => {
+    console.log(error);
   };
 
   const webrtc = new MembraneWebRTC({
