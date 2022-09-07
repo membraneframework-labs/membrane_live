@@ -10,7 +10,7 @@ import {
 } from "../utils/storageUtils";
 import type { LocationState } from "../services/GuardedRoute";
 import { useToast } from "@chakra-ui/react";
-import { getErrorToast } from "../utils/popupUtils";
+import { getErrorToast } from "../utils/toastUtils";
 import "../../css/authpage.css";
 
 const Auth = () => {

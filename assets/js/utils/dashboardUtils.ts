@@ -1,5 +1,11 @@
-import type { EventForm } from "../pages/Form";
 import axiosWithInterceptor from "../services/index";
+
+export type EventForm = {
+  title: string;
+  description: string;
+  start_date: string;
+  presenters: string[];
+};
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
