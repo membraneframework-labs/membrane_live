@@ -12,7 +12,7 @@ import {
 } from "../utils/storageUtils";
 import StreamArea from "../components/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { presenterPopup } from "../utils/popupUtils";
+import { presenterPopup } from "../utils/toastUtils";
 import "../../css/event.css";
 
 export type PresenterPopupState = {

@@ -12,16 +12,10 @@ import {
   Link,
 } from "@chakra-ui/react";
 import React from "react";
-import { checkEventForm, sendEventForm } from "../utils/formApi";
+import { checkEventForm, sendEventForm } from "../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";
-import { getInfoToast } from "../utils/popupUtils";
-
-export type EventForm = {
-  title: string;
-  description: string;
-  start_date: string;
-  presenters: string[];
-};
+import { getInfoToast } from "../utils/toastUtils";
+import type { EventForm } from "../utils/dashboardUtils";
 
 function Form() {
   const toast = useToast();

@@ -94,7 +94,7 @@ export const getErrorToast = (toast: any, text: string, duration: number = 10_00
   );
 };
 
-export const getInfoToast = (toast: any, text: string, duration: number) => {
+export const getInfoToast = (toast: any, text: string, duration: number = 10_000) => {
   const fontColor = getFontColor("--bg-light-color-1");
   getToast(
     toast,

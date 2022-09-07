@@ -2,7 +2,7 @@ import { Presence } from "phoenix";
 import { Participant } from "../components/ParticipantsList";
 import type { Client } from "../pages/Event";
 import type { Presenter } from "../components/PresenterStreams";
-import { getErrorToast, getInfoToast } from "./popupUtils";
+import { getErrorToast, getInfoToast } from "./toastUtils";
 
 export const createEventChannel = (
   toast: any,
