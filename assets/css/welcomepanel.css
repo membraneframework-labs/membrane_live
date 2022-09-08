@@ -1,0 +1,35 @@
+@import "./main.css";
+
+.NamePanel {
+    display: flex;
+    margin-bottom: 1.3em;
+}
+
+.UserContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    margin-left: auto; 
+}
+
+.DashboardUserIcon {
+    height: 3em;
+    width: auto;
+    color: var(--font-dark-color);
+}
+
+.DashboardUserName {
+    font-size: 1.3em;
+    color: var(--font-dark-color);
+}
+
+.HiText {
+    color: var(--font-dark-color);
+    font-size: 2.5em; 
+}
+
+.EncouragingText {
+    color: var(--font-dark-color);
+    font-size: 1.3em;
+    margin-bottom: 1.5em;
+}

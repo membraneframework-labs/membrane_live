@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import MembraneLogo from "./membraneLogo";
+import { useNavigate } from "react-router-dom";
+import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout } from "react-swm-icon-pack";
 import { getFontColor } from "../utils/styleUtils";
 import "../../css/sidedashboardpanel.css";
 
 
 const SideDashboardPanel = () => {
+    const navigate = useNavigate();
     const [currentlyActiveButton, setCurrentlyActiveButton] = useState("All events");
 
     const mainFontColor = getFontColor("--bg-light-color-1");
@@ -42,7 +44,10 @@ const SideDashboardPanel = () => {
                     // TODO
                 })}
                 {getButton(Logout, "Logout", () => {
-                    // TODO
+                    localStorage.clear();
+                    navigate("/auth", {replace: true});
+                    // TODO pewnie trzeba będzie wysłać jakiś komunikat
+                    // zeby tego usera wyrzucilo ze spotkan
                 })}
             </div>
         </div>
