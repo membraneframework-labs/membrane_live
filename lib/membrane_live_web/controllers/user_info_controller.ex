@@ -4,7 +4,7 @@ defmodule MembraneLiveWeb.UserInfoController do
   alias MembraneLive.Accounts
 
   def index(conn, _params) do
-    user_info = Accounts.get_user(conn.assigns.user_id)
+    {:ok, user_info} = Accounts.get_user(conn.assigns.user_id)
 
     json(
       conn,
