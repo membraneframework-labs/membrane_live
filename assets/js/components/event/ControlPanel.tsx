@@ -36,11 +36,11 @@ import {
   SourceType,
   stopShareScreen,
   checkTrackIsEnabled,
-} from "../utils/rtcUtils";
+} from "../../utils/rtcUtils";
 import { Mode } from "./StreamArea";
-import { getFontColor } from "../utils/styleUtils";
-import type { Client } from "../pages/Event";
-import "../../css/controlpanel.css";
+import { getFontColor } from "../../utils/styleUtils";
+import type { Client } from "../../pages/Event";
+import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import EventField from "./EventField";
-import { getWebinarInfo } from "../utils/dashboardUtils";
-import type { WebinarInfo } from "../utils/dashboardUtils";
-import "../../css/eventsarea.css";
+import { getWebinarInfo } from "../../utils/dashboardUtils";
+import type { WebinarInfo } from "../../utils/dashboardUtils";
+import "../../../css/dashboard/eventsarea.css";
 
 type EventsAreaProps = {
     searchText: string;

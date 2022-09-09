@@ -1,38 +1,38 @@
-@import "./main.css";
+@import "../main.css";
 
 .EventsArea {
     overflow-y: scroll;
     height: 100%;
 }
 
-.example::-webkit-scrollbar {
-    display: none;
+.HeaderText {
+    color: var(--font-dark-color);
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 2rem 0;
 }
 
-.HeaderText {
-    margin: 1em 1em 1em 0;
-    font-size: 1.3em;
-    color: var(--font-dark-color);
-    font-weight: 600;
+.EventList {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem
 }
 
 .EventField {
-    display: flex;
+    color: var(--font-dark-color);
+    background: var(--bg-light-color-2);
     border: 1px solid var(--bg-light-color-3);
     border-radius: 24px;
-    background-color: var(--bg-light-color-2);
-    padding: 1em;
-    margin: 1em 0 1em 0;
-    color: var(--font-dark-color);
+    padding: 2rem;
+    display: flex;
+    gap: 2rem
 }
 
 .EventImage {
-    height: 12em;
-    max-width: 15em;
+    height: 18rem;
+    max-width: 25rem;
     overflow: hidden;
     border-radius: 16px;
-    margin-right: 1em;
-    align-self: center;
 }
 
 .InfoBox {
@@ -42,16 +42,25 @@
 
 .EventPresenters {
     color: var(--font-medium-color);
+    padding: 0.3rem 0;
+    font-size: 1.6rem;
 }
 
 .EventTitle {
     font-weight: 600;
-    font-size: 1.5em;
+    font-size: 2rem;
+    padding-bottom: 0.5rem;
     display: inline-block;
     width: fit-content;
 }
 
+.EventDescription {
+    font-size: 1.8rem;
+    padding-bottom: 3rem;
+}
+
 .EventDate {
+    font-size: 1.6rem;
     margin-top: auto;
     display: flex;
     gap: 1em;
@@ -70,7 +79,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 30px;
+    height: 1rem;
     position: absolute;
     display: block;
     content: "";
@@ -79,7 +88,7 @@
 
 .FogWrapper::after {
     width: 100%;
-    height: 30px;
+    height: 1rem;
     bottom: 0;
     position: absolute;
     content: "";

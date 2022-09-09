@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../utils/headerUtils";
+import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils/headerUtils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 import { Avatar } from "@chakra-ui/react";
-import { storageGetPicture } from "../utils/storageUtils";
-import type { Client } from "../pages/Event";
-import "../../css/header.css";
+import { storageGetPicture } from "../../utils/storageUtils";
+import type { Client } from "../../pages/Event";
+import "../../../css/event/header.css";
 
 const monthNames = [
   "January",

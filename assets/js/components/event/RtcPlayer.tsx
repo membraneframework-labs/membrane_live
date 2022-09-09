@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { presenterStreams, SourceType } from "../utils/rtcUtils";
+import { presenterStreams, SourceType } from "../../utils/rtcUtils";
 import { User1 } from "react-swm-icon-pack";
 import type { Presenter } from "./PresenterStreams";
-import "../../css/rtcplayer.css";
+import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
   isMyself: boolean;

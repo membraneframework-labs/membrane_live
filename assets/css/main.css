@@ -2,6 +2,7 @@
 
 :root {
   --font-main: "Roboto";
+
   --name-background-color: rgba(21, 26, 40, 0.5);
   --font-light-color: #dbe0f0;
   --font-dark-color: #001a72;
@@ -13,13 +14,12 @@
   --bg-light-color-3: #bfccf8;
   --bg-light-color-4: #7089DB;
   --button-red: #c32222;
+}
 
+html {
+  font-size: 10px;
+  font-family: var(--font-main);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-}
-
-* {
-  font-size: 16px;
-  font-family: var(--font-main);
 }

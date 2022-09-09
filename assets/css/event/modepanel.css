@@ -1,4 +1,4 @@
-@import "./main.css";
+@import "../main.css";
 
 .ModePanel {
   background-color: var(--bg-light-color-2);

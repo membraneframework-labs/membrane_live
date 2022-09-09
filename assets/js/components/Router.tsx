@@ -1,9 +1,9 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import GuardedRoute from "../services/GuardedRoute";
 import Dashboard from "../pages/Dashboard";
 import Event from "../pages/Event";
 import Auth from "../pages/Auth";
-import GuardedRoute from "../services/GuardedRoute";
 
 const Router = () => {
   return (

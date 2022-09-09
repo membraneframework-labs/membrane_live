@@ -1,6 +1,6 @@
 import React from "react";
 import { Search } from "react-swm-icon-pack";
-import "../../css/searchandcreatepanel.css";
+import "../../../css/dashboard/searchandcreatepanel.css";
 
 type SearchAndCreatePanelProps = {
     searchText: string;
@@ -12,7 +12,7 @@ const SearchAndCreatePanel = ({searchText, setSearchText}: SearchAndCreatePanelP
         <div className="SearchAndCreatePanel">
             <div className="SearchBar">
                 <Search />
-                <input value={searchText} onInput={e => setSearchText((e.target as any).value)} placeholder="Search events"/>
+                <input value={searchText} onInput={e => setSearchText((e.target as any).value)} placeholder="Search events" className="SearchInput"/>
             </div>
             <button className="FormButton" onClick={() => {
                     // TODO

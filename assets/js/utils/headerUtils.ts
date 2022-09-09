@@ -1,4 +1,4 @@
-import type { EventInfo } from "../components/Header";
+import type { EventInfo } from "../components/event/Header";
 import { Presence } from "phoenix";
 import { getChannelId } from "../utils/channelUtils";
 import axios from "../services/index";

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { syncEventChannel } from "../utils/channelUtils";
+import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
-import { getFontColor } from "../utils/styleUtils";
-import "../../css/participants.css";
-import { Client } from "../pages/Event";
+import { getFontColor } from "../../utils/styleUtils";
+import { Client } from "../../pages/Event";
+import "../../../css/event/participants.css";
 
 export type Participant = {
   email: string;

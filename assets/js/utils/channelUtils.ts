@@ -1,7 +1,7 @@
 import { Presence } from "phoenix";
-import { Participant } from "../components/ParticipantsList";
+import { Participant } from "../components/event/ParticipantsList";
 import type { Client } from "../pages/Event";
-import type { Presenter } from "../components/PresenterStreams";
+import type { Presenter } from "../components/event/PresenterStreams";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
 export const createEventChannel = (

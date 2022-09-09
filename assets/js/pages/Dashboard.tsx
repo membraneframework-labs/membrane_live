@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import WelcomePanel from "../components/WelcomePanel";
-import SearchAndCreatePanel from "../components/SearchAndCreatePanel";
-import SideDashboardPanel from "../components/SideDashboardPanel";
-import EventsArea from "../components/EventsArea";
-import "../../css/dashboard.css";
+import WelcomePanel from "../components/dashboard/WelcomePanel";
+import SearchAndCreatePanel from "../components/dashboard/SearchAndCreatePanel";
+import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
+import EventsArea from "../components/dashboard/EventsArea";
+import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {
   const [searchText, setSearchText] = useState("");

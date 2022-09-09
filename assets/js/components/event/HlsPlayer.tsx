@@ -1,7 +1,7 @@
 import React from "react";
 import ReactHlsPlayer from "react-hls-player";
 import { RotateLeft } from "react-swm-icon-pack";
-import "../../css/hlsplayer.css";
+import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
   hlsUrl: string;

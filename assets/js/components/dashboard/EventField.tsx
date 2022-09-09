@@ -1,8 +1,8 @@
 import React from "react";
 import { Image } from '@chakra-ui/react'
-import { WebinarInfo } from "../utils/dashboardUtils";
+import { WebinarInfo } from "../../utils/dashboardUtils";
 import { CalendarClock } from "react-swm-icon-pack";
-import "../../css/eventsarea.css";
+import "../../../css/dashboard/eventsarea.css";
 
 const monthNames = [
     "Jan",

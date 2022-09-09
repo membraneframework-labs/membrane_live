@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { connectWebrtc, leaveWebrtc, SourceType } from "../utils/rtcUtils";
-import { syncPresenters } from "../utils/channelUtils";
+import { connectWebrtc, leaveWebrtc, SourceType } from "../../utils/rtcUtils";
+import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Mode } from "./StreamArea";
-import type { Client } from "../pages/Event";
-import "../../css/presenterstreams.css";
+import type { Client } from "../../pages/Event";
+import "../../../css/event/presenterstreams.css";
 
 export type Presenter = {
   name: string;

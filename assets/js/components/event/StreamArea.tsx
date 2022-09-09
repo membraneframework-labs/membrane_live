@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
-import type { Client } from "../pages/Event";
-import "../../css/streamarea.css";
+import type { Client } from "../../pages/Event";
+import "../../../css/event/streamarea.css";
 
 export type Mode = "presenters" | "hls";
 

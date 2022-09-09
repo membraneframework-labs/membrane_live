@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout } from "react-swm-icon-pack";
-import { getFontColor } from "../utils/styleUtils";
-import "../../css/sidedashboardpanel.css";
+import { getFontColor } from "../../utils/styleUtils";
+import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
     currentEvents: string;
@@ -15,6 +15,7 @@ const SideDashboardPanel = ({currentEvents, setCurrentEvents}: SideDashboardPane
 
     const mainFontColor = getFontColor("--bg-light-color-1");
     const bgFontColor = getFontColor("--bg-light-color-3");
+    const transitionFontColor = getFontColor("--bg-light-color-4");
 
     const getButton = (Icon: any, text: string, onClick: () => void) => {
         const [hoverColor, setHoverColor] = useState(bgFontColor);
@@ -23,10 +24,10 @@ const SideDashboardPanel = ({currentEvents, setCurrentEvents}: SideDashboardPane
         return (
             <button className="DashboardPanelButton" onClick={onClick}
                 // a very inconvinient way to add hover effect to the icon
-                onMouseEnter={() => setHoverColor(mainFontColor)}
+                onMouseEnter={() => setHoverColor(transitionFontColor)}
                 onMouseLeave={() => setHoverColor(bgFontColor)}
             >
-                <Icon color={isActive ? mainFontColor : hoverColor} />
+                <Icon color={isActive ? mainFontColor : hoverColor} />  {/* TODO color transition */}
                 <p className={`PanelText ${isActive ? "ActiveButton" : ""}`}>{text}</p>
                 <div className={`Accent ${isActive ? "ActiveAccent" : ""}`} />
             </button>
