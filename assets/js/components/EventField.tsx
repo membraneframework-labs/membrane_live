@@ -13,7 +13,7 @@ const monthNames = [
     "June",
     "July",
     "Aug",
-    "Sept",
+    "Sep",
     "Oct",
     "Nov",
     "Dec",
@@ -24,6 +24,7 @@ type EventFieldProps = {
 }
 
 const EventField = ({webinarInfo}: EventFieldProps) => {
+
     const formatDate = (date: Date) => {
         const time = 
             date
@@ -40,7 +41,7 @@ const EventField = ({webinarInfo}: EventFieldProps) => {
             </div>
             <div className="InfoBox">
                 <p className="EventPresenters">{webinarInfo.presenters.join(", ")}</p>
-                <p className="EventTitle">{webinarInfo.title}</p>
+                <a href={`event/${webinarInfo.uuid}`}  className="EventTitle">{webinarInfo.title}</a>
                 <p className="EventDescription">{webinarInfo.description}</p>
                 <div className="EventDate">
                     <CalendarClock />

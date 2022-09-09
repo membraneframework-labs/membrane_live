@@ -7,9 +7,10 @@
 }
 
 .HeaderText {
-    margin: 1em;
+    margin: 1em 1em 1em 0;
     font-size: 1.3em;
     color: var(--font-dark-color);
+    font-weight: 600;
 }
 
 .EventField {
@@ -18,7 +19,8 @@
     border-radius: 24px;
     background-color: var(--bg-light-color-2);
     padding: 1em;
-    margin: 1em;
+    margin: 1em 0 1em 0;
+    color: var(--font-dark-color);
 }
 
 .EventImage {
@@ -27,10 +29,29 @@
     overflow: hidden;
     border-radius: 16px;
     margin-right: 1em;
+    align-self: center;
+}
+
+.InfoBox {
+    display: flex;
+    flex-direction: column;
 }
 
 .EventPresenters {
-    color: var(--font-dark-color);
+    color: var(--font-medium-color);
+}
+
+.EventTitle {
+    font-weight: 600;
+    font-size: 1.5em;
+    display: inline-block;
+    width: fit-content;
+}
+
+.EventDate {
+    margin-top: auto;
+    display: flex;
+    gap: 1em;
 }
 
 

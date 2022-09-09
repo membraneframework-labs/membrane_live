@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { Search } from "react-swm-icon-pack";
 import "../../css/searchandcreatepanel.css";
 
-const SearchAndCreatePanel = () => {
-    const [input, setInput] = useState("");  // TODO
+type SearchAndCreatePanelProps = {
+    searchText: string;
+    setSearchText: React.Dispatch<React.SetStateAction<string>>;
+}
 
+const SearchAndCreatePanel = ({searchText, setSearchText}: SearchAndCreatePanelProps) => {
     return (
         <div className="SearchAndCreatePanel">
             <div className="SearchBar">
                 <Search />
-                <input value={input} onInput={e => setInput((e.target as any).value)} placeholder="Search events"/>
+                <input value={searchText} onInput={e => setSearchText((e.target as any).value)} placeholder="Search events"/>
             </div>
             <button className="FormButton" onClick={() => {
                     // TODO

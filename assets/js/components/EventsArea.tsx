@@ -4,8 +4,29 @@ import { getWebinarInfo } from "../utils/dashboardUtils";
 import type { WebinarInfo } from "../utils/dashboardUtils";
 import "../../css/eventsarea.css";
 
-const EventsArea = () => {
+type EventsAreaProps = {
+    searchText: string;
+    currentEvents: string;
+}
+
+const EventsArea = ({searchText, currentEvents}: EventsAreaProps) => {
     const [webinars, setWebinars] = useState<WebinarInfo[]>([]);
+
+    const listEvents = (upcoming: boolean) => {
+        const curDate = new Date();
+
+        return webinars
+            .filter(elem => upcoming ? 
+                elem.start_date >= curDate 
+                : elem.start_date < curDate)
+            .filter(elem => elem.title.includes(searchText))
+            .sort((a, b) => upcoming ? 
+                a.start_date.getTime() - b.start_date.getTime() 
+                : b.start_date.getTime() - a.start_date.getTime())
+            .map(elem => (
+                <EventField key={elem.uuid} webinarInfo={elem}/>
+        ));
+    }
 
     useEffect(() => {
         getWebinarInfo(setWebinars);
@@ -13,22 +34,20 @@ const EventsArea = () => {
 
     return (
         <div className="EventsArea">
-            <p className="HeaderText">Upcoming events</p>
-            <div className="EventList">
-                {
-                    webinars.filter(elem => elem.start_date >= new Date()).sort().map(elem => (
-                        <EventField key={elem.uuid} webinarInfo={elem}/>
-                    ))
-                }
-            </div>
-            <p className="HeaderText">Past events</p>
-            <div className="EventList">
-                {
-                    webinars.filter(elem => elem.start_date < new Date()).sort().map(elem => (
-                        <EventField key={elem.uuid} webinarInfo={elem}/>
-                    ))
-                }
-            </div>
+            { currentEvents == "All events" && <>
+                <p className="HeaderText">Upcoming events</p>
+                <div className="EventList">
+                    {listEvents(true)}
+                </div>
+                <p className="HeaderText">Past events</p>
+                <div className="EventList">
+                    {listEvents(false)}
+                </div>
+            </>}
+            { currentEvents == "Recorded events" && <>
+                <p className="HeaderText">Recorded events</p>
+                    {/* TODO */}
+            </>}
         </div>
     );
 }
