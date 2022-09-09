@@ -33,21 +33,23 @@ const EventsArea = ({searchText, currentEvents}: EventsAreaProps) => {
     }, []);
 
     return (
-        <div className="EventsArea">
-            { currentEvents == "All events" && <>
-                <p className="HeaderText">Upcoming events</p>
-                <div className="EventList">
-                    {listEvents(true)}
-                </div>
-                <p className="HeaderText">Past events</p>
-                <div className="EventList">
-                    {listEvents(false)}
-                </div>
-            </>}
-            { currentEvents == "Recorded events" && <>
-                <p className="HeaderText">Recorded events</p>
-                    {/* TODO */}
-            </>}
+        <div className="FogWrapper">
+            <div className="EventsArea">
+                { currentEvents == "All events" && <>
+                    <p className="HeaderText">Upcoming events</p>
+                    <div className="EventList">
+                        {listEvents(true)}
+                    </div>
+                    <p className="HeaderText">Past events</p>
+                    <div className="EventList">
+                        {listEvents(false)}
+                    </div>
+                </>}
+                { currentEvents == "Recorded events" && <>
+                    <p className="HeaderText">Recorded events</p>
+                        {/* TODO */}
+                </>}
+            </div>
         </div>
     );
 }

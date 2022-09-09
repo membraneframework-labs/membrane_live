@@ -42,6 +42,10 @@
     font-size: 1.1em;
 }
 
+.PanelText:hover {
+    color: var(--bg-light-color-1);
+}
+
 .ActiveButton {
     color: var(--bg-light-color-1);
 }

@@ -1,9 +1,12 @@
 @import "./main.css";
 
-
 .EventsArea {
     overflow-y: scroll;
-    flex: 1;
+    height: 100%;
+}
+
+.example::-webkit-scrollbar {
+    display: none;
 }
 
 .HeaderText {
@@ -54,36 +57,31 @@
     gap: 1em;
 }
 
-
 /* Foggy effect on top and bottom of scrollable area */
 
-/* .BlurWrapper {
+.FogWrapper {
     position: relative;
+    flex: 1;
+    height: fit-content;
     overflow: hidden;
 }
 
-.BlurWrapper::before {
+.FogWrapper::before {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100px;
+    height: 30px;
     position: absolute;
     display: block;
     content: "";
-    background: -webkit-gradient(linear,left top,left bottom,color-stop(0,#fff),color-stop(.6,rgba(255,255,255,0)));
-    background: -moz-linear-gradient(center top,#fff 0%,rgba(255,255,255,0) 60%);
-    pointer-events: none;
+    background: linear-gradient(0, rgba(255, 255, 255, 0) 0%, #FFFFFF 99.99%, #FFFFFF 100%);
 }
 
-.BlurWrapper::after {
+.FogWrapper::after {
     width: 100%;
-    height: 100px;
+    height: 30px;
     bottom: 0;
-    left: 0;
     position: absolute;
-    display: block;
     content: "";
-    background: -webkit-gradient(linear,left top,left bottom,color-stop(1,#fff),color-stop(.6,rgba(255,255,255,0)));
-    background: -moz-linear-gradient(center bottom,#fff 0%,rgba(255,255,255,0) 60%);
-    pointer-events: none;
-} */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 99.99%, #FFFFFF 100%);
+}

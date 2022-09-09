@@ -17,11 +17,16 @@ const SideDashboardPanel = ({currentEvents, setCurrentEvents}: SideDashboardPane
     const bgFontColor = getFontColor("--bg-light-color-3");
 
     const getButton = (Icon: any, text: string, onClick: () => void) => {
+        const [hoverColor, setHoverColor] = useState(bgFontColor);
         const isActive = currentEvents == text;
 
         return (
-            <button className="DashboardPanelButton" onClick={onClick}>
-                <Icon color={isActive ? mainFontColor : bgFontColor} />
+            <button className="DashboardPanelButton" onClick={onClick}
+                // a very inconvinient way to add hover effect to the icon
+                onMouseEnter={() => setHoverColor(mainFontColor)}
+                onMouseLeave={() => setHoverColor(bgFontColor)}
+            >
+                <Icon color={isActive ? mainFontColor : hoverColor} />
                 <p className={`PanelText ${isActive ? "ActiveButton" : ""}`}>{text}</p>
                 <div className={`Accent ${isActive ? "ActiveAccent" : ""}`} />
             </button>
