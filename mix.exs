@@ -68,6 +68,7 @@ defmodule Membrane.Live.Mixfile do
       {:ecto_fields, "~> 1.3.0"},
       {:bypass, "~> 2.1.0"},
       {:bimap, "~> 1.2", override: true},
+      {:ex_libsrtp, "~> 0.5.1", override: true},
 
       # Otel
       {:opentelemetry, "~> 1.0"},
