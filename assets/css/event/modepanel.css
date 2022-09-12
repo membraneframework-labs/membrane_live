@@ -3,18 +3,22 @@
 .ModePanel {
   background-color: var(--bg-light-color-2);
   color: var(--font-dark-color);
-  margin-bottom: 1em;
-  padding: 1em;
-  border-radius: 24px;
+  font-size: 1.6rem;
   border: 1px solid var(--bg-light-color-3);
+  border-radius: 24px;
+  padding: 1.3rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1em;
+  gap: 0.7em;
   white-space: nowrap;
 }
 
+.PresentingNow {
+  line-height: 4.5rem;
+}
+
 .ScreenIcon {
-  height: 2em;
+  height: 3rem;
   width: auto;
 }
 
@@ -25,11 +29,11 @@
 }
 
 .ModeButton {
-  border-radius: 16px;
   color: var(--font-dark-color);
+  border-radius: 16px;
   font-weight: 600;
-  font-size: 1.1em;
-  padding: 0.5em 1em;
+  font-size: 1.6rem;
+  padding: 1rem 1.5rem;
 }
 
 .ModeButton.Clicked {

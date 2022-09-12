@@ -18,7 +18,7 @@
 .BottomBar {
   position: absolute;
   width: 100%;
-  bottom: 3em;
+  bottom: 3rem;
   z-index: 1;
   display: flex;
   flex-direction: row;
@@ -27,14 +27,16 @@
 }
 
 .PresenterName {
-  display: flex;
-  gap: 0.5em;
-  position: absolute;
-  margin: 2em;
-  border-radius: 16px;
-  padding: 0.4em 1em;
   background: var(--name-background-color);
   color: var(--font-light-color);
+  font-size: 1.6rem;
+  position: absolute;
+  margin: 2rem;
+  border-radius: 16px;
+  padding: 0.4rem 1rem;
   background-blend-mode: multiply;
   backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }

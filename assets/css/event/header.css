@@ -1,60 +1,59 @@
 @import "../main.css";
 
 .Header {
-  margin: 1rem 1rem 0rem;
+  white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 2rem;
-  white-space: nowrap;
+  gap: 3rem;
 }
 
 .Arrow {
   box-sizing: content-box;
-  height: 2em;
-  width: auto;
-  padding: 1em;
-  border-radius: 50%;
   background: var(--bg-light-color-2);
+  height: 3.2rem;
+  width: auto;
+  padding: 1rem;
+  border-radius: 50%;
 }
 
 .Title {
-  font-size: 1.5rem;
-  letter-spacing: 0.015em;
   color: var(--font-dark-color);
+  font-size: 2.4rem;
 }
 
 .InfoWrapper {
+  margin-right: auto;
   display: flex;
   flex-direction: column;
-  margin-right: auto;
 }
 
 .WebinarInfo {
+  color: var(--font-dark-color);
+  font-size: 1.6rem;
   display: flex;
   align-items: center;
-  gap: 0.75em;
-  color: var(--font-dark-color);
+  gap: 2rem;
 }
 
 .CopyLink {
-  display: flex;
-  align-items: center;
-  padding: 0.4em 1em;
-  gap: 1em;
   color: var(--font-dark-color);
   background: var(--bg-light-color-2);
   border: 1px solid var(--bg-light-color-3);
   border-radius: 24px;
+  padding: 0.5rem 1.7rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .User {
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: 1rem;
 }
 
 .UsersIcon {
-  height: 1.2em;
+  height: 2rem;
   width: auto;
 }
 
@@ -64,18 +63,20 @@
 }
 
 .UserIcon {
-  height: 3em;
-  width: auto;
   color: var(--font-dark-color);
+  height: 4.8rem;
+  width: auto;
+  border-radius: 50%;
 }
 
 .UserName {
-  font-size: 1.3em;
+  font-size: 2rem;
   color: var(--font-dark-color);
 }
 
 .Link {
-  max-width: 15ch;
+  max-width: 18ch;
+  font-size: 1.6rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -84,5 +85,5 @@
 .ParticipantsNumber {
   display: flex;
   align-items: center;
-  gap: 0.4em;
+  gap: 0.7rem;
 }

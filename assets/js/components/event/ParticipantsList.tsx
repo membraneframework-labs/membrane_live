@@ -55,14 +55,9 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
           color={fontColor}
           onClick={handleClick}
           value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+          className="MenuOptionText"
         >
           {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
-        </MenuItem>
-        <MenuItem color={fontColor} value="Mute">
-          Mute
-        </MenuItem>
-        <MenuItem color={fontColor} value="Kick">
-          Kick
         </MenuItem>
       </MenuList>
     </Menu>
@@ -91,6 +86,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         label={`${role}${client.name == participant.name ? " (You)" : ""}`}
         bg={fontColor}
         borderRadius="25px"
+        fontSize={"1.3rem"}
       >
         {icon}
       </Tooltip>

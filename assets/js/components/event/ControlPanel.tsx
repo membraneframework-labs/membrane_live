@@ -50,7 +50,11 @@ type DropdownListProps = {
 
 const DropdownList = ({ sources, currentSourceName, itemSelectFunc }: DropdownListProps) => {
   const getDeviceLabel = (source: MediaDeviceInfo, currentSourceName: String | undefined) => {
-    return source.label === currentSourceName ? <b>{source.label}</b> : source.label;
+    return source.label === currentSourceName ? (
+      <b className="SettingsMenuItem">{source.label}</b>
+    ) : (
+      source.label
+    );
   };
 
   const menuItems = sources.map((source) => (
@@ -76,7 +80,9 @@ const DropdownButton = ({
 }: DropdownButtonProps) => {
   return (
     <Menu>
-      <MenuButton as={Button}>{mainText}</MenuButton>
+      <MenuButton as={Button} className="MenuButton">
+        <p className="MenuButtonText">{mainText}</p>
+      </MenuButton>
       <DropdownList
         sources={sources}
         currentSourceName={currentSourceName}
@@ -107,7 +113,9 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader className="SettingsModalHeader">Settings</ModalHeader>
+          <ModalHeader>
+            <p className="SettingsModalHeader">Settings</p>
+          </ModalHeader>
           <ModalCloseButton className="SettingsModalClose" />
 
           <ModalBody className="SettingsModalBody">{elements}</ModalBody>

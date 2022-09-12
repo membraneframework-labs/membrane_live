@@ -3,9 +3,9 @@
 .StreamArea {
   flex: 1;
   min-width: 0;
-  margin: 1em 0 1em 1em;
   display: flex;
   flex-direction: column;
+  gap: 2.5rem;
 }
 
 .Stream {

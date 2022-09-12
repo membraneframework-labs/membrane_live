@@ -1,31 +1,30 @@
 @import "../main.css";
 
 .Participants {
-  width: 25%;
   background: var(--bg-light-color-2);
-  display: flex;
-  flex-direction: column;
-  margin: 1em;
+  width: 40rem;
   border-radius: 24px;
   border: 1px solid var(--bg-light-color-3);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .ParticipantsButtons {
-  padding: 1em 0;
+  padding: 1.3rem 1.5rem;
   width: 100%;
   display: grid;
   grid-template-columns: 50% 50%;
 }
 
 .ParticipantsButton {
-  width: 80%;
-  border-radius: 16px;
   color: var(--font-dark-color);
+  width: 84%;
+  border-radius: 16px;
   font-weight: 600;
-  font-size: 1.1em;
+  font-size: 1.6rem;
   justify-self: center;
-  padding: 0.5em 1em;
+  padding: 1rem 1.5rem;
   white-space: nowrap;
 }
 
@@ -41,25 +40,25 @@
 .Participant {
   display: flex;
   align-items: center;
-  padding: 8px 24px;
-  gap: 12px;
+  padding: 1rem 2rem;
+  gap: 1.5rem;
   width: 100%;
 }
 
 .ParticipantText {
   color: var(--font-dark-color);
-  font-size: 1.2em;
+  font-size: 1.8rem;
   white-space: nowrap;
 }
 
 .OptionButton {
-  height: 1.5em;
+  height: 2rem;
   width: auto;
   margin-left: auto;
 }
 
-.MenuText {
-  color: var(--font-dark-color);
+.MenuOptionText {
+  font-size: 1.6rem;
 }
 
 /* Participant Tooltip and color of menu items styled inside js file */

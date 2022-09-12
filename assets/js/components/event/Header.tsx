@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils/headerUtils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
-import { Avatar } from "@chakra-ui/react";
 import { storageGetPicture } from "../../utils/storageUtils";
 import type { Client } from "../../pages/Event";
 import "../../../css/event/header.css";
@@ -41,7 +40,10 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
 
   const navigate = useNavigate();
-  const redirectToHomePage = () => navigate("/");
+  const redirectToHomePage = () => {
+    // TODO
+    navigate("/");
+  };
 
   useEffect(() => getEventInfo(setEventInfo), []);
   useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
@@ -80,11 +82,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
         </button>
       </div>
       <div className="User">
-        {picture ? (
-          <Avatar name={client.name} src={picture} className="UserIcon" />
-        ) : (
-          <User1 className="UserIcon" />
-        )}
+        {picture ? <img src={picture} className="UserIcon" /> : <User1 className="UserIcon" />}
         <div className="UserName">{client.name}</div>
       </div>
     </div>

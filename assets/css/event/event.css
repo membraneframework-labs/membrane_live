@@ -1,16 +1,19 @@
 @import "../main.css";
 
 .EventPage {
+  background: var(--bg-light-color-1);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
-  background: var(--bg-light-color-1);
+  gap: 2.5rem;
 }
 
 .MainGrid {
   flex: 1;
   min-height: 0;
   display: flex;
+  gap: 2.5rem;
 }
