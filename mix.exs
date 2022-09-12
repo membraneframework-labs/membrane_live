@@ -116,7 +116,7 @@ defmodule Membrane.Live.Mixfile do
         "test --warnings-as-errors",
         "credo"
       ],
-      setup: ["deps.get", "cmd --cd assets npm ci"],
+      setup: ["deps.get", "cmd --cd assets npm ci --legacy-peer-deps"],
       "assets.deploy": [
         "esbuild default --minify",
         "phx.digest"
