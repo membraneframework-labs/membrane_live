@@ -46,16 +46,16 @@ export const getWebinarInfo = async (
 ) => {
   axiosWithInterceptor
     .get("resources/webinars")
-    .then(response => {
+    .then((response) => {
       setWebinars(
-        (response.data.webinars as OriginalWebinarInfo[]).map(elem => {
-          const newDate = new Date()
+        (response.data.webinars as OriginalWebinarInfo[]).map((elem) => {
+          const newDate = new Date();
           newDate.setTime(Date.parse(elem.start_date));
-          return {...elem, start_date: newDate};
+          return { ...elem, start_date: newDate };
         })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       console.log(error);
     });
-}
+};

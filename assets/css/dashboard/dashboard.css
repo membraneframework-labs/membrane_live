@@ -1,17 +1,17 @@
 @import "../main.css";
 
 .Dashboard {
-    background: var(--bg-light-color-1);
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    padding: 2.5rem;
-    display: flex;
-    gap: 2.5rem;
+  background: var(--bg-light-color-1);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  padding: 2.5rem;
+  display: flex;
+  gap: 2.5rem;
 }
 
 .MainDashboardArea {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }

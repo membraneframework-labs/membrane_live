@@ -5,53 +5,52 @@ import type { WebinarInfo } from "../../utils/dashboardUtils";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventsAreaProps = {
-    searchText: string;
-    currentEvents: string;
-}
+  searchText: string;
+  currentEvents: string;
+};
 
-const EventsArea = ({searchText, currentEvents}: EventsAreaProps) => {
-    const [webinars, setWebinars] = useState<WebinarInfo[]>([]);
+const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
+  const [webinars, setWebinars] = useState<WebinarInfo[]>([]);
 
-    const listEvents = (upcoming: boolean) => {
-        const curDate = new Date();
+  const listEvents = (upcoming: boolean) => {
+    const curDate = new Date();
 
-        return webinars
-            .filter(elem => upcoming ? 
-                elem.start_date >= curDate 
-                : elem.start_date < curDate)
-            .filter(elem => elem.title.includes(searchText))
-            .sort((a, b) => upcoming ? 
-                a.start_date.getTime() - b.start_date.getTime() 
-                : b.start_date.getTime() - a.start_date.getTime())
-            .map(elem => (
-                <EventField key={elem.uuid} webinarInfo={elem}/>
-        ));
-    }
+    return webinars
+      .filter((elem) => (upcoming ? elem.start_date >= curDate : elem.start_date < curDate))
+      .filter((elem) => elem.title.includes(searchText))
+      .sort((a, b) =>
+        upcoming
+          ? a.start_date.getTime() - b.start_date.getTime()
+          : b.start_date.getTime() - a.start_date.getTime()
+      )
+      .map((elem) => <EventField key={elem.uuid} webinarInfo={elem} />);
+  };
 
-    useEffect(() => {
-        getWebinarInfo(setWebinars);
-    }, []);
+  useEffect(() => {
+    getWebinarInfo(setWebinars);
+  }, []);
 
-    return (
-        <div className="FogWrapper">
-            <div className="EventsArea">
-                { currentEvents == "All events" && <>
-                    <p className="HeaderText">Upcoming events</p>
-                    <div className="EventList">
-                        {listEvents(true)}
-                    </div>
-                    <p className="HeaderText">Past events</p>
-                    <div className="EventList">
-                        {listEvents(false)}
-                    </div>
-                </>}
-                { currentEvents == "Recorded events" && <>
-                    <p className="HeaderText">Recorded events</p>
-                        {/* TODO */}
-                </>}
-            </div>
-        </div>
-    );
-}
+  return (
+    <div className="FogWrapper">
+      <div className="EventsArea">
+        {currentEvents == "All events" && (
+          <>
+            <p className="HeaderText">Upcoming events</p>
+            <div className="EventList">{listEvents(true)}</div>
+            <p className="HeaderText">Past events</p>
+            <div className="EventList">{listEvents(false)}</div>
+          </>
+        )}
+        {currentEvents == "Recorded events" && (
+          <>
+            <p className="HeaderText">Recorded events</p>
+            <i style={{ color: "#001a72" }}>Coming soon...</i>
+            {/* TODO */}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default EventsArea;

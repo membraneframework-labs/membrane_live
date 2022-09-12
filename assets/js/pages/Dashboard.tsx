@@ -11,14 +11,18 @@ const Dashboard = () => {
 
   return (
     <div className="Dashboard">
-      <SideDashboardPanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents}/>
+      <SideDashboardPanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
       <div className="MainDashboardArea">
-        <WelcomePanel />
-        <SearchAndCreatePanel searchText={searchText} setSearchText={setSearchText}/>
-        <EventsArea searchText={searchText} currentEvents={currentEvents}/>
+        <WelcomePanel currentEvents={currentEvents} />
+        <SearchAndCreatePanel
+          currentEvents={currentEvents}
+          searchText={searchText}
+          setSearchText={setSearchText}
+        />
+        <EventsArea searchText={searchText} currentEvents={currentEvents} />
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
