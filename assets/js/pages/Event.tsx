@@ -14,6 +14,7 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import type { Client } from "../types";
+import { pageTitlePrefix } from "../utils/const";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -58,6 +59,8 @@ const Event = () => {
   }, [eventChannel, privateChannel]);
 
   useEffect(() => {
+    document.title = `${pageTitlePrefix} | ${"a"}`;
+
     window.addEventListener("beforeunload", storageSetReloaded);
     return () => {
       window.removeEventListener("beforeunload", storageSetReloaded);

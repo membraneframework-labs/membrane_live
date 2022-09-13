@@ -53,6 +53,8 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    document.title = `${pageTitlePrefix} | Login`;
+
     google.accounts.id.initialize({
       client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com",
       ux_mode: "popup",

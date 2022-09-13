@@ -1,14 +1,14 @@
 import { Presence } from "phoenix";
 import axios from "../services/index";
 import { getChannelId } from "../utils/channelUtils";
-import type { EventInfo } from "../types";
+import type { EventInfo, OriginalEventInfo } from "../types";
 
 export const initEventInfo = (): EventInfo => {
   return {
-    link: "",
+    uuid: "",
     title: "",
     description: "",
-    start_date: "",
+    startDate: new Date(),
     presenters: [],
   };
 };
@@ -16,17 +16,22 @@ export const initEventInfo = (): EventInfo => {
 export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>) => {
   axios
     .get("/resources/webinars/" + getChannelId())
-    .then((response) => {
-      console.log("DATA", response.data.webinar.start_date);
-      const start_date = response.data.webinar.start_date.replace("T", " ");
-      setEventInfo({ ...response.data.webinar, start_date: start_date });
+    .then((response: { data: { webinar: OriginalEventInfo } }) => {
+      const newDate = new Date();
+      newDate.setTime(Date.parse(response.data.webinar.start_date));
+      const newElem: any = { ...response.data.webinar, startDate: newDate };
+      delete newElem.start_date;
+      setEventInfo(newElem as EventInfo);
     })
     .catch((error) => {
       console.log(error);
     });
 };
 
-export const syncParticipantsNumber = (eventChannel, setParticipantsNumber) => {
+export const syncParticipantsNumber = (
+  eventChannel: any,
+  setParticipantsNumber: React.Dispatch<React.SetStateAction<number>>
+) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 

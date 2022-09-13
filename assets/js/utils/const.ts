@@ -46,3 +46,5 @@ export const monthNames = [
   "November",
   "December",
 ];
+
+export const pageTitlePrefix = "Membrane Live";

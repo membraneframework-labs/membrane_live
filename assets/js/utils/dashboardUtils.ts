@@ -1,5 +1,5 @@
 import axiosWithInterceptor from "../services/index";
-import type { EventForm, WebinarInfo, OriginalWebinarInfo } from "../types";
+import type { EventForm, EventInfo, OriginalEventInfo } from "../types";
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
@@ -11,7 +11,7 @@ export const sendEventForm = async (
 ): Promise<void> => {
   axiosWithInterceptor
     .post("resources/webinars", { webinar: eventForm })
-    .then((response) => {
+    .then((response: { data: { link: string } }) => {
       setLink(response.data.link);
     })
     .catch((error) => {
@@ -19,17 +19,19 @@ export const sendEventForm = async (
     });
 };
 
-export const getWebinarInfo = async (
-  setWebinars: React.Dispatch<React.SetStateAction<WebinarInfo[]>>
+export const getWebinarsInfo = async (
+  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
 ) => {
   axiosWithInterceptor
     .get("resources/webinars")
-    .then((response) => {
+    .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
       setWebinars(
-        (response.data.webinars as OriginalWebinarInfo[]).map((elem) => {
+        (response.data.webinars as OriginalEventInfo[]).map((elem) => {
           const newDate = new Date();
           newDate.setTime(Date.parse(elem.start_date));
-          return { ...elem, start_date: newDate };
+          const newElem: any = { ...elem, startDate: newDate };
+          delete newElem.start_date;
+          return newElem as EventInfo;
         })
       );
     })

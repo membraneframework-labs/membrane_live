@@ -2,18 +2,18 @@ import React from "react";
 import { Image } from "@chakra-ui/react";
 import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
-import type { WebinarInfo } from "../../types";
+import type { EventInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
-  webinarInfo: WebinarInfo;
+  webinarInfo: EventInfo;
 };
 
 const EventField = ({ webinarInfo }: EventFieldProps) => {
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
-    return `${shortMonthNames[date.getMonth()]} ${date.getDay()}, ${date.getFullYear()} ${time}`;
+    return `${shortMonthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} ${time}`;
   };
 
   return (
@@ -33,7 +33,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
         <p className="EventDescription">{webinarInfo.description}</p>
         <div className="EventDate">
           <CalendarClock />
-          {formatDate(webinarInfo.start_date)}
+          {formatDate(webinarInfo.startDate)}
         </div>
       </div>
     </div>

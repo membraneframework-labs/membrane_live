@@ -3,7 +3,7 @@ import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
-import { monthNames } from "../../utils/const";
+import { monthNames, pageTitlePrefix } from "../../utils/const";
 import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
 
@@ -19,22 +19,24 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
 
   const navigate = useNavigate();
   const redirectToHomePage = () => {
-    // TODO
     navigate("/");
+    // the line above does not break socket connection
+    // which is desired in this case, so the page is reloaded manually
+    window.location.reload();
   };
 
   useEffect(() => getEventInfo(setEventInfo), []);
+  useEffect(() => {
+    if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
+  }, [eventInfo]);
   useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date();
-    date.setTime(Date.parse(dateString));
-
-    return `${monthNames[date.getMonth()]}, ${date.getDay()} ${date.getFullYear()}`;
+  const formatDate = (date: Date) => {
+    return `${monthNames[date.getMonth()]}, ${date.getDate()} ${date.getFullYear()}`;
   };
 
   return (
@@ -45,7 +47,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
         <div className="WebinarInfo">
-          <div> {formatDate(eventInfo.start_date)}</div>
+          <div> {formatDate(eventInfo.startDate)}</div>
           <div> | </div>
           <div className="ParticipantsNumber">
             <Users className="UsersIcon" />

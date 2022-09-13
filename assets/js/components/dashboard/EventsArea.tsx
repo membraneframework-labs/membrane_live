@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EventField from "./EventField";
-import { getWebinarInfo } from "../../utils/dashboardUtils";
-import type { WebinarInfo } from "../../types";
+import { getWebinarsInfo } from "../../utils/dashboardUtils";
+import type { EventInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventsAreaProps = {
@@ -10,24 +10,24 @@ type EventsAreaProps = {
 };
 
 const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
-  const [webinars, setWebinars] = useState<WebinarInfo[]>([]);
+  const [webinars, setWebinars] = useState<EventInfo[]>([]);
 
   const listEvents = (upcoming: boolean) => {
     const curDate = new Date();
 
     return webinars
-      .filter((elem) => (upcoming ? elem.start_date >= curDate : elem.start_date < curDate))
+      .filter((elem) => (upcoming ? elem.startDate >= curDate : elem.startDate < curDate))
       .filter((elem) => elem.title.includes(searchText))
       .sort((a, b) =>
         upcoming
-          ? a.start_date.getTime() - b.start_date.getTime()
-          : b.start_date.getTime() - a.start_date.getTime()
+          ? a.startDate.getTime() - b.startDate.getTime()
+          : b.startDate.getTime() - a.startDate.getTime()
       )
       .map((elem) => <EventField key={elem.uuid} webinarInfo={elem} />);
   };
 
   useEffect(() => {
-    getWebinarInfo(setWebinars);
+    getWebinarsInfo(setWebinars);
   }, []);
 
   return (
@@ -45,7 +45,6 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
           <>
             <p className="HeaderText">Recorded events</p>
             <i style={{ color: "#001a72" }}>Coming soon...</i>
-            {/* TODO */}
           </>
         )}
       </div>
