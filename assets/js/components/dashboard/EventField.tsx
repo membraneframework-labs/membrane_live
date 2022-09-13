@@ -1,23 +1,9 @@
 import React from "react";
 import { Image } from "@chakra-ui/react";
-import { WebinarInfo } from "../../utils/dashboardUtils";
 import { CalendarClock } from "react-swm-icon-pack";
+import { shortMonthNames } from "../../utils/const";
+import type { WebinarInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
-
-const monthNames = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "June",
-  "July",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 type EventFieldProps = {
   webinarInfo: WebinarInfo;
@@ -27,7 +13,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
-    return `${monthNames[date.getMonth()]} ${date.getDay()}, ${date.getFullYear()} ${time}`;
+    return `${shortMonthNames[date.getMonth()]} ${date.getDay()}, ${date.getFullYear()} ${time}`;
   };
 
   return (

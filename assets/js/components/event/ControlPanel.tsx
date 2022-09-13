@@ -37,9 +37,8 @@ import {
   stopShareScreen,
   checkTrackIsEnabled,
 } from "../../utils/rtcUtils";
-import { Mode } from "./StreamArea";
 import { getFontColor } from "../../utils/styleUtils";
-import type { Client } from "../../pages/Event";
+import type { Mode, Client } from "../../types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {

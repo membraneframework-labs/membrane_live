@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import type { Mode } from "./StreamArea";
 import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
-import { Client } from "../../pages/Event";
+import type { Client, Mode } from "../../types";
 import "../../../css/event/modepanel.css";
 
 type ModeButtonProps = {

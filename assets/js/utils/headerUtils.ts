@@ -1,7 +1,7 @@
-import type { EventInfo } from "../components/event/Header";
 import { Presence } from "phoenix";
-import { getChannelId } from "../utils/channelUtils";
 import axios from "../services/index";
+import { getChannelId } from "../utils/channelUtils";
+import type { EventInfo } from "../types";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -17,6 +17,7 @@ export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<E
   axios
     .get("/resources/webinars/" + getChannelId())
     .then((response) => {
+      console.log("DATA", response.data.webinar.start_date);
       const start_date = response.data.webinar.start_date.replace("T", " ");
       setEventInfo({ ...response.data.webinar, start_date: start_date });
     })

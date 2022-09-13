@@ -1,5 +1,5 @@
 import { Presence } from "phoenix";
-import { Client } from "../pages/Event";
+import type { Client } from "../types";
 
 export const syncPresentersNumber = (
   eventChannel: any,

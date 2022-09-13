@@ -1,27 +1,5 @@
 import axiosWithInterceptor from "../services/index";
-
-export type EventForm = {
-  title: string;
-  description: string;
-  start_date: string;
-  presenters: string[];
-};
-
-export type WebinarInfo = {
-  title: string;
-  description: string;
-  presenters: string[];
-  start_date: Date;
-  uuid: string;
-};
-
-type OriginalWebinarInfo = {
-  title: string;
-  description: string;
-  presenters: string[];
-  start_date: string;
-  uuid: string;
-};
+import type { EventForm, WebinarInfo, OriginalWebinarInfo } from "../types";
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";

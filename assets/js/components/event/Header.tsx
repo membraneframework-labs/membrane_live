@@ -3,35 +3,13 @@ import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
-import type { Client } from "../../pages/Event";
+import { monthNames } from "../../utils/const";
+import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
-
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 type HeaderProps = {
   eventChannel: any;
   client: Client;
-};
-
-export type EventInfo = {
-  link: string;
-  title: string;
-  description: string;
-  start_date: string;
-  presenters: string[];
 };
 
 const Header = ({ client, eventChannel }: HeaderProps) => {

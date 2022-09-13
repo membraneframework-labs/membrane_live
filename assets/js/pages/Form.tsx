@@ -15,7 +15,7 @@ import React from "react";
 import { checkEventForm, sendEventForm } from "../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";
 import { getInfoToast } from "../utils/toastUtils";
-import type { EventForm } from "../utils/dashboardUtils";
+import type { EventForm } from "../types";
 
 function Form() {
   const toast = useToast();

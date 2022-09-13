@@ -16,3 +16,33 @@ export const SCREEN_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
   video: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, frameRate: FRAME_RATE },
 };
+
+export const shortMonthNames = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "June",
+  "July",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];

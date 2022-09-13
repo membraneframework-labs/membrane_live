@@ -3,30 +3,12 @@ import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react"
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
 import { getFontColor } from "../../utils/styleUtils";
-import { Client } from "../../pages/Event";
+import type { Participant, Client } from "../../types";
 import "../../../css/event/participants.css";
-
-export type Participant = {
-  email: string;
-  name: string;
-  isPresenter: boolean;
-  isModerator: boolean;
-};
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
   participant: Participant;
-  eventChannel: any;
-};
-
-type ParticipantProps = {
-  client: Client;
-  participant: Participant;
-  eventChannel: any;
-};
-
-type ParticipantsListProps = {
-  client: Client;
   eventChannel: any;
 };
 
@@ -62,6 +44,12 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
       </MenuList>
     </Menu>
   );
+};
+
+type ParticipantProps = {
+  client: Client;
+  participant: Participant;
+  eventChannel: any;
 };
 
 const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
@@ -100,6 +88,11 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
       )}
     </div>
   );
+};
+
+type ParticipantsListProps = {
+  client: Client;
+  eventChannel: any;
 };
 
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {

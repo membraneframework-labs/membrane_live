@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client } from "../pages/Event";
+import type { Client } from "../types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { getFontColor } from "./styleUtils";
 import "../../css/popups.css";

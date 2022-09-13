@@ -8,9 +8,10 @@ import {
   storageSetEmail,
   storageSetPicture,
 } from "../utils/storageUtils";
-import type { LocationState } from "../services/GuardedRoute";
 import { useToast } from "@chakra-ui/react";
 import { getErrorToast } from "../utils/toastUtils";
+import { pageTitlePrefix } from "../utils/const";
+import type { LocationState } from "../types";
 import "../../css/authpage.css";
 
 const Auth = () => {

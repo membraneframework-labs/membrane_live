@@ -13,18 +13,8 @@ import {
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
+import type { Client } from "../types";
 import "../../css/event/event.css";
-
-export type PresenterPopupState = {
-  isOpen: boolean;
-  moderatorTopic: string;
-};
-
-export type Client = {
-  name: string;
-  email: string;
-  isModerator: boolean;
-};
 
 const Event = () => {
   const toast = useToast();

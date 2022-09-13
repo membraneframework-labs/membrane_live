@@ -1,18 +1,12 @@
+import type {AuthTokenKey, RefreshTokenKey, AuthResponseData} from "../types";
+
 const NAME = "name";
-const TOKEN = "jwt";
 const EMAIL = "email";
 const PICTURE = "picture";
 const RELOAD = "reloaded";
 
-type AuthTokenKey = "authJwt";
-type RefreshTokenKey = "refreshJwt";
-
 export const authTokenKey: AuthTokenKey = "authJwt";
 export const refreshTokenKey: RefreshTokenKey = "refreshJwt";
-export type AuthResponseData = {
-  authToken: AuthTokenKey;
-  refreshToken: RefreshTokenKey;
-};
 
 export const storageGetAuthToken = (): string | null => {
   return localStorage.getItem(authTokenKey);
