@@ -54,7 +54,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
     const date = new Date();
     date.setTime(Date.parse(dateString));
 
-    return `${monthNames[date.getMonth()]}, ${date.getDay()} ${date.getFullYear()}`;
+    return `${monthNames[date.getMonth()]}, ${date.getDate()} ${date.getFullYear()}`;
   };
 
   return (
