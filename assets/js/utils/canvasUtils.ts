@@ -11,10 +11,14 @@ export const getMergedTracks = async (
     ? new MediaStream([mergedScreenRef.screenTrack])
     : await navigator.mediaDevices.getDisplayMedia(SCREEN_CONSTRAINTS);
 
-  const cameraStream: MediaStream = new MediaStream(presenterStream.getVideoTracks()).clone();
+  const cameraStream: MediaStream = mergedScreenRef.cameraTrack
+    ? new MediaStream([mergedScreenRef.cameraTrack])
+    : new MediaStream(presenterStream.getVideoTracks()).clone();
 
-  mergedScreenRef.screenTrack = screenStream.getVideoTracks().pop();
-  mergedScreenRef.cameraTrack = cameraStream.getVideoTracks().pop();
+  mergedScreenRef.screenTrack = screenStream.getVideoTracks()[0];
+  mergedScreenRef.cameraTrack = cameraStream.getVideoTracks()[0];
+
+  if (!mergedScreenRef.cameraTrack.enabled) return screenStream;
 
   const camera = await attachToDOM("justCamera", cameraStream);
   const screen = await attachToDOM("justScreenShare", screenStream);
