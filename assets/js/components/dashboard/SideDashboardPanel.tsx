@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout } from "react-swm-icon-pack";
-import { getFontColor } from "../../utils/styleUtils";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
@@ -13,22 +12,12 @@ type SideDashboardPanelProps = {
 const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPanelProps) => {
   const navigate = useNavigate();
 
-  const mainFontColor = getFontColor("--bg-light-color-1");
-  const bgFontColor = getFontColor("--bg-light-color-3");
-  const transitionFontColor = getFontColor("--bg-light-color-4");
-
   const getButton = (Icon: any, text: string, onClick: () => void) => {
-    const [hoverColor, setHoverColor] = useState(bgFontColor);
     const isActive = currentEvents == text;
 
     return (
-      <button
-        className="DashboardPanelButton"
-        onClick={onClick}
-        onMouseEnter={() => setHoverColor(transitionFontColor)}
-        onMouseLeave={() => setHoverColor(bgFontColor)}
-      >
-        <Icon color={isActive ? mainFontColor : hoverColor} />
+      <button className="DashboardPanelButton" onClick={onClick}>
+        <Icon className={`SideDashboardPanelButton ${isActive ? "ActiveButton" : ""}`} />
         <p className={`PanelText ${isActive ? "ActiveButton" : ""}`}>{text}</p>
         <div className={`Accent ${isActive ? "ActiveAccent" : ""}`} />
       </button>
@@ -54,13 +43,10 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
           // TODO
         })}
         {getButton(Logout, "Logout", () => {
-          ["name", "picture", "email", "authJwt", "refreshJwt"].forEach(key => {
+          ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
             localStorage.removeItem(key);
-          })
+          });
           navigate("/auth", { replace: true });
-          // TODO probably some kind of message
-          // needs to be sent to the server to kick the user
-          // from webinars that he's participating in
         })}
       </div>
     </div>

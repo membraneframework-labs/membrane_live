@@ -37,7 +37,6 @@ import {
   stopShareScreen,
   checkTrackIsEnabled,
 } from "../../utils/rtcUtils";
-import { getFontColor } from "../../utils/styleUtils";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/controlpanel.css";
 
@@ -158,8 +157,6 @@ const ControlPanel = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
 
-  const bgColor = getFontColor("--bg-light-color-1");
-
   const updateSources = async () => {
     const sources = await getSources();
     setSources(sources!);
@@ -219,7 +216,7 @@ const ControlPanel = ({
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
-            icon={<PhoneDown className="DisconnectButton" color={bgColor} />}
+            icon={<PhoneDown className="DisconnectButton" />}
             onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
           />
           <GenericButton

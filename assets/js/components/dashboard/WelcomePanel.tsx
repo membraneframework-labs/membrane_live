@@ -32,7 +32,7 @@ const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
         )}
       </div>
       <div className="UserContainer">
-        <UserField name={name} picture={picture}/>
+        <UserField name={name} picture={picture} />
       </div>
     </div>
   );

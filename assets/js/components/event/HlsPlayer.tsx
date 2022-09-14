@@ -20,7 +20,7 @@ const HlsPlayer = ({ hlsUrl, presenterName }: HlsPlayerProps) => {
         </div>
       ) : (
         <div className="WaitText">
-          <RotateLeft />
+          <RotateLeft className="RotateIcon" />
           Waiting for the live stream to start...
         </div>
       )}

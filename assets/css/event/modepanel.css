@@ -22,6 +22,10 @@
   width: auto;
 }
 
+.ScreenIcon path {
+  stroke: var(--font-dark-color);
+}
+
 .ModeButtons {
   margin-left: auto;
   display: flex;

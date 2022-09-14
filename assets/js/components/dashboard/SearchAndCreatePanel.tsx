@@ -16,7 +16,7 @@ const SearchAndCreatePanel = ({
   return (
     <div className="SearchAndCreatePanel">
       <div className="SearchBar">
-        <Search />
+        <Search className="SearchIcon" />
         <input
           value={searchText}
           onInput={(e) => setSearchText((e.target as any).value)}

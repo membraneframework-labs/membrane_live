@@ -16,6 +16,10 @@
   border-radius: 50%;
 }
 
+.Arrow path {
+  stroke: var(--font-dark-color);
+}
+
 .Title {
   color: var(--font-dark-color);
   font-size: 2.4rem;
@@ -47,9 +51,17 @@
   gap: 1rem;
 }
 
+.CopyIcon path {
+  stroke: var(--font-dark-color);
+}
+
 .UsersIcon {
   height: 2rem;
   width: auto;
+}
+
+.UsersIcon path {
+  stroke: var(--font-dark-color);
 }
 
 .CopyButton {

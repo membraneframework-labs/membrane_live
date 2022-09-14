@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
-import { getFontColor } from "../../utils/styleUtils";
 import type { Participant, Client } from "../../types";
 import "../../../css/event/participants.css";
 
@@ -13,7 +12,6 @@ type ModeratorMenuProps = {
 };
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
-  const fontColor = getFontColor("--font-dark-color");
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
   const handleClick = (e: any) => {
@@ -34,7 +32,6 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
       </MenuButton>
       <MenuList>
         <MenuItem
-          color={fontColor}
           onClick={handleClick}
           value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
           className="MenuOptionText"
@@ -53,14 +50,12 @@ type ParticipantProps = {
 };
 
 const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
-  const fontColor = getFontColor("--font-dark-color");
-
   const icon = participant.isModerator ? (
-    <Crown1 />
+    <Crown1 className="ParticipantIcon" />
   ) : participant.isPresenter ? (
-    <Star1 />
+    <Star1 className="ParticipantIcon" />
   ) : (
-    <User1 />
+    <User1 className="ParticipantIcon" />
   );
   const role = participant.isModerator
     ? "Moderator"
@@ -72,9 +67,9 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     <div className="Participant">
       <Tooltip
         label={`${role}${client.name == participant.name ? " (You)" : ""}`}
-        bg={fontColor}
         borderRadius="25px"
         fontSize={"1.3rem"}
+        className="InfoTooltip"
       >
         {icon}
       </Tooltip>

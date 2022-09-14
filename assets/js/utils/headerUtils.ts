@@ -16,7 +16,7 @@ export const initEventInfo = (): EventInfo => {
 
 export const getEventInfo = (
   toast: any,
-  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>,
+  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
   axios
     .get("/resources/webinars/" + getChannelId())

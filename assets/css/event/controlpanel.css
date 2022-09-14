@@ -24,6 +24,10 @@
   transition: background 0.25s;
 }
 
+.PanelButton path {
+  stroke: var(--font-dark-color);
+}
+
 .DisconnectButton {
   box-sizing: content-box;
   height: 2.7rem;
@@ -31,7 +35,10 @@
   background-color: var(--button-red);
   border-radius: 50%;
   padding: 1.2rem;
-  /* color set inline as a prop */
+}
+
+.DisconnectButton path {
+  stroke: var(--bg-light-color-1);
 }
 
 .CenterIcons {

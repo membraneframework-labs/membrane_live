@@ -1,8 +1,7 @@
 import React from "react";
 import type { Client } from "../types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
-import { getFontColor } from "./styleUtils";
-import "../../css/popups.css";
+import "../../css/toast.css";
 
 const closeToast = (toast: any, toastName: string) => {
   toast.close(toastName);
@@ -14,7 +13,6 @@ export const presenterPopup = (
   eventChannel: any,
   moderatorTopic: string
 ) => {
-  const fontColor = getFontColor("--bg-light-color-1");
   let answer = "reject";
 
   const thisToast = toast({
@@ -24,7 +22,7 @@ export const presenterPopup = (
     },
     render: () => (
       <div className="Popup">
-        <QuestionCircle className="PopupIcon" color={fontColor} />
+        <QuestionCircle className="PopupIcon" />
         <div className="PopupText">Do you want to be a presenter?</div>
         <button
           className="PresenterPopupButton"
@@ -65,7 +63,7 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
-const getToast = (toast: any, icon: any, text: string, fontColor: string, duration: number) => {
+const getToast = (toast: any, icon: any, text: string, duration: number) => {
   const thisToast = toast({
     duration: duration,
     position: "top",
@@ -75,7 +73,7 @@ const getToast = (toast: any, icon: any, text: string, fontColor: string, durati
         <div className="PopupText">{text}</div>
         <div className="CrossBox">
           <button onClick={() => closeToast(toast, thisToast)}>
-            <CrossSmall className="CrossIcon" color={fontColor} />
+            <CrossSmall className="CrossIcon" />
           </button>
         </div>
       </div>
@@ -84,23 +82,9 @@ const getToast = (toast: any, icon: any, text: string, fontColor: string, durati
 };
 
 export const getErrorToast = (toast: any, text: string, duration: number = 10_000) => {
-  const fontColor = getFontColor("--bg-light-color-1");
-  getToast(
-    toast,
-    <WarningCircle className="PopupIcon" color={fontColor} />,
-    text,
-    fontColor,
-    duration
-  );
+  getToast(toast, <WarningCircle className="PopupIcon" />, text, duration);
 };
 
 export const getInfoToast = (toast: any, text: string, duration: number = 10_000) => {
-  const fontColor = getFontColor("--bg-light-color-1");
-  getToast(
-    toast,
-    <InfoCircle className="PopupIcon" color={fontColor} />,
-    text,
-    fontColor,
-    duration
-  );
+  getToast(toast, <InfoCircle className="PopupIcon" />, text, duration);
 };

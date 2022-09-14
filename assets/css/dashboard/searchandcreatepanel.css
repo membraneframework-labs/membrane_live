@@ -36,3 +36,7 @@
   padding: 1.2rem 3rem;
   margin-left: auto;
 }
+
+.SearchIcon path {
+  stroke: var(--font-dark-color);
+}

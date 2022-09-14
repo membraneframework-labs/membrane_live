@@ -1,3 +1,4 @@
+import React from "react";
 import { Presence } from "phoenix";
 import type { Client } from "../types";
 

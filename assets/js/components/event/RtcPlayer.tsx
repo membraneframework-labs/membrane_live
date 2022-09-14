@@ -14,9 +14,6 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => 
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const style = getComputedStyle(document.body);
-  const font = style.getPropertyValue("--font-light-color");
-
   const connectStreams = (sourceType: SourceType) => {
     if (!presenterStreams[presenter.email]) return;
     if (videoRef.current && sourceType == "video")
@@ -36,7 +33,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => 
       <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
       <div className="BottomBar">
         <div className="PresenterName">
-          {isMyself && <User1 color={font} />}
+          {isMyself && <User1 className="YouIcon" />}
           {isMyself ? "You" : presenter.name}
         </div>
       </div>

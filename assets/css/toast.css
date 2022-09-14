@@ -37,8 +37,8 @@
   font-size: 1.6rem;
 }
 
-.PopupIcon {
-  size: 1.7rem;
+.PopupIcon path {
+  stroke: var(--bg-light-color-1);
 }
 
 .CrossBox {
@@ -46,4 +46,8 @@
   position: absolute;
   right: 0.3rem;
   top: 0.3rem;
+}
+
+.CrossIcon path {
+  stroke: var(--bg-light-color-1);
 }

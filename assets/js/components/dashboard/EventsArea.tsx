@@ -19,7 +19,7 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
 
     return webinars
       .filter((elem) => (upcoming ? elem.startDate >= curDate : elem.startDate < curDate))
-      .filter((elem) => elem.title.includes(searchText))
+      .filter((elem) => elem.title.toLowerCase().includes(searchText.toLowerCase()))
       .sort((a, b) =>
         upcoming
           ? a.startDate.getTime() - b.startDate.getTime()

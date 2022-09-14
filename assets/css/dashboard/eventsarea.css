@@ -36,11 +36,6 @@
   border-radius: 16px;
 }
 
-.EventImage {
-  object-fit: cover;
-  min-height: 100%;
-}
-
 .InfoBox {
   display: flex;
   flex-direction: column;
@@ -63,6 +58,10 @@
 .EventDescription {
   font-size: 1.8rem;
   padding-bottom: 3rem;
+}
+
+.CalendarIcon path {
+  stroke: var(--font-dark-color);
 }
 
 .EventDate {

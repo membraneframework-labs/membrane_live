@@ -9,7 +9,7 @@ export const checkEventForm = (eventForm: EventForm): boolean => {
 export const sendEventForm = async (
   toast: any,
   eventForm: EventForm,
-  setLink: React.Dispatch<React.SetStateAction<string>>,
+  setLink: React.Dispatch<React.SetStateAction<string>>
 ): Promise<void> => {
   axiosWithInterceptor
     .post("resources/webinars", { webinar: eventForm })
@@ -24,7 +24,7 @@ export const sendEventForm = async (
 
 export const getWebinarsInfo = async (
   toast: any,
-  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>,
+  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
 ) => {
   axiosWithInterceptor
     .get("resources/webinars")

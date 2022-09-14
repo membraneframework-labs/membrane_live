@@ -40,3 +40,7 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.YouIcon path {
+  stroke: var(--font-light-color);
+}

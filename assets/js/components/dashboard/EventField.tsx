@@ -1,5 +1,4 @@
 import React from "react";
-import { Image } from "@chakra-ui/react";
 import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
 import type { EventInfo } from "../../types";
@@ -18,13 +17,6 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
 
   return (
     <div className="EventField">
-      <div className="EventImageContainer">
-        <Image
-          src="https://drscdn.500px.org/photo/224226723/m%3D2048/v2?sig=98f73dda3c8af34384e01d46702feb68c615f7279b58f0d03cee7e7b4acd82fc"
-          alt="Event Photo"
-          className="EventImage"
-        />
-      </div>
       <div className="InfoBox">
         <p className="EventPresenters">{webinarInfo.presenters.join(", ")}</p>
         <a href={`event/${webinarInfo.uuid}`} className="EventTitle">
@@ -32,7 +24,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
         </a>
         <p className="EventDescription">{webinarInfo.description}</p>
         <div className="EventDate">
-          <CalendarClock />
+          <CalendarClock className="CalendarIcon" />
           {formatDate(webinarInfo.startDate)}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils/headerUtils";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
+import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
@@ -61,10 +61,10 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
       <div className="CopyLink">
         <p className="Link"> {window.location.href} </p>
         <button className="CopyButton" onClick={handleCopyButton}>
-          <Copy />
+          <Copy className="CopyIcon" />
         </button>
       </div>
-      <UserField name={client.name} picture={picture}/>
+      <UserField name={client.name} picture={picture} />
     </div>
   );
 };

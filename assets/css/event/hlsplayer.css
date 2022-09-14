@@ -50,3 +50,7 @@
   font-size: 1.6rem;
   padding: 0.4rem 1rem;
 }
+
+.RotateIcon path {
+  stroke: var(--font-dark-color);
+}
