@@ -37,6 +37,7 @@ import {
   stopShareScreen,
   checkTrackIsEnabled,
 } from "../../utils/rtcUtils";
+import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/controlpanel.css";
 
@@ -88,15 +89,6 @@ const DropdownButton = ({
       />
     </Menu>
   );
-};
-
-type GenericButtonProps = {
-  icon: any;
-  onClick: () => void;
-};
-
-const GenericButton = ({ icon, onClick }: GenericButtonProps) => {
-  return <button onClick={onClick}>{icon}</button>;
 };
 
 type SettingsModalProps = {

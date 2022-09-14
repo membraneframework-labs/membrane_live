@@ -1,0 +1,76 @@
+@import "../main.css";
+
+.ModalFormButton {
+    color: var(--bg-light-color-1);
+    background: var(--font-dark-color);
+    font-size: 1.6rem;
+    font-weight: 600;
+    border-radius: 40px;
+    padding: 1.2rem 3rem;
+    margin-left: auto;
+  }
+
+.ModalForm {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 40px;
+
+    position: absolute;
+    left: 34%;
+    top: 20%;
+    width: 36vw;
+    max-height: 679px;
+    max-width: 434px;
+    
+    border: 2px solid darkblue;
+    background-color: var(--bg-light-color-1);  
+    border-radius: 32px;
+}
+
+.ModalTitle {
+    color: var(--font-dark-color);
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.ModalFormHeader {
+    display: flex;
+}
+
+.ModalFormHeader > button {
+    margin-left: auto;
+}
+
+.ModalFormFooter {
+    margin-top: auto;
+    display: flex;
+}
+
+.ModalFormSubmitButton {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0em 3em;
+    gap: 8px;
+    min-height: 2.5em;
+
+    border-radius: 100px;
+
+    color: white;
+    background-color: #001A72;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.ModalFormCancelButton {
+    margin-left: auto;
+    min-height: 3em;
+    padding: 0em 2em;
+    
+    color: #981B1B;
+    font-weight: 600;
+    font-size: 18px;
+}

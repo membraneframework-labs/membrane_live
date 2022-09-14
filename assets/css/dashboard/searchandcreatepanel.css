@@ -14,6 +14,7 @@
 .SearchAndCreatePanel {
   display: flex;
   padding: 1.6rem 0;
+  justify-content: space-between;
 }
 
 .SearchBar {
@@ -25,16 +26,6 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.FormButton {
-  color: var(--bg-light-color-1);
-  background: var(--font-dark-color);
-  font-size: 1.6rem;
-  font-weight: 600;
-  border-radius: 40px;
-  padding: 1.2rem 3rem;
-  margin-left: auto;
 }
 
 .SearchIcon path {
