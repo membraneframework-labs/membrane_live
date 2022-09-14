@@ -3,7 +3,9 @@ import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, User1, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
+import { useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
+import UserField from "../dashboard/UserField";
 import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
 
@@ -16,16 +18,17 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
   const picture: string = storageGetPicture();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
+  const toast = useToast();
 
   const navigate = useNavigate();
   const redirectToHomePage = () => {
     navigate("/");
-    // the line above does not break socket connection
+    // the line above does not break the socket connection
     // which is desired in this case, so the page is reloaded manually
     window.location.reload();
   };
 
-  useEffect(() => getEventInfo(setEventInfo), []);
+  useEffect(() => getEventInfo(toast, setEventInfo), []);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
@@ -61,10 +64,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
           <Copy />
         </button>
       </div>
-      <div className="User">
-        {picture ? <img src={picture} className="UserIcon" /> : <User1 className="UserIcon" />}
-        <div className="UserName">{client.name}</div>
-      </div>
+      <UserField name={client.name} picture={picture}/>
     </div>
   );
 };

@@ -25,12 +25,10 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
       <button
         className="DashboardPanelButton"
         onClick={onClick}
-        // a very inconvinient way to add hover effect to the icon
-        // as it seems to be impossible in css
         onMouseEnter={() => setHoverColor(transitionFontColor)}
         onMouseLeave={() => setHoverColor(bgFontColor)}
       >
-        <Icon color={isActive ? mainFontColor : hoverColor} /> {/* TODO color transition */}
+        <Icon color={isActive ? mainFontColor : hoverColor} />
         <p className={`PanelText ${isActive ? "ActiveButton" : ""}`}>{text}</p>
         <div className={`Accent ${isActive ? "ActiveAccent" : ""}`} />
       </button>
@@ -56,7 +54,9 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
           // TODO
         })}
         {getButton(Logout, "Logout", () => {
-          localStorage.clear();
+          ["name", "picture", "email", "authJwt", "refreshJwt"].forEach(key => {
+            localStorage.removeItem(key);
+          })
           navigate("/auth", { replace: true });
           // TODO probably some kind of message
           // needs to be sent to the server to kick the user

@@ -41,7 +41,7 @@ function Form() {
   };
   const handleSendButton = () => {
     if (checkEventForm(eventForm)) {
-      sendEventForm(eventForm, setLink);
+      sendEventForm(toast, eventForm, setLink);
     } else {
       getInfoToast(toast, 'Fields "title" and "date" are necessary to create an event.');
     }

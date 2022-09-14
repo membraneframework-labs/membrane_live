@@ -1,6 +1,6 @@
 import React from "react";
 import { storageGetName, storageGetPicture } from "../../utils/storageUtils";
-import { User1 } from "react-swm-icon-pack";
+import UserField from "./UserField";
 import "../../../css/dashboard/welcomepanel.css";
 
 type WelcomePanelProps = {
@@ -32,12 +32,7 @@ const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
         )}
       </div>
       <div className="UserContainer">
-        {picture ? (
-          <img src={picture} className="DashboardUserIcon" />
-        ) : (
-          <User1 className="DashboardUserIcon" />
-        )}
-        <div className="DashboardUserName">{name}</div>
+        <UserField name={name} picture={picture}/>
       </div>
     </div>
   );

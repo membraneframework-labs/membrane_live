@@ -1,0 +1,19 @@
+@import "../main.css";
+
+.UserField {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.UserIcon {
+    color: var(--font-dark-color);
+    border-radius: 50%;
+    height: 4.5rem;
+    width: auto;
+}
+
+.UserName {
+    color: var(--font-dark-color);
+    font-size: 2rem;
+}

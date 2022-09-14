@@ -26,21 +26,6 @@
 }
 
 .UserContainer {
-  padding: 2rem 0;
-  display: flex;
-  align-items: center;
+  padding-top: 2rem;
   margin-left: auto;
-  gap: 1.5rem;
-}
-
-.DashboardUserIcon {
-  color: var(--font-dark-color);
-  border-radius: 50%;
-  height: 4.5rem;
-  width: auto;
-}
-
-.DashboardUserName {
-  color: var(--font-dark-color);
-  font-size: 1.8rem;
 }

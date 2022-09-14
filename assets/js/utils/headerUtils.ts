@@ -2,6 +2,7 @@ import { Presence } from "phoenix";
 import axios from "../services/index";
 import { getChannelId } from "../utils/channelUtils";
 import type { EventInfo, OriginalEventInfo } from "../types";
+import { getErrorToast } from "./toastUtils";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -13,7 +14,10 @@ export const initEventInfo = (): EventInfo => {
   };
 };
 
-export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>) => {
+export const getEventInfo = (
+  toast: any,
+  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>,
+) => {
   axios
     .get("/resources/webinars/" + getChannelId())
     .then((response: { data: { webinar: OriginalEventInfo } }) => {
@@ -25,6 +29,7 @@ export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<E
     })
     .catch((error) => {
       console.log(error);
+      getErrorToast(toast, "Event information could not be obtained...");
     });
 };
 

@@ -1,4 +1,5 @@
 import axiosWithInterceptor from "../services/index";
+import { getErrorToast } from "./toastUtils";
 import type { EventForm, EventInfo, OriginalEventInfo } from "../types";
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
@@ -6,8 +7,9 @@ export const checkEventForm = (eventForm: EventForm): boolean => {
 };
 
 export const sendEventForm = async (
+  toast: any,
   eventForm: EventForm,
-  setLink: React.Dispatch<React.SetStateAction<string>>
+  setLink: React.Dispatch<React.SetStateAction<string>>,
 ): Promise<void> => {
   axiosWithInterceptor
     .post("resources/webinars", { webinar: eventForm })
@@ -16,11 +18,13 @@ export const sendEventForm = async (
     })
     .catch((error) => {
       console.log(error);
+      getErrorToast(toast, "Webinar form could not be submitted...");
     });
 };
 
 export const getWebinarsInfo = async (
-  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
+  toast: any,
+  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>,
 ) => {
   axiosWithInterceptor
     .get("resources/webinars")
@@ -37,5 +41,6 @@ export const getWebinarsInfo = async (
     })
     .catch((error) => {
       console.log(error);
+      getErrorToast(toast, "Webinar informations could not be obtained...");
     });
 };

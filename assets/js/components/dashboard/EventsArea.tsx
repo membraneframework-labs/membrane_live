@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EventField from "./EventField";
 import { getWebinarsInfo } from "../../utils/dashboardUtils";
+import { useToast } from "@chakra-ui/react";
 import type { EventInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
 
@@ -11,6 +12,7 @@ type EventsAreaProps = {
 
 const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
   const [webinars, setWebinars] = useState<EventInfo[]>([]);
+  const toast = useToast();
 
   const listEvents = (upcoming: boolean) => {
     const curDate = new Date();
@@ -27,7 +29,7 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
   };
 
   useEffect(() => {
-    getWebinarsInfo(setWebinars);
+    getWebinarsInfo(toast, setWebinars);
   }, []);
 
   return (
