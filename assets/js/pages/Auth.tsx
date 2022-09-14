@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+
+import axios from "axios";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
 import {
@@ -9,8 +11,10 @@ import {
   storageSetPicture,
 } from "../utils/storageUtils";
 import type { LocationState } from "../services/GuardedRoute";
+
 import { useToast } from "@chakra-ui/react";
 import { getErrorToast } from "../utils/popupUtils";
+
 import "../../css/authpage.css";
 
 const Auth = () => {
@@ -23,7 +27,7 @@ const Auth = () => {
 
   const fetchToken = async (googleResponse) => {
     try {
-      const response = await axiosWithInterceptor.post("auth", googleResponse);
+      const response = await axios.post("auth", googleResponse);
       if (!response.data.authToken || !response.data.refreshToken) throw "Token is empty";
       storageSetJwt(response.data);
     } catch (error) {
