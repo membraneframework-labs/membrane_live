@@ -43,8 +43,9 @@ defmodule MembraneLiveWeb.WebinarController do
          %{"uuid" => uuid} = params,
          callback
        ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid) do
-      callback.(conn, Map.put(params, "webinar_db", webinar))
+    with {:ok, webinar} <- Webinars.get_webinar(uuid),
+         {:ok, webinar_db} <- is_user_authorized(webinar, user_id, callback) do
+      callback.(conn, Map.put(params, "webinar_db", webinar_db))
     else
       {:error, :no_webinar} ->
         %{error: :not_found, message: "Webinar with uuid #{uuid} could not be found"}
@@ -71,5 +72,13 @@ defmodule MembraneLiveWeb.WebinarController do
     with {:ok, %Webinar{}} <- Webinars.delete_webinar(webinar) do
       send_resp(conn, :no_content, "")
     end
+  end
+
+  defp is_user_authorized(webinar, jwt_user_uuid, _callback)
+       when jwt_user_uuid == webinar.moderator_id,
+       do: {:ok, webinar}
+
+  defp is_user_authorized(webinar, _jwt_user_uuid, callback) do
+    if callback == (&show_callback/2), do: {:ok, webinar}, else: {:error, :forbidden}
   end
 end
