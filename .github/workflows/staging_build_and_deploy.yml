@@ -9,6 +9,7 @@ env:
   VIRTUAL_HOST: live.membrane.work
   INTEGRATED_TURN_IP: 65.108.158.247
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
 jobs:
   build:
@@ -52,7 +53,7 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD" > .env
+        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nGOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" > .env
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy

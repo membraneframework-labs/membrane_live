@@ -9,6 +9,7 @@ env:
   INTEGRATED_TURN_IP: 95.217.215.156
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
   TAG: sandbox
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
 jobs:
   build:
@@ -52,7 +53,7 @@ jobs:
 
       - name: Prepare .env file for the deployment
         id: variables_population
-        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nTAG=$TAG" > .env
+        run: echo "VIRTUAL_HOST=$VIRTUAL_HOST \nINTEGRATED_TURN_IP=$INTEGRATED_TURN_IP \nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD \nTAG=$TAG \nGOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" > .env
 
       - name: Deploy docker compose to a pre-configured server
         id: deploy
