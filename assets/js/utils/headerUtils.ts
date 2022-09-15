@@ -14,6 +14,14 @@ export const initEventInfo = (): EventInfo => {
   };
 };
 
+export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
+  const newDate = new Date();
+  newDate.setTime(Date.parse(originalEventInfo.start_date));
+  const newEventInfo: any = { ...originalEventInfo, startDate: newDate };
+  delete newEventInfo.start_date;
+  return newEventInfo as EventInfo;
+};
+
 export const getEventInfo = (
   toast: any,
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
@@ -21,11 +29,7 @@ export const getEventInfo = (
   axios
     .get("/resources/webinars/" + getChannelId())
     .then((response: { data: { webinar: OriginalEventInfo } }) => {
-      const newDate = new Date();
-      newDate.setTime(Date.parse(response.data.webinar.start_date));
-      const newElem: any = { ...response.data.webinar, startDate: newDate };
-      delete newElem.start_date;
-      setEventInfo(newElem as EventInfo);
+      setEventInfo(mapToEventInfo(response.data.webinar));
     })
     .catch((error) => {
       console.log(error);

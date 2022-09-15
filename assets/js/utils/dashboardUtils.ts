@@ -1,5 +1,6 @@
 import axiosWithInterceptor from "../services/index";
 import { getErrorToast } from "./toastUtils";
+import { mapToEventInfo } from "./headerUtils";
 import type { EventForm, EventInfo, OriginalEventInfo } from "../types";
 
 export const checkEventForm = (eventForm: EventForm): boolean => {
@@ -29,15 +30,7 @@ export const getWebinarsInfo = async (
   axiosWithInterceptor
     .get("resources/webinars")
     .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
-      setWebinars(
-        (response.data.webinars as OriginalEventInfo[]).map((elem) => {
-          const newDate = new Date();
-          newDate.setTime(Date.parse(elem.start_date));
-          const newElem: any = { ...elem, startDate: newDate };
-          delete newElem.start_date;
-          return newElem as EventInfo;
-        })
-      );
+      setWebinars(response.data.webinars.map((elem) => mapToEventInfo(elem)));
     })
     .catch((error) => {
       console.log(error);
