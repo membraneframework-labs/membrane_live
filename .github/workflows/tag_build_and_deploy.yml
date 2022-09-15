@@ -9,7 +9,7 @@ env:
   INTEGRATED_TURN_IP: 95.217.177.119
   TAG: ${{ github.ref_name }}
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID  }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
 jobs:
   build:

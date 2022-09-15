@@ -30,12 +30,20 @@ export const findTrackByType = (client: Client, sourceType: SourceType) => {
   return presenterStreams[client.email].getTracks().find((elem) => elem.kind == sourceType);
 };
 
-export const changeTrackIsEnabled = (client: Client, sourceType: SourceType) => {
+export const changeTrackIsEnabled = (
+  webrtc: MembraneWebRTC,
+  client: Client,
+  sourceType: SourceType,
+  playerCallback: (sourceType: SourceType) => void
+) => {
   const track =
     sourceType == "video" && mergedScreenRef.cameraTrack
       ? mergedScreenRef.cameraTrack
       : findTrackByType(client, sourceType);
   if (track) track.enabled = !track.enabled;
+  if (sourceType == "video" && mergedScreenRef.cameraTrack) {
+    shareScreen(webrtc, client, playerCallback);
+  }
 };
 
 export const checkTrackIsEnabled = (client: Client, sourceType: SourceType) => {
@@ -184,7 +192,7 @@ export const shareScreen = async (
   playerCallback: (SourceType: SourceType) => void
 ): Promise<boolean> => {
   let mergedStream: MediaStream;
-  mergedScreenRef.deviceName = presenterStreams[client.email].getVideoTracks().pop()!.label;
+  mergedScreenRef.deviceName = presenterStreams[client.email].getVideoTracks()[0]!.label;
 
   try {
     mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[client.email]);
@@ -243,11 +251,14 @@ const addOrReplaceTrack = (
 ) => {
   if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
   const curTrack = findTrackByType(client, track.kind as SourceType);
-  if (curTrack) {
+
+  if (curTrack && curTrack.id !== track.id && curTrack.id !== mergedScreenRef.screenTrack?.id) {
     curTrack.stop();
-    presenterStreams[client.email].removeTrack(curTrack);
   }
+
+  curTrack && presenterStreams[client.email].removeTrack(curTrack);
   presenterStreams[client.email].addTrack(track);
+
   playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
 };
 

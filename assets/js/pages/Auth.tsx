@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+
+import axios from "axios";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
 import {
@@ -24,7 +26,7 @@ const Auth = () => {
 
   const fetchToken = async (googleResponse) => {
     try {
-      const response = await axiosWithInterceptor.post("auth", googleResponse);
+      const response = await axios.post("auth", googleResponse);
       if (!response.data.authToken || !response.data.refreshToken) throw "Token is empty";
       storageSetJwt(response.data);
     } catch (error) {

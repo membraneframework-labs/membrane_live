@@ -201,7 +201,7 @@ const ControlPanel = ({
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(client, sourceType);
+          changeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
           rerender();
         }}
       />
