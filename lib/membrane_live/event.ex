@@ -198,7 +198,12 @@ defmodule MembraneLive.Event do
 
       peer_channel ->
         error_message = "Endpoint has crashed."
-        data = MediaEvent.create_error_event(error_message)
+
+        data =
+          error_message
+          |> MediaEvent.create_error_event()
+          |> MediaEvent.encode()
+
         send(peer_channel, {:media_event, data})
         {:noreply, state}
     end
