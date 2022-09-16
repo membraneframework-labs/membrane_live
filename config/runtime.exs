@@ -21,7 +21,7 @@ defmodule ConfigParser do
     else
       _else ->
         raise("""
-        Bad INTEGRATED_TURN_PORT_RANGE enviroment variable value. Expected "from-to", where `from` and `to` \
+        Bad INTEGRATED_TURN_PORT_RANGE environment variable value. Expected "from-to", where `from` and `to` \
         are numbers between 0 and 65535 and `from` is not bigger than `to`, got: \
         #{inspect(range)}
         """)
@@ -36,8 +36,15 @@ defmodule ConfigParser do
     else
       _var ->
         raise(
-          "Bad #{var_name} enviroment variable value. Expected valid port number, got: #{inspect(var_value)}"
+          "Bad #{var_name} environment variable value. Expected valid port number, got: #{inspect(var_value)}"
         )
+    end
+  end
+
+  def get_env!(env_key) do
+    case System.get_env(env_key) do
+      nil -> raise("Environmental variable #{env_key} was not set properly")
+      env_val -> env_val
     end
   end
 end
@@ -59,7 +66,8 @@ config :membrane_live,
   integrated_turn_domain: System.get_env("VIRTUAL_HOST"),
   token_auth_secret: "auth_secret",
   token_refresh_secret: "refresh_secret",
-  token_issuer: System.get_env("TOKEN_ISSUER", "swmansion.com")
+  token_issuer: System.get_env("TOKEN_ISSUER", "swmansion.com"),
+  client_id: ConfigParser.get_env!("GOOGLE_CLIENT_ID")
 
 # if System.get_env("PHX_SERVER") do
 #   config :membrane_live, MembraneLiveWeb.Endpoint, server: true
