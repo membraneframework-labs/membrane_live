@@ -1,27 +1,28 @@
 import axiosWithInterceptor from "../services/index";
 import { getErrorToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventForm, EventInfo, OriginalEventInfo } from "../types";
+import type { EventFormType, EventInfo, ModalFormType, OriginalEventInfo } from "../types";
 
-export const checkEventForm = (eventForm: EventForm): boolean => {
+export const checkEventForm = (eventForm: EventFormType): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
 };
 
-export const sendEventForm = async (
-  toast: any,
-  eventForm: EventForm,
-  setLink: React.Dispatch<React.SetStateAction<string>>
-): Promise<void> => {
-  axiosWithInterceptor
-    .post("resources/webinars", { webinar: eventForm })
-    .then((response: { data: { link: string } }) => {
-      setLink(response.data.link);
-    })
-    .catch((error) => {
-      console.log(error);
-      getErrorToast(toast, "Webinar form could not be submitted...");
-    });
+const methodMap = {
+  create: axiosWithInterceptor.post,
+  update: axiosWithInterceptor.put,
 };
+
+export const sendEventForm = async (
+  modalType: ModalFormType,
+  eventForm: EventFormType,
+  uuid: string = ""
+): Promise<any> => {
+  const endpoint = "resources/webinars/" + uuid;
+  const method = methodMap[modalType];
+
+  return method(endpoint, { webinar: eventForm });
+};
+
 
 export const getWebinarsInfo = async (
   toast: any,

@@ -10,7 +10,7 @@ import GenericButton from "../helpers/GenericButton";
 
 import { useToast } from "@chakra-ui/react";
 import { getInfoToast, getErrorToast } from "../../utils/toastUtils";
-import { checkEventForm, sendEventForm } from "../../utils/formApi";
+import { checkEventForm, sendEventForm } from "../../utils/dashboardUtils";
 
 import "../../../css/dashboard/modalform.css";
 

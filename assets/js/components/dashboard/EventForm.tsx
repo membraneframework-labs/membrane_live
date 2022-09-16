@@ -121,7 +121,7 @@ const ModeratorField = () => {
         <GenericButton
           icon={<Plus />}
           onClick={() => {
-            console.log("I'm working but please, implement me on backend!");
+            alert("This functionality should be implemented in task LIVE-97");
           }}
         />
       </div>
