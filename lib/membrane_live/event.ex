@@ -9,6 +9,7 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
+  alias Membrane.RTC.Engine.Endpoint.HLS.TranscodingConfig
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -80,7 +81,8 @@ defmodule MembraneLive.Event do
       rtc_engine: pid,
       owner: self(),
       output_directory: "output",
-      target_window_duration: :infinity
+      target_window_duration: :infinity,
+      transcoding_config: %TranscodingConfig{enabled?: true}
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)

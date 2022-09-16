@@ -92,10 +92,20 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
              } = json_response(conn, 200)["webinar"]
     end
 
-    test "reject if user is not authorized", %{conn: conn, webinar: webinar} = context do
-      webinar_path = Routes.webinar_path(conn, :show, webinar)
-      callback = &get(&1, webinar_path)
-      test_unauthorized_webinar_request(callback, context)
+    test "fetch webinar when user is not the moderator", %{
+      conn: conn,
+      webinar: %{uuid: webinar_uuid} = webinar
+    } do
+      {:ok, _user, conn} = set_new_user_token(conn, "_another_user")
+      conn = get(conn, Routes.webinar_path(conn, :show, webinar))
+
+      assert %{
+               "uuid" => ^webinar_uuid,
+               "description" => "some description",
+               "presenters" => [],
+               "start_date" => "2022-07-17T10:20:00",
+               "title" => "some title"
+             } = json_response(conn, 200)["webinar"]
     end
   end
 
