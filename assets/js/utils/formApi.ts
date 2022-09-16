@@ -1,18 +1,22 @@
-import type { EventFormType } from "../types";
+import type { EventFormType, ModalFormType } from "../types";
 import axiosWithInterceptor from "../services/index";
 
 export const checkEventForm = (eventForm: EventFormType): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
 };
 
-export const sendEventForm = async (eventForm: EventFormType): Promise<void> => {
-  //TODO change it to an async request and remove the happy path console log
-  axiosWithInterceptor
-    .post("resources/webinars", { webinar: eventForm })
-    .then((response) => {
-      console.log(response.data.link);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+const methodMap = {
+  create: axiosWithInterceptor.post,
+  update: axiosWithInterceptor.put,
+};
+
+export const sendEventForm = async (
+  modalType: ModalFormType,
+  eventForm: EventFormType,
+  uuid: string = ""
+): Promise<any> => {
+  const endpoint = "resources/webinars/" + uuid;
+  const method = methodMap[modalType];
+
+  return method(endpoint, { webinar: eventForm });
 };

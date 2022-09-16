@@ -4,20 +4,31 @@ import Modal from "react-modal";
 
 import { Cross } from "react-swm-icon-pack";
 
-import { EventFormType } from "../../types";
+import { EventFormType, ModalFormType } from "../../types";
 import EventForm, { initialEventFormInput } from "./EventForm";
 import GenericButton from "../helpers/GenericButton";
 
 import { useToast } from "@chakra-ui/react";
-import { getInfoToast } from "../../utils/toastUtils";
+import { getInfoToast, getErrorToast } from "../../utils/toastUtils";
 import { checkEventForm, sendEventForm } from "../../utils/formApi";
 
 import "../../../css/dashboard/modalform.css";
 
-const ModalForm = () => {
+const modalTitle = { create: "Create new webinar", update: "Update webinar" };
+const modalSubmitLabel = { create: "Create event", update: "Update event" };
+
+type ModalFormProps = {
+  type: ModalFormType;
+  uuid?: string;
+};
+
+const ModalForm = ({ type, uuid }: ModalFormProps) => {
   const toast = useToast();
+
   const [eventFormInput, setEventFormInput] = useState<EventFormType>(initialEventFormInput);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const refresh = () => window.location.reload();
 
   const openModal = () => {
     setIsOpen(true);
@@ -29,8 +40,15 @@ const ModalForm = () => {
 
   const handleSendButton = () => {
     if (checkEventForm(eventFormInput)) {
-      sendEventForm(eventFormInput);
-      closeModal();
+      sendEventForm(type, eventFormInput, uuid)
+        .then((_response) => {
+          refresh();
+          closeModal();
+        })
+        .catch((e) => {
+          console.log(e);
+          getErrorToast(toast, "There was an error when creating the webinar");
+        });
     } else {
       getInfoToast(toast, 'Fields "title" and "date" are necessary to create an event.');
     }
@@ -39,11 +57,11 @@ const ModalForm = () => {
   return (
     <div>
       <button className="ModalFormButton" onClick={openModal}>
-        Create new event
+        {modalTitle[type]}
       </button>
       <Modal className="ModalForm" isOpen={isOpen} ariaHideApp={false} contentLabel="Form Modal">
         <div className="ModalFormHeader">
-          <div className="ModalTitle">Create new event</div>
+          <div className="ModalTitle">{modalTitle[type]}</div>
           <GenericButton icon={<Cross />} onClick={closeModal} />
         </div>
         <div className="ModalFormBody">
@@ -51,7 +69,7 @@ const ModalForm = () => {
         </div>
         <div className="ModalFormFooter">
           <button className="ModalFormSubmitButton" onClick={handleSendButton}>
-            Create event
+            {modalSubmitLabel[type]}
           </button>
           <button className="ModalFormCancelButton" onClick={closeModal}>
             Cancel

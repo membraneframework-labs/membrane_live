@@ -45,6 +45,8 @@ export type EventInfo = {
   uuid: string;
 };
 
+export type ModalFormType = "create" | "update";
+
 export type AuthTokenKey = "authJwt";
 
 export type RefreshTokenKey = "refreshJwt";
