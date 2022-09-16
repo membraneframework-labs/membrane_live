@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search } from "react-swm-icon-pack";
+import { Plus } from "react-swm-icon-pack";
 
 import { EventFormType } from "../../types";
 
@@ -101,7 +101,7 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
           placeholder="Type name of presenters to add"
           onChange={(e) => changeElement(e, setInputPresenter)}
         />
-        <GenericButton icon={<Search />} onClick={handleAddButton} />
+        <GenericButton icon={<Plus />} onClick={handleAddButton} />
       </div>
       <UnorderedList>
         {inputList.map((presenter, idx) => {
@@ -119,7 +119,7 @@ const ModeratorField = () => {
       <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
         <input type="search" placeholder="Type name of moderators to add" />
         <GenericButton
-          icon={<Search />}
+          icon={<Plus />}
           onClick={() => {
             console.log("I'm working but please, implement me on backend!");
           }}

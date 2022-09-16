@@ -7,7 +7,7 @@
   flex-direction: column;
 
   font-size: 1.5rem;
-  color: var(--dark-blue);
+  color: var(--font-dark-color);
 }
 
 .EventFormFieldLabel {
@@ -16,7 +16,7 @@
 }
 
 .EventFormFieldInput {
-  border: 2px solid var(--dark-blue);
+  border: 2px solid var(--font-dark-color);
   border-radius: 25px;
   padding: 1rem;
 }
