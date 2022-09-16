@@ -91,6 +91,22 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
                "title" => "some title"
              } = json_response(conn, 200)["webinar"]
     end
+
+    test "fetch webinar when user is not the moderator", %{
+      conn: conn,
+      webinar: %{uuid: webinar_uuid} = webinar
+    } do
+      {:ok, _user, conn} = set_new_user_token(conn, "_another_user")
+      conn = get(conn, Routes.webinar_path(conn, :show, webinar))
+
+      assert %{
+               "uuid" => ^webinar_uuid,
+               "description" => "some description",
+               "presenters" => [],
+               "start_date" => "2022-07-17T10:20:00",
+               "title" => "some title"
+             } = json_response(conn, 200)["webinar"]
+    end
   end
 
   describe "update webinar" do

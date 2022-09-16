@@ -55,10 +55,10 @@ defmodule MembraneLive.Support.CustomTokenHelperFunctions do
     put_req_header(conn, "authorization", get_valid_bearer(token))
   end
 
-  def set_new_user_token(conn) do
+  def set_new_user_token(conn, suffix \\ "") do
     google_claims = %{
-      "name" => "mock_user",
-      "email" => "mock_email@gmail.com",
+      "name" => "mock_user#{suffix}",
+      "email" => "mock_email#{suffix}@gmail.com",
       "picture" => "https://google.com"
     }
 
