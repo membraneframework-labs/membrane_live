@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus } from "react-swm-icon-pack";
+import { Plus, Minus } from "react-swm-icon-pack";
 
 import { EventFormInput, EventInfo } from "../../types";
 
@@ -93,9 +93,14 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
   const [inputPresenter, setInputPresenter] = useState<string>("");
 
   const handleAddButton = () => {
-    inputSetter([...inputList, inputPresenter]);
+    inputPresenter.trim() && inputSetter([...inputList, inputPresenter.trim()]);
     setInputPresenter("");
   };
+
+  const removePresenter = (idx: number) => {
+    const newInputList = inputList.filter((_p, i) => i != idx);
+    inputSetter(newInputList);
+  }
 
   return (
     <div className="EventFormFieldDiv">
@@ -103,16 +108,24 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
       <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
         <input
           type="search"
+          value={inputPresenter}
           placeholder="Type name of presenters to add"
           onChange={(e) => changeElement(e, setInputPresenter)}
         />
         <GenericButton icon={<Plus />} onClick={handleAddButton} />
       </div>
-      <UnorderedList>
+      <ul className="EventFormUnorderedList">
         {inputList.map((presenter, idx) => {
-          return <ListItem key={idx}>{presenter}</ListItem>;
+          return (
+            <li key={idx}>
+              <div className="FlexContainer">
+                <span>{presenter}</span>
+                <GenericButton icon={<Minus/>} onClick={() => removePresenter(idx)}/>
+              </div>
+            </li>
+            );
         })}
-      </UnorderedList>
+      </ul>
     </div>
   );
 };

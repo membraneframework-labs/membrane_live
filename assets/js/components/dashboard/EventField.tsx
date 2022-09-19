@@ -3,9 +3,10 @@ import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
 import type { EventInfo } from "../../types";
 import ModalForm from "./ModalForm";
-import { deleteEvent } from "../../utils/dashboardUtils";
-import "../../../css/dashboard/eventsarea.css";
 import { useToast } from "@chakra-ui/react";
+import { deleteEventPopup } from "../../utils/toastUtils";
+
+import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
   webinarInfo: EventInfo;
@@ -35,7 +36,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
       </div>
       <div className="EventModifyBox">
         <ModalForm type="update" activationButtonClass="EventUpdateButton" webinar={webinarInfo} />
-        <button className="EventDeleteButton" onClick={() => deleteEvent(webinarInfo.uuid, toast)}>
+        <button className="EventDeleteButton" onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}>
           Delete
         </button>
       </div>

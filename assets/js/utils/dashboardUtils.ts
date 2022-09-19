@@ -23,7 +23,7 @@ export const sendEventForm = async (
   return method(endpoint, { webinar: eventForm });
 };
 
-export const deleteEvent = async (uuid: string, toast: any): Promise<void> => {
+export const deleteEvent = (uuid: string, toast: any): void => {
   axiosWithInterceptor
     .delete("resources/webinars/" + uuid)
     .then((_response: Response) => {
@@ -49,10 +49,4 @@ export const getWebinarsInfo = async (
       console.log(error);
       getErrorToast(toast, "The webinar information could not be obtained.");
     });
-};
-
-const convertDateToString = (date: Date) => {
-  const offset = date.getTimezoneOffset() * 60 * 1000;
-  const dateWithOffset = new Date(date.getTime() - offset);
-  return dateWithOffset.toISOString().replace("Z", "");
 };

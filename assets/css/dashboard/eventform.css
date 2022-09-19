@@ -36,3 +36,9 @@
   height: 10rem;
   border-radius: 1.5rem;
 }
+
+.EventFormUnorderedList {
+  padding: 0rem 1.1rem 0rem 2rem;
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+}
