@@ -1,6 +1,6 @@
 @import "../main.css";
 
-.ModalFormButton {
+.ModalFormCreateButton {
   color: var(--bg-light-color-1);
   background: var(--font-dark-color);
   font-size: 1.6rem;

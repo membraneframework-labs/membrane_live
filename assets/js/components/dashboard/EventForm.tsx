@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus } from "react-swm-icon-pack";
 
-import { EventFormType } from "../../types";
+import { EventFormType, EventInfo } from "../../types";
 
 import { UnorderedList, ListItem } from "@chakra-ui/react";
 import GenericButton from "../helpers/GenericButton";
@@ -16,6 +16,7 @@ export const initialEventFormInput: EventFormType = {
 };
 
 type FieldProps = {
+  value: string;
   inputSetter: (fieldInput: string) => void;
 };
 
@@ -26,7 +27,7 @@ const changeElement = (
   return inputSetter(event.target.value);
 };
 
-const TitleField = ({ inputSetter }: FieldProps) => {
+const TitleField = ({ value, inputSetter }: FieldProps) => {
   return (
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Event name</label>
@@ -34,15 +35,16 @@ const TitleField = ({ inputSetter }: FieldProps) => {
         className="EventFormFieldInput"
         type="text"
         placeholder="Type title here"
+        value={value}
         onChange={(e) => changeElement(e, inputSetter)}
       />
     </div>
   );
 };
 
-const DescriptionField = ({ inputSetter }: FieldProps) => {
+const DescriptionField = ({ value, inputSetter }: FieldProps) => {
   const charLimit = 255;
-  const [counter, setCounter] = useState<number>(0);
+  const [counter, setCounter] = useState<number>(value.length);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     const numberOfChars: number = event.target.value.length;
@@ -63,19 +65,21 @@ const DescriptionField = ({ inputSetter }: FieldProps) => {
         className="EventFormFieldInput"
         id="EventFormDescriptionField"
         placeholder="Type description here"
+        value={value}
         onChange={handleChange}
       ></textarea>
     </div>
   );
 };
 
-const DateField = ({ inputSetter }: FieldProps) => {
+const DateField = ({ value, inputSetter }: FieldProps) => {
   return (
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Date & Time</label>
       <input
         className="EventFormFieldInput"
         type="datetime-local"
+        value={value}
         onChange={(e) => changeElement(e, inputSetter)}
       />
     </div>
@@ -131,13 +135,28 @@ const ModeratorField = () => {
 
 type EventFormProps = {
   setParentInput: (input: EventFormType) => void;
+  defaultInput?: EventInfo;
 };
 
-const EventForm = ({ setParentInput }: EventFormProps) => {
-  const [inputTitle, setInputTitle] = useState<string>("");
-  const [inputDescription, setInputDescription] = useState<string>("");
-  const [inputDate, setDate] = useState<string>("");
-  const [inputPresenters, setInputParticipants] = useState<string[]>([]);
+const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
+  const infoToEventForm = (defaultInput: EventInfo): EventFormType => {
+    const convertDateToString = (date: Date) => {
+      const offset = date.getTimezoneOffset() * 60 * 1000;
+      const dateWithOffset = new Date(date.getTime() - offset);
+      return dateWithOffset.toISOString().replace("Z", "");
+    };
+
+    const start_date = convertDateToString(defaultInput.startDate);
+    console.log(start_date);
+    return { ...defaultInput, start_date };
+  };
+
+  const initialInput = defaultInput ? infoToEventForm(defaultInput) : initialEventFormInput;
+
+  const [inputTitle, setInputTitle] = useState<string>(initialInput.title);
+  const [inputDescription, setInputDescription] = useState<string>(initialInput.description);
+  const [inputDate, setDate] = useState<string>(initialInput.start_date);
+  const [inputPresenters, setInputParticipants] = useState<string[]>(initialInput.presenters);
 
   useEffect(() => {
     setParentInput({
@@ -150,9 +169,9 @@ const EventForm = ({ setParentInput }: EventFormProps) => {
 
   return (
     <div className="EventFormDiv">
-      <TitleField inputSetter={setInputTitle} />
-      <DescriptionField inputSetter={setInputDescription} />
-      <DateField inputSetter={setDate} />
+      <TitleField value={inputTitle} inputSetter={setInputTitle} />
+      <DescriptionField value={inputDescription} inputSetter={setInputDescription} />
+      <DateField value={inputDate} inputSetter={setDate} />
       <PresenterField inputList={inputPresenters} inputSetter={setInputParticipants} />
       <ModeratorField />
     </div>

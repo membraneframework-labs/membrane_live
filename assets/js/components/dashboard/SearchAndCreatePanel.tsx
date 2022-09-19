@@ -25,7 +25,9 @@ const SearchAndCreatePanel = ({
           className="SearchInput"
         />
       </div>
-      {currentEvents == "All events" && <ModalForm type="create" />}
+      {currentEvents == "All events" && (
+        <ModalForm type="create" activationButtonClass="ModalFormCreateButton" />
+      )}
     </div>
   );
 };

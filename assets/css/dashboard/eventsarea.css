@@ -71,6 +71,33 @@
   gap: 1em;
 }
 
+.EventModifyBox {
+  margin-top: auto;
+  margin-left: auto;
+
+  display: flex;
+  direction: column;
+
+  gap: 2rem;
+  font-size: 1.6rem;
+}
+
+.EventUpdateButton {
+  font-weight: 600;
+}
+
+.EventUpdateButton:hover {
+  color: var(--font-medium-color);
+}
+
+.EventDeleteButton {
+  font-weight: 600;
+  color: var(--button-red);
+}
+
+.EventDeleteButton:hover {
+  color: var(--button-red-hover);
+}
 /* Foggy effect on top and bottom of scrollable area */
 
 .FogWrapper {

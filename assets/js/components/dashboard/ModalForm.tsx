@@ -4,7 +4,7 @@ import Modal from "react-modal";
 
 import { Cross } from "react-swm-icon-pack";
 
-import { EventFormType, ModalFormType } from "../../types";
+import { EventFormType, EventInfo, ModalFormType } from "../../types";
 import EventForm, { initialEventFormInput } from "./EventForm";
 import GenericButton from "../helpers/GenericButton";
 
@@ -14,15 +14,21 @@ import { checkEventForm, sendEventForm } from "../../utils/dashboardUtils";
 
 import "../../../css/dashboard/modalform.css";
 
+const modalButtonTitle = { create: "Create new webinar", update: "Update" };
 const modalTitle = { create: "Create new webinar", update: "Update webinar" };
 const modalSubmitLabel = { create: "Create event", update: "Update event" };
+const modalErrorMessage = {
+  create: "There was an error when creating the webinar",
+  update: "There was an error when updating the webinar",
+};
 
 type ModalFormProps = {
   type: ModalFormType;
-  uuid?: string;
+  activationButtonClass: string;
+  webinar?: EventInfo;
 };
 
-const ModalForm = ({ type, uuid }: ModalFormProps) => {
+const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => {
   const toast = useToast();
 
   const [eventFormInput, setEventFormInput] = useState<EventFormType>(initialEventFormInput);
@@ -40,14 +46,14 @@ const ModalForm = ({ type, uuid }: ModalFormProps) => {
 
   const handleSendButton = () => {
     if (checkEventForm(eventFormInput)) {
-      sendEventForm(type, eventFormInput, uuid)
+      sendEventForm(type, eventFormInput, webinar?.uuid)
         .then((_response) => {
           refresh();
           closeModal();
         })
         .catch((e) => {
           console.log(e);
-          getErrorToast(toast, "There was an error when creating the webinar");
+          getErrorToast(toast, modalErrorMessage[type]);
         });
     } else {
       getInfoToast(toast, 'Fields "title" and "date" are necessary to create an event.');
@@ -56,8 +62,8 @@ const ModalForm = ({ type, uuid }: ModalFormProps) => {
 
   return (
     <div>
-      <button className="ModalFormButton" onClick={openModal}>
-        {modalTitle[type]}
+      <button className={activationButtonClass} onClick={openModal}>
+        {modalButtonTitle[type]}
       </button>
       <Modal className="ModalForm" isOpen={isOpen} ariaHideApp={false} contentLabel="Form Modal">
         <div className="ModalFormHeader">
@@ -65,7 +71,7 @@ const ModalForm = ({ type, uuid }: ModalFormProps) => {
           <GenericButton icon={<Cross />} onClick={closeModal} />
         </div>
         <div className="ModalFormBody">
-          <EventForm setParentInput={setEventFormInput} />
+          <EventForm setParentInput={setEventFormInput} defaultInput={webinar} />
         </div>
         <div className="ModalFormFooter">
           <button className="ModalFormSubmitButton" onClick={handleSendButton}>
