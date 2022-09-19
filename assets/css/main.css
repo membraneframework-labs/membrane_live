@@ -20,7 +20,7 @@
 
 html {
   font-size: 10px;
-  font-family: var(--font-main);
+
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -29,4 +29,8 @@ html {
 .FlexContainer {
   display: flex;
   justify-content: space-between;
+}
+
+* {
+  font-family: var(--font-main);
 }

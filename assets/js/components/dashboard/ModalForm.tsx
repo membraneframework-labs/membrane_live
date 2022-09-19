@@ -65,7 +65,13 @@ const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => 
       <button className={activationButtonClass} onClick={openModal}>
         {modalButtonTitle[type]}
       </button>
-      <Modal className="ModalForm" isOpen={isOpen} ariaHideApp={false} contentLabel="Form Modal">
+      <Modal
+        className="ModalForm"
+        isOpen={isOpen}
+        ariaHideApp={false}
+        onRequestClose={closeModal}
+        contentLabel="Form Modal"
+      >
         <div className="ModalFormHeader">
           <div className="ModalTitle">{modalTitle[type]}</div>
           <GenericButton icon={<Cross />} onClick={closeModal} />

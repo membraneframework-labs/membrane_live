@@ -16,7 +16,7 @@ export const initialEventFormInput: EventFormType = {
 };
 
 type FieldProps = {
-  value: string;
+  value?: string;
   inputSetter: (fieldInput: string) => void;
 };
 
@@ -44,7 +44,7 @@ const TitleField = ({ value, inputSetter }: FieldProps) => {
 
 const DescriptionField = ({ value, inputSetter }: FieldProps) => {
   const charLimit = 255;
-  const [counter, setCounter] = useState<number>(value.length);
+  const [counter, setCounter] = useState<number>(value ? value.length : 0);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     const numberOfChars: number = event.target.value.length;
@@ -65,7 +65,7 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
         className="EventFormFieldInput"
         id="EventFormDescriptionField"
         placeholder="Type description here"
-        value={value}
+        value={value ? value : ""}
         onChange={handleChange}
       ></textarea>
     </div>
@@ -143,11 +143,10 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
     const convertDateToString = (date: Date) => {
       const offset = date.getTimezoneOffset() * 60 * 1000;
       const dateWithOffset = new Date(date.getTime() - offset);
-      return dateWithOffset.toISOString().replace("Z", "");
+      return dateWithOffset.toISOString().slice(0, 16);
     };
 
     const start_date = convertDateToString(defaultInput.startDate);
-    console.log(start_date);
     return { ...defaultInput, start_date };
   };
 
