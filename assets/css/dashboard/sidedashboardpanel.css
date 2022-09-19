@@ -67,12 +67,12 @@
 }
 
 .ActiveButton path {
-  stroke: var(--bg-light-color-1);
+  stroke: var(--bg-light-color-3);
 }
 
 .Accent {
   margin-left: auto;
-  width: 0.2rem;
+  width: 0.4rem;
   height: 90%;
   border-radius: 24px 0 0 24px;
   transition: background 0.5s;
