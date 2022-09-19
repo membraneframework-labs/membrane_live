@@ -4,7 +4,7 @@ import Modal from "react-modal";
 
 import { Cross } from "react-swm-icon-pack";
 
-import { EventFormType, EventInfo, ModalFormType } from "../../types";
+import { EventFormInput, EventInfo, ModalForm } from "../../types";
 import EventForm, { initialEventFormInput } from "./EventForm";
 import GenericButton from "../helpers/GenericButton";
 
@@ -23,7 +23,7 @@ const modalErrorMessage = {
 };
 
 type ModalFormProps = {
-  type: ModalFormType;
+  type: ModalForm;
   activationButtonClass: string;
   webinar?: EventInfo;
 };
@@ -31,7 +31,7 @@ type ModalFormProps = {
 const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => {
   const toast = useToast();
 
-  const [eventFormInput, setEventFormInput] = useState<EventFormType>(initialEventFormInput);
+  const [eventFormInput, setEventFormInput] = useState<EventFormInput>(initialEventFormInput);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const refresh = () => window.location.reload();

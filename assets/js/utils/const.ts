@@ -2,6 +2,9 @@ export const FRAME_RATE = 24;
 export const CANVAS_WIDTH = 1920;
 export const CANVAS_HEIGHT = 1080;
 
+export const MILLISECONDS_IN_MINUTE = 60_000;
+export const DESCRIPTION_CHAR_LIMIT = 255;
+
 export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: true,
   video: false,

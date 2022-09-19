@@ -1,9 +1,9 @@
 import axiosWithInterceptor from "../services/index";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventFormType, EventInfo, ModalFormType, OriginalEventInfo } from "../types";
+import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo } from "../types";
 
-export const checkEventForm = (eventForm: EventFormType): boolean => {
+export const checkEventForm = (eventForm: EventFormInput): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
 };
 
@@ -13,8 +13,8 @@ const methodMap = {
 };
 
 export const sendEventForm = async (
-  modalType: ModalFormType,
-  eventForm: EventFormType,
+  modalType: ModalForm,
+  eventForm: EventFormInput,
   uuid: string = ""
 ): Promise<any> => {
   const endpoint = "resources/webinars/" + uuid;

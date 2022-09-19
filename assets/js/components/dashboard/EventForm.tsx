@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Plus } from "react-swm-icon-pack";
 
-import { EventFormType, EventInfo } from "../../types";
+import { EventFormInput, EventInfo } from "../../types";
 
 import { UnorderedList, ListItem } from "@chakra-ui/react";
 import GenericButton from "../helpers/GenericButton";
 
 import "../../../css/dashboard/eventform.css";
+import { DESCRIPTION_CHAR_LIMIT, MILLISECONDS_IN_MINUTE } from "../../utils/const";
 
-export const initialEventFormInput: EventFormType = {
+export const initialEventFormInput: EventFormInput = {
   title: "",
   description: "",
   start_date: "",
@@ -43,7 +44,7 @@ const TitleField = ({ value, inputSetter }: FieldProps) => {
 };
 
 const DescriptionField = ({ value, inputSetter }: FieldProps) => {
-  const charLimit = 255;
+  const charLimit = DESCRIPTION_CHAR_LIMIT;
   const [counter, setCounter] = useState<number>(value ? value.length : 0);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
@@ -125,7 +126,7 @@ const ModeratorField = () => {
         <GenericButton
           icon={<Plus />}
           onClick={() => {
-            alert("This functionality should be implemented in task LIVE-97");
+            alert("Handling multiple operators is coming soon...");
           }}
         />
       </div>
@@ -134,16 +135,18 @@ const ModeratorField = () => {
 };
 
 type EventFormProps = {
-  setParentInput: (input: EventFormType) => void;
+  setParentInput: (input: EventFormInput) => void;
   defaultInput?: EventInfo;
 };
 
 const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
-  const infoToEventForm = (defaultInput: EventInfo): EventFormType => {
+  const infoToEventForm = (defaultInput: EventInfo): EventFormInput => {
     const convertDateToString = (date: Date) => {
-      const offset = date.getTimezoneOffset() * 60 * 1000;
+      const offset = date.getTimezoneOffset() * MILLISECONDS_IN_MINUTE;
       const dateWithOffset = new Date(date.getTime() - offset);
-      return dateWithOffset.toISOString().slice(0, 16);
+      const toISOStringWithMinutes = (date: Date): string => date.toISOString().slice(0, 16);
+
+      return toISOStringWithMinutes(dateWithOffset);
     };
 
     const start_date = convertDateToString(defaultInput.startDate);
