@@ -100,7 +100,7 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
   const removePresenter = (idx: number) => {
     const newInputList = inputList.filter((_p, i) => i != idx);
     inputSetter(newInputList);
-  }
+  };
 
   return (
     <div className="EventFormFieldDiv">
@@ -120,10 +120,10 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
             <li key={idx}>
               <div className="FlexContainer">
                 <span>{presenter}</span>
-                <GenericButton icon={<Minus/>} onClick={() => removePresenter(idx)}/>
+                <GenericButton icon={<Minus />} onClick={() => removePresenter(idx)} />
               </div>
             </li>
-            );
+          );
         })}
       </ul>
     </div>

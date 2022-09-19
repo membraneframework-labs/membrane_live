@@ -36,7 +36,10 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
       </div>
       <div className="EventModifyBox">
         <ModalForm type="update" activationButtonClass="EventUpdateButton" webinar={webinarInfo} />
-        <button className="EventDeleteButton" onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}>
+        <button
+          className="EventDeleteButton"
+          onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
+        >
           Delete
         </button>
       </div>

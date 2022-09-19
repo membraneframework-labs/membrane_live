@@ -1,7 +1,7 @@
 import React from "react";
 import type { Client } from "../types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
-import { deleteEvent } from "./dashboardUtils"; 
+import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
 
 const closeToast = (toast: any, toastName: string) => {
@@ -64,10 +64,7 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
-export const deleteEventPopup = (
-  toast: any,
-  uuid: string
-) => {
+export const deleteEventPopup = (toast: any, uuid: string) => {
   let answer = "reject";
 
   const thisToast = toast({
