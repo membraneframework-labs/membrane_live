@@ -1,5 +1,6 @@
 import React from "react";
 import { Search } from "react-swm-icon-pack";
+import ModalForm from "./ModalForm";
 import "../../../css/dashboard/searchandcreatepanel.css";
 
 type SearchAndCreatePanelProps = {
@@ -25,14 +26,7 @@ const SearchAndCreatePanel = ({
         />
       </div>
       {currentEvents == "All events" && (
-        <button
-          className="FormButton"
-          onClick={() => {
-            // TODO
-          }}
-        >
-          <p>Create new event</p>
-        </button>
+        <ModalForm type="create" activationButtonClass="ModalFormCreateButton" />
       )}
     </div>
   );

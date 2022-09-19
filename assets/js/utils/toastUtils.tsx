@@ -1,6 +1,7 @@
 import React from "react";
 import type { Client } from "../types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
+import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
 
 const closeToast = (toast: any, toastName: string) => {
@@ -61,6 +62,41 @@ const sendAnswer = (
     answer: answer,
   });
   if (toast) toast.close(toastName);
+};
+
+export const deleteEventPopup = (toast: any, uuid: string) => {
+  let answer = "reject";
+
+  const thisToast = toast({
+    duration: 15_000,
+    onCloseComplete: () => {
+      if (answer === "accept") deleteEvent(uuid, toast);
+    },
+    render: () => (
+      <div className="Popup">
+        <QuestionCircle className="PopupIcon" />
+        <div className="PopupText">Do you want to remove this webinar?</div>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "accept";
+            closeToast(toast, thisToast);
+          }}
+        >
+          YES
+        </button>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "reject";
+            closeToast(toast, thisToast);
+          }}
+        >
+          NO
+        </button>
+      </div>
+    ),
+  });
 };
 
 const getToast = (toast: any, icon: any, text: string, duration: number) => {

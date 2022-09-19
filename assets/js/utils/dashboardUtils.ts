@@ -1,25 +1,38 @@
 import axiosWithInterceptor from "../services/index";
-import { getErrorToast } from "./toastUtils";
+import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventForm, EventInfo, OriginalEventInfo } from "../types";
+import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo } from "../types";
 
-export const checkEventForm = (eventForm: EventForm): boolean => {
+export const checkEventForm = (eventForm: EventFormInput): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
 };
 
+const methodMap = {
+  create: axiosWithInterceptor.post,
+  update: axiosWithInterceptor.put,
+};
+
 export const sendEventForm = async (
-  toast: any,
-  eventForm: EventForm,
-  setLink: React.Dispatch<React.SetStateAction<string>>
-): Promise<void> => {
+  modalType: ModalForm,
+  eventForm: EventFormInput,
+  uuid: string = ""
+): Promise<any> => {
+  const endpoint = "resources/webinars/" + uuid;
+  const method = methodMap[modalType];
+
+  return method(endpoint, { webinar: eventForm });
+};
+
+export const deleteEvent = (uuid: string, toast: any): void => {
   axiosWithInterceptor
-    .post("resources/webinars", { webinar: eventForm })
-    .then((response: { data: { link: string } }) => {
-      setLink(response.data.link);
+    .delete("resources/webinars/" + uuid)
+    .then((_response: Response) => {
+      window.location.reload();
+      getInfoToast(toast, "The webinar has been deleted.");
     })
     .catch((error) => {
       console.log(error);
-      getErrorToast(toast, "Webinar form could not be submitted...");
+      getErrorToast(toast, "The webinar could not be deleted.");
     });
 };
 
@@ -28,12 +41,12 @@ export const getWebinarsInfo = async (
   setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
 ) => {
   axiosWithInterceptor
-    .get("resources/webinars")
+    .get("resources/webinars/")
     .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
       setWebinars(response.data.webinars.map((elem) => mapToEventInfo(elem)));
     })
     .catch((error) => {
       console.log(error);
-      getErrorToast(toast, "Webinar informations could not be obtained...");
+      getErrorToast(toast, "The webinar information could not be obtained.");
     });
 };

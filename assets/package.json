@@ -16,6 +16,7 @@
     "react-dom": "^18.2.0",
     "react-hls-player": "^3.0.7",
     "react-icons": "^4.4.0",
+    "react-modal": "^3.15.1",
     "react-router-dom": "^6.3.0",
     "react-swm-icon-pack": "^1.0.14",
     "react-tooltip": "^4.2.21"

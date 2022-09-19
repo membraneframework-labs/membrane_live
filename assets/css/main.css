@@ -1,7 +1,8 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto);
 
 :root {
-  --font-main: "Roboto";
+  --font-main: aktiv-grotesk, Roboto;
+  --font-title: roc-grotesk, Roboto;
 
   --name-background-color: rgba(21, 26, 40, 0.5);
   --font-light-color: #dbe0f0;
@@ -14,12 +15,22 @@
   --bg-light-color-3: #bfccf8;
   --bg-light-color-4: #7089db;
   --button-red: #c32222;
+  --button-red-hover: #e46767;
 }
 
 html {
   font-size: 10px;
-  font-family: var(--font-main);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+.FlexContainer {
+  display: flex;
+  justify-content: space-between;
+  direction: column;
+}
+
+* {
+  font-family: var(--font-main);
 }

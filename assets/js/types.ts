@@ -22,7 +22,7 @@ export type LocationState = {
   pathToReturnTo: string;
 };
 
-export type EventForm = {
+export type EventFormInput = {
   title: string;
   description: string;
   start_date: string;
@@ -44,6 +44,8 @@ export type EventInfo = {
   startDate: Date;
   uuid: string;
 };
+
+export type ModalForm = "create" | "update";
 
 export type AuthTokenKey = "authJwt";
 
