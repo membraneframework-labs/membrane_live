@@ -22,8 +22,7 @@ config :membrane_live,
   google_private_key_path: Path.expand("./test/files/keys/jwtRS256.key"),
   google_invalid_priv_key_path: Path.expand("./test/files/keys/jwtRS256-invalid.key"),
   google_public_key_path: Path.expand("./test/files/keys/jwtRS256.key.pub"),
-  google_pems_url: "http://localhost:#{bypass_port}",
-  client_id: "mock.client1id.apps.googleusercontent.com"
+  google_pems_url: "http://localhost:#{bypass_port}"
 
 config :logger, level: :warn
 

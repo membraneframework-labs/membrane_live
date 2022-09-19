@@ -44,7 +44,8 @@ defmodule MembraneLiveWeb.WebinarController do
          callback
        ) do
     with {:ok, webinar} <- Webinars.get_webinar(uuid),
-         {:ok, webinar_db} <- is_user_authorized(webinar, user_id) do
+         is_show_callback? <- callback == (&show_callback/2),
+         {:ok, webinar_db} <- is_user_authorized(webinar, user_id, is_show_callback?) do
       callback.(conn, Map.put(params, "webinar_db", webinar_db))
     else
       {:error, :no_webinar} ->
@@ -74,8 +75,11 @@ defmodule MembraneLiveWeb.WebinarController do
     end
   end
 
-  defp is_user_authorized(webinar, jwt_user_uuid) when jwt_user_uuid == webinar.moderator_id,
-    do: {:ok, webinar}
+  defp is_user_authorized(webinar, _jwt_user_uuid, true), do: {:ok, webinar}
 
-  defp is_user_authorized(_webinar, _jwt_user_uuid), do: {:error, :forbidden}
+  defp is_user_authorized(webinar, jwt_user_uuid, _is_show_callback?)
+       when jwt_user_uuid == webinar.moderator_id,
+       do: {:ok, webinar}
+
+  defp is_user_authorized(_webinar, _jwt_user_uuid, _is_show_callback?), do: {:error, :forbidden}
 end

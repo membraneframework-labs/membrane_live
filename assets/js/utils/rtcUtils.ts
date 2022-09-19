@@ -122,7 +122,7 @@ export const connectWebrtc = async (
       onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
         webrtcChannel.push("mediaEvent", { data: mediaEvent });
       },
-      onConnectionError: () => {
+      onConnectionError: (msg: String) => {
         onError("Error while connecting to WebRTC");
       },
       onJoinSuccess: (_peerId, _peersInRoom) => {

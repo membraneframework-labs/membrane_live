@@ -9,6 +9,7 @@ jobs:
       - image: membraneframeworklabs/docker_membrane:latest
         environment:
           MIX_ENV: test
+          GOOGLE_CLIENT_ID: m0cKiNgGo0g7eId2137-13371234567890.apps.google.id
 
       - image: cimg/postgres:14.0
         environment:
