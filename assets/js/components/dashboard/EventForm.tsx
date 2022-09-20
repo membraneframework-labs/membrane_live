@@ -64,6 +64,7 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
       <textarea
         className="EventFormFieldInput"
         id="EventFormDescriptionField"
+        maxLength={charLimit}
         placeholder="Type description here"
         value={value ? value : ""}
         onChange={handleChange}

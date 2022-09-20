@@ -13,7 +13,6 @@ import { getInfoToast, getErrorToast } from "../../utils/toastUtils";
 import { checkEventForm, sendEventForm } from "../../utils/dashboardUtils";
 
 import "../../../css/dashboard/modalform.css";
-import axiosWithInterceptor from "../../services";
 
 const modalButtonTitle = { create: "Create new webinar", update: "Update" };
 const modalTitle = { create: "Create new webinar", update: "Update webinar" };

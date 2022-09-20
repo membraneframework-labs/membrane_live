@@ -15,6 +15,8 @@ defmodule MembraneLive.Webinars.Webinar do
           title: String.t()
         }
 
+  @desc_limit 255
+
   schema "webinars" do
     field(:description, :string)
     field(:presenters, {:array, :string})
@@ -30,5 +32,6 @@ defmodule MembraneLive.Webinars.Webinar do
     webinar
     |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id])
     |> validate_required([:title, :start_date, :moderator_id])
+    |> validate_length(:description, max: @desc_limit)
   end
 end
