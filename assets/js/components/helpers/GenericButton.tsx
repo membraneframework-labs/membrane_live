@@ -5,8 +5,12 @@ type GenericButtonProps = {
   onClick: () => void;
 };
 
-const GenericButton = ({ icon, onClick }: GenericButtonProps) => {
-  return <button onClick={onClick}>{icon}</button>;
+const GenericButton = ({ icon, onClick}: GenericButtonProps) => {
+  return (
+    <button onClick={onClick}>
+      {icon}
+    </button>
+  );
 };
 
 export default GenericButton;

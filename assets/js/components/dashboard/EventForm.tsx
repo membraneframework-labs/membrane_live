@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Minus } from "react-swm-icon-pack";
+import React, { useEffect, useRef, useState } from "react";
+import { Plus, Minus, CalendarClock } from "react-swm-icon-pack";
 
 import { EventFormInput, EventInfo } from "../../types";
 
@@ -77,15 +77,22 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
 };
 
 const DateField = ({ value, inputSetter }: FieldProps) => {
+  const ref = useRef<HTMLInputElement>() as React.MutableRefObject<HTMLInputElement>;
   return (
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Date & Time</label>
-      <input
-        className="EventFormFieldInput"
-        type="datetime-local"
-        value={value}
-        onChange={(e) => changeElement(e, inputSetter)}
-      />
+      <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
+        <input
+          type="datetime-local"
+          value={value}
+          ref={ref}
+          onChange={(e) => changeElement(e, inputSetter)}
+        />
+        <GenericButton
+          icon={<CalendarClock />}
+          onClick={() => (ref && ref.current ? ref.current.showPicker() : undefined)}
+        />
+      </div>
     </div>
   );
 };
