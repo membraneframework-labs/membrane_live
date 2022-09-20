@@ -29,19 +29,25 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
           {webinarInfo.title}
         </a>
         <p className="EventDescription">{webinarInfo.description}</p>
-        <div className="EventDate">
-          <CalendarClock className="CalendarIcon" />
-          {formatDate(webinarInfo.startDate)}
+        <div className="FlexContainer">
+          <div className="EventDate">
+            <CalendarClock className="CalendarIcon" />
+            {formatDate(webinarInfo.startDate)}
+          </div>
+          <div className="EventModifyBox">
+            <ModalForm
+              type="update"
+              activationButtonClass="EventUpdateButton"
+              webinar={webinarInfo}
+            />
+            <button
+              className="EventDeleteButton"
+              onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="EventModifyBox">
-        <ModalForm type="update" activationButtonClass="EventUpdateButton" webinar={webinarInfo} />
-        <button
-          className="EventDeleteButton"
-          onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
-        >
-          Delete
-        </button>
       </div>
     </div>
   );
