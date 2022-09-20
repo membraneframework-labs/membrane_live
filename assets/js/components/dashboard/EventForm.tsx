@@ -61,14 +61,17 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
           {counter}/{charLimit}
         </span>
       </div>
-      <textarea
-        className="EventFormFieldInput"
-        id="EventFormDescriptionField"
-        maxLength={charLimit}
-        placeholder="Type description here"
-        value={value ? value : ""}
-        onChange={handleChange}
-      ></textarea>
+      <div className="EventFormDescriptionWrapper">
+        <div className="EventFormInput EventFormScrollAdjuster" />
+        <textarea
+          className="EventFormFieldInput"
+          id="EventFormDescriptionField"
+          maxLength={charLimit}
+          placeholder="Type description here"
+          value={value ? value : ""}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 };

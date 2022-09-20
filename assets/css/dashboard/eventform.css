@@ -18,7 +18,7 @@
 .EventFormFieldInput {
   border: 2px solid var(--font-dark-color);
   border-radius: 25px;
-  padding: 1rem;
+  padding: 1.6rem 1.4rem;
 }
 
 .EventFormFieldWithButtonDiv {
@@ -32,9 +32,32 @@
   outline: none;
 }
 
+.EventFormDescriptionWrapper {
+  height: 100%;
+}
+
+.EventFormScrollAdjuster {
+  height: 1.6rem;
+  border-radius: 1.6rem;
+  border: 2px solid var(--font-dark-color);
+
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 #EventFormDescriptionField {
   height: 10rem;
-  border-radius: 1.5rem;
+  width: 100%;
+
+  border-top: 0;
+  border-radius: 1.6rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+
+  padding-top: 0;
+
+  outline: none;
 }
 
 .EventFormUnorderedList {
