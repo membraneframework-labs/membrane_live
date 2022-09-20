@@ -57,7 +57,7 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
     <div className="EventFormFieldDiv">
       <div className="FlexContainer">
         <label className="EventFormFieldLabel">Event description</label>
-        <span>
+        <span className="EventFormCounter">
           {counter}/{charLimit}
         </span>
       </div>
