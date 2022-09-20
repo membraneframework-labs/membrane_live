@@ -31,7 +31,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
         <p className="EventDescription">{webinarInfo.description}</p>
         <div className="FlexContainer">
           <div className="EventDate">
-            <CalendarClock/>
+            <CalendarClock />
             {formatDate(webinarInfo.startDate)}
           </div>
           <div className="EventModifyBox">

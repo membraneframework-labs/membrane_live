@@ -25,6 +25,8 @@
   max-height: 75rem;
   width: 44rem;
 
+  box-shadow: 0.5rem 0.5rem 0.5rem var(--name-background-color);
+
   border: 2px solid var(--font-dark-color);
   background-color: var(--bg-light-color-1);
   border-radius: 3rem;

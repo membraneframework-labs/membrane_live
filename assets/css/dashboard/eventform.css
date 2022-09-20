@@ -55,7 +55,7 @@
 }
 
 .EventFormDescriptionWrapper:hover .EventFormScrollAdjuster,
-.EventFormDescriptionWrapper:hover .EventFormFieldInput{
+.EventFormDescriptionWrapper:hover .EventFormFieldInput {
   border-color: var(--bg-light-color-4);
 }
 
