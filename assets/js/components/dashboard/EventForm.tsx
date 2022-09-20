@@ -3,7 +3,6 @@ import { Plus, Minus } from "react-swm-icon-pack";
 
 import { EventFormInput, EventInfo } from "../../types";
 
-import { UnorderedList, ListItem } from "@chakra-ui/react";
 import GenericButton from "../helpers/GenericButton";
 
 import "../../../css/dashboard/eventform.css";

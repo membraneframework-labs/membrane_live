@@ -13,6 +13,7 @@ import { getInfoToast, getErrorToast } from "../../utils/toastUtils";
 import { checkEventForm, sendEventForm } from "../../utils/dashboardUtils";
 
 import "../../../css/dashboard/modalform.css";
+import axiosWithInterceptor from "../../services";
 
 const modalButtonTitle = { create: "Create new webinar", update: "Update" };
 const modalTitle = { create: "Create new webinar", update: "Update webinar" };
@@ -53,7 +54,11 @@ const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => 
         })
         .catch((e) => {
           console.log(e);
-          getErrorToast(toast, modalErrorMessage[type]);
+          if (e.response.status === 403) {
+            getErrorToast(toast, "You are not permitted to change this webinar.");
+          } else {
+            getErrorToast(toast, modalErrorMessage[type]);
+          }
         });
     } else {
       getInfoToast(toast, 'Fields "title" and "date" are necessary to create an event.');
