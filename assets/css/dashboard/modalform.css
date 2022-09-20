@@ -52,25 +52,28 @@
 }
 
 .ModalFormSubmitButton {
-  padding: 0rem 7rem;
+  width: 24rem;
+  padding: 0rem 3.2rem;
   min-height: 4.5rem;
+  line-height: 2.4rem;
 
   border-radius: 100px;
 
   color: white;
   background-color: #001a72;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 600;
 }
 
 .ModalFormCancelButton {
   min-height: 5rem;
-  padding: 0rem 4rem;
+  padding: 0rem 3.2rem;
+  line-height: 2.4rem;
 
   color: #981b1b;
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
 }
 
 .ModalWrapper {
