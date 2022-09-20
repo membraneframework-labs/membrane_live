@@ -19,6 +19,11 @@
   border: 2px solid var(--font-dark-color);
   border-radius: 25px;
   padding: 1.6rem 1.4rem;
+  outline: none;
+}
+
+.EventFormFieldInput:hover {
+  border-color: var(--bg-light-color-4);
 }
 
 .EventFormFieldWithButtonDiv {
@@ -36,12 +41,6 @@
   display: none;
   -webkit-appearance: none;
 }
-/* 
-.EventFormFieldWithButtonDiv > input ::-webkit-inner-spin-button,
-.EventFormFieldWithButtonDiv > input ::-webkit-calendar-picker-indicator {
-  display: none;
-  -webkit-appearance: none;
-} */
 
 .EventFormCounter {
   font-size: 1.2rem;
@@ -53,6 +52,11 @@
 
 .EventFormDescriptionWrapper {
   height: 100%;
+}
+
+.EventFormDescriptionWrapper:hover .EventFormScrollAdjuster,
+.EventFormDescriptionWrapper:hover .EventFormFieldInput{
+  border-color: var(--bg-light-color-4);
 }
 
 .EventFormScrollAdjuster {
@@ -83,9 +87,4 @@
   padding: 0rem 1.1rem 0rem 2rem;
   margin-top: 0.5rem;
   margin-left: 2rem;
-}
-
-.EventFormIcon {
-  height: 1.7rem;
-  width: 1.7rem;
 }

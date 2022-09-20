@@ -37,6 +37,7 @@ const TitleField = ({ value, inputSetter }: FieldProps) => {
         placeholder="Type title here"
         value={value}
         onChange={(e) => changeElement(e, inputSetter)}
+        required
       />
     </div>
   );
@@ -62,7 +63,7 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
         </span>
       </div>
       <div className="EventFormDescriptionWrapper">
-        <div className="EventFormInput EventFormScrollAdjuster" />
+        <div className="EventFormScrollAdjuster" />
         <textarea
           className="EventFormFieldInput"
           id="EventFormDescriptionField"
@@ -87,6 +88,7 @@ const DateField = ({ value, inputSetter }: FieldProps) => {
           value={value}
           ref={ref}
           onChange={(e) => changeElement(e, inputSetter)}
+          required
         />
         <GenericButton
           icon={<CalendarClock />}
