@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Minus } from "react-swm-icon-pack";
+import React, { useEffect, useRef, useState } from "react";
+import { Plus, Minus, CalendarClock } from "react-swm-icon-pack";
 
 import { EventFormInput, EventInfo } from "../../types";
 
-import { UnorderedList, ListItem } from "@chakra-ui/react";
 import GenericButton from "../helpers/GenericButton";
 
 import "../../../css/dashboard/eventform.css";
@@ -38,6 +37,7 @@ const TitleField = ({ value, inputSetter }: FieldProps) => {
         placeholder="Type title here"
         value={value}
         onChange={(e) => changeElement(e, inputSetter)}
+        required
       />
     </div>
   );
@@ -58,31 +58,43 @@ const DescriptionField = ({ value, inputSetter }: FieldProps) => {
     <div className="EventFormFieldDiv">
       <div className="FlexContainer">
         <label className="EventFormFieldLabel">Event description</label>
-        <span>
+        <span className="EventFormCounter">
           {counter}/{charLimit}
         </span>
       </div>
-      <textarea
-        className="EventFormFieldInput"
-        id="EventFormDescriptionField"
-        placeholder="Type description here"
-        value={value ? value : ""}
-        onChange={handleChange}
-      ></textarea>
+      <div className="EventFormDescriptionWrapper">
+        <div className="EventFormScrollAdjuster" />
+        <textarea
+          className="EventFormFieldInput"
+          id="EventFormDescriptionField"
+          maxLength={charLimit}
+          placeholder="Type description here"
+          value={value ? value : ""}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 };
 
 const DateField = ({ value, inputSetter }: FieldProps) => {
+  const ref = useRef<HTMLInputElement>() as React.MutableRefObject<HTMLInputElement>;
   return (
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Date & Time</label>
-      <input
-        className="EventFormFieldInput"
-        type="datetime-local"
-        value={value}
-        onChange={(e) => changeElement(e, inputSetter)}
-      />
+      <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
+        <input
+          type="datetime-local"
+          value={value}
+          ref={ref}
+          onChange={(e) => changeElement(e, inputSetter)}
+          required
+        />
+        <GenericButton
+          icon={<CalendarClock />}
+          onClick={() => (ref && ref.current ? ref.current.showPicker() : undefined)}
+        />
+      </div>
     </div>
   );
 };

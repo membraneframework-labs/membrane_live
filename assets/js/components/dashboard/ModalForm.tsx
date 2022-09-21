@@ -53,7 +53,11 @@ const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => 
         })
         .catch((e) => {
           console.log(e);
-          getErrorToast(toast, modalErrorMessage[type]);
+          if (e.response.status === 403) {
+            getErrorToast(toast, "You are not permitted to change this webinar.");
+          } else {
+            getErrorToast(toast, modalErrorMessage[type]);
+          }
         });
     } else {
       getInfoToast(toast, 'Fields "title" and "date" are necessary to create an event.');
@@ -72,20 +76,22 @@ const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => 
         onRequestClose={closeModal}
         contentLabel="Form Modal"
       >
-        <div className="ModalFormHeader">
-          <div className="ModalTitle">{modalTitle[type]}</div>
-          <GenericButton icon={<Cross />} onClick={closeModal} />
-        </div>
-        <div className="ModalFormBody">
-          <EventForm setParentInput={setEventFormInput} defaultInput={webinar} />
-        </div>
-        <div className="ModalFormFooter">
-          <button className="ModalFormSubmitButton" onClick={handleSendButton}>
-            {modalSubmitLabel[type]}
-          </button>
-          <button className="ModalFormCancelButton" onClick={closeModal}>
-            Cancel
-          </button>
+        <div className="ModalWrapper">
+          <div className="ModalFormHeader">
+            <div className="ModalTitle">{modalTitle[type]}</div>
+            <GenericButton icon={<Cross />} onClick={closeModal} />
+          </div>
+          <div className="ModalFormBody">
+            <EventForm setParentInput={setEventFormInput} defaultInput={webinar} />
+          </div>
+          <div className="ModalFormFooter">
+            <button className="ModalFormSubmitButton" onClick={handleSendButton}>
+              {modalSubmitLabel[type]}
+            </button>
+            <button className="ModalFormCancelButton" onClick={closeModal}>
+              Cancel
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

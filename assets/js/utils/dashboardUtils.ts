@@ -32,7 +32,11 @@ export const deleteEvent = (uuid: string, toast: any): void => {
     })
     .catch((error) => {
       console.log(error);
-      getErrorToast(toast, "The webinar could not be deleted.");
+      if (error.response.status === 403) {
+        getErrorToast(toast, "You are not permitted to delete this webinar");
+      } else {
+        getErrorToast(toast, "The webinar could not be deleted.");
+      }
     });
 };
 
