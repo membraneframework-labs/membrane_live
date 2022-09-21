@@ -22,8 +22,9 @@
 }
 
 .LogoText {
+  font-family: var(--font-title);
   font-size: 2.4rem;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.2rem;
 }
 

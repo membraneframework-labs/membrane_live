@@ -7,8 +7,9 @@
 
 .HeaderText {
   color: var(--font-dark-color);
+  font-family: var(--font-title);
   font-size: 2rem;
-  font-weight: 600;
+  font-weight: 500;
   margin: 2rem 0;
 }
 
@@ -43,13 +44,16 @@
 }
 
 .EventPresenters {
+  font-family: var(--font-title);
   color: var(--font-medium-color);
+  font-weight: 500;
   padding: 0.3rem 0;
   font-size: 1.6rem;
 }
 
 .EventTitle {
-  font-weight: 600;
+  font-family: var(--font-title);
+  font-weight: 500;
   font-size: 2rem;
   padding-bottom: 0.5rem;
   display: inline-block;
