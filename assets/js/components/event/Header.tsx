@@ -39,7 +39,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
   };
 
   const formatDate = (date: Date) => {
-    return `${monthNames[date.getMonth()]}, ${date.getDate()} ${date.getFullYear()}`;
+    return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
   return (

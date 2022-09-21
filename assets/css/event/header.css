@@ -22,6 +22,7 @@
 
 .Title {
   color: var(--font-dark-color);
+  font-family: var(--font-title);
   font-size: 2.4rem;
   font-weight: 500;
 }
