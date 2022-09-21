@@ -59,8 +59,6 @@ const Event = () => {
   }, [eventChannel, privateChannel]);
 
   useEffect(() => {
-    document.title = `${pageTitlePrefix} | ${"a"}`;
-
     window.addEventListener("beforeunload", storageSetReloaded);
     return () => {
       window.removeEventListener("beforeunload", storageSetReloaded);
