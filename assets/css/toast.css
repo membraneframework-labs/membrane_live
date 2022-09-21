@@ -1,0 +1,53 @@
+.Popup {
+  background: var(--font-dark-color);
+  border-radius: 16px;
+  padding: 1.3rem;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.NormalPopup {
+  padding-right: 4rem;
+}
+
+.PresenterPopupButton {
+  color: var(--font-dark-color);
+  background: var(--bg-light-color-2);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1.6rem;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  transition: color 0.5s, background 0.5s;
+}
+
+.PresenterPopupButton:hover {
+  background: var(--bg-light-color-3);
+  color: var(--font-dark-color);
+  transition: color 0.5s, background 0.5s;
+}
+
+.PopupText {
+  color: var(--bg-light-color-1);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1.6rem;
+}
+
+.PopupIcon path {
+  stroke: var(--bg-light-color-1);
+}
+
+.CrossBox {
+  height: 2.5rem;
+  position: absolute;
+  right: 0.3rem;
+  top: 0.3rem;
+}
+
+.CrossIcon path {
+  stroke: var(--bg-light-color-1);
+}

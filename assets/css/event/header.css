@@ -1,0 +1,85 @@
+@import "../main.css";
+
+.Header {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.Arrow {
+  box-sizing: content-box;
+  background: var(--bg-light-color-2);
+  height: 3.2rem;
+  width: auto;
+  padding: 1rem;
+  border-radius: 50%;
+}
+
+.Arrow path {
+  stroke: var(--font-dark-color);
+}
+
+.Title {
+  color: var(--font-dark-color);
+  font-family: var(--font-title);
+  font-size: 2.4rem;
+  font-weight: 500;
+}
+
+.InfoWrapper {
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.WebinarInfo {
+  color: var(--font-dark-color);
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.CopyLink {
+  color: var(--font-dark-color);
+  background: var(--bg-light-color-2);
+  border: 1px solid var(--bg-light-color-3);
+  border-radius: 24px;
+  padding: 0.5rem 1.7rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.CopyIcon path {
+  stroke: var(--font-dark-color);
+}
+
+.UsersIcon {
+  height: 2rem;
+  width: auto;
+}
+
+.UsersIcon path {
+  stroke: var(--font-dark-color);
+}
+
+.CopyButton {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.Link {
+  max-width: 18ch;
+  font-size: 1.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ParticipantsNumber {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}

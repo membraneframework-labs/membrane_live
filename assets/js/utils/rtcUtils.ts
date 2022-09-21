@@ -1,7 +1,7 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { Client } from "../pages/Event";
+import { Client } from "../types";
 
 export type Sources = {
   audio: MediaDeviceInfo[];

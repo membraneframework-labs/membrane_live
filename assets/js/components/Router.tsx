@@ -1,16 +1,16 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Form from "../pages/Form";
+import GuardedRoute from "../services/GuardedRoute";
+import Dashboard from "../pages/Dashboard";
 import Event from "../pages/Event";
 import Auth from "../pages/Auth";
-import GuardedRoute from "../services/GuardedRoute";
 
 const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<GuardedRoute />}>
-          <Route path="/" element={<Form />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/event/*" element={<Event />} />
         </Route>
         <Route path="/auth/" element={<Auth />} />

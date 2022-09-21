@@ -1,0 +1,46 @@
+@import "../main.css";
+
+.ModePanel {
+  background-color: var(--bg-light-color-2);
+  color: var(--font-dark-color);
+  font-size: 1.6rem;
+  border: 1px solid var(--bg-light-color-3);
+  border-radius: 24px;
+  padding: 1.3rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  white-space: nowrap;
+}
+
+.PresentingNow {
+  line-height: 4.5rem;
+}
+
+.ScreenIcon {
+  height: 3rem;
+  width: auto;
+}
+
+.ScreenIcon path {
+  stroke: var(--font-dark-color);
+}
+
+.ModeButtons {
+  margin-left: auto;
+  display: flex;
+  gap: 1em;
+}
+
+.ModeButton {
+  color: var(--font-dark-color);
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1.6rem;
+  padding: 1rem 1.5rem;
+}
+
+.ModeButton.Clicked {
+  background: var(--font-dark-color);
+  color: var(--bg-light-color-1);
+}

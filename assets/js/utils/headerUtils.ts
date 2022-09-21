@@ -1,31 +1,46 @@
-import type { EventInfo } from "../components/Header";
 import { Presence } from "phoenix";
-import { getChannelId } from "../utils/channelUtils";
 import axios from "../services/index";
+import { getChannelId } from "../utils/channelUtils";
+import type { EventInfo, OriginalEventInfo } from "../types";
+import { getErrorToast } from "./toastUtils";
 
 export const initEventInfo = (): EventInfo => {
   return {
-    link: "",
+    uuid: "",
     title: "",
     description: "",
-    start_date: "",
+    startDate: new Date(),
     presenters: [],
   };
 };
 
-export const getEventInfo = (setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>) => {
+export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
+  const newDate = new Date();
+  newDate.setTime(Date.parse(originalEventInfo.start_date));
+  const newEventInfo: any = { ...originalEventInfo, startDate: newDate };
+  delete newEventInfo.start_date;
+  return newEventInfo as EventInfo;
+};
+
+export const getEventInfo = (
+  toast: any,
+  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
+) => {
   axios
     .get("/resources/webinars/" + getChannelId())
-    .then((response) => {
-      const start_date = response.data.webinar.start_date.replace("T", " ");
-      setEventInfo({ ...response.data.webinar, start_date: start_date });
+    .then((response: { data: { webinar: OriginalEventInfo } }) => {
+      setEventInfo(mapToEventInfo(response.data.webinar));
     })
     .catch((error) => {
       console.log(error);
+      getErrorToast(toast, "Event information could not be obtained...");
     });
 };
 
-export const syncParticipantsNumber = (eventChannel, setParticipantsNumber) => {
+export const syncParticipantsNumber = (
+  eventChannel: any,
+  setParticipantsNumber: React.Dispatch<React.SetStateAction<number>>
+) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 

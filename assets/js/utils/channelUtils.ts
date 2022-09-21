@@ -1,8 +1,6 @@
 import { Presence } from "phoenix";
-import { Participant } from "../components/ParticipantsList";
-import type { Client } from "../pages/Event";
-import type { Presenter } from "../components/PresenterStreams";
-import { getErrorToast, getInfoToast } from "./popupUtils";
+import type { Participant, Client, Presenter } from "../types";
+import { getErrorToast, getInfoToast } from "./toastUtils";
 
 export const createEventChannel = (
   toast: any,
@@ -19,7 +17,7 @@ export const createEventChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
-      getErrorToast(toast, "Error while joining the event.");
+      getErrorToast(toast, `Error while joining the event: ${resp.reason}`);
     });
 };
 
@@ -78,7 +76,7 @@ export const createPrivateChannel = (
     })
     .receive("error", (resp: { reason: string }) => {
       privateChannel.leave();
-      getErrorToast(toast, "Error while joining the event.");
+      getErrorToast(toast, `Error while joining the event: ${resp.reason}`);
     });
 };
 

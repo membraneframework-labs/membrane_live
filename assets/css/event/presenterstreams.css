@@ -1,0 +1,39 @@
+@import "../main.css";
+
+.PresenterStreams {
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.StreamsGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 1rem;
+  justify-content: center;
+  justify-items: center;
+}
+
+.Grid2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.Grid3,
+.Grid4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.Grid5,
+.Grid6 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}

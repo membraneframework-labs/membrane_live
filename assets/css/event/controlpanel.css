@@ -1,0 +1,75 @@
+@import "../main.css";
+
+.ControlPanel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.6rem;
+}
+
+.PanelButton {
+  box-sizing: content-box;
+  height: 2.5rem;
+  width: auto;
+  background-color: var(--bg-light-color-1);
+  border: 1px solid var(--bg-light-color-3);
+  border-radius: 50%;
+  padding: 1rem;
+  transition: background 0.25s;
+}
+
+.PanelButton:hover {
+  background: var(--bg-light-color-2);
+  transition: background 0.25s;
+}
+
+.PanelButton path {
+  stroke: var(--font-dark-color);
+}
+
+.DisconnectButton {
+  box-sizing: content-box;
+  height: 2.7rem;
+  width: auto;
+  background-color: var(--button-red);
+  border-radius: 50%;
+  padding: 1.2rem;
+}
+
+.DisconnectButton path {
+  stroke: var(--bg-light-color-1);
+}
+
+.CenterIcons {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.SettingsModalBody {
+  color: var(--font-dark-color);
+  gap: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.SettingsModalHeader,
+.SettingsModal,
+.SettingsModalClose {
+  color: var(--font-dark-color);
+  font-size: 2.4rem;
+}
+
+.SettingsModal {
+  position: absolute;
+}
+
+.MenuButtonText {
+  font-size: 1.6rem;
+}
+
+.SettingsMenuItem {
+  font-size: 1.6rem;
+}

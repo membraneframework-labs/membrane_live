@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import ParticipantsList from "../components/ParticipantsList";
+import ParticipantsList from "../components/event/ParticipantsList";
 import { Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
-import Header from "../components/Header";
+import Header from "../components/event/Header";
 import {
   storageGetName,
   storageGetAuthToken,
@@ -10,21 +10,12 @@ import {
   storageSetReloaded,
   storageGetEmail,
 } from "../utils/storageUtils";
-import StreamArea from "../components/StreamArea";
+import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { presenterPopup } from "../utils/popupUtils";
-import "../../css/event.css";
-
-export type PresenterPopupState = {
-  isOpen: boolean;
-  moderatorTopic: string;
-};
-
-export type Client = {
-  name: string;
-  email: string;
-  isModerator: boolean;
-};
+import { presenterPopup } from "../utils/toastUtils";
+import type { Client } from "../types";
+import { pageTitlePrefix } from "../utils/const";
+import "../../css/event/event.css";
 
 const Event = () => {
   const toast = useToast();

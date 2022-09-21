@@ -1,0 +1,90 @@
+@import "../main.css";
+
+.EventFormFieldDiv,
+.EventFormDiv {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+
+  font-size: 1.5rem;
+  color: var(--font-dark-color);
+}
+
+.EventFormFieldLabel {
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+
+.EventFormFieldInput {
+  border: 2px solid var(--font-dark-color);
+  border-radius: 25px;
+  padding: 1.6rem 1.4rem;
+  outline: none;
+}
+
+.EventFormFieldInput:hover {
+  border-color: var(--bg-light-color-4);
+}
+
+.EventFormFieldWithButtonDiv {
+  display: flex;
+  justify-content: space-between;
+}
+
+.EventFormFieldWithButtonDiv > input {
+  flex-grow: 2;
+  border: none;
+  outline: none;
+}
+
+.EventFormFieldWithButtonDiv > input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.EventFormCounter {
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+
+  display: flex;
+  align-items: center;
+}
+
+.EventFormDescriptionWrapper {
+  height: 100%;
+}
+
+.EventFormDescriptionWrapper:hover .EventFormScrollAdjuster,
+.EventFormDescriptionWrapper:hover .EventFormFieldInput {
+  border-color: var(--bg-light-color-4);
+}
+
+.EventFormScrollAdjuster {
+  height: 1.6rem;
+  border-radius: 1.6rem;
+  border: 2px solid var(--font-dark-color);
+
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#EventFormDescriptionField {
+  height: 10rem;
+  width: 100%;
+
+  border-top: 0;
+  border-radius: 1.6rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+
+  padding-top: 0;
+
+  outline: none;
+}
+
+.EventFormUnorderedList {
+  padding: 0rem 1.1rem 0rem 2rem;
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+}
