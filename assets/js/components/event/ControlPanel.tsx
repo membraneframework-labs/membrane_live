@@ -52,7 +52,7 @@ const DropdownList = ({ sources, currentSourceName, itemSelectFunc }: DropdownLi
     return source.label === currentSourceName ? (
       <b className="SettingsMenuItem">{source.label}</b>
     ) : (
-      source.label
+      <p className="SettingsMenuItem">{source.label}</p>
     );
   };
 
