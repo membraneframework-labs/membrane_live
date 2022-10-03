@@ -77,7 +77,7 @@ defmodule Membrane.Live.Mixfile do
 
       # HLS_Endpoint deps
       {:membrane_http_adaptive_stream_plugin, "~> 0.8.1"},
-      {:membrane_mp4_plugin, "~> 0.16.0"},
+      {:membrane_mp4_plugin, github: "membraneframework/membrane_mp4_plugin", override: true},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
