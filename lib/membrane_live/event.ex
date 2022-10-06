@@ -240,27 +240,20 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :audio, _playlist_idl, _peer_id}, state) do
+  def handle_info({:playlist_playable, :audio}, state) do
     # TODO: implement detecting when HLS starts
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, playlist_idl, peer_id}, state)
-      when is_map_key(state.playlist_idls, peer_id) do
-    state = put_in(state, [:playlist_idls, peer_id, :playlist_idl], playlist_idl)
-    name = state.playlist_idls[peer_id].name
-
+  def handle_info({:playlist_playable, :video, event_name}, state) do
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-      playlist_idl: playlist_idl,
-      name: name
+      playlist_idl: event_name,
+      name: "name"
     })
 
     {:noreply, state}
   end
-
-  def handle_info({:playlist_playable, :video, _playlist_idl, _peer_id}, state),
-    do: {:noreply, state}
 
   @impl true
   def handle_info({:cleanup, _clean_function, stream_id}, state) do
