@@ -1,3 +1,5 @@
+import { useToast } from "@chakra-ui/react";
+
 export type Participant = {
   email: string;
   name: string;
@@ -36,7 +38,7 @@ export type OriginalEventInfo = {
   title: string;
   description: string;
   presenters: string[];
-  start_date: string;
+  start_date?: string;
   uuid: string;
 };
 
@@ -57,4 +59,17 @@ export type RefreshTokenKey = "refreshJwt";
 export type AuthResponseData = {
   authToken: AuthTokenKey;
   refreshToken: RefreshTokenKey;
+};
+
+export type Toast = ReturnType<typeof useToast>;
+
+type MetasUser = {
+  is_moderator: boolean;
+  is_presenter: boolean;
+  name: string;
+  phx_ref: string;
+};
+
+export type Metas = {
+  metas: [MetasUser];
 };

@@ -23,8 +23,8 @@ export const getMergedTracks = async (
   const camera = await attachToDOM("justCamera", cameraStream);
   const screen = await attachToDOM("justScreenShare", screenStream);
 
-  let canvasElement = document.createElement("canvas");
-  let canvasCtx = canvasElement.getContext("2d");
+  const canvasElement = document.createElement("canvas");
+  const canvasCtx = canvasElement.getContext("2d");
 
   canvasCtx
     ? await makeComposite(canvasElement, canvasCtx, camera, screen, mergedScreenRef)
@@ -34,7 +34,7 @@ export const getMergedTracks = async (
 };
 
 const attachToDOM = async (id: string, stream: MediaStream) => {
-  let videoElem = document.createElement("video");
+  const videoElem = document.createElement("video");
   videoElem.id = id;
   videoElem.width = CANVAS_WIDTH;
   videoElem.height = CANVAS_HEIGHT;
@@ -64,7 +64,7 @@ const makeComposite = async (
     Math.floor(screen.height / 4)
   );
 
-  let imageData = canvasCtx.getImageData(0, 0, screen.width, screen.height);
+  const imageData = canvasCtx.getImageData(0, 0, screen.width, screen.height);
   canvasCtx.putImageData(imageData, 0, 0);
   canvasCtx.restore();
 
@@ -78,7 +78,7 @@ const stopRefreshingAndRemovePreviousScreen = (mergedScreenRef: MergedScreenRef)
   mergedScreenRef.refreshId = undefined;
 };
 
-const requestVideoFrame = (callback: Function) => {
+const requestVideoFrame = (callback: () => void) => {
   return setTimeout(() => {
     callback();
   }, 1000 / FRAME_RATE);

@@ -4,11 +4,12 @@ import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
 import "../../../css/event/participants.css";
+import { Channel } from "phoenix";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
@@ -16,12 +17,12 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
-      eventChannel.push("presenter_prop", {
+      eventChannel?.push("presenter_prop", {
         moderatorTopic: link + moderatorClient.email,
         presenterTopic: link + participant.email,
       });
     } else {
-      eventChannel.push("presenter_remove", { presenterTopic: link + participant.email });
+      eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
     }
   };
 
@@ -80,7 +81,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
 type ParticipantProps = {
   client: Client;
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
@@ -127,7 +128,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
 
 type ParticipantsListProps = {
   client: Client;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
@@ -138,7 +139,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     syncEventChannel(eventChannel, setParticipants, client.email);
   }, [eventChannel]);
 
-  let parts: JSX.Element[] = [];
+  const parts: JSX.Element[] = [];
   participants.map((participant) =>
     parts.push(
       <Participant

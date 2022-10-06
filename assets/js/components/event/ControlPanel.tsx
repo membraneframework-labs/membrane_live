@@ -40,6 +40,7 @@ import {
 import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/controlpanel.css";
+import { Channel } from "phoenix";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -48,7 +49,7 @@ type DropdownListProps = {
 };
 
 const DropdownList = ({ sources, currentSourceName, itemSelectFunc }: DropdownListProps) => {
-  const getDeviceLabel = (source: MediaDeviceInfo, currentSourceName: String | undefined) => {
+  const getDeviceLabel = (source: MediaDeviceInfo, currentSourceName: string | undefined) => {
     return source.label === currentSourceName ? (
       <b className="SettingsMenuItem">{source.label}</b>
     ) : (
@@ -116,11 +117,11 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
 };
 
 const stopBeingPresenter = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   client: Client,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
-  eventChannel.push("presenter_remove", { email: client.email });
+  eventChannel?.push("presenter_remove", { email: client.email });
   setMode("hls");
 };
 
@@ -132,7 +133,7 @@ const useRerender = () => {
 type ControlPanelProps = {
   client: Client;
   webrtc: MembraneWebRTC;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
@@ -151,7 +152,7 @@ const ControlPanel = ({
 
   const updateSources = async () => {
     const sources = await getSources();
-    setSources(sources!);
+    if (sources != null) setSources(sources);
   };
 
   useEffect(() => {
@@ -228,9 +229,19 @@ const ControlPanel = ({
               setSharingScreen(false);
             }}
           />
-          <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => {}} />
+          <GenericButton
+            icon={<MenuHorizontal className="PanelButton" />}
+            onClick={() => {
+              // do nothing
+            }}
+          />
         </div>
-        <GenericButton icon={<UserPlus className="PanelButton" />} onClick={() => {}} />
+        <GenericButton
+          icon={<UserPlus className="PanelButton" />}
+          onClick={() => {
+            // do nothing
+          }}
+        />
       </div>
       <SettingsModal
         isOpen={isOpen}

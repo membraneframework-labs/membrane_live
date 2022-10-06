@@ -1,12 +1,12 @@
-import { Presence } from "phoenix";
-import type { Participant, Client, Presenter } from "../types";
+import { Channel, Presence } from "phoenix";
+import type { Participant, Client, Presenter, Toast, Metas } from "../types";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
 export const createEventChannel = (
-  toast: any,
+  toast: Toast,
   client: Client,
-  eventChannel: any,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  eventChannel: Channel,
+  setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>
 ) => {
   eventChannel
@@ -24,7 +24,7 @@ export const createEventChannel = (
 };
 
 export const syncEventChannel = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
   clientEmail: String
 ) => {
@@ -33,7 +33,7 @@ export const syncEventChannel = (
 
     const updateStates = () => {
       const parts: Participant[] = [];
-      presence.list((email: string, metas: any) => {
+      presence.list((email: string, metas: Metas) => {
         const participant = metas.metas[0];
         parts.push({
           email: email,
@@ -57,12 +57,12 @@ export const syncEventChannel = (
 };
 
 export const createPrivateChannel = (
-  toast: any,
-  privateChannel: any,
-  eventChannel: any,
+  toast: Toast,
+  privateChannel: Channel,
+  eventChannel: Channel,
   client: Client,
-  presenterPopup: (toast: any, moderatorTopic: string) => void,
-  setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
+  presenterPopup: (toast: Toast, moderatorTopic: string) => void,
+  setPrivateChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>
 ) => {
   privateChannel
     .join()
@@ -86,7 +86,7 @@ export const createPrivateChannel = (
 };
 
 export const syncPresenters = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setPresenters: React.Dispatch<React.SetStateAction<Presenter[]>>
 ) => {
   if (eventChannel) {
@@ -95,7 +95,7 @@ export const syncPresenters = (
     const updatePresenters = () => {
       const presenters: Presenter[] = [];
 
-      presence.list((email: string, metas: any) => {
+      presence.list((email: string, metas: Metas) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
         metas.metas[0].is_presenter && presenters.push({ name: metas.metas[0].name, email: email });
       });

@@ -47,7 +47,7 @@ const ModalForm = ({ type, activationButtonClass, webinar }: ModalFormProps) => 
   const handleSendButton = () => {
     if (checkEventForm(eventFormInput)) {
       sendEventForm(type, eventFormInput, webinar?.uuid)
-        .then((_response) => {
+        .then(() => {
           refresh();
           closeModal();
         })
