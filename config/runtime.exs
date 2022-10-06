@@ -84,7 +84,7 @@ get_env = fn env, default ->
 end
 
 host = System.get_env("VIRTUAL_HOST", "localhost")
-port = System.get_env("PHOENIX_PORT", "4000")
+port = System.get_env("MEMBRANE_LIVE_PHOENIX_PORT", "4000")
 
 config :membrane_live, MembraneLive.Repo,
   username: System.get_env("POSTGRES_USER", "swm"),
