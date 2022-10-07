@@ -54,7 +54,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine"},
+      {:membrane_rtc_engine,
+       github: "membraneframework/membrane_rtc_engine", branch: "add_switch_elements_to_hls_endpoint"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions",
@@ -83,7 +84,9 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
       {:membrane_h264_ffmpeg_plugin, "~> 0.21.5"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
-      {:membrane_framerate_converter_plugin, "~> 0.5.0"}
+      {:membrane_framerate_converter_plugin, "~> 0.5.0"},
+      {:membrane_generator_plugin, "~> 0.6.0"},
+      {:membrane_realtimer_plugin, "~> 0.5.0"}
     ]
   end
 
