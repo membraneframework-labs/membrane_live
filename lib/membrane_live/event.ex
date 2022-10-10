@@ -8,8 +8,8 @@ defmodule MembraneLive.Event do
 
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
-  alias Membrane.RTC.Engine.Endpoint.{SwitchHLS, WebRTC}
   alias Membrane.RTC.Engine.Endpoint.HLS.TranscodingConfig
+  alias Membrane.RTC.Engine.Endpoint.{SwitchHLS, WebRTC}
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}

@@ -38,7 +38,8 @@ defmodule MembraneLiveWeb.EventChannel do
             Presence.track(socket, email, %{
               name: name,
               is_moderator: is_moderator,
-              is_presenter: is_presenter
+              is_presenter: is_presenter,
+              is_currently_streaming: false
             })
 
           {:ok, %{is_moderator: is_moderator}, socket}
@@ -166,7 +167,8 @@ defmodule MembraneLiveWeb.EventChannel do
   # such design is caused by user Presence that can be updated only with its socket-channel combination
   # (socket parameter in function below)
   def handle_in("presenter_remove", %{"email" => email}, socket) do
-    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, false))
+    {:ok, _ref} =
+      Presence.update(socket, email, &%{&1 | is_presenter: false, is_currently_streaming: false})
 
     "event:" <> id = socket.topic
     remove_from_presenters(email, id)
@@ -202,6 +204,52 @@ defmodule MembraneLiveWeb.EventChannel do
     MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
       moderator_topic: moderator_topic
     })
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "currently_streaming",
+        %{"email" => email, "setTo" => set_to, "response" => true},
+        socket
+      ) do
+    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_currently_streaming, set_to))
+
+    {:noreply, socket}
+  end
+
+  def handle_in("currently_streaming", %{"email" => email, "setTo" => set_to}, socket) do
+    %{metas: [props]} = Presence.get_by_key(socket, email)
+
+    if not props.is_presenter,
+      do: raise("Error: Trying to set currently_streaming property on non-presenter")
+
+    "event:" <> id = socket.topic
+
+    if set_to do
+      Enum.each(Presence.list(socket), fn
+        {^email, _rest} ->
+          nil
+
+        {key, %{metas: [%{is_currently_streaming: true}]}} ->
+          MembraneLiveWeb.Endpoint.broadcast_from!(
+            self(),
+            "private:#{id}:#{key}",
+            "currently_streaming",
+            %{"setTo" => false}
+          )
+
+        _otherwise ->
+          nil
+      end)
+    end
+
+    MembraneLiveWeb.Endpoint.broadcast_from!(
+      self(),
+      "private:#{id}:#{email}",
+      "currently_streaming",
+      %{"setTo" => set_to}
+    )
 
     {:noreply, socket}
   end

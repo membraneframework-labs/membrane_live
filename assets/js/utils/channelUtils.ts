@@ -37,6 +37,7 @@ export const syncEventChannel = (
           name: participant.name,
           isPresenter: participant.is_presenter,
           isModerator: participant.is_moderator,
+          isCurrentlyStreaming: participant.is_currently_streaming,
         });
       });
       parts.sort(compareParticipants);
@@ -72,6 +73,19 @@ export const createPrivateChannel = (
         getInfoToast(toast, "You are no longer a presenter.");
         eventChannel.push("presenter_remove", { email: client.email });
       });
+      privateChannel.on("currently_streaming", (message: { setTo: boolean }) => {
+        if (message.setTo) {
+          getInfoToast(toast, "You are now the currently streaming presenter.");
+        } else {
+          getInfoToast(toast, "You are no longer the currently streaming presenter.");
+        }
+        eventChannel.push("currently_streaming", {
+          email: client.email,
+          setTo: message.setTo,
+          response: true,
+        });
+      });
+
       setPrivateChannel(privateChannel);
     })
     .receive("error", (resp: { reason: string }) => {

@@ -14,7 +14,7 @@ type ModeratorMenuProps = {
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
-  const handleClick = (e: any) => {
+  const handleSetAsPresenterClick = (e: any) => {
     if (e.target.value === "Set as a presenter") {
       eventChannel.push("presenter_prop", {
         moderatorTopic: link + moderatorClient.email,
@@ -25,6 +25,14 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
     }
   };
 
+  const handleSetAsCurrentClick = (e: any) => {
+    const setTo = e.target.value === "Set as a currently streaming";
+    eventChannel.push("currently_streaming", {
+      email: participant.email,
+      setTo: setTo,
+    });
+  };
+
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
@@ -32,12 +40,27 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
       </MenuButton>
       <MenuList>
         <MenuItem
-          onClick={handleClick}
+          onClick={handleSetAsPresenterClick}
           value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
           className="MenuOptionText"
         >
           {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
         </MenuItem>
+        {participant.isPresenter && (
+          <MenuItem
+            onClick={handleSetAsCurrentClick}
+            value={
+              participant.isCurrentlyStreaming
+                ? "Remove as a currently streaming"
+                : "Set as a currently streaming"
+            }
+            className="MenuOptionText"
+          >
+            {participant.isCurrentlyStreaming
+              ? "Remove as a currently streaming"
+              : "Set as a currently streaming"}
+          </MenuItem>
+        )}
       </MenuList>
     </Menu>
   );
