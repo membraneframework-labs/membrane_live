@@ -21,12 +21,18 @@ const ModeButton = ({ onClick, active, name }: ModeButtonProps) => {
 type ModePanelProps = {
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
-  presenterName: string;
+  currentlyStreamingName: string;
   eventChannel: any;
   client: Client;
 };
 
-const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
+const ModePanel = ({
+  mode,
+  setMode,
+  currentlyStreamingName,
+  eventChannel,
+  client,
+}: ModePanelProps) => {
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
 
@@ -39,8 +45,8 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
     <div className="ModePanel">
       <Screen className="ScreenIcon" />
       <div className="PresentingNow">
-        {presenterName
-          ? `${presenterName} is now presenting...`
+        {currentlyStreamingName
+          ? `${currentlyStreamingName} is now presenting...`
           : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">

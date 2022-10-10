@@ -21,6 +21,32 @@ export const createEventChannel = (
     });
 };
 
+export const syncCurrentlyStreaming = (
+  eventChannel: any,
+  setCurrentlyStreamingName: React.Dispatch<React.SetStateAction<string>>
+) => {
+  if (eventChannel) {
+    const presence = new Presence(eventChannel);
+
+    const updateCurrentlyStreamingName = () => {
+      setCurrentlyStreamingName("");
+      presence.list((email: string, metas: any) => {
+        const participant = metas.metas[0];
+
+        if (participant.is_currently_streaming) {
+          setCurrentlyStreamingName(participant.name);
+        }
+      });
+    };
+
+    presence.onSync(() => {
+      updateCurrentlyStreamingName();
+    });
+
+    eventChannel.push("sync_presence", {});
+  }
+};
+
 export const syncEventChannel = (
   eventChannel: any,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>

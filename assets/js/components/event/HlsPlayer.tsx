@@ -5,17 +5,17 @@ import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
   hlsUrl: string;
-  presenterName: string;
+  currentlyStreamingName: string;
 };
 
-const HlsPlayer = ({ hlsUrl, presenterName }: HlsPlayerProps) => {
+const HlsPlayer = ({ hlsUrl, currentlyStreamingName }: HlsPlayerProps) => {
   return (
     <div className="HlsStream">
       {hlsUrl ? (
         <div className="HlsPlayerWrapper">
           <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer" />
           <div className="HlsTopBar">
-            <div className="HlsPresenterName">{presenterName}</div>
+            <div className="HlsPresenterName">{currentlyStreamingName}</div>
           </div>
         </div>
       ) : (

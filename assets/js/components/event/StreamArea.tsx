@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
+import { syncCurrentlyStreaming } from "../../utils/channelUtils";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/streamarea.css";
 
@@ -14,18 +15,21 @@ type StreamAreaProps = {
 const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) => {
   const [mode, setMode] = useState<Mode>("hls");
   const [hlsUrl, setHlsUrl] = useState<string>("");
-  const [presenterName, setPresenterName] = useState<string>("");
+  const [currentlyStreamingName, setCurrentlyStreamingName] = useState<string>("");
 
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
       setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);
-      setPresenterName(message.name);
     } else {
       setHlsUrl("");
-      setPresenterName("");
     }
+    // message.name is ignored as it is not necessary in this implementation
   };
+
+  useEffect(() => {
+    syncCurrentlyStreaming(eventChannel, setCurrentlyStreamingName);
+  }, [eventChannel]);
 
   useEffect(() => {
     if (eventChannel && privateChannel) {
@@ -40,12 +44,14 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
       <ModePanel
         mode={mode}
         setMode={setMode}
-        presenterName={presenterName}
+        currentlyStreamingName={currentlyStreamingName}
         eventChannel={eventChannel}
         client={client}
       />
       <div className="Stream">
-        {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} />}
+        {mode == "hls" && (
+          <HlsPlayer hlsUrl={hlsUrl} currentlyStreamingName={currentlyStreamingName} />
+        )}
         <PresenterStreams
           client={client}
           eventChannel={eventChannel}
