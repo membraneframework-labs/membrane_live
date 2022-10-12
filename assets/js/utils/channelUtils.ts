@@ -11,9 +11,11 @@ export const createEventChannel = (
 ) => {
   eventChannel
     .join()
-    .receive("ok", (resp: { is_moderator: boolean }) => {
+    .receive("ok", (resp: any) => {
       setEventChannel(eventChannel);
-      setClient({ ...client, isModerator: resp.is_moderator });
+      const isModerator = resp?.is_moderator ? true : false;
+      const email = resp?.gen_key ? resp.gen_key : client.email;
+      setClient({ ...client, isModerator: isModerator, email: email });
     })
     .receive("error", (resp: { reason: string }) => {
       eventChannel.leave();
@@ -37,6 +39,7 @@ export const syncEventChannel = (
           name: participant.name,
           isPresenter: participant.is_presenter,
           isModerator: participant.is_moderator,
+          isAuth: participant.is_auth,
         });
       });
       parts.sort(compareParticipants);

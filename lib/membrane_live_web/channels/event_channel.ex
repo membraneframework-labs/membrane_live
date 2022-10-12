@@ -17,6 +17,29 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
 
   @impl true
+  def join("event:" <> id, %{"username" => name}, socket) do
+    case webinar_exists(id) do
+      {:ok, false} ->
+        {:error, %{reason: "This event doesn't exists."}}
+
+      {:ok, true} ->
+        gen_key = UUID.uuid1()
+
+        Presence.track(socket, gen_key, %{
+          name: name,
+          is_moderator: false,
+          is_presenter: false,
+          is_auth: false
+        })
+
+        {:ok, %{generated_key: gen_key}, socket}
+
+      {:error, _error} ->
+        {:error, %{reason: "This link is wrong."}}
+    end
+  end
+
+  @impl true
   def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
     case webinar_exists(id) do
       {:ok, false} ->
@@ -38,7 +61,8 @@ defmodule MembraneLiveWeb.EventChannel do
             Presence.track(socket, email, %{
               name: name,
               is_moderator: is_moderator,
-              is_presenter: is_presenter
+              is_presenter: is_presenter,
+              is_auth: true
             })
 
           {:ok, %{is_moderator: is_moderator}, socket}

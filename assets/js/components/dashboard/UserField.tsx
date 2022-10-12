@@ -5,14 +5,15 @@ import "../../../css/dashboard/userfield.css";
 type UserFieldProps = {
   picture: string;
   name: string;
+  isAuthenticated: boolean;
 };
 
 const redirect = (suffix: string) => {
   window.location.href = `${window.location.origin}${suffix}`;
 };
 
-const UserField = ({ picture, name }: UserFieldProps) => {
-  return name ? (
+const UserField = ({ isAuthenticated, picture, name }: UserFieldProps) => {
+  return isAuthenticated ? (
     <div className="UserField">
       {picture ? <img src={picture} className="UserIcon" /> : <User1 className="UserIcon" />}
       <div className="UserName">{name}</div>

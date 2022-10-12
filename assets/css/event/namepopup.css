@@ -1,0 +1,25 @@
+.SaveButton {
+  background-color: var(--font-dark-color);
+  color: var(--bg-light-color-1);
+  font-size: 1.6rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 1.3rem 3rem;
+  margin-left: auto;
+}
+
+.UsernameInput {
+  border: 2px solid var(--font-dark-color);
+  border-radius: 20px;
+  padding: 1.6rem 1.4rem;
+  outline: none;
+  font-weight: 400;
+  width: 100%;
+}
+
+.PopupHeader {
+  padding: 1.6rem 1.4rem;
+  color: var(--font-dark-color);
+  font-size: 1.6rem;
+  font-weight: 600;
+}

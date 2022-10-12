@@ -14,8 +14,8 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import type { Client } from "../types";
-import { pageTitlePrefix } from "../utils/const";
 import "../../css/event/event.css";
+import NamePopup from "../components/event/NamePopup";
 
 const Event = () => {
   const toast = useToast();
@@ -23,28 +23,32 @@ const Event = () => {
     name: storageGetName(),
     email: storageGetEmail(),
     isModerator: false,
+    isAuthenticated: storageGetAuthToken() ? true : false,
   });
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
-
+  const isAuthenticated = storageGetAuthToken() ? true : false;
   const socket = new Socket("/socket");
   socket.connect();
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
-    if (!alreadyJoined) {
-      const channel = socket.channel(`event:${getChannelId()}`, {
-        token: storageGetAuthToken(),
-        reloaded: storageGetReloaded(),
-      });
+    if (!alreadyJoined && client.name) {
+      const channelMsg = isAuthenticated
+        ? {
+            token: storageGetAuthToken(),
+            reloaded: storageGetReloaded(),
+          }
+        : { username: client.name };
+      const channel = socket.channel(`event:${getChannelId()}`, channelMsg);
       createEventChannel(toast, client, channel, setEventChannel, setClient);
     }
-  }, [eventChannel]);
+  }, [eventChannel, client.name]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
-    if (!privateAlreadyJoined && eventAlreadyJoined) {
+    if (!privateAlreadyJoined && eventAlreadyJoined && isAuthenticated) {
       const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,
@@ -67,6 +71,7 @@ const Event = () => {
 
   return (
     <div className="EventPage">
+      {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
       <Header client={client} eventChannel={eventChannel}></Header>
       <div className="MainGrid">
         <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
