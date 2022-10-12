@@ -16,7 +16,6 @@ type ClientParticipantMenuProps = {
   eventChannel: any;
 };
 
-
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
@@ -60,7 +59,9 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
     }
   };
 
-  const text = participant.requestPresenting ? "Stop asking to become presenter" : "Ask to become presenter"
+  const text = participant.requestPresenting
+    ? "Stop asking to become presenter"
+    : "Ask to become presenter";
 
   return (
     <Menu>
@@ -68,11 +69,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        <MenuItem
-          onClick={handleClick}
-          value={text}
-          className="MenuOptionText"
-        >
+        <MenuItem onClick={handleClick} value={text} className="MenuOptionText">
           {text}
         </MenuItem>
       </MenuList>
@@ -97,11 +94,10 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   const role = participant.isModerator
     ? "Moderator"
     : participant.isPresenter
-      ? "Presenter"
-      : "Participant";
+    ? "Presenter"
+    : "Participant";
 
-  const isClientPariticipant: Boolean = client.name == participant.name;
-
+  const isClientPariticipant: Boolean = client.email == participant.email;
 
   return (
     <div className="Participant">
@@ -114,15 +110,11 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
-      {participant.requestPresenting && <Tooltip
-        label={`${role}${isClientPariticipant ? " (You)" : ""}`}
-        borderRadius="25px"
-        fontSize={"1.3rem"}
-        className="InfoTooltip"
-      >
-        <QuestionCircle className="ParticipantIcon" />
-      </Tooltip>
-      }
+      {participant.requestPresenting && (
+        <Tooltip borderRadius="25px" fontSize={"1.3rem"} className="InfoTooltip">
+          <QuestionCircle className="ParticipantIcon" />
+        </Tooltip>
+      )}
       {client.isModerator && (
         <ModeratorMenu
           moderatorClient={client}
@@ -131,10 +123,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         />
       )}
       {!client.isModerator && role == "Participant" && isClientPariticipant && (
-        <ClientParticipantMenu
-          eventChannel={eventChannel}
-          participant={participant}
-        />
+        <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />
       )}
     </div>
   );
@@ -148,7 +137,6 @@ type ParticipantsListProps = {
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
-
 
   useEffect(() => {
     syncEventChannel(eventChannel, setParticipants, client.email);
