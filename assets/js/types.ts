@@ -3,6 +3,7 @@ export type Participant = {
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
+  requestPresenting: boolean;
 };
 
 export type Presenter = {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
-import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
+import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
 import "../../../css/event/participants.css";
 
@@ -10,6 +10,12 @@ type ModeratorMenuProps = {
   participant: Participant;
   eventChannel: any;
 };
+
+type ClientParticipantMenuProps = {
+  participant: Participant;
+  eventChannel: any;
+};
+
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
@@ -43,6 +49,37 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   );
 };
 
+const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
+  const handleClick = (e: any) => {
+    if (e.target.value === "Ask to become presenter") {
+      eventChannel.push("presenting_request", {
+        email: participant.email,
+      });
+    } else {
+      eventChannel.push("cancel_presenting_request", { email: participant.email });
+    }
+  };
+
+  const text = participant.requestPresenting ? "Stop asking to become presenter" : "Ask to become presenter"
+
+  return (
+    <Menu>
+      <MenuButton ml={"auto"} area-label="Options">
+        <MenuVertical className="OptionButton" />
+      </MenuButton>
+      <MenuList>
+        <MenuItem
+          onClick={handleClick}
+          value={text}
+          className="MenuOptionText"
+        >
+          {text}
+        </MenuItem>
+      </MenuList>
+    </Menu>
+  );
+};
+
 type ParticipantProps = {
   client: Client;
   participant: Participant;
@@ -60,13 +97,16 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   const role = participant.isModerator
     ? "Moderator"
     : participant.isPresenter
-    ? "Presenter"
-    : "Praticipant";
+      ? "Presenter"
+      : "Participant";
+
+  const isClientPariticipant: Boolean = client.name == participant.name;
+
 
   return (
     <div className="Participant">
       <Tooltip
-        label={`${role}${client.name == participant.name ? " (You)" : ""}`}
+        label={`${role}${isClientPariticipant ? " (You)" : ""}`}
         borderRadius="25px"
         fontSize={"1.3rem"}
         className="InfoTooltip"
@@ -74,9 +114,24 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
+      {participant.requestPresenting && <Tooltip
+        label={`${role}${isClientPariticipant ? " (You)" : ""}`}
+        borderRadius="25px"
+        fontSize={"1.3rem"}
+        className="InfoTooltip"
+      >
+        <QuestionCircle className="ParticipantIcon" />
+      </Tooltip>
+      }
       {client.isModerator && (
         <ModeratorMenu
           moderatorClient={client}
+          eventChannel={eventChannel}
+          participant={participant}
+        />
+      )}
+      {!client.isModerator && role == "Participant" && isClientPariticipant && (
+        <ClientParticipantMenu
           eventChannel={eventChannel}
           participant={participant}
         />
@@ -94,8 +149,9 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
 
+
   useEffect(() => {
-    syncEventChannel(eventChannel, setParticipants);
+    syncEventChannel(eventChannel, setParticipants, client.email);
   }, [eventChannel]);
 
   let parts: JSX.Element[] = [];
