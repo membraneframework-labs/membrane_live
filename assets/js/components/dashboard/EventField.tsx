@@ -7,6 +7,7 @@ import { useToast } from "@chakra-ui/react";
 import { deleteEventPopup } from "../../utils/toastUtils";
 
 import "../../../css/dashboard/eventsarea.css";
+import { storageGetAuthToken } from "../../utils/storageUtils";
 
 type EventFieldProps = {
   webinarInfo: EventInfo;
@@ -14,7 +15,7 @@ type EventFieldProps = {
 
 const EventField = ({ webinarInfo }: EventFieldProps) => {
   const toast = useToast();
-
+  const isAuthenticated = storageGetAuthToken() ? true : false;
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
@@ -34,19 +35,21 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
             <CalendarClock />
             {formatDate(webinarInfo.startDate)}
           </div>
-          <div className="EventModifyBox">
-            <ModalForm
-              type="update"
-              activationButtonClass="EventUpdateButton"
-              webinar={webinarInfo}
-            />
-            <button
-              className="EventDeleteButton"
-              onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
-            >
-              Delete
-            </button>
-          </div>
+          {isAuthenticated && (
+            <div className="EventModifyBox">
+              <ModalForm
+                type="update"
+                activationButtonClass="EventUpdateButton"
+                webinar={webinarInfo}
+              />
+              <button
+                className="EventDeleteButton"
+                onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
+              >
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

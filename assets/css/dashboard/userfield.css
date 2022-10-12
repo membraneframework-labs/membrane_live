@@ -20,3 +20,13 @@
   color: var(--font-dark-color);
   font-size: 2rem;
 }
+
+.LogInButton {
+  color: var(--bg-light-color-1);
+  background: var(--button-red);
+  font-size: 1.6rem;
+  font-weight: 600;
+  border-radius: 40px;
+  padding: 1.3rem 3rem;
+  margin-left: auto;
+}

@@ -28,6 +28,12 @@ defmodule MembraneLiveWeb.Router do
     get("/me", UserInfoController, :index)
   end
 
+  scope "/resources/webinars", MembraneLiveWeb do
+    pipe_through(:browser)
+
+    get("/", WebinarController, :index)
+  end
+
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
     pipe_through(:auth)
