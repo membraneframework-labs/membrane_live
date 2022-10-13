@@ -41,7 +41,7 @@ defmodule MembraneLiveWeb.EventChannel do
               name: name,
               is_moderator: is_moderator,
               is_presenter: is_presenter,
-              request_presenting: is_request_presenting
+              is_request_presenting: is_request_presenting
             })
 
           {:ok, %{is_moderator: is_moderator}, socket}
@@ -148,7 +148,11 @@ defmodule MembraneLiveWeb.EventChannel do
     {:ok, socket} =
       if answer == "accept" do
         {:ok, _ref} =
-          Presence.update(socket, email, &%{&1 | is_presenter: true, request_presenting: false})
+          Presence.update(
+            socket,
+            email,
+            &%{&1 | is_presenter: true, is_request_presenting: false}
+          )
 
         "event:" <> id = socket.topic
         add_to_presenters(email, id)
@@ -171,11 +175,10 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in(
         "presenting_request",
         %{"email" => email},
-        socket
+        %{topic: "event:" <> id} = socket
       ) do
-    {:ok, _ref} = Presence.update(socket, email, &%{&1 | request_presenting: true})
+    {:ok, _ref} = Presence.update(socket, email, &%{&1 | is_request_presenting: true})
 
-    "event:" <> id = socket.topic
     add_to_presenting_request(email, id)
 
     {:noreply, socket}
@@ -184,10 +187,9 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in(
         "cancel_presenting_request",
         %{"email" => email},
-        socket
+        %{topic: "event:" <> id} = socket
       ) do
-    {:ok, _ref} = Presence.update(socket, email, &%{&1 | request_presenting: false})
-    "event:" <> id = socket.topic
+    {:ok, _ref} = Presence.update(socket, email, &%{&1 | is_request_presenting: false})
     remove_from_presenting_requests(email, id)
 
     {:noreply, socket}

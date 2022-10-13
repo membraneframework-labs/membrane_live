@@ -11,16 +11,11 @@ type ModeratorMenuProps = {
   eventChannel: any;
 };
 
-type ClientParticipantMenuProps = {
-  participant: Participant;
-  eventChannel: any;
-};
-
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
-  const handleClick = (e: any) => {
-    if (e.target.value === "Set as a presenter") {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
       eventChannel.push("presenter_prop", {
         moderatorTopic: link + moderatorClient.email,
         presenterTopic: link + participant.email,
@@ -48,9 +43,14 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   );
 };
 
+type ClientParticipantMenuProps = {
+  participant: Participant;
+  eventChannel: any;
+};
+
 const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
-  const handleClick = (e: any) => {
-    if (e.target.value === "Ask to become presenter") {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if ((e.target as HTMLTextAreaElement).value === "Ask to become presenter") {
       eventChannel.push("presenting_request", {
         email: participant.email,
       });
@@ -59,7 +59,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
     }
   };
 
-  const text = participant.requestPresenting
+  const text = participant.isRequestPresenting
     ? "Stop asking to become presenter"
     : "Ask to become presenter";
 
@@ -97,21 +97,17 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     ? "Presenter"
     : "Participant";
 
-  const isClientPariticipant: Boolean = client.email == participant.email;
+  const isMyself: Boolean = client.email == participant.email;
+  const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;
 
   return (
     <div className="Participant">
-      <Tooltip
-        label={`${role}${isClientPariticipant ? " (You)" : ""}`}
-        borderRadius="25px"
-        fontSize={"1.3rem"}
-        className="InfoTooltip"
-      >
+      <Tooltip label={`${role}${isMyself ? " (You)" : ""}`} className="InfoTooltip">
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
-      {participant.requestPresenting && (
-        <Tooltip borderRadius="25px" fontSize={"1.3rem"} className="InfoTooltip">
+      {participant.isRequestPresenting && (client.isModerator || isMyself) && (
+        <Tooltip label={"This user is asking to become presenter"} className="InfoTooltip">
           <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
@@ -122,7 +118,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
           participant={participant}
         />
       )}
-      {!client.isModerator && role == "Participant" && isClientPariticipant && (
+      {isMyselfNotModeratorParticipant && (
         <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />
       )}
     </div>

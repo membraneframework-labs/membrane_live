@@ -2,7 +2,7 @@ import type { AuthTokenKey, RefreshTokenKey, AuthResponseData } from "../types";
 
 const NAME = "name";
 const EMAIL = "email";
-const REQUEST_PRESENTING = "requestPresenting";
+const REQUEST_PRESENTING = "isRequestPresenting";
 const PICTURE = "picture";
 const RELOAD = "reloaded";
 

@@ -38,7 +38,7 @@ export const syncEventChannel = (
           name: participant.name,
           isPresenter: participant.is_presenter,
           isModerator: participant.is_moderator,
-          requestPresenting: participant.request_presenting,
+          isRequestPresenting: participant.is_request_presenting,
         });
       });
       parts.sort(compareParticipants(clientEmail));
@@ -124,7 +124,7 @@ const participantToNumber = (participant: Participant): number => {
     ? 1
     : participant.isPresenter
     ? 2
-    : participant.requestPresenting
+    : participant.isRequestPresenting
     ? 3
     : 4;
 };
