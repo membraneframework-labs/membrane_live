@@ -1,5 +1,6 @@
 import { Channel, Presence } from "phoenix";
 import type { Participant, Client, Presenter, Toast, Metas } from "../types";
+import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
 type EventChannelJoinResponse = {
@@ -17,6 +18,10 @@ export const createEventChannel = (
   eventChannel
     .join()
     .receive("ok", (response: EventChannelJoinResponse) => {
+      eventChannel.on("finish_event", () => {
+        redirectToHomePage();
+        getInfoToast(toast, "The event has finished.");
+      });
       setEventChannel(eventChannel);
       const isModerator = response?.is_moderator ? true : false;
       const email = response?.generated_key || client.email;

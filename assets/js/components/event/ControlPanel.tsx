@@ -12,6 +12,12 @@ import {
   ModalCloseButton,
   Modal,
   ModalBody,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  Popover,
+  PopoverArrow,
+  PopoverHeader,
 } from "@chakra-ui/react";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import {
@@ -230,12 +236,30 @@ const ControlPanel = ({
               setSharingScreen(false);
             }}
           />
-          <GenericButton
-            icon={<MenuHorizontal className="PanelButton" />}
-            onClick={() => {
-              // do nothing
-            }}
-          />
+          <Popover>
+            <PopoverTrigger>
+              <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverArrow />
+              <PopoverHeader>
+                <p className="OptionsPopoverHeader">Options</p>
+              </PopoverHeader>
+              <PopoverBody>
+                <div className="OptionsPopoverBody">
+                  <p>Do you want to finish the event?</p>
+                  <button
+                    className="OptionsPopoverButton"
+                    onClick={() => {
+                      eventChannel?.push("finish_event", {});
+                    }}
+                  >
+                    YES
+                  </button>
+                </div>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
         </div>
         <GenericButton
           icon={<UserPlus className="PanelButton" />}
