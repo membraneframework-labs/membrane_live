@@ -23,9 +23,11 @@ export const sendEventForm = async (
   return method(endpoint, { webinar: eventForm });
 };
 
-export const deleteEvent = (uuid: string, toast: any): void => {
+export const deleteEvent = (uuid: string, toast: any, isRecording: boolean): void => {
+  const eventResourcesType = getEventResourcesType(isRecording);
+
   axiosWithInterceptor
-    .delete("resources/webinars/" + uuid)
+    .delete(`resources/${eventResourcesType}/"` + uuid)
     .then((_response: Response) => {
       window.location.reload();
       getInfoToast(toast, "The webinar has been deleted.");
@@ -42,10 +44,13 @@ export const deleteEvent = (uuid: string, toast: any): void => {
 
 export const getWebinarsInfo = async (
   toast: any,
-  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
+  setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>,
+  isRecording: boolean
 ) => {
+  const eventResourcesType = getEventResourcesType(isRecording);
+
   axiosWithInterceptor
-    .get("resources/webinars/")
+    .get(`resources/${eventResourcesType}/`)
     .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
       setWebinars(response.data.webinars.map((elem) => mapToEventInfo(elem)));
     })
@@ -54,3 +59,7 @@ export const getWebinarsInfo = async (
       getErrorToast(toast, "The webinar information could not be obtained.");
     });
 };
+
+export const getEventType = (isRecording: boolean) => (isRecording ? "recordings" : "event");
+export const getEventResourcesType = (isRecording: boolean) =>
+  isRecording ? "recordings" : "webinars";

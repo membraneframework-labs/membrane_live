@@ -14,7 +14,6 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import type { Client } from "../types";
-import { pageTitlePrefix } from "../utils/const";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -67,7 +66,7 @@ const Event = () => {
 
   return (
     <div className="EventPage">
-      <Header client={client} eventChannel={eventChannel}></Header>
+      <Header client={client} eventChannel={eventChannel} isRecording={false}></Header>
       <div className="MainGrid">
         <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
         <ParticipantsList client={client} eventChannel={eventChannel} />

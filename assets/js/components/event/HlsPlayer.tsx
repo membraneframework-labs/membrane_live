@@ -15,7 +15,7 @@ const HlsPlayer = ({ hlsUrl, presenterName }: HlsPlayerProps) => {
         <div className="HlsPlayerWrapper">
           <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer" />
           <div className="HlsTopBar">
-            <div className="HlsPresenterName">{presenterName}</div>
+            {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
           </div>
         </div>
       ) : (

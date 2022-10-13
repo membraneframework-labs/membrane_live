@@ -3,6 +3,7 @@ import axios from "../services/index";
 import { getChannelId } from "../utils/channelUtils";
 import type { EventInfo, OriginalEventInfo } from "../types";
 import { getErrorToast } from "./toastUtils";
+import { getEventResourcesType } from "./dashboardUtils";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -24,10 +25,13 @@ export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
 
 export const getEventInfo = (
   toast: any,
-  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
+  setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>,
+  isRecording: boolean
 ) => {
+  const eventResourcesType = getEventResourcesType(isRecording);
+
   axios
-    .get("/resources/webinars/" + getChannelId())
+    .get(`/resources/${eventResourcesType}/` + getChannelId())
     .then((response: { data: { webinar: OriginalEventInfo } }) => {
       setEventInfo(mapToEventInfo(response.data.webinar));
     })
