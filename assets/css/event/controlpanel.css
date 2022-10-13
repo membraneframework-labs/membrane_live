@@ -73,3 +73,24 @@
 .SettingsMenuItem {
   font-size: 1.6rem;
 }
+
+.OptionsPopoverHeader {
+  font-size: 2rem;
+  color: var(--font-dark-color);
+}
+
+.OptionsPopoverBody {
+  color: var(--font-dark-color);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.OptionsPopoverButton {
+  color: var(--bg-light-color-1);
+  background-color: var(--font-dark-color);
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1.6rem;
+  padding: 1rem 1.5rem;
+}

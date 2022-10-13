@@ -1,5 +1,6 @@
 import { Presence } from "phoenix";
 import type { Participant, Client, Presenter } from "../types";
+import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
 export const createEventChannel = (
@@ -12,6 +13,10 @@ export const createEventChannel = (
   eventChannel
     .join()
     .receive("ok", (resp: { is_moderator: boolean }) => {
+      eventChannel.on("finish_event", () => {
+        redirectToHomePage();
+        getInfoToast(toast, "The event has finished.");
+      });
       setEventChannel(eventChannel);
       setClient({ ...client, isModerator: resp.is_moderator });
     })

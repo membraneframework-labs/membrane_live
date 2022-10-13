@@ -4,6 +4,7 @@ import { getChannelId } from "../utils/channelUtils";
 import type { EventInfo, OriginalEventInfo } from "../types";
 import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
+import { useNavigate } from "react-router-dom";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -58,4 +59,12 @@ export const syncParticipantsNumber = (
 
     eventChannel.push("sync_presence", {});
   }
+};
+
+export const redirectToHomePage = () => {
+  const navigate = useNavigate();
+  navigate("/");
+  // the line above does not break the socket connection
+  // which is desired in this case, so the page is reloaded manually
+  window.location.reload();
 };

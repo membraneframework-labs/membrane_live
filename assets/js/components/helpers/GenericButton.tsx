@@ -5,8 +5,12 @@ type GenericButtonProps = {
   onClick: () => void;
 };
 
-const GenericButton = ({ icon, onClick }: GenericButtonProps) => {
-  return <button onClick={onClick}>{icon}</button>;
-};
+const GenericButton = React.forwardRef(({ icon, onClick }: GenericButtonProps, ref: any) => {
+  return (
+    <button ref={ref} onClick={onClick}>
+      {icon}
+    </button>
+  );
+});
 
 export default GenericButton;

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils/headerUtils";
-import { useNavigate } from "react-router-dom";
+import {
+  getEventInfo,
+  initEventInfo,
+  redirectToHomePage,
+  syncParticipantsNumber,
+} from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
@@ -20,14 +24,6 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
   const toast = useToast();
-
-  const navigate = useNavigate();
-  const redirectToHomePage = () => {
-    navigate("/");
-    // the line above does not break the socket connection
-    // which is desired in this case, so the page is reloaded manually
-    window.location.reload();
-  };
 
   useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
