@@ -74,7 +74,7 @@ const Event = () => {
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      <Header client={client} eventChannel={eventChannel}></Header>
+      <Header client={client} eventChannel={eventChannel} isRecording={false}></Header>
       <div className="MainGrid">
         <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
         <ParticipantsList client={client} eventChannel={eventChannel} />

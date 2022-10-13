@@ -13,9 +13,10 @@ import { Channel } from "phoenix";
 type HeaderProps = {
   eventChannel: Channel | undefined;
   client: Client;
+  isRecording: boolean;
 };
 
-const Header = ({ client, eventChannel }: HeaderProps) => {
+const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const picture: string = storageGetPicture();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
@@ -29,11 +30,14 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
     window.location.reload();
   };
 
-  useEffect(() => getEventInfo(toast, setEventInfo), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
-  useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
+
+  if (!isRecording) {
+    useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
+  }
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -52,11 +56,15 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
         <div className="Title"> {eventInfo.title} </div>
         <div className="WebinarInfo">
           <div> {formatDate(eventInfo.startDate)}</div>
-          <div> | </div>
-          <div className="ParticipantsNumber">
-            <Users className="UsersIcon" />
-            {participantsNumber + ` participant${participantsNumber > 1 ? "s" : ""}`}
-          </div>
+          {!isRecording && (
+            <>
+              <div> | </div>
+              <div className="ParticipantsNumber">
+                <Users className="UsersIcon" />
+                {`${participantsNumber} participant${participantsNumber > 1 ? "s" : ""}`}
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className="CopyLink">

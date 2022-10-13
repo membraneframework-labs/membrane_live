@@ -18,7 +18,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
         <div className="HlsPlayerWrapper">
           <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer" />
           <div className="HlsTopBar">
-            <div className="HlsPresenterName">{presenterName}</div>
+            {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
           </div>
           <div className="HlsBottomBar">
             <AnimationComponent eventChannel={eventChannel} />
