@@ -155,6 +155,12 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
+  def handle_in("finish_event", %{}, socket) do
+    # event finish handling
+    broadcast!(socket, "finish_event", %{})
+    {:noreply, socket}
+  end
+
   def handle_in("sync_presence", _data, socket) do
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
