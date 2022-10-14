@@ -114,7 +114,9 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("finish_event", %{}, socket) do
-    # event finish handling
+    "event:" <> uuid = socket.topic
+    Webinars.mark_webinar_as_finished(uuid)
+
     broadcast!(socket, "finish_event", %{})
     {:noreply, socket}
   end
