@@ -13,11 +13,13 @@ import {
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
+import { useNavigate } from "react-router-dom";
 import type { Client } from "../types";
 import "../../css/event/event.css";
 
 const Event = () => {
   const toast = useToast();
+  const navigate = useNavigate();
   const [client, setClient] = useState<Client>({
     name: storageGetName(),
     email: storageGetEmail(),
@@ -36,7 +38,7 @@ const Event = () => {
         token: storageGetAuthToken(),
         reloaded: storageGetReloaded(),
       });
-      createEventChannel(toast, client, channel, setEventChannel, setClient);
+      createEventChannel(toast, client, channel, setEventChannel, setClient, navigate);
     }
   }, [eventChannel]);
 

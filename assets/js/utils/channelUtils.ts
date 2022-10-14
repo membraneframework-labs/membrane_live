@@ -1,4 +1,5 @@
 import { Presence } from "phoenix";
+import { NavigateFunction } from "react-router-dom";
 import type { Participant, Client, Presenter } from "../types";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
@@ -8,13 +9,14 @@ export const createEventChannel = (
   client: Client,
   eventChannel: any,
   setEventChannel: React.Dispatch<React.SetStateAction<any>>,
-  setClient: React.Dispatch<React.SetStateAction<Client>>
+  setClient: React.Dispatch<React.SetStateAction<Client>>,
+  navigate: NavigateFunction
 ) => {
   eventChannel
     .join()
     .receive("ok", (resp: { is_moderator: boolean }) => {
       eventChannel.on("finish_event", () => {
-        redirectToHomePage();
+        redirectToHomePage(navigate);
         getInfoToast(toast, "The event has finished.");
       });
       setEventChannel(eventChannel);
