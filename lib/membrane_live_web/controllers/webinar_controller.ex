@@ -1,6 +1,7 @@
 defmodule MembraneLiveWeb.WebinarController do
   use MembraneLiveWeb, :controller
 
+  alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
 
@@ -25,38 +26,17 @@ defmodule MembraneLiveWeb.WebinarController do
 
   @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, params) do
-    get_with_callback(conn, params, &show_callback/2)
+    ControllerCallbackHelper.get_with_callback(conn, params, &show_callback/2, true)
   end
 
   @spec update(any, map) :: any
   def update(conn, params) do
-    get_with_callback(conn, params, &update_callback/2)
+    ControllerCallbackHelper.get_with_callback(conn, params, &update_callback/2, false)
   end
 
   @spec delete(any, map) :: any
   def delete(conn, params) do
-    get_with_callback(conn, params, &delete_callback/2)
-  end
-
-  defp get_with_callback(
-         %{assigns: %{user_id: user_id}} = conn,
-         %{"uuid" => uuid} = params,
-         callback
-       ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid),
-         is_show_callback? <- callback == (&show_callback/2),
-         {:ok, webinar_db} <- is_user_authorized(webinar, user_id, is_show_callback?) do
-      callback.(conn, Map.put(params, "webinar_db", webinar_db))
-    else
-      {:error, :no_webinar} ->
-        %{error: :not_found, message: "Webinar with uuid #{uuid} could not be found"}
-
-      {:error, :forbidden} ->
-        %{
-          error: :forbidden,
-          message: "User with uuid #{user_id} does not have access to webinar with uuid #{uuid}"
-        }
-    end
+    ControllerCallbackHelper.get_with_callback(conn, params, &delete_callback/2, false)
   end
 
   defp get_with_callback(
@@ -91,12 +71,4 @@ defmodule MembraneLiveWeb.WebinarController do
       send_resp(conn, :no_content, "")
     end
   end
-
-  defp is_user_authorized(webinar, _jwt_user_uuid, true), do: {:ok, webinar}
-
-  defp is_user_authorized(webinar, jwt_user_uuid, _is_show_callback?)
-       when jwt_user_uuid == webinar.moderator_id,
-       do: {:ok, webinar}
-
-  defp is_user_authorized(_webinar, _jwt_user_uuid, _is_show_callback?), do: {:error, :forbidden}
 end

@@ -8,8 +8,23 @@ defmodule MembraneLive.Webinars do
 
   alias MembraneLive.Webinars.Webinar
 
-  @spec list_webinars :: list(Webinar.t())
-  def list_webinars, do: Repo.all(Webinar)
+  @spec list_webinars() :: list(Webinar.t())
+  def list_webinars() do
+    query = from u in Webinar,
+              where: not u.is_finished,
+              select: u
+
+    Repo.all(query)
+  end
+
+  @spec list_recordings() :: list(Webinar.t())
+  def list_recordings() do
+    query = from u in Webinar,
+              where: not u.is_finished,
+              select: u
+
+    Repo.all(query)
+  end
 
   @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
   def get_webinar(uuid) do
