@@ -1,12 +1,13 @@
 import React from "react";
 import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
-import type { EventInfo } from "../../types";
 import ModalForm from "./ModalForm";
 import { useToast } from "@chakra-ui/react";
 import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
 import { getIsAuthenticated, clearSessionStorageName } from "../../utils/storageUtils";
+import type { EventInfo } from "../../types";
+
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {

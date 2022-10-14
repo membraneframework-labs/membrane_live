@@ -4,7 +4,7 @@ import { getChannelId } from "../utils/channelUtils";
 import type { EventInfo, OriginalEventInfo, Toast } from "../types";
 import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
-import { useNavigate } from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -61,8 +61,7 @@ export const syncParticipantsNumber = (
   }
 };
 
-export const redirectToHomePage = () => {
-  const navigate = useNavigate();
+export const redirectToHomePage = (navigate: NavigateFunction) => {
   navigate("/");
   // the line above does not break the socket connection
   // which is desired in this case, so the page is reloaded manually

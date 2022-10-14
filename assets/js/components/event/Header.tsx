@@ -9,6 +9,7 @@ import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
+import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
 import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
@@ -25,6 +26,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
   const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
@@ -45,7 +47,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
 
   return (
     <div className="Header">
-      <button onClick={redirectToHomePage}>
+      <button onClick={() => redirectToHomePage(navigate)}>
         <ArrowLeft className="Arrow" />
       </button>
       <div className="InfoWrapper">
