@@ -1,9 +1,9 @@
 defmodule MembraneLiveWeb.WebinarController do
   use MembraneLiveWeb, :controller
 
-  alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
+  alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
 
   action_fallback(MembraneLiveWeb.FallbackController)
 

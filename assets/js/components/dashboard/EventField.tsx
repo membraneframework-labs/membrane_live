@@ -7,7 +7,6 @@ import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
 import { getIsAuthenticated, clearSessionStorageName } from "../../utils/storageUtils";
 import type { EventInfo } from "../../types";
-
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
@@ -45,11 +44,13 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
           </div>
           {isAuthenticated && (
             <div className="EventModifyBox">
-              <ModalForm
-                type="update"
-                activationButtonClass="EventUpdateButton"
-                webinar={webinarInfo}
-              />
+              {!isRecording && (
+                <ModalForm
+                  type="update"
+                  activationButtonClass="EventUpdateButton"
+                  webinar={webinarInfo}
+                />
+              )}
               <button
                 className="EventDeleteButton"
                 onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}

@@ -11,12 +11,15 @@ const Recording = () => {
     isModerator: false,
   };
   const splitUrl = window.location.pathname.split("/");
-  const hlsUrl = `${splitUrl[0]}/video/${splitUrl[2]}/index.m3u8`;
+  // const hlsUrl = `${splitUrl[0]}/video/${splitUrl[2]}/index.m3u8`;
+  const hlsUrl = `${splitUrl[0]}/video/5cbbe570-f119-45c7-95b5-49af6b385c7e/index.m3u8`; // TODO: temporary, should be as above
 
   return (
-    <div>
+    <div className="EventPage">
       <Header client={client} eventChannel={null} isRecording={true} />
-      <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
+      <div className="Stream">
+        <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
+      </div>
     </div>
   );
 };
