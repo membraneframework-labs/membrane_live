@@ -34,7 +34,12 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:auth)
 
     resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
-    resources("/recordings", RecordingsController, except: [:edit, :new, :create, :update], param: "uuid")
+
+    resources("/recordings", RecordingsController,
+      except: [:edit, :new, :create, :update],
+      param: "uuid"
+    )
+
     resources("/users", UserController, except: [:edit, :new, :create], param: "uuid")
   end
 

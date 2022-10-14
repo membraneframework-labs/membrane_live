@@ -10,18 +10,22 @@ defmodule MembraneLive.Webinars do
 
   @spec list_webinars() :: list(Webinar.t())
   def list_webinars() do
-    query = from u in Webinar,
-              where: not u.is_finished,
-              select: u
+    query =
+      from(u in Webinar,
+        where: not u.is_finished,
+        select: u
+      )
 
     Repo.all(query)
   end
 
   @spec list_recordings() :: list(Webinar.t())
   def list_recordings() do
-    query = from u in Webinar,
-              where: u.is_finished,
-              select: u
+    query =
+      from(u in Webinar,
+        where: u.is_finished,
+        select: u
+      )
 
     Repo.all(query)
   end

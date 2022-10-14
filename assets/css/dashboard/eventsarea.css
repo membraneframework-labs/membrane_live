@@ -105,6 +105,13 @@
 .EventDeleteButton:hover {
   color: var(--button-red-hover);
 }
+
+.EmptyText {
+  color: var(--font-dark-color);
+  font-size: 1.5rem;
+  padding-left: 2.4rem;
+}
+
 /* Foggy effect on top and bottom of scrollable area */
 
 .FogWrapper {

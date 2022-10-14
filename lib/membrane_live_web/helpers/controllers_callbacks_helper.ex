@@ -5,11 +5,11 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
   alias MembraneLive.Webinars
 
   def get_with_callback(
-         %{assigns: %{user_id: user_id}} = conn,
-         %{"uuid" => uuid} = params,
-         callback,
-         is_show_callback?
-       ) do
+        %{assigns: %{user_id: user_id}} = conn,
+        %{"uuid" => uuid} = params,
+        callback,
+        is_show_callback?
+      ) do
     with {:ok, webinar} <- Webinars.get_webinar(uuid),
          {:ok, webinar_db} <- is_user_authorized(webinar, user_id, is_show_callback?) do
       callback.(conn, Map.put(params, "webinar_db", webinar_db))

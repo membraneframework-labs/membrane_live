@@ -19,8 +19,10 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
     const curDate = new Date();
     const events = isRecording ? recordings : webinars;
 
-    return events
-      .filter((elem) => (isRecording ? true : upcoming ? elem.startDate >= curDate : elem.startDate < curDate))
+    const filtered_events = events
+      .filter((elem) =>
+        isRecording ? true : upcoming ? elem.startDate >= curDate : elem.startDate < curDate
+      )
       .filter((elem) => elem.title.toLowerCase().includes(searchText.toLowerCase()))
       .sort((a, b) =>
         upcoming
@@ -28,6 +30,8 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
           : b.startDate.getTime() - a.startDate.getTime()
       )
       .map((elem) => <EventField key={elem.uuid} isRecording={isRecording} webinarInfo={elem} />);
+
+    return filtered_events.length ? filtered_events : null;
   };
 
   useEffect(() => {
@@ -41,15 +45,23 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
         {currentEvents == "All events" && (
           <>
             <p className="HeaderText">Upcoming events</p>
-            <div className="EventList">{listEvents(false, true)}</div>
+            <div className="EventList">
+              {listEvents(false, true) || (
+                <p className="EmptyText">No upcoming events! Create one with the button above!</p>
+              )}
+            </div>
             <p className="HeaderText">Past events</p>
-            <div className="EventList">{listEvents(false, false)}</div>
+            <div className="EventList">
+              {listEvents(false, false) || <p className="EmptyText">No past events!</p>}
+            </div>
           </>
         )}
         {currentEvents == "Recorded events" && (
           <>
             <p className="HeaderText">Recorded events</p>
-            <div className="EventList">{listEvents(true, false)}</div>
+            <div className="EventList">
+              {listEvents(true, false) || <p className="EmptyText">No available recorded events</p>}
+            </div>
           </>
         )}
       </div>

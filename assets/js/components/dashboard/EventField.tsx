@@ -6,7 +6,6 @@ import { useToast } from "@chakra-ui/react";
 import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
 import type { EventInfo } from "../../types";
-
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
@@ -38,11 +37,13 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
             {formatDate(webinarInfo.startDate)}
           </div>
           <div className="EventModifyBox">
-            <ModalForm
-              type="update"
-              activationButtonClass="EventUpdateButton"
-              webinar={webinarInfo}
-            />
+            {!isRecording && (
+              <ModalForm
+                type="update"
+                activationButtonClass="EventUpdateButton"
+                webinar={webinarInfo}
+              />
+            )}
             <button
               className="EventDeleteButton"
               onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
