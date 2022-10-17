@@ -242,11 +242,10 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in("isPlaylistPlayable", _data, socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        {:reply, {:ok, false}, socket} |> IO.inspect(label: "Playlist playable FALSE")
+        {:reply, {:ok, false}, socket}
 
       _pid ->
         {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
-        |> IO.inspect(label: "Playlist playable TRUE")
     end
   end
 end

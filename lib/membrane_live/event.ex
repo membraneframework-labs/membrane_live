@@ -89,9 +89,9 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
-       playlist_idls: %{},
        peer_ids: [],
        event_id: event_id,
+       event_name: "",
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
@@ -169,12 +169,6 @@ defmodule MembraneLive.Event do
 
     state = Map.put(state, :peer_ids, [peer.id | state.peer_ids])
 
-    state =
-      put_in(state, [:playlist_idls, peer.id], %{
-        name: peer.metadata["name"],
-        playlist_idl: ""
-      })
-
     {:noreply, state}
   end
 
@@ -247,6 +241,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :video, event_name}, state) do
+    state = %{state | event_name: event_name}
+
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
       playlist_idl: event_name,
       name: "name"
@@ -267,9 +263,8 @@ defmodule MembraneLive.Event do
       [] ->
         {:reply, %{playlist_idl: "", name: ""}, state}
 
-      [first_peer | _rest] ->
-        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[first_peer]
-        {:reply, %{playlist_idl: playlist_idl, name: name}, state}
+      _ ->
+        {:reply, %{playlist_idl: state.event_name, name: "Dzialaaaa!"}, state}
     end
   end
 
@@ -285,7 +280,6 @@ defmodule MembraneLive.Event do
   defp handle_peer_left(%{peer_ids: []} = state, _peer_id), do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
-    state = Map.update!(state, :playlist_idls, &Map.delete(&1, peer_id))
     state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
 
     case state.peer_ids do
