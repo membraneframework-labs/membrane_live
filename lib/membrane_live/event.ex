@@ -285,7 +285,6 @@ defmodule MembraneLive.Event do
   defp handle_peer_left(%{peer_ids: []} = state, _peer_id), do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
-    [prev_peer | _rest] = state.peer_ids
     state = Map.update!(state, :playlist_idls, &Map.delete(&1, peer_id))
     state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
 
@@ -296,16 +295,8 @@ defmodule MembraneLive.Event do
           name: ""
         })
 
-      [^prev_peer | _] ->
+      _ ->
         nil
-
-      [curr_peer | _] ->
-        %{playlist_idl: playlist_idl, name: name} = state.playlist_idls[curr_peer]
-
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-          playlist_idl: playlist_idl,
-          name: name
-        })
     end
 
     {:ok, state}
