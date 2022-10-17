@@ -60,8 +60,8 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
   };
 
   const text = participant.isRequestPresenting
-    ? "Stop asking to become presenter"
-    : "Ask to become presenter";
+    ? "Stop asking to become a presenter"
+    : "Ask to become a presenter";
 
   return (
     <Menu>
@@ -107,7 +107,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
       {participant.isRequestPresenting && (client.isModerator || isMyself) && (
-        <Tooltip label={"This user is asking to become presenter"} className="InfoTooltip">
+        <Tooltip label={"This user is asking to become a presenter"} className="InfoTooltip">
           <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
