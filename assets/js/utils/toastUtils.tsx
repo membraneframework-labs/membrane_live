@@ -1,6 +1,12 @@
 import React from "react";
 import type { Client, Toast } from "../types";
-import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle, iconType } from "react-swm-icon-pack";
+import {
+  QuestionCircle,
+  CrossSmall,
+  WarningCircle,
+  InfoCircle,
+  iconType,
+} from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
 import { Channel } from "phoenix";

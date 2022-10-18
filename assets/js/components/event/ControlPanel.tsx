@@ -25,7 +25,7 @@ import {
   ScreenDisabled,
   MenuHorizontal,
   UserPlus,
-  iconType
+  iconType,
 } from "react-swm-icon-pack";
 import {
   shareScreen,
