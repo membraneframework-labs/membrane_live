@@ -1,0 +1,36 @@
+@keyframes heartfade {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.heart {
+  z-index: 999;
+  animation: heartfade 6s linear;
+  position: absolute;
+}
+
+.heart:before {
+  content: "";
+  background-color: var(--font-dark-color);
+  position: absolute;
+  height: 30px;
+  width: 45px;
+  border-radius: 15px 0px 0px 15px;
+  transform: rotate(45deg);
+}
+
+.heart:after {
+  content: "";
+  background-color: var(--font-dark-color);
+  position: absolute;
+  height: 30px;
+  width: 45px;
+  border-radius: 15px 0px 0px 15px;
+  left: 10.5px;
+  transform: rotate(135deg);
+}

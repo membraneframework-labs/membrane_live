@@ -36,6 +36,10 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
     [eventChannel]
   );
 
+  const sendReaction = () => {
+    eventChannel.push("reaction", {});
+  };
+
   return (
     <div className="ModePanel">
       <Screen className="ScreenIcon" />
@@ -45,6 +49,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
           : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">
+        <ModeButton name="Reaction" active={false} onClick={() => sendReaction()} />
         {amIPresenter && (
           <>
             <ModeButton name="Main Stream" active={mode == "hls"} onClick={() => setMode("hls")} />

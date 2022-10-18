@@ -38,9 +38,9 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const channelMsg = client.isAuthenticated
         ? {
-            token: storageGetAuthToken(),
-            reloaded: storageGetReloaded(),
-          }
+          token: storageGetAuthToken(),
+          reloaded: storageGetReloaded(),
+        }
         : { username: client.name };
       const channel = socket.channel(`event:${getChannelId()}`, channelMsg);
       createEventChannel(toast, client, channel, setEventChannel, setClient);
@@ -79,7 +79,7 @@ const Event = () => {
         <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
         <ParticipantsList client={client} eventChannel={eventChannel} />
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -95,8 +95,8 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   const role = participant.isModerator
     ? "Moderator"
     : participant.isPresenter
-    ? "Presenter"
-    : "Participant";
+      ? "Presenter"
+      : "Participant";
 
   const isMyself: boolean = client.email == participant.email;
   const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;

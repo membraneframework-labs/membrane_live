@@ -71,7 +71,7 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
         name={client.name}
         picture={picture}
       />
-    </div>
+    </div >
   );
 };
 
