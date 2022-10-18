@@ -25,6 +25,7 @@ import {
   ScreenDisabled,
   MenuHorizontal,
   UserPlus,
+  iconType
 } from "react-swm-icon-pack";
 import {
   shareScreen,
@@ -183,7 +184,7 @@ const ControlPanel = ({
     );
   };
 
-  const getMuteButton = (sourceType: SourceType, IconEnabled: any, IconDisabled: any) => {
+  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => {
     return (
       <GenericButton
         icon={

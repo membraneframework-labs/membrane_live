@@ -1,7 +1,8 @@
 import React from "react";
+import { iconType } from "react-swm-icon-pack";
 
 type GenericButtonProps = {
-  icon: any;
+  icon: iconType;
   onClick: () => void;
 };
 

@@ -1,6 +1,6 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
-import { Calendar, Package, QuestionCircle, Logout } from "react-swm-icon-pack";
+import { Calendar, Package, QuestionCircle, Logout, iconType } from "react-swm-icon-pack";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
@@ -9,7 +9,7 @@ type SideDashboardPanelProps = {
 };
 
 const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPanelProps) => {
-  const getButton = (Icon: any, text: string, onClick: () => void) => {
+  const getButton = (Icon: iconType, text: string, onClick: () => void) => {
     const isActive = currentEvents == text;
 
     return (
