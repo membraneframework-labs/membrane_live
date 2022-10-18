@@ -2,7 +2,7 @@
   "scripts": {
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "linter": "eslint js/*"
+    "linter": "eslint --max-warnings 0 js/*"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.4",
@@ -33,6 +33,7 @@
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "eslint": "^8.24.0",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
   }
 }
