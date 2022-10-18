@@ -95,7 +95,8 @@ defmodule MembraneLive.Event do
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
-       trace_ctx: trace_ctx
+       trace_ctx: trace_ctx,
+       moderator_pid: nil,
      }}
   end
 
@@ -178,7 +179,12 @@ defmodule MembraneLive.Event do
 
     {:ok, state} = handle_peer_left(state, peer.id)
 
-    {:noreply, state}
+    if state.peer_channels == %{} and is_nil(state.moderator_pid) do
+      Engine.terminate(state.rtc_engine)
+      {:stop, :normal, state}
+    else
+      {:noreply, state}
+    end
   end
 
   @impl true
@@ -211,25 +217,45 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
+  def handle_info({:moderator, moderator_pid}, state) do
+    Process.monitor(moderator_pid)
+    {:noreply,  %{state | moderator_pid: moderator_pid}}
+  end
+
+  @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    if pid == state.rtc_engine do
-      event_span_id(state.event_id)
-      |> Membrane.OpenTelemetry.end_span()
+    cond do
+      pid == state.rtc_engine ->
+        event_span_id(state.event_id)
+        |> Membrane.OpenTelemetry.end_span()
 
-      {:stop, :normal, state}
-    else
-      {peer_id, _peer_channel_id} =
-        state.peer_channels
-        |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
+        {:stop, :normal, state}
+      pid == state.moderator_pid ->
+        if state.peer_channels == %{} do
+          Engine.terminate(state.rtc_engine)
+          {:stop, :normal, state}
+        else
+          {:noreply, %{state | moderator_pid: nil}}
+        end
+      true ->
+        result =
+          state.peer_channels
+          |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
-      {:ok, state} = handle_peer_left(state, peer_id)
+        case result do
+          nil -> {:noreply, state}
+          {peer_id, _peer_channel_id} ->
+            {:ok, state} = handle_peer_left(state, peer_id)
 
-      Engine.remove_peer(state.rtc_engine, peer_id)
-      {_elem, state} = pop_in(state, [:peer_channels, peer_id])
+            Engine.remove_peer(state.rtc_engine, peer_id)
 
-      if state.peer_channels == %{}, do: Engine.terminate(state.rtc_engine)
-
-      {:noreply, state}
+            if is_nil(state.moderator_pid) and state.peer_channels == %{} do
+              Engine.terminate(state.rtc_engine)
+              {:stop, :normal, state}
+            else
+              {:noreply, state}
+            end
+        end
     end
   end
 
@@ -281,6 +307,7 @@ defmodule MembraneLive.Event do
 
   defp handle_peer_left(state, peer_id) do
     state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
+    {_elem, state} = pop_in(state, [:peer_channels, peer_id])
 
     case state.peer_ids do
       [] ->
