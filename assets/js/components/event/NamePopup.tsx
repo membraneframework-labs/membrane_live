@@ -1,21 +1,10 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-  Input,
-  Center,
-  FormLabel,
-  FormControl,
-} from "@chakra-ui/react";
+import Modal from "react-modal";
 import React, { useState } from "react";
+import GoogleButton from "../helpers/GoogleButton";
+import { roundedGoogleButton } from "../../utils/const";
 import { Client } from "../../types";
 import "../../../css/event/namepopup.css";
+import "../../../css/dashboard/modalform.css";
 
 type NamePopupProps = {
   client: Client;
@@ -23,34 +12,40 @@ type NamePopupProps = {
 };
 
 const NamePopup = ({ client, setClient }: NamePopupProps) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  onOpen;
   const [name, setName] = useState<string>("");
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+
   const saveNameAndClosePopup = () => {
+    if (name === "") return;
     setClient({ ...client, name: name });
-    onClose();
+    setIsOpen(false);
   };
+
   return (
-    <Modal isCentered={true} size={"xl"} isOpen={true} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <p className="PopupHeader"> Pass your name </p>
-        <ModalBody pb={6}>
-          <FormControl>
+    <Modal className="ModalForm" isOpen={isOpen} ariaHideApp={false} contentLabel="Form Modal">
+      <div className="ModalWrapper">
+        <div className="ModalFormHeader">
+          <div className="ModalTitle"> Pass your name </div>
+        </div>
+        <div className="ModalFormBody">
+          <div className="EventFormFieldDiv">
             <input
-              className="UsernameInput"
+              className="EventFormFieldInput"
+              type="text"
               placeholder="Username"
               value={name}
-              onInput={(e) => setName((e.target as any).value)}
-            ></input>
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
+              onChange={(e) => setName((e.target as any).value)}
+              required
+            />
+          </div>
+        </div>
+        <div className="ModalFormFooter">
+          <GoogleButton options={roundedGoogleButton} />
           <button onClick={saveNameAndClosePopup} className="SaveButton">
             Save
           </button>
-        </ModalFooter>
-      </ModalContent>
+        </div>
+      </div>
     </Modal>
   );
 };

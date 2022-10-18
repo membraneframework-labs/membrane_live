@@ -74,7 +74,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
-      {client.isModerator && (
+      {client.isModerator && participant.isAuth && (
         <ModeratorMenu
           moderatorClient={client}
           eventChannel={eventChannel}

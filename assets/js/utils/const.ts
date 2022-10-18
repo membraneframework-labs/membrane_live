@@ -51,3 +51,19 @@ export const monthNames = [
 ];
 
 export const pageTitlePrefix = "Membrane Live";
+
+export const roundedGoogleButton = {
+  theme: "outline",
+  type: "icon",
+  size: "large",
+  logo_alignment: "left",
+  shape: "circle",
+};
+
+export const rectangleGoogleButton = {
+  theme: "outline",
+  size: "large",
+  logo_alignment: "left",
+  shape: "pill",
+  text: "signin_with",
+};

@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout } from "react-swm-icon-pack";
 import "../../../css/dashboard/sidedashboardpanel.css";
@@ -10,8 +9,6 @@ type SideDashboardPanelProps = {
 };
 
 const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPanelProps) => {
-  const navigate = useNavigate();
-
   const getButton = (Icon: any, text: string, onClick: () => void) => {
     const isActive = currentEvents == text;
 
@@ -46,7 +43,7 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
           ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
             localStorage.removeItem(key);
           });
-          navigate("/auth", { replace: true });
+          window.location.reload();
         })}
       </div>
     </div>
