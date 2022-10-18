@@ -8,7 +8,6 @@ defmodule MembraneLiveWeb.EventChannel do
 
   require Logger
 
-  alias Phoenix.Socket
   alias MembraneLive.Accounts
   alias MembraneLive.Event
   alias MembraneLive.Repo
@@ -16,6 +15,7 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
+  alias Phoenix.Socket
 
   @impl true
   def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
@@ -32,7 +32,7 @@ defmodule MembraneLiveWeb.EventChannel do
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(id, socket, is_moderator),
-             {:ok, is_presenter} = check_if_presenter(email, reloaded, id) do
+             {:ok, is_presenter} <- check_if_presenter(email, reloaded, id) do
           {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
 
           {:ok, _ref} =
@@ -43,7 +43,9 @@ defmodule MembraneLiveWeb.EventChannel do
             })
 
           if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
-          {:ok, %{is_moderator: is_moderator}, Socket.assign(socket, %{is_moderator: is_moderator, event_id: id})}
+
+          {:ok, %{is_moderator: is_moderator},
+           Socket.assign(socket, %{is_moderator: is_moderator, event_id: id})}
         else
           %{metas: _presence} ->
             {:error,
@@ -86,8 +88,12 @@ defmodule MembraneLiveWeb.EventChannel do
   defp create_event(event_id, socket, is_moderator) do
     case :global.whereis_name(event_id) do
       :undefined ->
-        if is_moderator, do: Event.start(event_id, name: {:global, event_id}), else: {:error, :non_moderator}
-      pid -> {:ok, pid}
+        if is_moderator,
+          do: Event.start(event_id, name: {:global, event_id}),
+          else: {:error, :non_moderator}
+
+      pid ->
+        {:ok, pid}
     end
     |> case do
       {:ok, event_pid} ->
@@ -121,7 +127,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
   defp join_event(socket) do
     socket = get_event_pid(socket)
-    if is_nil(socket.assigns.event_pid), do: raise "Event was not started before first joining attempt"
+
+    if is_nil(socket.assigns.event_pid),
+      do: raise("Event was not started before first joining attempt")
 
     peer_id = "#{UUID.uuid4()}"
 

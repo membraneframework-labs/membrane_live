@@ -96,7 +96,7 @@ defmodule MembraneLive.Event do
        peer_channels: %{},
        network_options: network_options,
        trace_ctx: trace_ctx,
-       moderator_pid: nil,
+       moderator_pid: nil
      }}
   end
 
@@ -219,7 +219,7 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_info({:moderator, moderator_pid}, state) do
     Process.monitor(moderator_pid)
-    {:noreply,  %{state | moderator_pid: moderator_pid}}
+    {:noreply, %{state | moderator_pid: moderator_pid}}
   end
 
   @impl true
@@ -230,6 +230,7 @@ defmodule MembraneLive.Event do
         |> Membrane.OpenTelemetry.end_span()
 
         {:stop, :normal, state}
+
       pid == state.moderator_pid ->
         if state.peer_channels == %{} do
           Engine.terminate(state.rtc_engine)
@@ -237,13 +238,16 @@ defmodule MembraneLive.Event do
         else
           {:noreply, %{state | moderator_pid: nil}}
         end
+
       true ->
         result =
           state.peer_channels
           |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
         case result do
-          nil -> {:noreply, state}
+          nil ->
+            {:noreply, state}
+
           {peer_id, _peer_channel_id} ->
             {:ok, state} = handle_peer_left(state, peer_id)
 
@@ -289,7 +293,7 @@ defmodule MembraneLive.Event do
       [] ->
         {:reply, %{playlist_idl: "", name: ""}, state}
 
-      _ ->
+      _else ->
         {:reply, %{playlist_idl: state.event_name, name: "Dzialaaaa!"}, state}
     end
   end
@@ -316,7 +320,7 @@ defmodule MembraneLive.Event do
           name: ""
         })
 
-      _ ->
+      _else ->
         nil
     end
 
