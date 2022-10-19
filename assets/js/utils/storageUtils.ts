@@ -2,6 +2,7 @@ import type { AuthTokenKey, RefreshTokenKey, AuthResponseData } from "../types";
 
 const NAME = "name";
 const EMAIL = "email";
+const REQUEST_PRESENTING = "isRequestPresenting";
 const PICTURE = "picture";
 const RELOAD = "reloaded";
 
@@ -30,6 +31,10 @@ export const storageGetEmail = (): string => {
   const email: string | null = localStorage.getItem(EMAIL);
   return email ? email : "";
 };
+
+export const storageGetPresentingRequest = (): boolean => {
+  return localStorage.getItem(REQUEST_PRESENTING) === "true";
+};
 export const storageGetPicture = (): string => {
   const picture: string | null = localStorage.getItem(PICTURE);
   return picture ? picture : "";
@@ -41,6 +46,10 @@ export const storageSetName = (name: string): void => {
 
 export const storageSetEmail = (email: string): void => {
   localStorage.setItem(EMAIL, email);
+};
+
+export const storageSetPresentingRequest = (requestedPresenting: boolean): void => {
+  localStorage.setItem(REQUEST_PRESENTING, requestedPresenting ? "true" : "false");
 };
 
 export const storageSetPicture = (picture: string): void => {

@@ -4,6 +4,7 @@ export type Participant = {
   isPresenter: boolean;
   isModerator: boolean;
   isAuth: boolean;
+  isRequestPresenting: boolean;
 };
 
 export type Presenter = {

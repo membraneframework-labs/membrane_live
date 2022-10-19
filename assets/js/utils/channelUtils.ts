@@ -25,7 +25,8 @@ export const createEventChannel = (
 
 export const syncEventChannel = (
   eventChannel: any,
-  setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>
+  setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
+  clientEmail: String
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
@@ -40,9 +41,10 @@ export const syncEventChannel = (
           isPresenter: participant.is_presenter,
           isModerator: participant.is_moderator,
           isAuth: participant.is_auth,
+          isRequestPresenting: participant.is_request_presenting,
         });
       });
-      parts.sort(compareParticipants);
+      parts.sort(compareParticipants(clientEmail));
       setParticipants(parts);
     };
 
@@ -110,10 +112,22 @@ export const syncPresenters = (
 
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
 
-const compareParticipants = (x: Participant, y: Participant): number => {
-  return participantToNumber(x) - participantToNumber(y);
-};
+const compareParticipants =
+  (clientEmail: String) =>
+  (x: Participant, y: Participant): number => {
+    return x.email == clientEmail
+      ? -1
+      : y.email == clientEmail
+      ? 1
+      : participantToNumber(x) - participantToNumber(y);
+  };
 
 const participantToNumber = (participant: Participant): number => {
-  return participant.isModerator ? 1 : participant.isPresenter ? 2 : 3;
+  return participant.isModerator
+    ? 1
+    : participant.isPresenter
+    ? 2
+    : participant.isRequestPresenting
+    ? 3
+    : 4;
 };
