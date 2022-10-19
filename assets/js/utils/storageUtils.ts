@@ -62,3 +62,11 @@ export const sessionStorageGetName = (): string => {
   const name: string | null = sessionStorage.getItem(NAME);
   return name ? name : "";
 };
+
+export const getIsAuthenticated = (): boolean => {
+  return storageGetAuthToken() != null;
+};
+
+export const clearSessionStorageName = (): void => {
+  sessionStorage.removeItem(NAME);
+};

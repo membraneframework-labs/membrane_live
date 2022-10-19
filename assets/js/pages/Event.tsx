@@ -10,6 +10,7 @@ import {
   storageSetReloaded,
   storageGetEmail,
   sessionStorageGetName,
+  getIsAuthenticated,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
@@ -24,18 +25,17 @@ const Event = () => {
     name: storageGetName() || sessionStorageGetName(),
     email: storageGetEmail(),
     isModerator: false,
-    isAuthenticated: storageGetAuthToken() ? true : false,
+    isAuthenticated: getIsAuthenticated(),
   });
   const [eventChannel, setEventChannel] = useState<any>();
   const [privateChannel, setPrivateChannel] = useState<any>();
-  const isAuthenticated = storageGetAuthToken() ? true : false;
   const socket = new Socket("/socket");
   socket.connect();
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
     if (!alreadyJoined && client.name) {
-      const channelMsg = isAuthenticated
+      const channelMsg = client.isAuthenticated
         ? {
             token: storageGetAuthToken(),
             reloaded: storageGetReloaded(),
@@ -49,7 +49,7 @@ const Event = () => {
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
-    if (!privateAlreadyJoined && eventAlreadyJoined && isAuthenticated) {
+    if (!privateAlreadyJoined && eventAlreadyJoined && client.isAuthenticated) {
       const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,

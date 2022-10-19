@@ -142,6 +142,44 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     end
   end
 
+  describe "unauthenticated user" do
+    setup [:create_webinar]
+
+    test "get webinar", %{webinar: %{uuid: webinar_uuid} = webinar} do
+      conn =
+        build_conn()
+        |> put_req_header("accept", "application/json")
+
+      conn = get(conn, Routes.webinar_path(conn, :show, webinar))
+
+      assert %{
+               "uuid" => ^webinar_uuid,
+               "description" => "some description",
+               "presenters" => [],
+               "start_date" => "2022-07-17T10:20:00",
+               "title" => "some title"
+             } = json_response(conn, 200)["webinar"]
+    end
+
+    test "lists all webinars", %{webinar: %{uuid: webinar_uuid} = _webinar} do
+      conn =
+        build_conn()
+        |> put_req_header("accept", "application/json")
+
+      conn = get(conn, Routes.webinar_path(conn, :index))
+
+      assert [
+               %{
+                 "uuid" => ^webinar_uuid,
+                 "description" => "some description",
+                 "presenters" => [],
+                 "start_date" => "2022-07-17T10:20:00",
+                 "title" => "some title"
+               }
+             ] = json_response(conn, 200)["webinars"]
+    end
+  end
+
   describe "delete webinar" do
     setup [:create_webinar]
 

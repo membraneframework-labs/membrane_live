@@ -5,9 +5,8 @@ import type { EventInfo } from "../../types";
 import ModalForm from "./ModalForm";
 import { useToast } from "@chakra-ui/react";
 import { deleteEventPopup } from "../../utils/toastUtils";
-
+import { getIsAuthenticated, clearSessionStorageName } from "../../utils/storageUtils";
 import "../../../css/dashboard/eventsarea.css";
-import { storageGetAuthToken } from "../../utils/storageUtils";
 
 type EventFieldProps = {
   webinarInfo: EventInfo;
@@ -15,7 +14,7 @@ type EventFieldProps = {
 
 const EventField = ({ webinarInfo }: EventFieldProps) => {
   const toast = useToast();
-  const isAuthenticated = storageGetAuthToken() ? true : false;
+  const isAuthenticated = getIsAuthenticated();
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
@@ -26,7 +25,11 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
     <div className="EventField">
       <div className="InfoBox">
         <p className="EventPresenters">{webinarInfo.presenters.join(", ")}</p>
-        <a href={`event/${webinarInfo.uuid}`} className="EventTitle">
+        <a
+          href={`event/${webinarInfo.uuid}`}
+          className="EventTitle"
+          onClick={() => clearSessionStorageName()}
+        >
           {webinarInfo.title}
         </a>
         <p className="EventDescription">{webinarInfo.description}</p>

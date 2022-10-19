@@ -1,5 +1,5 @@
 import React from "react";
-import { storageGetAuthToken, storageGetName, storageGetPicture } from "../../utils/storageUtils";
+import { getIsAuthenticated, storageGetName, storageGetPicture } from "../../utils/storageUtils";
 import UserField from "./UserField";
 import "../../../css/dashboard/welcomepanel.css";
 
@@ -10,7 +10,7 @@ type WelcomePanelProps = {
 const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
   const name = storageGetName();
   const picture = storageGetPicture();
-  const isAuthenticated = storageGetAuthToken() ? true : false;
+  const isAuthenticated = getIsAuthenticated();
 
   return (
     <div className="WelcomePanel">

@@ -1,7 +1,7 @@
 import React from "react";
 import { Search } from "react-swm-icon-pack";
 import ModalForm from "./ModalForm";
-import { storageGetAuthToken } from "../../utils/storageUtils";
+import { getIsAuthenticated } from "../../utils/storageUtils";
 import "../../../css/dashboard/searchandcreatepanel.css";
 
 type SearchAndCreatePanelProps = {
@@ -15,7 +15,7 @@ const SearchAndCreatePanel = ({
   searchText,
   setSearchText,
 }: SearchAndCreatePanelProps) => {
-  const isAuthenticated = storageGetAuthToken() ? true : false;
+  const isAuthenticated = getIsAuthenticated();
 
   return (
     <div className="SearchAndCreatePanel">
