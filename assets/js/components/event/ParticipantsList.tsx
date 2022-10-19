@@ -49,8 +49,10 @@ type ClientParticipantMenuProps = {
 };
 
 const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
+  const askText = "Ask to become a presenter";
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if ((e.target as HTMLTextAreaElement).value === "Ask to become presenter") {
+    if ((e.target as HTMLTextAreaElement).value === askText) {
       eventChannel.push("presenting_request", {
         email: participant.email,
       });
@@ -59,9 +61,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
     }
   };
 
-  const text = participant.isRequestPresenting
-    ? "Stop asking to become a presenter"
-    : "Ask to become a presenter";
+  const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;
 
   return (
     <Menu>

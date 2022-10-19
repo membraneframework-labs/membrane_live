@@ -159,6 +159,13 @@ defmodule MembraneLiveWeb.EventChannel do
         remove_from_presenting_requests(email, id)
         join_event_stream(socket)
       else
+        {:ok, _ref} =
+          Presence.update(
+            socket,
+            email,
+            &%{&1 | is_request_presenting: false}
+          )
+
         {:ok, socket}
       end
 
