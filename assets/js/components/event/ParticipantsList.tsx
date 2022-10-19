@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
-import { MenuVertical, User1, Crown1, Star1 } from "react-swm-icon-pack";
+import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
 import "../../../css/event/participants.css";
 
@@ -14,8 +14,8 @@ type ModeratorMenuProps = {
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
-  const handleClick = (e: any) => {
-    if (e.target.value === "Set as a presenter") {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
       eventChannel.push("presenter_prop", {
         moderatorTopic: link + moderatorClient.email,
         presenterTopic: link + participant.email,
@@ -43,6 +43,40 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   );
 };
 
+type ClientParticipantMenuProps = {
+  participant: Participant;
+  eventChannel: any;
+};
+
+const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
+  const askText = "Ask to become a presenter";
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if ((e.target as HTMLTextAreaElement).value === askText) {
+      eventChannel.push("presenting_request", {
+        email: participant.email,
+      });
+    } else {
+      eventChannel.push("cancel_presenting_request", { email: participant.email });
+    }
+  };
+
+  const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;
+
+  return (
+    <Menu>
+      <MenuButton ml={"auto"} area-label="Options">
+        <MenuVertical className="OptionButton" />
+      </MenuButton>
+      <MenuList>
+        <MenuItem onClick={handleClick} value={text} className="MenuOptionText">
+          {text}
+        </MenuItem>
+      </MenuList>
+    </Menu>
+  );
+};
+
 type ParticipantProps = {
   client: Client;
   participant: Participant;
@@ -61,25 +95,31 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     ? "Moderator"
     : participant.isPresenter
     ? "Presenter"
-    : "Praticipant";
+    : "Participant";
+
+  const isMyself: Boolean = client.email == participant.email;
+  const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;
 
   return (
     <div className="Participant">
-      <Tooltip
-        label={`${role}${client.name == participant.name ? " (You)" : ""}`}
-        borderRadius="25px"
-        fontSize={"1.3rem"}
-        className="InfoTooltip"
-      >
+      <Tooltip label={`${role}${isMyself ? " (You)" : ""}`} className="InfoTooltip">
         {icon}
       </Tooltip>
       <p className="ParticipantText">{participant.name}</p>
+      {participant.isRequestPresenting && (client.isModerator || isMyself) && (
+        <Tooltip label={"This user is asking to become a presenter"} className="InfoTooltip">
+          <QuestionCircle className="ParticipantIcon" />
+        </Tooltip>
+      )}
       {client.isModerator && (
         <ModeratorMenu
           moderatorClient={client}
           eventChannel={eventChannel}
           participant={participant}
         />
+      )}
+      {isMyselfNotModeratorParticipant && (
+        <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />
       )}
     </div>
   );
@@ -95,7 +135,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<boolean>(true);
 
   useEffect(() => {
-    syncEventChannel(eventChannel, setParticipants);
+    syncEventChannel(eventChannel, setParticipants, client.email);
   }, [eventChannel]);
 
   let parts: JSX.Element[] = [];
