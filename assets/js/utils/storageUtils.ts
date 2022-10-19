@@ -53,3 +53,12 @@ export const storageSetReloaded = (): void => {
 export const storageGetReloaded = (): boolean => {
   return !!sessionStorage.getItem(RELOAD);
 };
+
+export const sessionStorageSetName = (name: string): void => {
+  sessionStorage.setItem(NAME, name);
+};
+
+export const sessionStorageGetName = (): string => {
+  const name: string | null = sessionStorage.getItem(NAME);
+  return name ? name : "";
+};

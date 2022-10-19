@@ -14,7 +14,7 @@ export const createEventChannel = (
     .receive("ok", (resp: any) => {
       setEventChannel(eventChannel);
       const isModerator = resp?.is_moderator ? true : false;
-      const email = resp?.gen_key ? resp.gen_key : client.email;
+      const email = resp?.generated_key ? resp.generated_key : client.email;
       setClient({ ...client, isModerator: isModerator, email: email });
     })
     .receive("error", (resp: { reason: string }) => {

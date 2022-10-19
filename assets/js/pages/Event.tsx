@@ -9,18 +9,19 @@ import {
   storageGetReloaded,
   storageSetReloaded,
   storageGetEmail,
+  sessionStorageGetName,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import type { Client } from "../types";
-import "../../css/event/event.css";
 import NamePopup from "../components/event/NamePopup";
+import "../../css/event/event.css";
 
 const Event = () => {
   const toast = useToast();
   const [client, setClient] = useState<Client>({
-    name: storageGetName(),
+    name: storageGetName() || sessionStorageGetName(),
     email: storageGetEmail(),
     isModerator: false,
     isAuthenticated: storageGetAuthToken() ? true : false,

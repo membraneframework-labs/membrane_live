@@ -32,7 +32,7 @@ defmodule MembraneLiveWeb.EventChannel do
           is_auth: false
         })
 
-        {:ok, %{generated_key: gen_key}, socket}
+        {:ok, %{generated_key: gen_key}, Phoenix.Socket.assign(socket, %{event_id: id})}
 
       {:error, _error} ->
         {:error, %{reason: "This link is wrong."}}
@@ -268,8 +268,8 @@ defmodule MembraneLiveWeb.EventChannel do
       :undefined ->
         {:reply, {:ok, false}, socket}
 
-      _pid ->
-        {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
+      pid ->
+        {:reply, {:ok, GenServer.call(pid, :is_playlist_playable)}, socket}
     end
   end
 end

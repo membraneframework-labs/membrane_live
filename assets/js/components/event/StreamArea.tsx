@@ -28,12 +28,17 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
   };
 
   useEffect(() => {
-    if (eventChannel && privateChannel) {
-      privateChannel.on("presenter_remove", () => setMode("hls"));
+    if (eventChannel) {
       eventChannel.on("playlist_playable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
     }
-  }, [eventChannel, privateChannel]);
+  }, [eventChannel]);
+
+  useEffect(() => {
+    if (privateChannel) {
+      privateChannel.on("presenter_remove", () => setMode("hls"));
+    }
+  }, [privateChannel]);
 
   return (
     <div className="StreamArea">
