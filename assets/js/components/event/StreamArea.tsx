@@ -60,8 +60,8 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
           mode={mode}
           setMode={setMode}
         />
-      </div >
-    </div >
+      </div>
+    </div>
   );
 };
 

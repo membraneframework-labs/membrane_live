@@ -119,20 +119,20 @@ export const getChannelId = (): string => window.location.pathname.split("/")[2]
 
 const compareParticipants =
   (clientEmail: string) =>
-    (x: Participant, y: Participant): number => {
-      return x.email == clientEmail
-        ? -1
-        : y.email == clientEmail
-          ? 1
-          : participantToNumber(x) - participantToNumber(y);
-    };
+  (x: Participant, y: Participant): number => {
+    return x.email == clientEmail
+      ? -1
+      : y.email == clientEmail
+      ? 1
+      : participantToNumber(x) - participantToNumber(y);
+  };
 
 const participantToNumber = (participant: Participant): number => {
   return participant.isModerator
     ? 1
     : participant.isPresenter
-      ? 2
-      : participant.isRequestPresenting
-        ? 3
-        : 4;
+    ? 2
+    : participant.isRequestPresenting
+    ? 3
+    : 4;
 };

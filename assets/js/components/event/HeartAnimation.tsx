@@ -66,7 +66,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
           const newXPosition =
             heart.x +
             ((heart.direction * heart.bound * Math.sin((heart.y * heart.scale) / 30)) / heart.y) *
-            100;
+              100;
           const newElem = generateHeartElement(newXPosition, newYPosition, heart.scale);
           const newTime = heart.time - deltaTime;
           const newHeart = { ...heart, elem: newElem, time: newTime, y: newYPosition };
