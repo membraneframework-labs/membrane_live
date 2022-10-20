@@ -44,10 +44,10 @@ import {
   stopShareScreen,
   checkTrackIsEnabled,
 } from "../../utils/rtcUtils";
+import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/controlpanel.css";
-import { Channel } from "phoenix";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -120,6 +120,39 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
         </ModalContent>
       </Modal>
     </div>
+  );
+};
+
+type MenuPopoverProps = {
+  eventChannel: Channel | undefined;
+};
+
+const MenuPopover = ({ eventChannel }: MenuPopoverProps) => {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverHeader>
+          <p className="OptionsPopoverHeader">Options</p>
+        </PopoverHeader>
+        <PopoverBody>
+          <div className="OptionsPopoverBody">
+            <p>Do you want to finish the event?</p>
+            <button
+              className="OptionsPopoverButton"
+              onClick={() => {
+                eventChannel?.push("finish_event", {});
+              }}
+            >
+              YES
+            </button>
+          </div>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -236,30 +269,7 @@ const ControlPanel = ({
               setSharingScreen(false);
             }}
           />
-          <Popover>
-            <PopoverTrigger>
-              <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverArrow />
-              <PopoverHeader>
-                <p className="OptionsPopoverHeader">Options</p>
-              </PopoverHeader>
-              <PopoverBody>
-                <div className="OptionsPopoverBody">
-                  <p>Do you want to finish the event?</p>
-                  <button
-                    className="OptionsPopoverButton"
-                    onClick={() => {
-                      eventChannel?.push("finish_event", {});
-                    }}
-                  >
-                    YES
-                  </button>
-                </div>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
+          <MenuPopover eventChannel={eventChannel} />
         </div>
         <GenericButton
           icon={<UserPlus className="PanelButton" />}
