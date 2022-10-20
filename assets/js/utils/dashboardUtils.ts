@@ -21,7 +21,7 @@ export const sendEventForm = async (
   const endpoint = "resources/webinars/" + uuid;
   const method = methodMap[modalType];
 
-  method(endpoint, { webinar: eventForm });
+  return method(endpoint, { webinar: eventForm });
 };
 
 export const deleteEvent = (uuid: string, toast: Toast): void => {

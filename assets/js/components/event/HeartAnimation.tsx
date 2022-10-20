@@ -78,13 +78,15 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   };
 
   useEffect(() => {
-    const ref = eventChannel.on("animation", () => {
-      const newHearts = Array.apply(null, Array(5)).map(() => onEvent());
+    const ref = eventChannel?.on("animation", () => {
+      const newHearts = Array(5)
+        .fill(null)
+        .map(() => onEvent());
       setHearts((hearts) => {
         return [...hearts, ...newHearts];
       });
     });
-    return () => eventChannel.off("animation", ref);
+    return () => eventChannel?.off("animation", ref);
   }, []);
 
   useEffect(() => {
