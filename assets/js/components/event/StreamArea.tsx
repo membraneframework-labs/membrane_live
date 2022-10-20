@@ -4,11 +4,12 @@ import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
 import "../../../css/event/streamarea.css";
+import { Channel } from "phoenix";
 
 type StreamAreaProps = {
   client: Client;
-  eventChannel: any;
-  privateChannel: any;
+  eventChannel: Channel | undefined;
+  privateChannel: Channel | undefined;
 };
 
 const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) => {

@@ -8,9 +8,10 @@ import { monthNames, pageTitlePrefix } from "../../utils/const";
 import UserField from "../dashboard/UserField";
 import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
+import { Channel } from "phoenix";
 
 type HeaderProps = {
-  eventChannel: any;
+  eventChannel: Channel | undefined;
   client: Client;
 };
 

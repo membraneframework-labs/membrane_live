@@ -1,39 +1,44 @@
-import { Presence } from "phoenix";
-import type { Participant, Client, Presenter } from "../types";
+import { Channel, Presence } from "phoenix";
+import type { Participant, Client, Presenter, Toast, Metas } from "../types";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
+type EventChannelJoinResponse = {
+  is_moderator?: boolean;
+  generated_key?: string;
+};
+
 export const createEventChannel = (
-  toast: any,
+  toast: Toast,
   client: Client,
-  eventChannel: any,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  eventChannel: Channel,
+  setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>
 ) => {
   eventChannel
     .join()
-    .receive("ok", (resp: any) => {
+    .receive("ok", (response: EventChannelJoinResponse) => {
       setEventChannel(eventChannel);
-      const isModerator = resp?.is_moderator ? true : false;
-      const email = resp?.generated_key || client.email;
+      const isModerator = response?.is_moderator ? true : false;
+      const email = response?.generated_key || client.email;
       setClient({ ...client, isModerator: isModerator, email: email });
     })
-    .receive("error", (resp: { reason: string }) => {
+    .receive("error", (response: { reason: string }) => {
       eventChannel.leave();
-      getErrorToast(toast, `Error while joining the event: ${resp.reason}`);
+      getErrorToast(toast, `Error while joining the event: ${response.reason}`);
     });
 };
 
 export const syncEventChannel = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
-  clientEmail: String
+  clientEmail: string
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 
     const updateStates = () => {
       const parts: Participant[] = [];
-      presence.list((email: string, metas: any) => {
+      presence.list((email: string, metas: Metas) => {
         const participant = metas.metas[0];
         parts.push({
           email: email,
@@ -57,12 +62,12 @@ export const syncEventChannel = (
 };
 
 export const createPrivateChannel = (
-  toast: any,
-  privateChannel: any,
-  eventChannel: any,
+  toast: Toast,
+  privateChannel: Channel,
+  eventChannel: Channel,
   client: Client,
-  presenterPopup: (toast: any, moderatorTopic: string) => void,
-  setPrivateChannel: React.Dispatch<React.SetStateAction<any>>
+  presenterPopup: (toast: Toast, moderatorTopic: string) => void,
+  setPrivateChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>
 ) => {
   privateChannel
     .join()
@@ -86,7 +91,7 @@ export const createPrivateChannel = (
 };
 
 export const syncPresenters = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setPresenters: React.Dispatch<React.SetStateAction<Presenter[]>>
 ) => {
   if (eventChannel) {
@@ -95,7 +100,7 @@ export const syncPresenters = (
     const updatePresenters = () => {
       const presenters: Presenter[] = [];
 
-      presence.list((email: string, metas: any) => {
+      presence.list((email: string, metas: Metas) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
         metas.metas[0].is_presenter && presenters.push({ name: metas.metas[0].name, email: email });
       });
@@ -113,7 +118,7 @@ export const syncPresenters = (
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
 
 const compareParticipants =
-  (clientEmail: String) =>
+  (clientEmail: string) =>
   (x: Participant, y: Participant): number => {
     return x.email == clientEmail
       ? -1

@@ -1,7 +1,6 @@
 import * as JwtApi from "./jwtApi";
 import { storageGetRefreshToken, storageSetJwt } from "../utils/storageUtils";
-
-const axios = require("axios").default;
+import axios from "axios";
 
 const redirect = (suffix: string) => {
   window.location.href = `${window.location.origin}${suffix}`;

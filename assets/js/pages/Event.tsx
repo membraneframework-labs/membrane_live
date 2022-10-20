@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ParticipantsList from "../components/event/ParticipantsList";
-import { Socket } from "phoenix";
+import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
@@ -15,20 +15,21 @@ import {
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
-import type { Client } from "../types";
+import type { Client, Toast } from "../types";
 import NamePopup from "../components/event/NamePopup";
 import "../../css/event/event.css";
 
 const Event = () => {
-  const toast = useToast();
+  const toast: Toast = useToast();
   const [client, setClient] = useState<Client>({
     name: storageGetName() || sessionStorageGetName(),
     email: storageGetEmail(),
     isModerator: false,
     isAuthenticated: getIsAuthenticated(),
   });
-  const [eventChannel, setEventChannel] = useState<any>();
-  const [privateChannel, setPrivateChannel] = useState<any>();
+  const [eventChannel, setEventChannel] = useState<Channel>();
+  const [privateChannel, setPrivateChannel] = useState<Channel>();
+
   const socket = new Socket("/socket");
   socket.connect();
 

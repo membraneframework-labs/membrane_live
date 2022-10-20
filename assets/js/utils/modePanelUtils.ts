@@ -1,9 +1,9 @@
 import React from "react";
-import { Presence } from "phoenix";
-import type { Client } from "../types";
+import { Channel, Presence } from "phoenix";
+import type { Client, Metas } from "../types";
 
 export const syncPresentersNumber = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setPresentersNumber: React.Dispatch<React.SetStateAction<number>>,
   setAmIPresenter: React.Dispatch<React.SetStateAction<boolean>>,
   client: Client
@@ -17,7 +17,7 @@ export const syncPresentersNumber = (
 
     const upadteAmIPresenter = () => {
       let newAmIPresenter = false;
-      presence.list((email: string, metas: any) => {
+      presence.list((email: string, metas: Metas) => {
         if (metas.metas[0].is_presenter && email == client.email) newAmIPresenter = true;
       });
       setAmIPresenter(newAmIPresenter);

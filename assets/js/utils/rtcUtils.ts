@@ -2,6 +2,7 @@ import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membran
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
 import { Client } from "../types";
+import { Channel } from "phoenix";
 
 export type Sources = {
   audio: MediaDeviceInfo[];
@@ -13,7 +14,7 @@ export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;
   cameraTrack: MediaStreamTrack | undefined;
   deviceName: string;
-  refreshId: number | undefined;
+  refreshId: NodeJS.Timeout | undefined;
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
@@ -94,7 +95,7 @@ export const setSourceById = async (
 };
 
 export const connectWebrtc = async (
-  webrtcChannel: any,
+  webrtcChannel: Channel | undefined,
   client: Client,
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
 ) => {
@@ -120,12 +121,12 @@ export const connectWebrtc = async (
   const webrtc = new MembraneWebRTC({
     callbacks: {
       onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
-        webrtcChannel.push("mediaEvent", { data: mediaEvent });
+        webrtcChannel?.push("mediaEvent", { data: mediaEvent });
       },
-      onConnectionError: (msg: String) => {
+      onConnectionError: () => {
         onError("Error while connecting to WebRTC");
       },
-      onJoinSuccess: (_peerId, _peersInRoom) => {
+      onJoinSuccess: () => {
         presenterStreams[client.email].getTracks().forEach((track) => {
           sourceIds[track.kind] = webrtc.addTrack(track, presenterStreams[client.email], {});
         });
@@ -137,14 +138,22 @@ export const connectWebrtc = async (
         if (track != null)
           addOrReplaceTrack(peer.metadata, track, playerCallbacks[peer.metadata.email]);
       },
-      onTrackAdded: (_ctx) => {},
-      onTrackRemoved: (_ctx) => {},
-      onPeerJoined: (_peer) => {},
+      onTrackAdded: () => {
+        // do nothing
+      },
+      onTrackRemoved: () => {
+        // do nothing
+      },
+      onPeerJoined: () => {
+        // do nothing
+      },
       onPeerLeft: (peer) => {
         removeStream(peer.metadata.email);
       },
-      onPeerUpdated: (_ctx) => {},
-      onRemoved: (_reason) => {
+      onPeerUpdated: () => {
+        // do nothing
+      },
+      onRemoved: () => {
         onError("You were removed from WebRTC connection");
       },
     },
@@ -152,7 +161,7 @@ export const connectWebrtc = async (
 
   webrtc.join(client);
 
-  webrtcChannel.on("mediaEvent", (event: any) => {
+  webrtcChannel?.on("mediaEvent", (event: { data: string }) => {
     webrtc.receiveMediaEvent(event.data);
   });
   return webrtc;
@@ -177,8 +186,12 @@ export const changeSource = async (
   }
 };
 
-export const leaveWebrtc = (webrtc: MembraneWebRTC, client: Client, webrtcChannel: any) => {
-  webrtcChannel.off("mediaEvent");
+export const leaveWebrtc = (
+  webrtc: MembraneWebRTC,
+  client: Client,
+  webrtcChannel: Channel | undefined
+) => {
+  webrtcChannel?.off("mediaEvent");
   presenterStreams[client.email].getTracks().forEach((track) => track.stop());
   mergedScreenRef.cameraTrack?.stop();
   removeMergedStream();
@@ -192,7 +205,9 @@ export const shareScreen = async (
   playerCallback: (SourceType: SourceType) => void
 ): Promise<boolean> => {
   let mergedStream: MediaStream;
-  mergedScreenRef.deviceName = presenterStreams[client.email].getVideoTracks()[0]!.label;
+
+  const videoTrackLabel = presenterStreams[client.email].getVideoTracks()[0].label;
+  if (videoTrackLabel != null) mergedScreenRef.deviceName = videoTrackLabel;
 
   try {
     mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[client.email]);
@@ -202,7 +217,7 @@ export const shareScreen = async (
     return false;
   }
 
-  mergedStream!.getTracks().forEach((track) => {
+  mergedStream.getTracks().forEach((track) => {
     addOrReplaceTrack(client, track, playerCallback);
   });
 
@@ -236,11 +251,14 @@ export const stopShareScreen = (
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
   const newConstraint: MediaStreamConstraints = { audio: false, video: false };
   const type: SourceType = !constraint.audio ? "video" : "audio";
-  newConstraint[type] = { ...(constraint[type] as Object), deviceId: { exact: deviceId } };
+  newConstraint[type] = {
+    ...(constraint[type] as MediaTrackConstraints),
+    deviceId: { exact: deviceId },
+  };
   return newConstraint;
 };
 
-const filterDevices = (allDevices: MediaDeviceInfo[], type: String) => {
+const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
   return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
 };
 

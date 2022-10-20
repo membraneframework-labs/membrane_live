@@ -81,6 +81,9 @@ jobs:
       - run:
           command: npm run format:check
           name: Run prettier on front-end
+      - run:
+          command: npm run linter
+          
 
 workflows:
   version: 2

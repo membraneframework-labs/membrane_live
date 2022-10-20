@@ -6,10 +6,11 @@ import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import type { Presenter, Client, Mode } from "../../types";
 import "../../../css/event/presenterstreams.css";
+import { Channel } from "phoenix";
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
-let webrtcConnecting: boolean = false;
+let webrtcConnecting = false;
 
 const includeKey = (storage: Presenter[], key: string): boolean => {
   return storage.some((e) => e.email === key);
@@ -17,7 +18,7 @@ const includeKey = (storage: Presenter[], key: string): boolean => {
 
 type PresenterStreamsProps = {
   client: Client;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
@@ -60,10 +61,10 @@ const PresenterStreams = ({ client, eventChannel, mode, setMode }: PresenterStre
           );
         })}
       </div>
-      {isControlPanelAvailable && (
+      {isControlPanelAvailable && webrtc && (
         <ControlPanel
           client={client}
-          webrtc={webrtc!}
+          webrtc={webrtc}
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}

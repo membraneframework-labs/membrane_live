@@ -1,7 +1,7 @@
 import axios from "../services";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo } from "../types";
+import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types";
 import axiosWithInterceptor from "../services";
 
 export const checkEventForm = (eventForm: EventFormInput): boolean => {
@@ -16,18 +16,18 @@ const methodMap = {
 export const sendEventForm = async (
   modalType: ModalForm,
   eventForm: EventFormInput,
-  uuid: string = ""
-): Promise<any> => {
+  uuid = ""
+): Promise<void> => {
   const endpoint = "resources/webinars/" + uuid;
   const method = methodMap[modalType];
 
-  return method(endpoint, { webinar: eventForm });
+  method(endpoint, { webinar: eventForm });
 };
 
-export const deleteEvent = (uuid: string, toast: any): void => {
+export const deleteEvent = (uuid: string, toast: Toast): void => {
   axiosWithInterceptor
     .delete("resources/webinars/" + uuid)
-    .then((_response: Response) => {
+    .then(() => {
       window.location.reload();
       getInfoToast(toast, "The webinar has been deleted.");
     })
@@ -42,7 +42,7 @@ export const deleteEvent = (uuid: string, toast: any): void => {
 };
 
 export const getWebinarsInfo = async (
-  toast: any,
+  toast: Toast,
   setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
 ) => {
   axios

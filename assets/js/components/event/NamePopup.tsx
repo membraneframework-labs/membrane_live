@@ -2,11 +2,11 @@ import Modal from "react-modal";
 import React, { useState } from "react";
 import GoogleButton from "../helpers/GoogleButton";
 import { roundedGoogleButton } from "../../utils/const";
+import { sessionStorageSetName } from "../../utils/storageUtils";
+import { useNavigate } from "react-router-dom";
 import { Client } from "../../types";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
-import { useNavigate } from "react-router-dom";
-import { sessionStorageSetName } from "../../utils/storageUtils";
 
 type NamePopupProps = {
   client: Client;
@@ -49,7 +49,7 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
               type="text"
               placeholder="Username"
               value={name}
-              onChange={(e) => setName((e.target as any).value)}
+              onInput={(e) => setName((e.target as HTMLTextAreaElement).value)}
               required
             />
           </div>

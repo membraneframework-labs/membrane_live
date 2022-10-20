@@ -23,7 +23,7 @@ const SearchAndCreatePanel = ({
         <Search className="SearchIcon" />
         <input
           value={searchText}
-          onInput={(e) => setSearchText((e.target as any).value)}
+          onInput={(e) => setSearchText((e.target as HTMLTextAreaElement).value)}
           placeholder="Search events"
           className="SearchInput"
         />

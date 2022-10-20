@@ -3,6 +3,7 @@ import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import type { Client, Mode } from "../../types";
 import "../../../css/event/modepanel.css";
+import { Channel } from "phoenix";
 
 type ModeButtonProps = {
   onClick: () => void;
@@ -22,7 +23,7 @@ type ModePanelProps = {
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   presenterName: string;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
   client: Client;
 };
 

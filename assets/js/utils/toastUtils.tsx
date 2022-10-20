@@ -1,17 +1,25 @@
 import React from "react";
-import type { Client } from "../types";
-import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
+import type { Client, Toast } from "../types";
+import {
+  QuestionCircle,
+  CrossSmall,
+  WarningCircle,
+  InfoCircle,
+  iconType,
+} from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
+import { Channel } from "phoenix";
+import { ToastId } from "@chakra-ui/react";
 
-const closeToast = (toast: any, toastName: string) => {
+const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
 };
 
 export const presenterPopup = (
-  toast: any,
+  toast: Toast,
   client: Client,
-  eventChannel: any,
+  eventChannel: Channel,
   moderatorTopic: string
 ) => {
   let answer = "reject";
@@ -49,9 +57,9 @@ export const presenterPopup = (
 };
 
 const sendAnswer = (
-  toast: any,
-  toastName: string,
-  eventChannel: any,
+  toast: Toast,
+  toastName: ToastId,
+  eventChannel: Channel,
   answer: string,
   email: string,
   moderatorTopic: string
@@ -64,7 +72,7 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
-export const deleteEventPopup = (toast: any, uuid: string) => {
+export const deleteEventPopup = (toast: Toast, uuid: string) => {
   let answer = "reject";
 
   const thisToast = toast({
@@ -99,7 +107,7 @@ export const deleteEventPopup = (toast: any, uuid: string) => {
   });
 };
 
-const getToast = (toast: any, icon: any, text: string, duration: number) => {
+const getToast = (toast: Toast, icon: iconType, text: string, duration: number) => {
   const thisToast = toast({
     duration: duration,
     position: "top",
@@ -117,10 +125,10 @@ const getToast = (toast: any, icon: any, text: string, duration: number) => {
   });
 };
 
-export const getErrorToast = (toast: any, text: string, duration: number = 10_000) => {
+export const getErrorToast = (toast: Toast, text: string, duration = 10_000) => {
   getToast(toast, <WarningCircle className="PopupIcon" />, text, duration);
 };
 
-export const getInfoToast = (toast: any, text: string, duration: number = 10_000) => {
+export const getInfoToast = (toast: Toast, text: string, duration = 10_000) => {
   getToast(toast, <InfoCircle className="PopupIcon" />, text, duration);
 };

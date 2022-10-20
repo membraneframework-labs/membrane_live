@@ -3,12 +3,13 @@ import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react"
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
+import { Channel } from "phoenix";
 import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
@@ -16,12 +17,12 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
-      eventChannel.push("presenter_prop", {
+      eventChannel?.push("presenter_prop", {
         moderatorTopic: link + moderatorClient.email,
         presenterTopic: link + participant.email,
       });
     } else {
-      eventChannel.push("presenter_remove", { presenterTopic: link + participant.email });
+      eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
     }
   };
 
@@ -45,7 +46,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
 
 type ClientParticipantMenuProps = {
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
@@ -53,11 +54,11 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if ((e.target as HTMLTextAreaElement).value === askText) {
-      eventChannel.push("presenting_request", {
+      eventChannel?.push("presenting_request", {
         email: participant.email,
       });
     } else {
-      eventChannel.push("cancel_presenting_request", { email: participant.email });
+      eventChannel?.push("cancel_presenting_request", { email: participant.email });
     }
   };
 
@@ -80,7 +81,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
 type ParticipantProps = {
   client: Client;
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
@@ -97,7 +98,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     ? "Presenter"
     : "Participant";
 
-  const isMyself: Boolean = client.email == participant.email;
+  const isMyself: boolean = client.email == participant.email;
   const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;
 
   return (
@@ -127,7 +128,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
 
 type ParticipantsListProps = {
   client: Client;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
@@ -138,7 +139,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     syncEventChannel(eventChannel, setParticipants, client.email);
   }, [eventChannel]);
 
-  let parts: JSX.Element[] = [];
+  const parts: JSX.Element[] = [];
   participants.map((participant) =>
     parts.push(
       <Participant

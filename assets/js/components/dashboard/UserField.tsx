@@ -2,13 +2,14 @@ import React from "react";
 import { User1 } from "react-swm-icon-pack";
 import GoogleButton from "../helpers/GoogleButton";
 import { rectangleGoogleButton } from "../../utils/const";
+import { Channel } from "phoenix";
 import "../../../css/dashboard/userfield.css";
 
 type UserFieldProps = {
   picture: string;
   name: string;
   isAuthenticated: boolean;
-  eventChannel?: any;
+  eventChannel?: Channel;
 };
 
 const UserField = ({ isAuthenticated, picture, name, eventChannel }: UserFieldProps) => {

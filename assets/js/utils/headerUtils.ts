@@ -1,7 +1,7 @@
-import { Presence } from "phoenix";
+import { Channel, Presence } from "phoenix";
 import axios from "../services/index";
 import { getChannelId } from "../utils/channelUtils";
-import type { EventInfo, OriginalEventInfo } from "../types";
+import type { EventInfo, OriginalEventInfo, Toast } from "../types";
 import { getErrorToast } from "./toastUtils";
 
 export const initEventInfo = (): EventInfo => {
@@ -16,14 +16,14 @@ export const initEventInfo = (): EventInfo => {
 
 export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
   const newDate = new Date();
-  newDate.setTime(Date.parse(originalEventInfo.start_date));
-  const newEventInfo: any = { ...originalEventInfo, startDate: newDate };
-  delete newEventInfo.start_date;
-  return newEventInfo as EventInfo;
+  if (originalEventInfo.start_date) newDate.setTime(Date.parse(originalEventInfo.start_date));
+  delete originalEventInfo.start_date;
+  const newEventInfo: EventInfo = { ...originalEventInfo, startDate: newDate };
+  return newEventInfo;
 };
 
 export const getEventInfo = (
-  toast: any,
+  toast: Toast,
   setEventInfo: React.Dispatch<React.SetStateAction<EventInfo>>
 ) => {
   axios
@@ -38,7 +38,7 @@ export const getEventInfo = (
 };
 
 export const syncParticipantsNumber = (
-  eventChannel: any,
+  eventChannel: Channel | undefined,
   setParticipantsNumber: React.Dispatch<React.SetStateAction<number>>
 ) => {
   if (eventChannel) {
