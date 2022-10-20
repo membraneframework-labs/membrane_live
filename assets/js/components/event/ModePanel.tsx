@@ -39,9 +39,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
     <div className="ModePanel">
       <Screen className="ScreenIcon" />
       <div className="PresentingNow">
-        {presenterName
-          ? `Presenting now...`
-          : "Waiting for the presenter to be chosen..."}
+        {presenterName ? `Presenting now...` : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">
         {amIPresenter && (

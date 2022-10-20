@@ -75,4 +75,6 @@
 
 .InfoTooltip {
   background: var(--font-dark-color) !important;
+  border-radius: 25px;
+  font-size: 1.3rem;
 }

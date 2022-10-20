@@ -24,6 +24,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
       {:ok, true} ->
         :ets.insert_new(:presenters, {id, MapSet.new()})
+        :ets.insert_new(:presenting_requests, {id, MapSet.new()})
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
@@ -31,6 +32,7 @@ defmodule MembraneLiveWeb.EventChannel do
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event_stream(id, socket),
              {:ok, is_presenter} = check_if_presenter(email, reloaded, id),
+             {:ok, is_request_presenting} = check_if_request_presenting(email, reloaded, id),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
           {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
 
@@ -38,7 +40,8 @@ defmodule MembraneLiveWeb.EventChannel do
             Presence.track(socket, email, %{
               name: name,
               is_moderator: is_moderator,
-              is_presenter: is_presenter
+              is_presenter: is_presenter,
+              is_request_presenting: is_request_presenting
             })
 
           {:ok, %{is_moderator: is_moderator}, socket}
@@ -69,75 +72,6 @@ defmodule MembraneLiveWeb.EventChannel do
   @impl true
   def join(_topic, _params, _socket) do
     {:error, %{reason: "This link is wrong."}}
-  end
-
-  defp webinar_exists(id) do
-    case Ecto.UUID.cast(id) do
-      {:ok, id} ->
-        {:ok, Repo.exists?(from(w in Webinar, where: w.uuid == ^id))}
-
-      _error ->
-        {:error, "id is not binary_id"}
-    end
-  end
-
-  defp create_event_stream(event_id, socket) do
-    case :global.whereis_name(event_id) do
-      :undefined -> Event.start(event_id, name: {:global, event_id})
-      pid -> {:ok, pid}
-    end
-    |> case do
-      {:ok, event_pid} ->
-        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
-
-      {:error, {:already_started, event_pid}} ->
-        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
-
-      {:error, reason} ->
-        Logger.error("""
-        Failed to start room.
-        Room: #{inspect(event_id)}
-        Reason: #{inspect(reason)}
-        """)
-
-        {:error, %{reason: "failed to start event"}}
-    end
-  end
-
-  defp join_event_stream(socket) do
-    peer_id = "#{UUID.uuid4()}"
-    # TODO handle crash of room?
-    Process.monitor(socket.assigns.event_pid)
-    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
-
-    {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
-  end
-
-  defp check_if_presenter(email, reloaded, id) do
-    [{_key, presenters}] = :ets.lookup(:presenters, id)
-    in_ets = MapSet.member?(presenters, email)
-
-    case {reloaded, in_ets} do
-      {true, _in_ets} ->
-        {:ok, in_ets}
-
-      {false, true} ->
-        remove_from_presenters(email, id)
-        {:ok, false}
-
-      {false, false} ->
-        {:ok, false}
-    end
-  end
-
-  defp remove_from_presenters(email, id) do
-    [{_key, presenters}] = :ets.lookup(:presenters, id)
-    :ets.insert(:presenters, {id, MapSet.delete(presenters, email)})
-  end
-
-  defp add_to_presenters(email, id) do
-    [{_key, presenters}] = :ets.lookup(:presenters, id)
-    :ets.insert(:presenters, {id, MapSet.put(presenters, email)})
   end
 
   @impl true
@@ -213,12 +147,25 @@ defmodule MembraneLiveWeb.EventChannel do
       ) do
     {:ok, socket} =
       if answer == "accept" do
-        {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, true))
+        {:ok, _ref} =
+          Presence.update(
+            socket,
+            email,
+            &%{&1 | is_presenter: true, is_request_presenting: false}
+          )
 
         "event:" <> id = socket.topic
         add_to_presenters(email, id)
+        remove_from_presenting_requests(email, id)
         join_event_stream(socket)
       else
+        {:ok, _ref} =
+          Presence.update(
+            socket,
+            email,
+            &%{&1 | is_request_presenting: false}
+          )
+
         {:ok, socket}
       end
 
@@ -228,6 +175,29 @@ defmodule MembraneLiveWeb.EventChannel do
       :name => name,
       :answer => answer
     })
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenting_request",
+        %{"email" => email},
+        %{topic: "event:" <> id} = socket
+      ) do
+    {:ok, _ref} = Presence.update(socket, email, &%{&1 | is_request_presenting: true})
+
+    add_to_presenting_request(email, id)
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "cancel_presenting_request",
+        %{"email" => email},
+        %{topic: "event:" <> id} = socket
+      ) do
+    {:ok, _ref} = Presence.update(socket, email, &%{&1 | is_request_presenting: false})
+    remove_from_presenting_requests(email, id)
 
     {:noreply, socket}
   end
@@ -247,5 +217,89 @@ defmodule MembraneLiveWeb.EventChannel do
       _pid ->
         {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
     end
+  end
+
+  defp webinar_exists(id) do
+    case Ecto.UUID.cast(id) do
+      {:ok, id} ->
+        {:ok, Repo.exists?(from(w in Webinar, where: w.uuid == ^id))}
+
+      _error ->
+        {:error, "id is not binary_id"}
+    end
+  end
+
+  defp create_event_stream(event_id, socket) do
+    case :global.whereis_name(event_id) do
+      :undefined -> Event.start(event_id, name: {:global, event_id})
+      pid -> {:ok, pid}
+    end
+    |> case do
+      {:ok, event_pid} ->
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
+
+      {:error, {:already_started, event_pid}} ->
+        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
+
+      {:error, reason} ->
+        Logger.error("""
+        Failed to start room.
+        Room: #{inspect(event_id)}
+        Reason: #{inspect(reason)}
+        """)
+
+        {:error, %{reason: "failed to start event"}}
+    end
+  end
+
+  defp join_event_stream(socket) do
+    peer_id = "#{UUID.uuid4()}"
+    # TODO handle crash of room?
+    Process.monitor(socket.assigns.event_pid)
+    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
+  end
+
+  defp check_if_presenter(email, reloaded, id),
+    do: check_if_exist_in_ets(:presenters, email, reloaded, id)
+
+  defp check_if_request_presenting(email, reloaded, id),
+    do: check_if_exist_in_ets(:presenting_requests, email, reloaded, id)
+
+  defp check_if_exist_in_ets(ets_key, email, reloaded, id) do
+    [{_key, presenters}] = :ets.lookup(ets_key, id)
+    in_ets = MapSet.member?(presenters, email)
+
+    case {reloaded, in_ets} do
+      {true, _in_ets} ->
+        {:ok, in_ets}
+
+      {false, true} ->
+        remove_from_presenters(email, id)
+        {:ok, false}
+
+      {false, false} ->
+        {:ok, false}
+    end
+  end
+
+  defp remove_from_presenters(email, id), do: remove_from_list_in_ets(:presenters, email, id)
+  defp add_to_presenters(email, id), do: add_to_list_in_ets(:presenters, email, id)
+
+  defp remove_from_presenting_requests(email, id),
+    do: remove_from_list_in_ets(:presenting_requests, email, id)
+
+  defp add_to_presenting_request(email, id),
+    do: add_to_list_in_ets(:presenting_requests, email, id)
+
+  defp remove_from_list_in_ets(ets_key, email, id) do
+    [{_key, presenters}] = :ets.lookup(ets_key, id)
+    :ets.insert(ets_key, {id, MapSet.delete(presenters, email)})
+  end
+
+  defp add_to_list_in_ets(ets_key, email, id) do
+    [{_key, presenters}] = :ets.lookup(ets_key, id)
+    :ets.insert(ets_key, {id, MapSet.put(presenters, email)})
   end
 end
