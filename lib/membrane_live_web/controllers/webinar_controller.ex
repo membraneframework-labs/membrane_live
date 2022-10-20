@@ -59,6 +59,23 @@ defmodule MembraneLiveWeb.WebinarController do
     end
   end
 
+  defp get_with_callback(
+         conn,
+         %{"uuid" => uuid} = params,
+         callback
+       ) do
+    with {:ok, webinar} <- Webinars.get_webinar(uuid),
+         true <- callback == (&show_callback/2) do
+      callback.(conn, Map.put(params, "webinar_db", webinar))
+    else
+      {:error, :no_webinar} ->
+        %{error: :not_found, message: "Webinar with uuid #{uuid} could not be found"}
+
+      false ->
+        %{error: :forbidden, message: "Unauthenticated user does not have access to this action."}
+    end
+  end
+
   defp show_callback(conn, %{"webinar_db" => webinar}) do
     render(conn, "show.json", webinar: webinar)
   end

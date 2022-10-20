@@ -64,7 +64,12 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
           <Copy className="CopyIcon" />
         </button>
       </div>
-      <UserField name={client.name} picture={picture} />
+      <UserField
+        eventChannel={eventChannel}
+        isAuthenticated={client.isAuthenticated}
+        name={client.name}
+        picture={picture}
+      />
     </div>
   );
 };

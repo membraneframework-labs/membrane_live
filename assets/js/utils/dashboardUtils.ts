@@ -1,7 +1,8 @@
-import axiosWithInterceptor from "../services/index";
+import axios from "../services";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
 import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo } from "../types";
+import axiosWithInterceptor from "../services";
 
 export const checkEventForm = (eventForm: EventFormInput): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
@@ -44,7 +45,7 @@ export const getWebinarsInfo = async (
   toast: any,
   setWebinars: React.Dispatch<React.SetStateAction<EventInfo[]>>
 ) => {
-  axiosWithInterceptor
+  axios
     .get("resources/webinars/")
     .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
       setWebinars(response.data.webinars.map((elem) => mapToEventInfo(elem)));

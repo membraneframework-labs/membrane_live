@@ -28,11 +28,18 @@ defmodule MembraneLiveWeb.Router do
     get("/me", UserInfoController, :index)
   end
 
+  scope "/resources/webinars", MembraneLiveWeb do
+    pipe_through(:browser)
+
+    get("/", WebinarController, :index)
+    get("/:uuid", WebinarController, :show)
+  end
+
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
     pipe_through(:auth)
 
-    resources("/webinars", WebinarController, except: [:edit, :new], param: "uuid")
+    resources("/webinars", WebinarController, except: [:edit, :new, :index, :show], param: "uuid")
     resources("/users", UserController, except: [:edit, :new, :create], param: "uuid")
   end
 

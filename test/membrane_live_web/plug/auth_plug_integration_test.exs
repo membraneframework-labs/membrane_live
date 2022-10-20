@@ -24,9 +24,7 @@ defmodule MembraneLiveWeb.AuthPlugIntegrationTest do
     @webinar_endpoint_infos [
       %{endpoint_atom: :create, body: %{webinar: webinar_attrs()}},
       %{endpoint_atom: :update, body: %{webinar: webinar_attrs()}},
-      %{endpoint_atom: :delete},
-      %{endpoint_atom: :show},
-      %{endpoint_atom: :index}
+      %{endpoint_atom: :delete}
     ]
 
     Enum.map(@webinar_endpoint_infos, fn %{endpoint_atom: atom} = info ->

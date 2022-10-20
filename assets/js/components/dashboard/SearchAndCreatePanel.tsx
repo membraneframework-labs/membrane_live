@@ -1,6 +1,7 @@
 import React from "react";
 import { Search } from "react-swm-icon-pack";
 import ModalForm from "./ModalForm";
+import { getIsAuthenticated } from "../../utils/storageUtils";
 import "../../../css/dashboard/searchandcreatepanel.css";
 
 type SearchAndCreatePanelProps = {
@@ -14,6 +15,8 @@ const SearchAndCreatePanel = ({
   searchText,
   setSearchText,
 }: SearchAndCreatePanelProps) => {
+  const isAuthenticated = getIsAuthenticated();
+
   return (
     <div className="SearchAndCreatePanel">
       <div className="SearchBar">
@@ -25,7 +28,7 @@ const SearchAndCreatePanel = ({
           className="SearchInput"
         />
       </div>
-      {currentEvents == "All events" && (
+      {currentEvents == "All events" && isAuthenticated && (
         <ModalForm type="create" activationButtonClass="ModalFormCreateButton" />
       )}
     </div>

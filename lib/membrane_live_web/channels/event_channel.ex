@@ -17,6 +17,29 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
 
   @impl true
+  def join("event:" <> id, %{"username" => name}, socket) do
+    case webinar_exists(id) do
+      {:ok, false} ->
+        {:error, %{reason: "This event doesn't exists."}}
+
+      {:ok, true} ->
+        gen_key = UUID.uuid1()
+
+        Presence.track(socket, gen_key, %{
+          name: name,
+          is_moderator: false,
+          is_presenter: false,
+          is_auth: false
+        })
+
+        {:ok, %{generated_key: gen_key}, Phoenix.Socket.assign(socket, %{event_id: id})}
+
+      {:error, _error} ->
+        {:error, %{reason: "This link is wrong."}}
+    end
+  end
+
+  @impl true
   def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
     case webinar_exists(id) do
       {:ok, false} ->
@@ -41,7 +64,8 @@ defmodule MembraneLiveWeb.EventChannel do
               name: name,
               is_moderator: is_moderator,
               is_presenter: is_presenter,
-              is_request_presenting: is_request_presenting
+              is_request_presenting: is_request_presenting,
+              is_auth: true
             })
 
           {:ok, %{is_moderator: is_moderator}, socket}
@@ -214,8 +238,8 @@ defmodule MembraneLiveWeb.EventChannel do
       :undefined ->
         {:reply, {:ok, false}, socket}
 
-      _pid ->
-        {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
+      pid ->
+        {:reply, {:ok, GenServer.call(pid, :is_playlist_playable)}, socket}
     end
   end
 

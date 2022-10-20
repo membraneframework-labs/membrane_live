@@ -111,7 +111,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
           <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
-      {client.isModerator && (
+      {client.isModerator && participant.isAuth && (
         <ModeratorMenu
           moderatorClient={client}
           eventChannel={eventChannel}

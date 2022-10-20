@@ -3,6 +3,7 @@ export type Participant = {
   name: string;
   isPresenter: boolean;
   isModerator: boolean;
+  isAuth: boolean;
   isRequestPresenting: boolean;
 };
 
@@ -17,6 +18,7 @@ export type Client = {
   name: string;
   email: string;
   isModerator: boolean;
+  isAuthenticated: boolean;
 };
 
 export type LocationState = {
