@@ -103,7 +103,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     parts.push(
       <Participant
         client={client}
-        key={participant.name}
+        key={participant.email}
         participant={participant}
         eventChannel={eventChannel}
       />
