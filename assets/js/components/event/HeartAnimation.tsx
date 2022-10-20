@@ -16,13 +16,14 @@ type HeartAnimationProps = {
   eventChannel: Channel | undefined;
 };
 
+const duration = 5000;
+const framerate = 30;
+const speed = (0.2 * 1000) / framerate;
+const cursorXOffset = 0;
+const cursorYOffset = -5;
+
 const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   const [hearts, setHearts] = useState<HeartElement[]>([]);
-
-  const duration = 5000;
-  const speed = 1;
-  const cursorXOffset = 0;
-  const cursorYOffset = -5;
 
   const generateHeartElement = (left, top, scale) => {
     return (
@@ -53,6 +54,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   let before = Date.now();
 
   const frame = () => {
+    console.log(hearts.length);
     const current = Date.now();
     const deltaTime = current - before;
     before = current;
@@ -77,8 +79,10 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
 
   useEffect(() => {
     const ref = eventChannel.on("animation", () => {
-      const newHeart = onEvent();
-      setHearts((hearts) => [...hearts, newHeart]);
+      const newHearts = Array.apply(null, Array(5)).map(() => onEvent());
+      setHearts((hearts) => {
+        return [...hearts, ...newHearts];
+      });
     });
     return () => eventChannel.off("animation", ref);
   }, []);
@@ -86,7 +90,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   useEffect(() => {
     const interval = setInterval(() => {
       frame();
-    }, 5);
+    }, 1000 / framerate);
     return () => clearInterval(interval);
   }, [hearts]);
 
@@ -94,14 +98,19 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
     const start = 1 - Math.round(Math.random()) * 2;
     const scale = Math.random() * Math.random() * 0.8 + 0.2;
     const bound = 30 + Math.random() * 200;
-    return generateHeart(200 + cursorXOffset, 10 + cursorYOffset, bound, start, scale);
+    const randomXFactor = Math.random() * 200;
+    const randomYFactor = Math.random() * 20;
+
+    return generateHeart(
+      200 + cursorXOffset + randomXFactor,
+      10 + cursorYOffset + randomYFactor,
+      bound,
+      start,
+      scale
+    );
   };
 
-  return (
-    <div className={"animatedContainer"}>
-      {hearts.length}: {hearts.map((heart) => heart.elem)}
-    </div>
-  );
+  return <div className={"animatedContainer"}>{hearts.map((heart) => heart.elem)}</div>;
 };
 
 export default AnimationComponent;
