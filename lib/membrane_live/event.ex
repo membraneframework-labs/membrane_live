@@ -178,13 +178,7 @@ defmodule MembraneLive.Event do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
 
     {:ok, state} = handle_peer_left(state, peer.id)
-
-    if state.peer_channels == %{} and is_nil(state.moderator_pid) do
-      Engine.terminate(state.rtc_engine)
-      {:stop, :normal, state}
-    else
-      {:noreply, state}
-    end
+    terminate_engine_if_empty(state)
   end
 
   @impl true
@@ -224,6 +218,10 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    result =
+      state.peer_channels
+      |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
+
     cond do
       pid == state.rtc_engine ->
         event_span_id(state.event_id)
@@ -232,34 +230,18 @@ defmodule MembraneLive.Event do
         {:stop, :normal, state}
 
       pid == state.moderator_pid ->
-        if state.peer_channels == %{} do
-          Engine.terminate(state.rtc_engine)
-          {:stop, :normal, state}
-        else
-          {:noreply, %{state | moderator_pid: nil}}
-        end
+        state = %{state | moderator_pid: nil}
+        terminate_engine_if_empty(state)
+
+      is_nil(result) ->
+        {:noreply, state}
 
       true ->
-        result =
-          state.peer_channels
-          |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
+        {peer_id, _peer_channel_id} = result
+        {:ok, state} = handle_peer_left(state, peer_id)
 
-        case result do
-          nil ->
-            {:noreply, state}
-
-          {peer_id, _peer_channel_id} ->
-            {:ok, state} = handle_peer_left(state, peer_id)
-
-            Engine.remove_peer(state.rtc_engine, peer_id)
-
-            if is_nil(state.moderator_pid) and state.peer_channels == %{} do
-              Engine.terminate(state.rtc_engine)
-              {:stop, :normal, state}
-            else
-              {:noreply, state}
-            end
-        end
+        Engine.remove_peer(state.rtc_engine, peer_id)
+        terminate_engine_if_empty(state)
     end
   end
 
@@ -295,6 +277,15 @@ defmodule MembraneLive.Event do
 
       _else ->
         {:reply, %{playlist_idl: state.event_name, name: "Dzialaaaa!"}, state}
+    end
+  end
+
+  defp terminate_engine_if_empty(state) do
+    if is_nil(state.moderator_pid) and state.peer_channels == %{} do
+      Engine.terminate(state.rtc_engine)
+      {:stop, :normal, state}
+    else
+      {:noreply, state}
     end
   end
 

@@ -118,7 +118,7 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp get_event_pid(socket) do
+  defp set_event_pid(socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined -> socket
       pid -> Socket.assign(socket, %{event_pid: pid})
@@ -126,7 +126,7 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   defp join_event(socket) do
-    socket = get_event_pid(socket)
+    socket = set_event_pid(socket)
 
     if is_nil(socket.assigns.event_pid),
       do: raise("Event was not started before first joining attempt")
@@ -282,7 +282,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_in("isPlaylistPlayable", _data, socket) do
-    socket = get_event_pid(socket)
+    socket = set_event_pid(socket)
 
     if socket.assigns.event_pid != nil do
       case :global.whereis_name(socket.assigns.event_id) do
