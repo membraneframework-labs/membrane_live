@@ -40,7 +40,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       <Screen className="ScreenIcon" />
       <div className="PresentingNow">
         {presenterName
-          ? `${presenterName} is now presenting...`
+          ? `Presenting now...`
           : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">

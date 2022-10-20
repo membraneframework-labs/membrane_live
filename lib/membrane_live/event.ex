@@ -9,7 +9,7 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.TranscodingConfig
+  alias Membrane.RTC.Engine.Endpoint.HLS.CompositorConfig
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -78,11 +78,12 @@ defmodule MembraneLive.Event do
     Process.monitor(pid)
 
     endpoint = %HLS{
+      event_id: event_id,
       rtc_engine: pid,
       owner: self(),
       output_directory: "output",
       target_window_duration: :infinity,
-      transcoding_config: %TranscodingConfig{enabled?: true}
+      compositor_config: %CompositorConfig{}
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)
@@ -91,7 +92,6 @@ defmodule MembraneLive.Event do
      %{
        peer_ids: [],
        event_id: event_id,
-       event_name: "",
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
@@ -240,32 +240,21 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video, event_name}, state) do
-    state = %{state | event_name: event_name}
-
-    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-      playlist_idl: event_name,
-      name: "name"
-    })
+  def handle_info({:playlist_playable, :video}, state) do
+    send_broadcast(state)
 
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:cleanup, _clean_function, stream_id}, state) do
-    StorageCleanup.remove_directory(stream_id)
+  def handle_info({:cleanup, _clean_function}, state) do
+    StorageCleanup.remove_directory(state.event_id)
     {:noreply, state}
   end
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
-    case state.peer_ids do
-      [] ->
-        {:reply, %{playlist_idl: "", name: ""}, state}
-
-      _ ->
-        {:reply, %{playlist_idl: state.event_name, name: "Dzialaaaa!"}, state}
-    end
+    {:reply, stream_response_message(state), state}
   end
 
   defp tracing_metadata(),
@@ -280,19 +269,30 @@ defmodule MembraneLive.Event do
   defp handle_peer_left(%{peer_ids: []} = state, _peer_id), do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
-    state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
-
-    case state.peer_ids do
-      [] ->
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "playlist_playable", %{
-          playlist_idl: "",
-          name: ""
-        })
-
-      _ ->
-        nil
-    end
+    state =
+      state
+      |> Map.update!(:peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
+      |> send_broadcast()
 
     {:ok, state}
+  end
+
+  defp send_broadcast(state) do
+    message = stream_response_message(state)
+
+    MembraneLiveWeb.Endpoint.broadcast!(
+      "event:" <> state.event_id,
+      "playlist_playable",
+      message
+    )
+
+    state
+  end
+
+  defp stream_response_message(state) do
+    start_stream_message = %{playlist_idl: state.event_id, name: "Live Stream 🎐"}
+    stop_stream_message = %{playlist_idl: "", name: ""}
+
+    if Enum.empty?(state.peer_ids), do: stop_stream_message, else: start_stream_message
   end
 end
