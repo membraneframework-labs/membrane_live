@@ -3,6 +3,7 @@ import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import type { Client, Mode } from "../../types";
 import "../../../css/event/modepanel.css";
+import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
 
 type ModeButtonProps = {
@@ -30,14 +31,25 @@ type ModePanelProps = {
 const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
+  const [isClicked, setClicked] = useState(false);
 
   useEffect(
     () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
     [eventChannel]
   );
 
+  useEffect(() => {
+    const ref = setTimeout(() => setClicked(false), 5_000);
+    return () => {
+      clearTimeout(ref);
+    };
+  }, [isClicked]);
+
   const sendReaction = () => {
-    eventChannel.push("reaction", {});
+    if (!isClicked) {
+      eventChannel?.push("reaction", {});
+      setClicked(true);
+    }
   };
 
   return (
@@ -49,7 +61,10 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
           : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">
-        <ModeButton name="Reaction" active={false} onClick={() => sendReaction()} />
+        <div
+          className={`heartButton ${isClicked ? "isActive" : ""}`}
+          onClick={() => sendReaction()}
+        ></div>
         {amIPresenter && (
           <>
             <ModeButton name="Main Stream" active={mode == "hls"} onClick={() => setMode("hls")} />

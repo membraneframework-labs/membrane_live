@@ -54,7 +54,6 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   let before = Date.now();
 
   const frame = () => {
-    console.log(hearts.length);
     const current = Date.now();
     const deltaTime = current - before;
     before = current;
