@@ -61,10 +61,10 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
           : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">
-        <div
+        {presenterName && <div
           className={`heartButton ${isClicked ? "isActive" : ""}`}
           onClick={() => sendReaction()}
-        ></div>
+        />}
         {amIPresenter && (
           <>
             <ModeButton name="Main Stream" active={mode == "hls"} onClick={() => setMode("hls")} />
