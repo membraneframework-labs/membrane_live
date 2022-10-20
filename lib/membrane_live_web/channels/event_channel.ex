@@ -54,8 +54,9 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
+             socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id}),
              [] <- Presence.get_by_key(socket, email),
-             {:ok, socket} <- create_event(id, socket, is_moderator),
+             {:ok, socket} <- create_event(socket, is_moderator),
              {:ok, is_presenter} = check_if_presenter(email, reloaded, id),
              {:ok, is_request_presenting} = check_if_request_presenting(email, reloaded, id) do
           {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
@@ -71,8 +72,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
           if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
 
-          {:ok, %{is_moderator: is_moderator},
-           Socket.assign(socket, %{is_moderator: is_moderator, event_id: id})}
+          {:ok, %{is_moderator: is_moderator}, socket}
         else
           %{metas: _presence} ->
             {:error,
@@ -112,11 +112,11 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp create_event(event_id, socket, is_moderator) do
-    case :global.whereis_name(event_id) do
+  defp create_event(socket, is_moderator) do
+    case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
         if is_moderator,
-          do: Event.start(event_id, name: {:global, event_id}),
+          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
           else: {:error, :non_moderator}
 
       pid ->
@@ -137,7 +137,7 @@ defmodule MembraneLiveWeb.EventChannel do
       {:error, reason} ->
         Logger.error("""
         Failed to start room.
-        Room: #{inspect(event_id)}
+        Room: #{inspect(socket.assigns.event_id)}
         Reason: #{inspect(reason)}
         """)
 
@@ -192,7 +192,7 @@ defmodule MembraneLiveWeb.EventChannel do
       # the Event and engine processes from the first join finish after second join has already happened
       # in this case the new moderator channel process will recieve :DOWN from the older Event process
       # it must restart the Event in that case
-      {:ok, socket} = create_event(socket.assigns.event_id, socket, socket.assigns.is_moderator)
+      {:ok, socket} = create_event(socket, socket.assigns.is_moderator)
       {:noreply, socket}
     else
       {:stop, :normal, socket}
