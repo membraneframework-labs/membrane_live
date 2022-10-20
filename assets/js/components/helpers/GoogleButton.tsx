@@ -2,11 +2,13 @@ import React, { useEffect } from "react";
 import { useToast } from "@chakra-ui/react";
 import { pageTitlePrefix } from "../../utils/const";
 import { fetchTokenAndRedirect } from "../../utils/googleAuthUtils";
+import { GoogleButtonOptions } from "../../types";
+import { Channel } from "phoenix";
 import "../../../css/authpage.css";
 
 type GoogleButtonProps = {
-  eventChannel?: any;
-  options: any;
+  eventChannel?: Channel;
+  options: GoogleButtonOptions;
 };
 
 const GoogleButton = ({ eventChannel, options }: GoogleButtonProps) => {

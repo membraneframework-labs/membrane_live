@@ -1,6 +1,8 @@
 import axios from "axios";
+import { Channel } from "phoenix";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
+import { GoogleResponse, Toast } from "../types";
 import {
   storageSetJwt,
   storageSetName,
@@ -9,7 +11,7 @@ import {
 } from "../utils/storageUtils";
 import { getErrorToast } from "../utils/toastUtils";
 
-const fetchToken = async (googleResponse: any, toast: any) => {
+const fetchToken = async (googleResponse: GoogleResponse, toast: Toast) => {
   try {
     const response = await axios.post(window.location.origin + "/auth", googleResponse);
     if (!response.data.authToken || !response.data.refreshToken) throw "Token is empty";
@@ -20,8 +22,12 @@ const fetchToken = async (googleResponse: any, toast: any) => {
   }
 };
 
-export const fetchTokenAndRedirect = async (response: any, eventChannel: any, toast: any) => {
-  await fetchToken(response, toast);
+export const fetchTokenAndRedirect = async (
+  googleResponse: GoogleResponse,
+  eventChannel: Channel | undefined,
+  toast: Toast
+) => {
+  await fetchToken(googleResponse, toast);
   if (isUserAuthenticated()) {
     axiosWithInterceptor
       .get("/me")

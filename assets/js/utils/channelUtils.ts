@@ -2,6 +2,11 @@ import { Channel, Presence } from "phoenix";
 import type { Participant, Client, Presenter, Toast, Metas } from "../types";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
+type EventChannelJoinResponse = {
+  is_moderator?: boolean;
+  generated_key?: string;
+};
+
 export const createEventChannel = (
   toast: Toast,
   client: Client,
@@ -11,22 +16,22 @@ export const createEventChannel = (
 ) => {
   eventChannel
     .join()
-    .receive("ok", (resp: any) => {
+    .receive("ok", (response: EventChannelJoinResponse) => {
       setEventChannel(eventChannel);
-      const isModerator = resp?.is_moderator ? true : false;
-      const email = resp?.generated_key || client.email;
+      const isModerator = response?.is_moderator ? true : false;
+      const email = response?.generated_key || client.email;
       setClient({ ...client, isModerator: isModerator, email: email });
     })
-    .receive("error", (resp: { reason: string }) => {
+    .receive("error", (response: { reason: string }) => {
       eventChannel.leave();
-      getErrorToast(toast, `Error while joining the event: ${resp.reason}`);
+      getErrorToast(toast, `Error while joining the event: ${response.reason}`);
     });
 };
 
 export const syncEventChannel = (
   eventChannel: Channel | undefined,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
-  clientEmail: String
+  clientEmail: string
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
@@ -113,7 +118,7 @@ export const syncPresenters = (
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
 
 const compareParticipants =
-  (clientEmail: String) =>
+  (clientEmail: string) =>
   (x: Participant, y: Participant): number => {
     return x.email == clientEmail
       ? -1

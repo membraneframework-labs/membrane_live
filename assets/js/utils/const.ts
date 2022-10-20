@@ -1,3 +1,5 @@
+import { GoogleButtonOptions } from "../types";
+
 export const FRAME_RATE = 24;
 export const CANVAS_WIDTH = 1920;
 export const CANVAS_HEIGHT = 1080;
@@ -52,7 +54,7 @@ export const monthNames = [
 
 export const pageTitlePrefix = "Membrane Live";
 
-export const roundedGoogleButton = {
+export const roundedGoogleButton: GoogleButtonOptions = {
   theme: "outline",
   type: "icon",
   size: "large",
@@ -60,7 +62,7 @@ export const roundedGoogleButton = {
   shape: "circle",
 };
 
-export const rectangleGoogleButton = {
+export const rectangleGoogleButton: GoogleButtonOptions = {
   theme: "outline",
   size: "large",
   logo_alignment: "left",

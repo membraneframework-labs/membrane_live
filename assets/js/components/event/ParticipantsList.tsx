@@ -3,8 +3,8 @@ import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react"
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
-import "../../../css/event/participants.css";
 import { Channel } from "phoenix";
+import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -46,7 +46,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
 
 type ClientParticipantMenuProps = {
   participant: Participant;
-  eventChannel: any;
+  eventChannel: Channel | undefined;
 };
 
 const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
@@ -54,11 +54,11 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if ((e.target as HTMLTextAreaElement).value === askText) {
-      eventChannel.push("presenting_request", {
+      eventChannel?.push("presenting_request", {
         email: participant.email,
       });
     } else {
-      eventChannel.push("cancel_presenting_request", { email: participant.email });
+      eventChannel?.push("cancel_presenting_request", { email: participant.email });
     }
   };
 
@@ -98,7 +98,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     ? "Presenter"
     : "Participant";
 
-  const isMyself: Boolean = client.email == participant.email;
+  const isMyself: boolean = client.email == participant.email;
   const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;
 
   return (
