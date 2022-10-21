@@ -38,9 +38,6 @@
 .heartButton {
   width: 100px;
   height: 100px;
-  /* width: auto; */
-  /* width: 6rem; */
-  /* height: 6rem; */
   background: url("https://cssanimation.rocks/images/posts/steps/heart.png") no-repeat;
   background-position: 0 0;
   cursor: pointer;
