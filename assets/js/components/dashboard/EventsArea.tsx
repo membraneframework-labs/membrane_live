@@ -12,24 +12,36 @@ type EventsAreaProps = {
 
 const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
   const [webinars, setWebinars] = useState<EventInfo[]>([]);
+  const [recordings, setRecordings] = useState<EventInfo[]>([]);
   const toast = useToast();
 
-  const listEvents = (upcoming: boolean) => {
+  const listEvents = (isRecording: boolean, events: EventInfo[], upcoming: boolean) => {
     const curDate = new Date();
 
-    return webinars
-      .filter((elem) => (upcoming ? elem.startDate >= curDate : elem.startDate < curDate))
+    const filtered_events = events
+      .filter((elem) => {
+        const upcomingEventCondition = upcoming
+          ? elem.startDate >= curDate
+          : elem.startDate < curDate;
+        return isRecording || upcomingEventCondition;
+      })
       .filter((elem) => elem.title.toLowerCase().includes(searchText.toLowerCase()))
       .sort((a, b) =>
         upcoming
           ? a.startDate.getTime() - b.startDate.getTime()
           : b.startDate.getTime() - a.startDate.getTime()
       )
-      .map((elem) => <EventField key={elem.uuid} webinarInfo={elem} />);
+      .map((elem) => <EventField key={elem.uuid} isRecording={isRecording} webinarInfo={elem} />);
+
+    return filtered_events.length ? filtered_events : null;
   };
 
+  const listRecordings = (upcoming: boolean) => listEvents(true, recordings, upcoming);
+  const listWebinars = (upcoming: boolean) => listEvents(false, webinars, upcoming);
+
   useEffect(() => {
-    getWebinarsInfo(toast, setWebinars);
+    getWebinarsInfo(toast, setWebinars, false);
+    getWebinarsInfo(toast, setRecordings, true);
   }, []);
 
   return (
@@ -38,15 +50,23 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
         {currentEvents == "All events" && (
           <>
             <p className="HeaderText">Upcoming events</p>
-            <div className="EventList">{listEvents(true)}</div>
+            <div className="EventList">
+              {listWebinars(true) || (
+                <p className="EmptyText">No upcoming events! Create one with the button above!</p>
+              )}
+            </div>
             <p className="HeaderText">Past events</p>
-            <div className="EventList">{listEvents(false)}</div>
+            <div className="EventList">
+              {listWebinars(false) || <p className="EmptyText">No past events!</p>}
+            </div>
           </>
         )}
         {currentEvents == "Recorded events" && (
           <>
             <p className="HeaderText">Recorded events</p>
-            <i style={{ color: "#001a72" }}>Coming soon...</i>
+            <div className="EventList">
+              {listRecordings(false) || <p className="EmptyText">No available recorded events</p>}
+            </div>
           </>
         )}
       </div>

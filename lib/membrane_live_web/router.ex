@@ -19,6 +19,7 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", PageController, :index)
     get("/event/*page", PageController, :index)
+    get("/recordings/*page", PageController, :index)
     get("/video/:prefix/:filename", HLSController, :index)
   end
 
@@ -35,11 +36,24 @@ defmodule MembraneLiveWeb.Router do
     get("/:uuid", WebinarController, :show)
   end
 
+  scope "/resources/recordings", MembraneLiveWeb do
+    pipe_through(:browser)
+
+    get("/", RecordingsController, :index)
+    get("/:uuid", RecordingsController, :show)
+  end
+
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
     pipe_through(:auth)
 
     resources("/webinars", WebinarController, except: [:edit, :new, :index, :show], param: "uuid")
+
+    resources("/recordings", RecordingsController,
+      except: [:edit, :new, :index, :create, :update, :show],
+      param: "uuid"
+    )
+
     resources("/users", UserController, except: [:edit, :new, :create], param: "uuid")
   end
 

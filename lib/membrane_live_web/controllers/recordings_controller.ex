@@ -1,4 +1,4 @@
-defmodule MembraneLiveWeb.WebinarController do
+defmodule MembraneLiveWeb.RecordingsController do
   use MembraneLiveWeb, :controller
 
   alias MembraneLive.Webinars
@@ -9,29 +9,13 @@ defmodule MembraneLiveWeb.WebinarController do
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
-    webinars = Webinars.list_webinars()
+    webinars = Webinars.list_recordings()
     render(conn, "index.json", webinars: webinars)
-  end
-
-  @spec create(any, map) :: any
-  def create(conn, %{"webinar" => webinar_params}) do
-    with {:ok, %Webinar{} = webinar} <-
-           Webinars.create_webinar(webinar_params, conn.assigns.user_id) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
-      |> render("show_link.json", link: Webinars.get_link(webinar))
-    end
   end
 
   @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, params) do
     ControllerCallbackHelper.get_with_callback(conn, params, &show_callback/2, true)
-  end
-
-  @spec update(any, map) :: any
-  def update(conn, params) do
-    ControllerCallbackHelper.get_with_callback(conn, params, &update_callback/2, false)
   end
 
   @spec delete(any, map) :: any
@@ -41,12 +25,6 @@ defmodule MembraneLiveWeb.WebinarController do
 
   defp show_callback(conn, %{"webinar_db" => webinar}) do
     render(conn, "show.json", webinar: webinar)
-  end
-
-  defp update_callback(conn, %{"webinar_db" => webinar, "webinar" => webinar_params}) do
-    with {:ok, %Webinar{} = webinar} <- Webinars.update_webinar(webinar, webinar_params) do
-      render(conn, "show.json", webinar: webinar)
-    end
   end
 
   defp delete_callback(conn, %{"webinar_db" => webinar}) do

@@ -1,5 +1,7 @@
 import { Channel, Presence } from "phoenix";
 import type { Participant, Client, Presenter, Toast, Metas } from "../types";
+import { NavigateFunction } from "react-router-dom";
+import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 
 type EventChannelJoinResponse = {
@@ -12,11 +14,16 @@ export const createEventChannel = (
   client: Client,
   eventChannel: Channel,
   setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
-  setClient: React.Dispatch<React.SetStateAction<Client>>
+  setClient: React.Dispatch<React.SetStateAction<Client>>,
+  navigate: NavigateFunction
 ) => {
   eventChannel
     .join()
     .receive("ok", (response: EventChannelJoinResponse) => {
+      eventChannel.on("finish_event", () => {
+        redirectToHomePage(navigate);
+        getInfoToast(toast, "The event has finished.");
+      });
       setEventChannel(eventChannel);
       const isModerator = response?.is_moderator ? true : false;
       const email = response?.generated_key || client.email;

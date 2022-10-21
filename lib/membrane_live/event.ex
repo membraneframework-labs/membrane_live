@@ -95,7 +95,8 @@ defmodule MembraneLive.Event do
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
-       trace_ctx: trace_ctx
+       trace_ctx: trace_ctx,
+       moderator_pid: nil
      }}
   end
 
@@ -183,8 +184,7 @@ defmodule MembraneLive.Event do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
 
     {:ok, state} = handle_peer_left(state, peer.id)
-
-    {:noreply, state}
+    terminate_engine_if_empty(state)
   end
 
   @impl true
@@ -217,25 +217,38 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
+  def handle_info({:moderator, moderator_pid}, state) do
+    Process.monitor(moderator_pid)
+    {:noreply, %{state | moderator_pid: moderator_pid}}
+  end
+
+  @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    if pid == state.rtc_engine do
-      event_span_id(state.event_id)
-      |> Membrane.OpenTelemetry.end_span()
+    result =
+      state.peer_channels
+      |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
-      {:stop, :normal, state}
-    else
-      {peer_id, _peer_channel_id} =
-        state.peer_channels
-        |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
+    cond do
+      pid == state.rtc_engine ->
+        state.event_id
+        |> event_span_id()
+        |> Membrane.OpenTelemetry.end_span()
 
-      {:ok, state} = handle_peer_left(state, peer_id)
+        {:stop, :normal, state}
 
-      Engine.remove_peer(state.rtc_engine, peer_id)
-      {_elem, state} = pop_in(state, [:peer_channels, peer_id])
+      pid == state.moderator_pid ->
+        state = %{state | moderator_pid: nil}
+        terminate_engine_if_empty(state)
 
-      if state.peer_channels == %{}, do: Engine.terminate(state.rtc_engine)
+      is_nil(result) ->
+        {:noreply, state}
 
-      {:noreply, state}
+      true ->
+        {peer_id, _peer_channel_id} = result
+        {:ok, state} = handle_peer_left(state, peer_id)
+
+        Engine.remove_peer(state.rtc_engine, peer_id)
+        terminate_engine_if_empty(state)
     end
   end
 
@@ -280,6 +293,15 @@ defmodule MembraneLive.Event do
     end
   end
 
+  defp terminate_engine_if_empty(state) do
+    if is_nil(state.moderator_pid) and state.peer_channels == %{} do
+      Engine.terminate(state.rtc_engine)
+      {:stop, :normal, state}
+    else
+      {:noreply, state}
+    end
+  end
+
   defp tracing_metadata(),
     do: [
       {:"library.language", :erlang},
@@ -295,6 +317,7 @@ defmodule MembraneLive.Event do
     [prev_peer | _rest] = state.peer_ids
     state = Map.update!(state, :playlist_idls, &Map.delete(&1, peer_id))
     state = Map.update!(state, :peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
+    {_elem, state} = pop_in(state, [:peer_channels, peer_id])
 
     case state.peer_ids do
       [] ->

@@ -15,6 +15,7 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
   alias MembraneLiveWeb.Presence
+  alias Phoenix.Socket
 
   @impl true
   def join("event:" <> id, %{"username" => name}, socket) do
@@ -32,7 +33,8 @@ defmodule MembraneLiveWeb.EventChannel do
           is_auth: false
         })
 
-        {:ok, %{generated_key: gen_key}, Phoenix.Socket.assign(socket, %{event_id: id})}
+        {:ok, %{generated_key: gen_key},
+         Phoenix.Socket.assign(socket, %{event_id: id, event_pid: nil})}
 
       {:error, _error} ->
         {:error, %{reason: "This link is wrong."}}
@@ -52,12 +54,13 @@ defmodule MembraneLiveWeb.EventChannel do
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
+             is_moderator <- Webinars.check_is_user_moderator(uuid, id),
+             socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id}),
              [] <- Presence.get_by_key(socket, email),
-             {:ok, socket} <- create_event_stream(id, socket),
-             {:ok, is_presenter} = check_if_presenter(email, reloaded, id),
-             {:ok, is_request_presenting} = check_if_request_presenting(email, reloaded, id),
-             is_moderator <- Webinars.check_is_user_moderator(uuid, id) do
-          {:ok, socket} = if is_presenter, do: join_event_stream(socket), else: {:ok, socket}
+             {:ok, socket} <- create_event(socket),
+             {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
+             {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
+          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
 
           {:ok, _ref} =
             Presence.track(socket, email, %{
@@ -67,6 +70,8 @@ defmodule MembraneLiveWeb.EventChannel do
               is_request_presenting: is_request_presenting,
               is_auth: true
             })
+
+          if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
 
           {:ok, %{is_moderator: is_moderator}, socket}
         else
@@ -100,16 +105,33 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_info(
-        {:DOWN, _ref, :process, _pid, _reason},
+        {:DOWN, _ref, :process, from, _reason},
         socket
       ) do
-    {:stop, :normal, socket}
+    if from == socket.assigns.event_pid do
+      # sometimes, when server recieves 2 join requests from the same peer in quick succession
+      # the Event and engine processes from the first join finish after second join has already happened
+      # in this case the new moderator channel process will recieve :DOWN from the older Event process
+      # it must restart the Event in that case
+      {:ok, socket} = create_event(socket)
+      {:noreply, socket}
+    else
+      {:stop, :normal, socket}
+    end
   end
 
   @impl true
   def handle_info({:media_event, event}, socket) do
     push(socket, "mediaEvent", %{data: event})
 
+    {:noreply, socket}
+  end
+
+  def handle_in("finish_event", %{}, socket) do
+    "event:" <> uuid = socket.topic
+    Webinars.mark_webinar_as_finished(uuid)
+
+    broadcast!(socket, "finish_event", %{})
     {:noreply, socket}
   end
 
@@ -186,7 +208,7 @@ defmodule MembraneLiveWeb.EventChannel do
         "event:" <> id = socket.topic
         add_to_presenters(email, id)
         remove_from_presenting_requests(email, id)
-        join_event_stream(socket)
+        join_event(socket)
       else
         {:ok, _ref} =
           Presence.update(
@@ -239,13 +261,72 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def handle_in("isPlaylistPlayable", _data, socket) do
+    socket = set_event_pid(socket)
+
+    if socket.assigns.event_pid != nil do
+      case :global.whereis_name(socket.assigns.event_id) do
+        :undefined ->
+          {:reply, {:ok, false}, socket}
+
+        _pid ->
+          {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
+      end
+    else
+      {:reply, {:ok, false}, socket}
+    end
+  end
+
+  defp create_event(socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        {:reply, {:ok, false}, socket}
+        if socket.assigns.is_moderator,
+          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
+          else: {:error, :non_moderator}
 
       pid ->
-        {:reply, {:ok, GenServer.call(pid, :is_playlist_playable)}, socket}
+        {:ok, pid}
     end
+    |> case do
+      {:ok, event_pid} ->
+        Process.monitor(event_pid)
+        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
+
+      {:error, {:already_started, event_pid}} ->
+        Process.monitor(event_pid)
+        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
+
+      {:error, :non_moderator} ->
+        {:ok, Socket.assign(socket, %{event_pid: nil})}
+
+      {:error, reason} ->
+        Logger.error("""
+        Failed to start room.
+        Room: #{inspect(socket.assigns.event_id)}
+        Reason: #{inspect(reason)}
+        """)
+
+        {:error, %{reason: "failed to start event"}}
+    end
+  end
+
+  defp set_event_pid(socket) do
+    case :global.whereis_name(socket.assigns.event_id) do
+      :undefined -> socket
+      pid -> Socket.assign(socket, %{event_pid: pid})
+    end
+  end
+
+  defp join_event(socket) do
+    socket = set_event_pid(socket)
+
+    if is_nil(socket.assigns.event_pid),
+      do: raise("Event was not started before first joining attempt")
+
+    peer_id = "#{UUID.uuid4()}"
+
+    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok, Socket.assign(socket, %{peer_id: peer_id})}
   end
 
   defp webinar_exists(id) do
@@ -256,38 +337,6 @@ defmodule MembraneLiveWeb.EventChannel do
       _error ->
         {:error, "id is not binary_id"}
     end
-  end
-
-  defp create_event_stream(event_id, socket) do
-    case :global.whereis_name(event_id) do
-      :undefined -> Event.start(event_id, name: {:global, event_id})
-      pid -> {:ok, pid}
-    end
-    |> case do
-      {:ok, event_pid} ->
-        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
-
-      {:error, {:already_started, event_pid}} ->
-        {:ok, Phoenix.Socket.assign(socket, %{event_id: event_id, event_pid: event_pid})}
-
-      {:error, reason} ->
-        Logger.error("""
-        Failed to start room.
-        Room: #{inspect(event_id)}
-        Reason: #{inspect(reason)}
-        """)
-
-        {:error, %{reason: "failed to start event"}}
-    end
-  end
-
-  defp join_event_stream(socket) do
-    peer_id = "#{UUID.uuid4()}"
-    # TODO handle crash of room?
-    Process.monitor(socket.assigns.event_pid)
-    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
-
-    {:ok, Phoenix.Socket.assign(socket, %{peer_id: peer_id})}
   end
 
   defp check_if_presenter(email, reloaded, id),

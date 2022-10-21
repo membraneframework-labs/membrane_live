@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { getEventInfo, initEventInfo, syncParticipantsNumber } from "../../utils/headerUtils";
-import { useNavigate } from "react-router-dom";
+import {
+  getEventInfo,
+  initEventInfo,
+  redirectToHomePage,
+  syncParticipantsNumber,
+} from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
+import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
 import type { Client, EventInfo } from "../../types";
 import "../../../css/event/header.css";
@@ -13,27 +18,24 @@ import { Channel } from "phoenix";
 type HeaderProps = {
   eventChannel: Channel | undefined;
   client: Client;
+  isRecording: boolean;
 };
 
-const Header = ({ client, eventChannel }: HeaderProps) => {
+const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const picture: string = storageGetPicture();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
   const toast = useToast();
-
   const navigate = useNavigate();
-  const redirectToHomePage = () => {
-    navigate("/");
-    // the line above does not break the socket connection
-    // which is desired in this case, so the page is reloaded manually
-    window.location.reload();
-  };
 
-  useEffect(() => getEventInfo(toast, setEventInfo), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
-  useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
+
+  if (!isRecording) {
+    useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
+  }
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -45,18 +47,22 @@ const Header = ({ client, eventChannel }: HeaderProps) => {
 
   return (
     <div className="Header">
-      <button onClick={redirectToHomePage}>
+      <button onClick={() => redirectToHomePage(navigate)}>
         <ArrowLeft className="Arrow" />
       </button>
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
         <div className="WebinarInfo">
           <div> {formatDate(eventInfo.startDate)}</div>
-          <div> | </div>
-          <div className="ParticipantsNumber">
-            <Users className="UsersIcon" />
-            {participantsNumber + ` participant${participantsNumber > 1 ? "s" : ""}`}
-          </div>
+          {!isRecording && (
+            <>
+              <div> | </div>
+              <div className="ParticipantsNumber">
+                <Users className="UsersIcon" />
+                {`${participantsNumber} participant${participantsNumber > 1 ? "s" : ""}`}
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className="CopyLink">

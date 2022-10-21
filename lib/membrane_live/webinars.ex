@@ -8,8 +8,27 @@ defmodule MembraneLive.Webinars do
 
   alias MembraneLive.Webinars.Webinar
 
-  @spec list_webinars :: list(Webinar.t())
-  def list_webinars, do: Repo.all(Webinar)
+  @spec list_webinars() :: list(Webinar.t())
+  def list_webinars() do
+    query =
+      from(u in Webinar,
+        where: not u.is_finished,
+        select: u
+      )
+
+    Repo.all(query)
+  end
+
+  @spec list_recordings() :: list(Webinar.t())
+  def list_recordings() do
+    query =
+      from(u in Webinar,
+        where: u.is_finished,
+        select: u
+      )
+
+    Repo.all(query)
+  end
 
   @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
   def get_webinar(uuid) do
@@ -37,6 +56,17 @@ defmodule MembraneLive.Webinars do
     webinar
     |> Webinar.changeset(attrs)
     |> Repo.update()
+  end
+
+  @spec mark_webinar_as_finished(binary()) :: any
+  def mark_webinar_as_finished(uuid) do
+    with {:ok, webinar} <- get_webinar(uuid),
+         webinar <- Ecto.Changeset.change(webinar, is_finished: true),
+         {:ok, struct} <- Repo.update(webinar) do
+      {:ok, struct}
+    else
+      {:error, error_code} -> {:error, error_code}
+    end
   end
 
   @spec delete_webinar(MembraneLive.Webinars.Webinar.t()) :: any

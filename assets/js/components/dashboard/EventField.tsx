@@ -1,20 +1,24 @@
 import React from "react";
 import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
-import type { EventInfo } from "../../types";
 import ModalForm from "./ModalForm";
 import { useToast } from "@chakra-ui/react";
+import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
 import { getIsAuthenticated, clearSessionStorageName } from "../../utils/storageUtils";
+import type { EventInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
+  isRecording: boolean;
   webinarInfo: EventInfo;
 };
 
-const EventField = ({ webinarInfo }: EventFieldProps) => {
+const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
   const toast = useToast();
   const isAuthenticated = getIsAuthenticated();
+  const eventType = getEventType(isRecording);
+
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
@@ -26,7 +30,7 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
       <div className="InfoBox">
         <p className="EventPresenters">{webinarInfo.presenters.join(", ")}</p>
         <a
-          href={`event/${webinarInfo.uuid}`}
+          href={`${eventType}/${webinarInfo.uuid}`}
           className="EventTitle"
           onClick={() => clearSessionStorageName()}
         >
@@ -40,11 +44,13 @@ const EventField = ({ webinarInfo }: EventFieldProps) => {
           </div>
           {isAuthenticated && (
             <div className="EventModifyBox">
-              <ModalForm
-                type="update"
-                activationButtonClass="EventUpdateButton"
-                webinar={webinarInfo}
-              />
+              {!isRecording && (
+                <ModalForm
+                  type="update"
+                  activationButtonClass="EventUpdateButton"
+                  webinar={webinarInfo}
+                />
+              )}
               <button
                 className="EventDeleteButton"
                 onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
