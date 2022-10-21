@@ -99,7 +99,8 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
     : "Participant";
 
   const isMyself: boolean = client.email == participant.email;
-  const isMyselfNotModeratorParticipant = !client.isModerator && role == "Participant" && isMyself;
+  const isMyselfNotModeratorParticipant =
+    client.isAuthenticated && !client.isModerator && role == "Participant" && isMyself;
 
   return (
     <div className="Participant">
