@@ -2,12 +2,10 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
   use MembraneLiveWeb.ConnCase
 
   import MembraneLive.WebinarsFixtures
-  import MembraneLive.AccountsFixtures
   import MembraneLive.Support.CustomTokenHelperFunctions
 
   alias MembraneLive.Webinars
 
-  @link_prefix "/recordings/"
   @keys [:description, :presenters, :start_date, :title, :uuid]
   @num_of_recordings 5
 
@@ -69,7 +67,7 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
   end
 
   defp create_auth_user(_params) do
-    {:ok, user, conn} =
+    {:ok, _user, conn} =
       build_conn()
       |> put_req_header("accept", "application/json")
       |> set_new_user_token("non_webinar_creator")
