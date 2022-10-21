@@ -31,16 +31,6 @@
   gap: 0.5rem;
 }
 
-.HlsTopBar {
-  position: absolute;
-  width: 100%;
-  top: 3rem;
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 .HlsPresenterName {
   background: var(--bg-green);
   color: var(--bg-light-color-1);
@@ -53,4 +43,21 @@
 
 .RotateIcon path {
   stroke: var(--font-dark-color);
+}
+
+.HlsTopBar {
+  position: absolute;
+  width: 100%;
+  top: 3rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.HlsBottomBar {
+  position: absolute;
+  width: 100%;
+  bottom: 3rem;
+  z-index: 1;
 }

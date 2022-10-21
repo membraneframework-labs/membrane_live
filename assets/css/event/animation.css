@@ -1,0 +1,51 @@
+@keyframes heartfade {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.heart {
+  z-index: 999;
+  animation: heartfade 6s linear;
+  position: absolute;
+}
+
+.heart:before {
+  content: "";
+  background-color: var(--font-dark-color);
+  position: absolute;
+  height: 30px;
+  width: 45px;
+  border-radius: 15px 0px 0px 15px;
+  transform: rotate(45deg);
+}
+
+.heart:after {
+  content: "";
+  background-color: var(--font-dark-color);
+  position: absolute;
+  height: 30px;
+  width: 45px;
+  border-radius: 15px 0px 0px 15px;
+  left: 10.5px;
+  transform: rotate(135deg);
+}
+
+.heartButton {
+  width: 100px;
+  height: 100px;
+  background: url("https://cssanimation.rocks/images/posts/steps/heart.png") no-repeat;
+  background-position: 0 0;
+  cursor: pointer;
+  transition: background-position 1s steps(28);
+  transition-duration: 0s;
+}
+
+.heartButton.isActive {
+  transition-duration: 1s;
+  background-position: -2800px 0;
+}
