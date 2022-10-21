@@ -4,8 +4,8 @@ defmodule MembraneLive.Webinars do
   """
 
   import Ecto.Query, warn: false
-  alias MembraneLive.Repo
   alias MembraneLive.Accounts
+  alias MembraneLive.Repo
 
   alias MembraneLive.Webinars.Webinar
 
