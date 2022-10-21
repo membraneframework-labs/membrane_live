@@ -86,7 +86,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
       });
     });
     return () => eventChannel?.off("animation", ref);
-  }, []);
+  }, [eventChannel]);
 
   useEffect(() => {
     const interval = setInterval(() => {
