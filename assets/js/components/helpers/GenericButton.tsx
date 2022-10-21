@@ -6,12 +6,15 @@ type GenericButtonProps = {
   onClick: () => void;
 };
 
-const GenericButton = React.forwardRef(({ icon, onClick }: GenericButtonProps, ref: any) => {
-  return (
-    <button ref={ref} onClick={onClick}>
-      {icon}
-    </button>
-  );
-});
+const GenericButton = React.forwardRef<HTMLButtonElement, GenericButtonProps>(
+  ({ icon, onClick }, ref) => {
+    return (
+      <button ref={ref} onClick={onClick}>
+        {icon}
+      </button>
+    );
+  }
+);
+GenericButton.displayName = "GenericButton";
 
 export default GenericButton;

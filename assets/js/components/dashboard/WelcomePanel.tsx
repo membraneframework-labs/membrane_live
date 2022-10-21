@@ -17,7 +17,7 @@ const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
       <div className="NamePanel">
         {currentEvents == "All events" && (
           <>
-            <p className="HiText">Hi {name.split(" ")[0]}!</p>
+            <p className="HiText">Hi{name ? ` ${name.split(" ")[0]}` : ""}!</p>
             <p className="EncouragingText">What event would you like to join today?</p>
           </>
         )}

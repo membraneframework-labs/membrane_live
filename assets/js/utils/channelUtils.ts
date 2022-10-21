@@ -13,7 +13,7 @@ export const createEventChannel = (
   toast: Toast,
   client: Client,
   eventChannel: Channel,
-  setEventChannel: React.Dispatch<React.SetStateAction<any>>,
+  setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>,
   navigate: NavigateFunction
 ) => {

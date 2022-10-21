@@ -131,7 +131,10 @@ const MenuPopover = ({ eventChannel }: MenuPopoverProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
+        <GenericButton
+          icon={<MenuHorizontal className="PanelButton" />}
+          onClick={() => undefined}
+        />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />

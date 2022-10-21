@@ -3,7 +3,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
   import MembraneLive.AccountsFixtures
 
-  alias MembraneLive.{Accounts.User, Repo, Webinars.Webinar}
+  alias MembraneLive.{Accounts.User, Repo, Webinars.Webinar, Tokens}
   alias MembraneLiveWeb.EventChannel
   alias MembraneLiveWeb.Presence
 
@@ -11,7 +11,9 @@ defmodule MembraneLiveWeb.EventChannelTest do
   @email "mock_email@gmail.com"
 
   setup do
-    %User{uuid: user_uuid} = user_fixture()
+    moderator_user = user_fixture()
+    %User{uuid: moderator_uuid} = moderator_user
+    {:ok, moderator_token, _claims} = Tokens.auth_encode(moderator_uuid)
 
     {:ok, %{uuid: uuid}} =
       Repo.insert(%Webinar{
@@ -19,7 +21,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
         presenters: [],
         start_date: ~N[2019-10-31 23:00:07],
         title: "Test webinar",
-        moderator_id: user_uuid
+        moderator_id: moderator_uuid
       })
 
     google_claims = %{
@@ -29,9 +31,17 @@ defmodule MembraneLiveWeb.EventChannelTest do
     }
 
     {:ok, user, token} = create_user_with_token(google_claims)
+    {:ok, _reply, moderator_socket} = create_channel_connection(uuid, moderator_token)
     {:ok, _reply, pub_socket} = create_channel_connection(uuid, token)
 
-    %{user: user, token: token, uuid: uuid, pub_socket: pub_socket}
+    %{
+      user: user,
+      token: token,
+      uuid: uuid,
+      pub_socket: pub_socket,
+      moderator_user: moderator_user,
+      moderator_socket: moderator_socket
+    }
   end
 
   describe "Joining and leaving webinar:" do
@@ -46,7 +56,12 @@ defmodule MembraneLiveWeb.EventChannelTest do
       assert return_value == {:error, %{reason: "This link is wrong."}}
     end
 
-    test "check if users are in presence", %{user: user, uuid: uuid, pub_socket: pub_socket} do
+    test "check if users are in presence", %{
+      user: user,
+      uuid: uuid,
+      pub_socket: pub_socket,
+      moderator_socket: moderator_socket
+    } do
       google_claims = %{
         "name" => "mock_user2",
         "email" => "mock_email2@gmail.com",
@@ -68,6 +83,9 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
       Process.unlink(pub_socket.channel_pid)
       close(pub_socket)
+
+      Process.unlink(moderator_socket.channel_pid)
+      close(moderator_socket)
 
       assert Presence.list("event:#{uuid}") == %{}
     end

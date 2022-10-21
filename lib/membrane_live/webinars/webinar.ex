@@ -33,6 +33,7 @@ defmodule MembraneLive.Webinars.Webinar do
   def changeset(webinar, attrs) do
     webinar
     |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id])
+    |> Ecto.Changeset.put_change(:is_finished, false)
     |> validate_required([:title, :start_date, :moderator_id])
     |> validate_length(:description, max: @desc_limit)
   end
