@@ -57,7 +57,7 @@ defmodule MembraneLiveWeb.EventChannel do
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
              socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id}),
              [] <- Presence.get_by_key(socket, email),
-             {:ok, socket} <- create_event(socket, is_moderator),
+             {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
              {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
           {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
@@ -103,59 +103,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  defp create_event(socket, is_moderator) do
-    case :global.whereis_name(socket.assigns.event_id) do
-      :undefined ->
-        if is_moderator,
-          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
-          else: {:error, :non_moderator}
-
-      pid ->
-        {:ok, pid}
-    end
-    |> case do
-      {:ok, event_pid} ->
-        Process.monitor(event_pid)
-        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
-
-      {:error, {:already_started, event_pid}} ->
-        Process.monitor(event_pid)
-        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
-
-      {:error, :non_moderator} ->
-        {:ok, Socket.assign(socket, %{event_pid: nil})}
-
-      {:error, reason} ->
-        Logger.error("""
-        Failed to start room.
-        Room: #{inspect(socket.assigns.event_id)}
-        Reason: #{inspect(reason)}
-        """)
-
-        {:error, %{reason: "failed to start event"}}
-    end
-  end
-
-  defp set_event_pid(socket) do
-    case :global.whereis_name(socket.assigns.event_id) do
-      :undefined -> socket
-      pid -> Socket.assign(socket, %{event_pid: pid})
-    end
-  end
-
-  defp join_event(socket) do
-    socket = set_event_pid(socket)
-
-    if is_nil(socket.assigns.event_pid),
-      do: raise("Event was not started before first joining attempt")
-
-    peer_id = "#{UUID.uuid4()}"
-
-    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
-
-    {:ok, Socket.assign(socket, %{peer_id: peer_id})}
-  end
-
   @impl true
   def handle_info(
         {:DOWN, _ref, :process, from, _reason},
@@ -166,7 +113,7 @@ defmodule MembraneLiveWeb.EventChannel do
       # the Event and engine processes from the first join finish after second join has already happened
       # in this case the new moderator channel process will recieve :DOWN from the older Event process
       # it must restart the Event in that case
-      {:ok, socket} = create_event(socket, socket.assigns.is_moderator)
+      {:ok, socket} = create_event(socket)
       {:noreply, socket}
     else
       {:stop, :normal, socket}
@@ -327,6 +274,59 @@ defmodule MembraneLiveWeb.EventChannel do
     else
       {:reply, {:ok, false}, socket}
     end
+  end
+
+  defp create_event(socket) do
+    case :global.whereis_name(socket.assigns.event_id) do
+      :undefined ->
+        if socket.assigns.is_moderator,
+          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
+          else: {:error, :non_moderator}
+
+      pid ->
+        {:ok, pid}
+    end
+    |> case do
+      {:ok, event_pid} ->
+        Process.monitor(event_pid)
+        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
+
+      {:error, {:already_started, event_pid}} ->
+        Process.monitor(event_pid)
+        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
+
+      {:error, :non_moderator} ->
+        {:ok, Socket.assign(socket, %{event_pid: nil})}
+
+      {:error, reason} ->
+        Logger.error("""
+        Failed to start room.
+        Room: #{inspect(socket.assigns.event_id)}
+        Reason: #{inspect(reason)}
+        """)
+
+        {:error, %{reason: "failed to start event"}}
+    end
+  end
+
+  defp set_event_pid(socket) do
+    case :global.whereis_name(socket.assigns.event_id) do
+      :undefined -> socket
+      pid -> Socket.assign(socket, %{event_pid: pid})
+    end
+  end
+
+  defp join_event(socket) do
+    socket = set_event_pid(socket)
+
+    if is_nil(socket.assigns.event_pid),
+      do: raise("Event was not started before first joining attempt")
+
+    peer_id = "#{UUID.uuid4()}"
+
+    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
+
+    {:ok, Socket.assign(socket, %{peer_id: peer_id})}
   end
 
   defp webinar_exists(id) do

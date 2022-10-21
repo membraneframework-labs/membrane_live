@@ -230,7 +230,8 @@ defmodule MembraneLive.Event do
 
     cond do
       pid == state.rtc_engine ->
-        event_span_id(state.event_id)
+        state.event_id
+        |> event_span_id()
         |> Membrane.OpenTelemetry.end_span()
 
         {:stop, :normal, state}

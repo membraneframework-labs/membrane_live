@@ -20,7 +20,7 @@ export const sendEventForm = async (
 ): Promise<void> => {
   const endpoint = "resources/webinars/" + uuid;
   const method = methodMap[modalType];
-
+  
   return method(endpoint, { webinar: eventForm });
 };
 
