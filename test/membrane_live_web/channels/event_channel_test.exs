@@ -3,7 +3,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
   import MembraneLive.AccountsFixtures
 
-  alias MembraneLive.{Accounts.User, Repo, Webinars.Webinar, Tokens}
+  alias MembraneLive.{Accounts.User, Repo, Tokens, Webinars.Webinar}
   alias MembraneLiveWeb.EventChannel
   alias MembraneLiveWeb.Presence
 
