@@ -66,7 +66,7 @@ defmodule MembraneLive.WebinarsTest do
       assert {:ok, %Webinar{} = webinar} = Webinars.update_webinar(webinar, update_attrs)
       assert webinar.description == "some updated description"
       assert webinar.presenters == []
-      assert webinar.moderators == []
+      assert webinar.moderators == [user.email]
       assert webinar.start_date == ~N[2022-07-18 10:20:00]
       assert webinar.title == "some updated title"
     end

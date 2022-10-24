@@ -21,9 +21,6 @@ defmodule MembraneLive.WebinarsFixtures do
     {:ok, webinar} =
       attrs
       |> Enum.into(@default_webinar_attrs)
-      |> Map.update!("moderators", fn moderators ->
-        if user.email in moderators, do: moderators, else: [user.email | moderators]
-      end)
       |> MembraneLive.Webinars.create_webinar(user.uuid)
 
     webinar

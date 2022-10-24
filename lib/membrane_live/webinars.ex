@@ -47,14 +47,7 @@ defmodule MembraneLive.Webinars do
     attrs =
       attrs
       |> Map.put("creator_id", creator_id)
-      |> Map.update!("moderators", fn moderators ->
-        if moderators do
-          creator_email = MembraneLive.Accounts.get_email!(creator_id)
-          if creator_email in moderators, do: moderators, else: [creator_email | moderators]
-        else
-          nil
-        end
-      end)
+      |> Map.update!("moderators", &add_user_email_to_list(creator_id, &1))
 
     %Webinar{}
     |> Webinar.changeset(attrs)
@@ -66,6 +59,8 @@ defmodule MembraneLive.Webinars do
           :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
         ) :: any
   def update_webinar(%Webinar{} = webinar, attrs) do
+    attrs = Map.update!(attrs, "moderators", &add_user_email_to_list(webinar.creator_id, &1))
+
     webinar
     |> Webinar.changeset(attrs)
     |> Repo.update()
@@ -108,6 +103,16 @@ defmodule MembraneLive.Webinars do
 
       {:error, :no_webinar} ->
         false
+    end
+  end
+
+  defp add_user_email_to_list(user_uuid, users_list) do
+    user_email = MembraneLive.Accounts.get_email!(user_uuid)
+
+    cond do
+      users_list == nil -> nil
+      user_email in users_list -> users_list
+      true -> [user_email | users_list]
     end
   end
 end
