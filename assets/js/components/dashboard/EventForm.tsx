@@ -7,6 +7,8 @@ import GenericButton from "../helpers/GenericButton";
 
 import "../../../css/dashboard/eventform.css";
 import { DESCRIPTION_CHAR_LIMIT, MILLISECONDS_IN_MINUTE } from "../../utils/const";
+import { useToast } from "@chakra-ui/react";
+import { getErrorToast } from "../../utils/toastUtils";
 
 export const initialEventFormInput: EventFormInput = {
   title: "",
@@ -145,10 +147,24 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
 
 const ModeratorField = ({ inputList, inputSetter }: ListFieldProps) => {
   const [inputModerator, setInputModerator] = useState<string>("");
+  const toast = useToast();
+
+  const validateEmail = (email: string) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
 
   const handleAddButton = () => {
-    inputModerator.trim() && inputSetter([...inputList, inputModerator.trim()]);
-    setInputModerator("");
+    if (validateEmail(inputModerator.trim()) != null) {
+      inputModerator.trim() && inputSetter([...inputList, inputModerator.trim()]);
+      setInputModerator("");
+    }
+    else {
+      getErrorToast(toast, "Invalid email address");
+    }
   };
 
   const removeModerator = (idx: number) => {
