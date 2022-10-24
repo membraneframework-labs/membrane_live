@@ -45,9 +45,11 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
 
   defp is_user_authorized(webinar, _jwt_user_uuid, true), do: {:ok, webinar}
 
-  defp is_user_authorized(webinar, jwt_user_uuid, _is_show_callback?)
-       when jwt_user_uuid == webinar.moderator_id,
-       do: {:ok, webinar}
-
-  defp is_user_authorized(_webinar, _jwt_user_uuid, _is_show_callback?), do: {:error, :forbidden}
+  defp is_user_authorized(webinar, jwt_user_uuid, _is_show_callback?) do
+    if Webinars.check_is_user_moderator(jwt_user_uuid, webinar.uuid) do
+      {:ok, webinar}
+    else
+      {:error, :forbidden}
+    end
+  end
 end

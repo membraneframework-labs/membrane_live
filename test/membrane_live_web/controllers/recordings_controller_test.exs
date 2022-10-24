@@ -6,7 +6,7 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
 
   alias MembraneLive.Webinars
 
-  @keys [:description, :presenters, :start_date, :title, :uuid]
+  @keys [:description, :presenters, :moderators, :start_date, :title, :uuid]
   @num_of_recordings 5
 
   setup %{conn: conn} do

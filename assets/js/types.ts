@@ -32,6 +32,7 @@ export type EventFormInput = {
   description: string;
   start_date: string;
   presenters: string[];
+  moderators: string[];
 };
 
 export type OriginalEventInfo = {
@@ -39,6 +40,7 @@ export type OriginalEventInfo = {
   description: string;
   presenters: string[];
   start_date?: string;
+  moderators: string[];
   uuid: string;
 };
 
@@ -46,6 +48,7 @@ export type EventInfo = {
   title: string;
   description: string;
   presenters: string[];
+  moderators: string[];
   startDate: Date;
   uuid: string;
 };

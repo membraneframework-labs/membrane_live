@@ -3,7 +3,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
 
   import MembraneLive.AccountsFixtures
 
-  alias MembraneLive.{Accounts.User, Repo, Tokens, Webinars.Webinar}
+  alias MembraneLive.{Accounts, Accounts.User, Repo, Tokens, Webinars.Webinar}
   alias MembraneLiveWeb.EventChannel
   alias MembraneLiveWeb.Presence
 
@@ -11,17 +11,18 @@ defmodule MembraneLiveWeb.EventChannelTest do
   @email "mock_email@gmail.com"
 
   setup do
-    moderator_user = user_fixture()
-    %User{uuid: moderator_uuid} = moderator_user
-    {:ok, moderator_token, _claims} = Tokens.auth_encode(moderator_uuid)
+    creator_user = user_fixture()
+    %User{uuid: creator_uuid} = creator_user
+    {:ok, creator_token, _claims} = Tokens.auth_encode(creator_uuid)
 
     {:ok, %{uuid: uuid}} =
       Repo.insert(%Webinar{
         description: "a",
         presenters: [],
+        moderators: [Accounts.get_email!(creator_uuid)],
         start_date: ~N[2019-10-31 23:00:07],
         title: "Test webinar",
-        moderator_id: moderator_uuid
+        creator_id: creator_uuid
       })
 
     google_claims = %{
@@ -31,7 +32,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
     }
 
     {:ok, user, token} = create_user_with_token(google_claims)
-    {:ok, _reply, moderator_socket} = create_channel_connection(uuid, moderator_token)
+    {:ok, _reply, moderator_socket} = create_channel_connection(uuid, creator_token)
     {:ok, _reply, pub_socket} = create_channel_connection(uuid, token)
 
     %{
@@ -39,7 +40,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
       token: token,
       uuid: uuid,
       pub_socket: pub_socket,
-      moderator_user: moderator_user,
+      moderator_user: creator_user,
       moderator_socket: moderator_socket
     }
   end

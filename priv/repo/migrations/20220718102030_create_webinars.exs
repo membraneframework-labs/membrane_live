@@ -8,6 +8,7 @@ defmodule MembraneLive.Repo.Migrations.CreateWebinars do
       add(:start_date, :naive_datetime, null: false)
       add(:description, :string)
       add(:presenters, {:array, :string})
+      add(:moderators, {:array, :string})
 
       timestamps()
     end

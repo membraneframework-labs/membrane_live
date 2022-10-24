@@ -13,6 +13,7 @@ export const initEventInfo = (): EventInfo => {
     description: "",
     startDate: new Date(),
     presenters: [],
+    moderators: [],
   };
 };
 

@@ -10,10 +10,11 @@ defmodule MembraneLive.Webinars.Webinar do
 
   @type t :: %__MODULE__{
           description: String.t(),
-          presenters: list,
+          presenters: [binary()],
           start_date: NaiveDateTime.t(),
           title: String.t(),
-          is_finished: boolean()
+          is_finished: boolean(),
+          moderators: [binary()]
         }
 
   @desc_limit 255
@@ -24,17 +25,17 @@ defmodule MembraneLive.Webinars.Webinar do
     field(:start_date, :naive_datetime)
     field(:title, :string)
     field(:is_finished, :boolean)
-    belongs_to(:moderator, MembraneLive.Webinars.Webinar, references: :uuid, type: :binary_id)
-
+    field(:moderators, {:array, :string})
+    belongs_to(:creator, MembraneLive.Accounts.User, references: :uuid, type: :binary_id)
     timestamps()
   end
 
   @doc false
   def changeset(webinar, attrs) do
     webinar
-    |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id])
+    |> cast(attrs, [:title, :start_date, :description, :presenters, :creator_id, :moderators])
     |> Ecto.Changeset.put_change(:is_finished, false)
-    |> validate_required([:title, :start_date, :moderator_id])
+    |> validate_required([:title, :start_date, :creator_id, :moderators])
     |> validate_length(:description, max: @desc_limit)
   end
 end

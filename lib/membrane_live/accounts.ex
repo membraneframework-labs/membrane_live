@@ -69,4 +69,12 @@ defmodule MembraneLive.Accounts do
       {:error, :no_user} -> {:error, "User with this id #{uuid} doesn't exist."}
     end
   end
+
+  @spec get_email!(String.t()) :: String.t()
+  def get_email!(uuid) do
+    case get_email(uuid) do
+      {:ok, email} -> email
+      {:error, reason} -> raise reason
+    end
+  end
 end

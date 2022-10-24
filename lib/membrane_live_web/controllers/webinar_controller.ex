@@ -13,7 +13,7 @@ defmodule MembraneLiveWeb.WebinarController do
     render(conn, "index.json", webinars: webinars)
   end
 
-  @spec create(any, map) :: any
+  @spec create(Plug.Conn.t(), map) :: any
   def create(conn, %{"webinar" => webinar_params}) do
     with {:ok, %Webinar{} = webinar} <-
            Webinars.create_webinar(webinar_params, conn.assigns.user_id) do

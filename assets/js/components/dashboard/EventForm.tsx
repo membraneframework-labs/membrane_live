@@ -13,6 +13,7 @@ export const initialEventFormInput: EventFormInput = {
   description: "",
   start_date: "",
   presenters: [],
+  moderators: [],
 };
 
 type FieldProps = {
@@ -102,6 +103,7 @@ const DateField = ({ value, inputSetter }: FieldProps) => {
 type ListFieldProps = { inputList: string[]; inputSetter: (inputList: string[]) => void };
 
 const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
+  console.log(inputList, "presenter inputList");
   const [inputPresenter, setInputPresenter] = useState<string>("");
 
   const handleAddButton = () => {
@@ -142,19 +144,45 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
   );
 };
 
-const ModeratorField = () => {
+const ModeratorField = ({ inputList, inputSetter }: ListFieldProps) => {
+
+  console.log(inputList, "inputList");
+  const [inputModerator, setInputModerator] = useState<string>("");
+
+  const handleAddButton = () => {
+    inputModerator.trim() && inputSetter([...inputList, inputModerator.trim()]);
+    setInputModerator("");
+  };
+
+  const removeModerator = (idx: number) => {
+    const newInputList = inputList.filter((_p, i) => i != idx);
+    inputSetter(newInputList);
+  };
+
   return (
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Choose moderators (optional)</label>
       <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
-        <input type="search" placeholder="Type name of moderators to add" />
-        <GenericButton
-          icon={<Plus />}
-          onClick={() => {
-            alert("Handling multiple operators is coming soon...");
-          }}
+        <input
+          type="search"
+          value={inputModerator}
+          placeholder="Type name of moderators to add"
+          onChange={(e) => changeElement(e, setInputModerator)}
         />
+        <GenericButton icon={<Plus />} onClick={handleAddButton} />
       </div>
+      <ul className="EventFormUnorderedList">
+        {inputList.map((moderator, idx) => {
+          return (
+            <li key={idx}>
+              <div className="FlexContainer">
+                <span>{moderator}</span>
+                <GenericButton icon={<Minus />} onClick={() => removeModerator(idx)} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 };
@@ -184,6 +212,7 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
   const [inputDescription, setInputDescription] = useState<string>(initialInput.description);
   const [inputDate, setDate] = useState<string>(initialInput.start_date);
   const [inputPresenters, setInputParticipants] = useState<string[]>(initialInput.presenters);
+  const [inputModerators, setInputModerators] = useState<string[]>(initialInput.moderators);
 
   useEffect(() => {
     setParentInput({
@@ -191,8 +220,12 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       description: inputDescription,
       start_date: inputDate,
       presenters: inputPresenters,
+      moderators: inputModerators,
     });
-  }, [inputTitle, inputDescription, inputDate, inputPresenters]);
+  }, [inputTitle, inputDescription, inputDate, inputPresenters, inputModerators]);
+
+  console.log(inputModerators, "inputModerators");
+  console.log(inputPresenters, "inputPresenter");
 
   return (
     <div className="EventFormDiv">
@@ -200,7 +233,7 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       <DescriptionField value={inputDescription} inputSetter={setInputDescription} />
       <DateField value={inputDate} inputSetter={setDate} />
       <PresenterField inputList={inputPresenters} inputSetter={setInputParticipants} />
-      <ModeratorField />
+      <ModeratorField inputList={inputModerators} inputSetter={setInputModerators} />
     </div>
   );
 };

@@ -22,7 +22,8 @@ defmodule MembraneLiveWeb.WebinarView do
       title: webinar.title,
       start_date: webinar.start_date,
       description: webinar.description,
-      presenters: webinar.presenters
+      presenters: webinar.presenters,
+      moderators: webinar.moderators
     }
   end
 end

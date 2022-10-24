@@ -6,6 +6,7 @@ defmodule MembraneLive.Webinars do
   import Ecto.Query, warn: false
   alias MembraneLive.Repo
 
+  alias MembraneLive.Accounts
   alias MembraneLive.Webinars.Webinar
 
   @spec list_webinars() :: list(Webinar.t())
@@ -42,9 +43,21 @@ defmodule MembraneLive.Webinars do
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
 
   @spec create_webinar(map(), binary()) :: any
-  def create_webinar(attrs, moderator_id) do
+  def create_webinar(attrs, creator_id) do
+    attrs =
+      attrs
+      |> Map.put("creator_id", creator_id)
+      |> Map.update!("moderators", fn moderators ->
+        if moderators do
+          creator_email = MembraneLive.Accounts.get_email!(creator_id)
+          if creator_email in moderators, do: moderators, else: [creator_email | moderators]
+        else
+          nil
+        end
+      end)
+
     %Webinar{}
-    |> Webinar.changeset(Map.put(attrs, "moderator_id", moderator_id))
+    |> Webinar.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -88,10 +101,13 @@ defmodule MembraneLive.Webinars do
   end
 
   @spec check_is_user_moderator(binary(), binary()) :: boolean()
-  def check_is_user_moderator(user_uuid, webinar_uuid) do
+  def check_is_user_moderator(user_id, webinar_uuid) do
     case get_webinar(webinar_uuid) do
-      {:ok, webinar} -> user_uuid == webinar.moderator_id
-      {:error, :no_webinar} -> false
+      {:ok, webinar} ->
+        Accounts.get_email!(user_id) in webinar.moderators
+
+      {:error, :no_webinar} ->
+        false
     end
   end
 end

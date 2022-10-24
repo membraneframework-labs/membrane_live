@@ -12,19 +12,22 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     "description" => "some description",
     "presenters" => [],
     "start_date" => ~N[2022-07-17 10:20:00],
-    "title" => "some title"
+    "title" => "some title",
+    "moderators" => []
   }
   @update_attrs %{
     "description" => "some updated description",
     "presenters" => [],
     "start_date" => ~N[2022-07-18 10:20:00],
-    "title" => "some updated title"
+    "title" => "some updated title",
+    "moderators" => []
   }
   @invalid_attrs %{
     "description" => nil,
     "presenters" => nil,
     "start_date" => nil,
-    "title" => nil
+    "title" => nil,
+    "moderators" => nil
   }
 
   @link_prefix "/event/"
@@ -64,8 +67,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
                "title" => "some title"
              } = json_response(conn, 200)["webinar"]
 
-      expected_moderator_id = user.uuid
-      assert expected_moderator_id == Webinars.get_webinar!(webinar.uuid).moderator_id
+      expected_creator_id = user.uuid
+      assert expected_creator_id == Webinars.get_webinar!(webinar.uuid).creator_id
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

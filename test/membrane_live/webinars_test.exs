@@ -16,6 +16,7 @@ defmodule MembraneLive.WebinarsTest do
     @invalid_attrs %{
       "description" => nil,
       "presenters" => nil,
+      "moderators" => nil,
       "start_date" => nil,
       "title" => nil
     }
@@ -34,6 +35,7 @@ defmodule MembraneLive.WebinarsTest do
       valid_attrs = %{
         "description" => "some description",
         "presenters" => [],
+        "moderators" => [],
         "start_date" => ~N[2022-07-17 10:20:00],
         "title" => "some title"
       }
@@ -41,6 +43,7 @@ defmodule MembraneLive.WebinarsTest do
       assert {:ok, %Webinar{} = webinar} = Webinars.create_webinar(valid_attrs, user.uuid)
       assert webinar.description == "some description"
       assert webinar.presenters == []
+      assert webinar.moderators == [user.email]
       assert webinar.start_date == ~N[2022-07-17 10:20:00]
       assert webinar.title == "some title"
     end
@@ -55,6 +58,7 @@ defmodule MembraneLive.WebinarsTest do
       update_attrs = %{
         "description" => "some updated description",
         "presenters" => [],
+        "moderators" => [],
         "start_date" => ~N[2022-07-18 10:20:00],
         "title" => "some updated title"
       }
@@ -62,6 +66,7 @@ defmodule MembraneLive.WebinarsTest do
       assert {:ok, %Webinar{} = webinar} = Webinars.update_webinar(webinar, update_attrs)
       assert webinar.description == "some updated description"
       assert webinar.presenters == []
+      assert webinar.moderators == []
       assert webinar.start_date == ~N[2022-07-18 10:20:00]
       assert webinar.title == "some updated title"
     end

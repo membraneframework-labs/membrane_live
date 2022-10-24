@@ -3,7 +3,11 @@ defmodule MembraneLive.Repo.Migrations.AddModeratorToWebinar do
 
   def change do
     alter table(:webinars) do
-      add(:moderator_id, references("users", column: :uuid, type: :binary_id, on_delete: :delete_all), null: false)
+      add(
+        :creator_id,
+        references("users", column: :uuid, type: :binary_id, on_delete: :delete_all),
+        null: false
+      )
     end
   end
 end
