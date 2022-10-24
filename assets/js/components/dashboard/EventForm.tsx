@@ -103,7 +103,6 @@ const DateField = ({ value, inputSetter }: FieldProps) => {
 type ListFieldProps = { inputList: string[]; inputSetter: (inputList: string[]) => void };
 
 const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
-  console.log(inputList, "presenter inputList");
   const [inputPresenter, setInputPresenter] = useState<string>("");
 
   const handleAddButton = () => {
@@ -145,8 +144,6 @@ const PresenterField = ({ inputList, inputSetter }: ListFieldProps) => {
 };
 
 const ModeratorField = ({ inputList, inputSetter }: ListFieldProps) => {
-
-  console.log(inputList, "inputList");
   const [inputModerator, setInputModerator] = useState<string>("");
 
   const handleAddButton = () => {
@@ -223,9 +220,6 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       moderators: inputModerators,
     });
   }, [inputTitle, inputDescription, inputDate, inputPresenters, inputModerators]);
-
-  console.log(inputModerators, "inputModerators");
-  console.log(inputPresenters, "inputPresenter");
 
   return (
     <div className="EventFormDiv">
