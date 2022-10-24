@@ -83,3 +83,11 @@
   background: var(--bg-light-color-1);
   transition: background 0.5s;
 }
+
+@media screen and (max-width: 768px), screen and (max-height: 768px) {
+  .LogoContainer {
+    color: var(--font-dark-color);
+    padding-left: 0;
+    padding-bottom: 1rem;
+  }
+}
