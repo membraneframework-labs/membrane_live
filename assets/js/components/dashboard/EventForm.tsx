@@ -161,8 +161,7 @@ const ModeratorField = ({ inputList, inputSetter }: ListFieldProps) => {
     if (validateEmail(inputModerator.trim()) != null) {
       inputModerator.trim() && inputSetter([...inputList, inputModerator.trim()]);
       setInputModerator("");
-    }
-    else {
+    } else {
       getErrorToast(toast, "Invalid email address");
     }
   };
