@@ -1,6 +1,7 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout, iconType } from "react-swm-icon-pack";
+import { logOut } from "../../utils/dashboardUtils";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
@@ -39,12 +40,7 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
         {getButton(QuestionCircle, "Help", () => {
           // TODO
         })}
-        {getButton(Logout, "Logout", () => {
-          ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
-            localStorage.removeItem(key);
-          });
-          window.location.reload();
-        })}
+        {getButton(Logout, "Logout", () => logOut() )}
       </div>
     </div>
   );
