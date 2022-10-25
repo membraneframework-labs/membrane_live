@@ -1,8 +1,22 @@
 import React from "react";
 
 const MembraneLogo = () => (
-  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 86 95" >  
-    <image id="image0" width="86" height="95" x="0" y="0"
+  <svg
+    version="1.1"
+    id="Layer_1"
+    xmlns="http://www.w3.org/2000/svg"
+    x="0px"
+    y="0px"
+    width="40px"
+    height="40px"
+    viewBox="0 0 86 95"
+  >
+    <image
+      id="image0"
+      width="86"
+      height="95"
+      x="0"
+      y="0"
       href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABfCAMAAABFh8ANAAAABGdBTUEAALGPC/xhBQAAACBjSFJN
       AAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAZlBMVEX///+HzOiHzOiHzOiH
       zOiHzOiHzOiHzOiHzOiHzOiHzOiHzOiHzOiHzOiHzOiHzOiHzOhuqtJln8p/weFdlMMyXJ4ZO4gA
@@ -29,7 +43,8 @@ const MembraneLogo = () => (
       3JlwU0I4JSfd62AtJt9CYSx+6c4sZTHx+glpMf2ybLU42opfu9ozEb6O/MBd7/M934dupr1byXcv
       eU3YFn/iStrE5aa2pfMBCf0P3K2wK1S66PAAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTAtMjRU
       MTY6MjY6MzArMDI6MDALuHAxAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEwLTI0VDE2OjI2OjMw
-      KzAyOjAweuXIjQAAAABJRU5ErkJggg==" />
+      KzAyOjAweuXIjQAAAABJRU5ErkJggg=="
+    />
   </svg>
 );
 

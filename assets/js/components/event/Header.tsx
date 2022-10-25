@@ -5,15 +5,16 @@ import {
   redirectToHomePage,
   syncParticipantsNumber,
 } from "../../utils/headerUtils";
-import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
+import { ArrowLeft, Users, Copy, Redo } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import { useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
 import type { Client, EventInfo } from "../../types";
-import "../../../css/event/header.css";
 import { Channel } from "phoenix";
+import useCheckScreenType from "../../utils/hooks";
+import "../../../css/event/header.css";
 
 type HeaderProps = {
   eventChannel: Channel | undefined;
@@ -27,6 +28,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
   const toast = useToast();
   const navigate = useNavigate();
+  const screenType = useCheckScreenType();
 
   useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
@@ -50,6 +52,12 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
       <button onClick={() => redirectToHomePage(navigate)}>
         <ArrowLeft className="Arrow" />
       </button>
+      {screenType.device == "mobile" && (
+        <div className="TurnDeviceContainer">
+          <Redo className="TurnIcon" />
+          <p className="TurnDeviceText">Turn your device sideways to see the livestream!</p>
+        </div>
+      )}
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
         <div className="WebinarInfo">
@@ -65,18 +73,22 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
           )}
         </div>
       </div>
-      <div className="CopyLink">
-        <p className="Link"> {window.location.href} </p>
-        <button className="CopyButton" onClick={handleCopyButton}>
-          <Copy className="CopyIcon" />
-        </button>
-      </div>
-      <UserField
-        eventChannel={eventChannel}
-        isAuthenticated={client.isAuthenticated}
-        name={client.name}
-        picture={picture}
-      />
+      {screenType.device == "normal" && (
+        <div className="CopyLink">
+          <p className="Link"> {window.location.href} </p>
+          <button className="CopyButton" onClick={handleCopyButton}>
+            <Copy className="CopyIcon" />
+          </button>
+        </div>
+      )}
+      {screenType.device == "normal" && (
+        <UserField
+          eventChannel={eventChannel}
+          isAuthenticated={client.isAuthenticated}
+          name={client.name}
+          picture={picture}
+        />
+      )}
     </div>
   );
 };

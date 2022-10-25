@@ -5,6 +5,7 @@ import { roundedGoogleButton } from "../../utils/const";
 import { sessionStorageSetName } from "../../utils/storageUtils";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../../types";
+import useCheckScreenType from "../../utils/hooks";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
 
@@ -28,6 +29,8 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
     setIsOpen(false);
     navigate("/");
   };
+
+  const screenType = useCheckScreenType();
 
   return (
     <Modal
@@ -55,7 +58,7 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
           </div>
         </div>
         <div className="ModalFormFooter">
-          <GoogleButton options={roundedGoogleButton} />
+          {screenType.device == "normal" && <GoogleButton options={roundedGoogleButton} />}
           <button onClick={saveNameAndClosePopup} className="SaveButton">
             Save
           </button>

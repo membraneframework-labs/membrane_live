@@ -69,10 +69,4 @@
   .EncouragingText {
     font-size: 1.8rem;
   }
-
-  .Separator {
-    width: 100%;
-    background-color: var(--font-dark-color);
-    color: var(--font-dark-color);
-  }
 }
