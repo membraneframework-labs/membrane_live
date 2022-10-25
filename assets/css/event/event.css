@@ -21,5 +21,7 @@
 @media screen and (max-width: 768px), screen and (max-height: 768px) {
   .EventPage {
     padding: 1rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 }
