@@ -61,3 +61,102 @@
   bottom: 3rem;
   z-index: 1;
 }
+
+.MediaControlBar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 15%;
+}
+
+.MediaTimeRange {
+  width: 93%;
+  --media-range-track-height: 10px;
+  --media-range-thumb-height: 20px;
+  --media-range-thumb-width: 20px;
+  --media-range-thumb-background: red;
+  --media-range-bar-color: red;
+  --media-range-track-border-radius: 24px;
+  background-color: transparent;
+}
+
+.MediaTimeDisplay {
+  width: 7%;
+  background-color: transparent;
+}
+
+.MediaMuteButton {
+  width: 20%;
+  background-color: transparent;
+}
+
+.MediaVolumeRange {
+  width: 20%;
+  background-color: transparent;
+}
+
+.MediaPlayButton {
+  width: 20%;
+  background-color: transparent;
+}
+
+.MediaSeekBackwardButton {
+  background-color: transparent;
+}
+
+.RewindButtons {
+  fill: transparent;
+}
+
+.RewindButtons path {
+  stroke: white;
+}
+
+.MediaSeekForwardButton {
+  width: 50px;
+  background-color: transparent;
+}
+
+.MediaFullScreenButton {
+  fill: transparent;
+  float: right;
+  background-color: transparent;
+  fill: transparent;
+}
+
+.FullScreenButton {
+  border-radius: 50%;
+  width: 30%;
+  background-color: transparent;
+  fill: transparent;
+  margin-left: auto;
+  margin-right: 0;
+  float: right;
+}
+
+.TopBar {
+  height: 5%;
+}
+.BottomBar {
+  display: flex;
+  flex-direction: row;
+  height: 5%;
+}
+
+.BottomBarLeft {
+  width: 30%;
+  padding-left: 1rem;
+}
+
+.BottomBarRight {
+  width: 30%;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 1rem;
+}
+
+.BottomBarCenter {
+  width: 40%;
+  display: flex;
+  justify-content: center;
+}

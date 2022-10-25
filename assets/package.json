@@ -18,6 +18,8 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-react": "^7.31.8",
     "framer-motion": "^6.5.1",
+    "hls-video-element": "^0.0.3",
+    "media-chrome": "^0.14.1",
     "phoenix": "^1.6.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
