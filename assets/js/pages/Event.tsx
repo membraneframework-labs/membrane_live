@@ -80,7 +80,7 @@ const Event = () => {
     if (screenType.device == "mobile" && localStorage.getItem("email")) {
       logOut();
     }
-  }, [screenType])
+  }, [screenType]);
 
   return (
     <div className="EventPage">

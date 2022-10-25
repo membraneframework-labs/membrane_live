@@ -70,4 +70,4 @@ export const logOut = () => {
     localStorage.removeItem(key);
   });
   window.location.reload();
-}
+};

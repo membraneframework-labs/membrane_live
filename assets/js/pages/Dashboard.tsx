@@ -21,7 +21,7 @@ const Dashboard = () => {
     if (screenType.device == "mobile" && localStorage.getItem("email")) {
       logOut();
     }
-  }, [screenType])
+  }, [screenType]);
 
   return (
     <div className="Dashboard">

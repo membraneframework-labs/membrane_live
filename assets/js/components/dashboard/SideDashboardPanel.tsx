@@ -40,7 +40,7 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
         {getButton(QuestionCircle, "Help", () => {
           // TODO
         })}
-        {getButton(Logout, "Logout", () => logOut() )}
+        {getButton(Logout, "Logout", () => logOut())}
       </div>
     </div>
   );

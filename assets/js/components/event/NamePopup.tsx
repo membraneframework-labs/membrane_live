@@ -18,10 +18,13 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
   const [name, setName] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const navigate = useNavigate();
+  const screenType = useCheckScreenType();
+
   const saveNameAndClosePopup = () => {
     if (name === "") return;
-    sessionStorageSetName(name);
-    setClient({ ...client, name: name });
+    const nameToSet = screenType.device == "mobile" ? `${name} 📱` : name;
+    sessionStorageSetName(nameToSet);
+    setClient({ ...client, name: nameToSet });
     setIsOpen(false);
   };
 
@@ -29,8 +32,6 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
     setIsOpen(false);
     navigate("/");
   };
-
-  const screenType = useCheckScreenType();
 
   return (
     <Modal
