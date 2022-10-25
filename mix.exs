@@ -54,7 +54,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine"},
+      {:membrane_rtc_engine,
+       github: "membraneframework/membrane_rtc_engine", branch: "add_audio_mixer_to_compositor"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions",
@@ -81,9 +82,14 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
-      {:membrane_h264_ffmpeg_plugin, "~> 0.21.5"},
+      {:membrane_h264_ffmpeg_plugin,
+       github: "membraneframework/membrane_h264_ffmpeg_plugin",
+       branch: "add_gop_size_option",
+       override: true},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
-      {:membrane_framerate_converter_plugin, "~> 0.5.0"}
+      {:membrane_framerate_converter_plugin, "~> 0.5.0"},
+      {:membrane_video_mix_plugin, github: "pkrucz00/membrane_video_mix_plugin"},
+      {:membrane_audio_mix_plugin, "~> 0.10.0"}
     ]
   end
 
