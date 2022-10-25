@@ -12,14 +12,11 @@ defmodule MembraneLive.Webinars do
   @spec list_webinars(boolean()) :: list(Webinar.t())
   def list_webinars(is_finished? \\ false) do
     from(u in Webinar,
-      where: is_finished? == u.is_finished,
+      where: ^is_finished? == u.is_finished,
       select: u
     )
     |> Repo.all()
-    |> Enum.map(fn webinar ->
-      {:ok, email} = Accounts.get_email(webinar.moderator_id)
-      Map.put(webinar, :email, email)
-    end)
+    |> Enum.map(&add_moderator_email(&1))
   end
 
   @spec list_recordings() :: list(Webinar.t())
@@ -88,5 +85,10 @@ defmodule MembraneLive.Webinars do
       {:ok, webinar} -> user_uuid == webinar.moderator_id
       {:error, :no_webinar} -> false
     end
+  end
+
+  defp add_moderator_email(webinar) do
+    {:ok, email} = Accounts.get_email(webinar.moderator_id)
+    Map.put(webinar, :moderator_email, email)
   end
 end

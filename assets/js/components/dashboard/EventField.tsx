@@ -29,7 +29,7 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
     return `${shortMonthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} ${time}`;
   };
 
-  console.log(webinarInfo, userEmail, userEmail == webinarInfo.moderatorEmail);
+  const isUserEventModerator = userEmail == webinarInfo.moderatorEmail;
 
   return (
     <div className="EventField">
@@ -48,7 +48,7 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
             <CalendarClock />
             {formatDate(webinarInfo.startDate)}
           </div>
-          {isAuthenticated && userEmail == webinarInfo.moderatorEmail && (
+          {isAuthenticated && isUserEventModerator && (
             <div className="EventModifyBox">
               {!isRecording && (
                 <ModalForm
