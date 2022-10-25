@@ -95,11 +95,13 @@ defmodule MembraneLive.Webinars do
     "/event/#{webinar.uuid}"
   end
 
-  @spec check_is_user_moderator(binary(), binary()) :: boolean()
-  def check_is_user_moderator(user_id, webinar_uuid) do
+  @spec check_is_user_moderator?(binary(), binary()) :: boolean()
+  def check_is_user_moderator?(user_id, webinar_uuid) do
     case get_webinar(webinar_uuid) do
       {:ok, webinar} ->
-        Accounts.get_email!(user_id) in webinar.moderators
+        with {:ok, email} <- Accounts.get_email(user_id) do
+          email in webinar.moderators
+        end
 
       {:error, :no_webinar} ->
         false
