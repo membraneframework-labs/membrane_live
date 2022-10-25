@@ -28,11 +28,11 @@ const Recording = () => {
       {(screenType.device == "normal" || screenType.orientation == "portrait") && (
         <Header client={client} eventChannel={undefined} isRecording={true} />
       )}
-      {(screenType.device == "normal" || screenType.orientation == "landscape") && 
-      <div className="Stream">
-        <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
-      </div>
-      }     
+      {(screenType.device == "normal" || screenType.orientation == "landscape") && (
+        <div className="Stream">
+          <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
+        </div>
+      )}
     </div>
   );
 };
