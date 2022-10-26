@@ -16,7 +16,14 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
     <div className="HlsStream">
       {hlsUrl ? (
         <div className="HlsPlayerWrapper">
-          <ReactHlsPlayer src={hlsUrl} autoPlay controls className="HlsPlayer" />
+          <ReactHlsPlayer
+            src={hlsUrl}
+            hlsConfig={{ liveSyncDurationCount: 2 }}
+            autoPlay
+            muted
+            controls
+            className="HlsPlayer"
+          />
           <div className="HlsTopBar">
             {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
           </div>

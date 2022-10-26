@@ -90,13 +90,13 @@ defmodule MembraneLive.Event do
 
     {:ok,
      %{
-       peer_ids: [],
        event_id: event_id,
        rtc_engine: pid,
        peer_channels: %{},
        network_options: network_options,
        trace_ctx: trace_ctx,
-       moderator_pid: nil
+       moderator_pid: nil,
+       is_playlist_playable?: false
      }}
   end
 
@@ -167,8 +167,6 @@ defmodule MembraneLive.Event do
 
     Engine.accept_peer(rtc_engine, peer.id)
     :ok = Engine.add_endpoint(rtc_engine, endpoint, peer_id: peer.id, node: peer_node)
-
-    state = Map.put(state, :peer_ids, [peer.id | state.peer_ids])
 
     {:noreply, state}
   end
@@ -254,8 +252,8 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :video}, state) do
+    state = %{state | is_playlist_playable?: true}
     send_broadcast(state)
-
     {:noreply, state}
   end
 
@@ -288,12 +286,14 @@ defmodule MembraneLive.Event do
 
   defp event_span_id(id), do: "event:#{id}"
 
-  defp handle_peer_left(%{peer_ids: []} = state, _peer_id), do: {:ok, state}
+  defp handle_peer_left(%{peer_channels: peer_channels} = state, _peer_id)
+       when map_size(peer_channels) == 0,
+       do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
     state =
       state
-      |> Map.update!(:peer_ids, &Enum.reject(&1, fn id -> id == peer_id end))
+      |> Map.update!(:peer_channels, &Map.delete(&1, peer_id))
       |> send_broadcast()
 
     {:ok, state}
@@ -315,6 +315,6 @@ defmodule MembraneLive.Event do
     start_stream_message = %{playlist_idl: state.event_id, name: "Live Stream 🎐"}
     stop_stream_message = %{playlist_idl: "", name: ""}
 
-    if Enum.empty?(state.peer_ids), do: stop_stream_message, else: start_stream_message
+    if state.is_playlist_playable?, do: start_stream_message, else: stop_stream_message
   end
 end
