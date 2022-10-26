@@ -128,7 +128,13 @@ export const connectWebrtc = async (
       },
       onJoinSuccess: () => {
         presenterStreams[client.email].getTracks().forEach((track) => {
-          sourceIds[track.kind] = webrtc.addTrack(track, presenterStreams[client.email], {});
+          sourceIds[track.kind] = webrtc.addTrack(
+            track,
+            presenterStreams[client.email],
+            {},
+            undefined,
+            1500
+          );
         });
       },
       onJoinError: () => {
