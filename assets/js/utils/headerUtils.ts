@@ -13,14 +13,21 @@ export const initEventInfo = (): EventInfo => {
     description: "",
     startDate: new Date(),
     presenters: [],
+    moderatorEmail: "",
   };
 };
 
 export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
   const newDate = new Date();
   if (originalEventInfo.start_date) newDate.setTime(Date.parse(originalEventInfo.start_date));
+  const email = originalEventInfo.moderator_email;
   delete originalEventInfo.start_date;
-  const newEventInfo: EventInfo = { ...originalEventInfo, startDate: newDate };
+  delete originalEventInfo.moderator_email;
+  const newEventInfo: EventInfo = {
+    ...originalEventInfo,
+    startDate: newDate,
+    moderatorEmail: email || "",
+  };
   return newEventInfo;
 };
 

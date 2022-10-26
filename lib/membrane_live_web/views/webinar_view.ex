@@ -16,6 +16,17 @@ defmodule MembraneLiveWeb.WebinarView do
     %{link: link}
   end
 
+  def render("webinar.json", %{webinar: %{moderator_email: email} = webinar}) do
+    %{
+      uuid: webinar.uuid,
+      title: webinar.title,
+      start_date: webinar.start_date,
+      description: webinar.description,
+      presenters: webinar.presenters,
+      moderator_email: email
+    }
+  end
+
   def render("webinar.json", %{webinar: webinar}) do
     %{
       uuid: webinar.uuid,

@@ -5,7 +5,11 @@ import ModalForm from "./ModalForm";
 import { useToast } from "@chakra-ui/react";
 import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
-import { getIsAuthenticated, clearSessionStorageName } from "../../utils/storageUtils";
+import {
+  getIsAuthenticated,
+  storageGetEmail,
+  clearSessionStorageName,
+} from "../../utils/storageUtils";
 import type { EventInfo } from "../../types";
 import "../../../css/dashboard/eventsarea.css";
 
@@ -18,12 +22,14 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
   const toast = useToast();
   const isAuthenticated = getIsAuthenticated();
   const eventType = getEventType(isRecording);
-
+  const userEmail = storageGetEmail();
   const formatDate = (date: Date) => {
     const time = date.toLocaleTimeString().replace(/^(\d+:\d\d)(:\d\d)(.*$)/, "$1$3");
 
     return `${shortMonthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} ${time}`;
   };
+
+  const isUserEventModerator = userEmail == webinarInfo.moderatorEmail;
 
   return (
     <div className="EventField">
@@ -42,7 +48,7 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
             <CalendarClock />
             {formatDate(webinarInfo.startDate)}
           </div>
-          {isAuthenticated && (
+          {isAuthenticated && isUserEventModerator && (
             <div className="EventModifyBox">
               {!isRecording && (
                 <ModalForm

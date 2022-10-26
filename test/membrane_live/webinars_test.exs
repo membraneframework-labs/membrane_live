@@ -21,7 +21,7 @@ defmodule MembraneLive.WebinarsTest do
     }
 
     test "list_webinars/0 returns all webinars", %{user: user} do
-      webinar = webinar_fixture(user)
+      webinar = webinar_fixture(user) |> Map.put(:moderator_email, user.email)
       assert Webinars.list_webinars() == [webinar]
     end
 

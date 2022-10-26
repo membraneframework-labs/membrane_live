@@ -18,15 +18,17 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
     webinars = for _index <- 1..@num_of_recordings, do: create_and_format_webinar(user)
     Enum.each(webinars, fn %{"uuid" => uuid} -> Webinars.mark_webinar_as_finished(uuid) end)
 
-    {:ok, webinars: webinars, moderator_conn: conn}
+    {:ok, webinars: webinars, moderator_conn: conn, user: user}
   end
 
   describe "authenticated user" do
     setup [:create_auth_user]
 
-    test "lists all recording", %{conn: conn, webinars: webinars} do
+    test "lists all recording", %{conn: conn, webinars: webinars, user: user} do
       conn = get(conn, Routes.recordings_path(conn, :index))
-      assert json_response(conn, 200)["webinars"] == webinars
+
+      assert json_response(conn, 200)["webinars"] ==
+               add_moderator_email_to_webinars(webinars, user)
     end
 
     test "list chosen recording", %{conn: conn, webinars: webinars} do
@@ -50,9 +52,11 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
   describe "unauthenticated user" do
     setup [:create_unauth_user]
 
-    test "lists all recording", %{conn: conn, webinars: webinars} do
+    test "lists all recording", %{conn: conn, webinars: webinars, user: user} do
       conn = get(conn, Routes.recordings_path(conn, :index))
-      assert json_response(conn, 200)["webinars"] == webinars
+
+      assert json_response(conn, 200)["webinars"] ==
+               add_moderator_email_to_webinars(webinars, user)
     end
 
     test "list chosen recording", %{conn: conn, webinars: webinars} do
@@ -81,6 +85,10 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
       |> put_req_header("accept", "application/json")
 
     %{conn: conn}
+  end
+
+  defp add_moderator_email_to_webinars(webinars, user) do
+    Enum.map(webinars, &Map.put(&1, "moderator_email", user.email))
   end
 
   defp create_and_format_webinar(user) do

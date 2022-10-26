@@ -4,31 +4,23 @@ defmodule MembraneLive.Webinars do
   """
 
   import Ecto.Query, warn: false
+  alias MembraneLive.Accounts
   alias MembraneLive.Repo
 
   alias MembraneLive.Webinars.Webinar
 
-  @spec list_webinars() :: list(Webinar.t())
-  def list_webinars() do
-    query =
-      from(u in Webinar,
-        where: not u.is_finished,
-        select: u
-      )
-
-    Repo.all(query)
+  @spec list_webinars(boolean()) :: list(Webinar.t())
+  def list_webinars(is_finished? \\ false) do
+    from(u in Webinar,
+      where: ^is_finished? == u.is_finished,
+      select: u
+    )
+    |> Repo.all()
+    |> Enum.map(&add_moderator_email(&1))
   end
 
   @spec list_recordings() :: list(Webinar.t())
-  def list_recordings() do
-    query =
-      from(u in Webinar,
-        where: u.is_finished,
-        select: u
-      )
-
-    Repo.all(query)
-  end
+  def list_recordings(), do: list_webinars(true)
 
   @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
   def get_webinar(uuid) do
@@ -93,5 +85,10 @@ defmodule MembraneLive.Webinars do
       {:ok, webinar} -> user_uuid == webinar.moderator_id
       {:error, :no_webinar} -> false
     end
+  end
+
+  defp add_moderator_email(webinar) do
+    {:ok, email} = Accounts.get_email(webinar.moderator_id)
+    Map.put(webinar, :moderator_email, email)
   end
 end

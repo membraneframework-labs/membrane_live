@@ -40,6 +40,7 @@ export type OriginalEventInfo = {
   presenters: string[];
   start_date?: string;
   uuid: string;
+  moderator_email?: string;
 };
 
 export type EventInfo = {
@@ -48,6 +49,7 @@ export type EventInfo = {
   presenters: string[];
   startDate: Date;
   uuid: string;
+  moderatorEmail: string;
 };
 
 export type ModalForm = "create" | "update";

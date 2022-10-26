@@ -16,7 +16,7 @@
 
 .heart:before {
   content: "";
-  background-color: var(--font-dark-color);
+  background-color: #fc2a62;
   position: absolute;
   height: 30px;
   width: 45px;
@@ -26,7 +26,7 @@
 
 .heart:after {
   content: "";
-  background-color: var(--font-dark-color);
+  background-color: #fc2a62;
   position: absolute;
   height: 30px;
   width: 45px;
