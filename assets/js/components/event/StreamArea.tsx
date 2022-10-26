@@ -45,7 +45,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
 
   return (
     <div className="StreamArea">
-      {screenType.device == "normal" && (
+      {screenType.device == "desktop" && (
         <ModePanel
           mode={mode}
           setMode={setMode}

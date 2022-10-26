@@ -78,13 +78,13 @@ const Event = () => {
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      {(screenType.device == "normal" || screenType.orientation == "portrait") && (
+      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
         <Header client={client} eventChannel={eventChannel} isRecording={false} />
       )}
-      {(screenType.device == "normal" || screenType.orientation == "landscape") && (
+      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
         <div className="MainGrid">
           <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
-          {screenType.device == "normal" && (
+          {screenType.device == "desktop" && (
             <ParticipantsList client={client} eventChannel={eventChannel} />
           )}
         </div>

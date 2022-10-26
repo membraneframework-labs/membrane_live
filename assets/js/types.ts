@@ -95,5 +95,5 @@ export type GoogleButtonOptions = {
 
 export type ScreenType = {
   orientation: "landscape" | "portrait";
-  device: "normal" | "mobile";
+  device: "desktop" | "mobile";
 };

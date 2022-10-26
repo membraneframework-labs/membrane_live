@@ -11,7 +11,7 @@ const useCheckScreenType = () => {
     orientation: mqlLandscape.matches ? "landscape" : "portrait",
     device: (mqlLandscape.matches ? mqlMobileLandscape.matches : mqlMobilePortrait.matches)
       ? "mobile"
-      : "normal",
+      : "desktop",
   });
 
   const onLandscapeChange = (e: MediaQueryListEvent) => {
@@ -19,7 +19,7 @@ const useCheckScreenType = () => {
     setScreenType((prev) => {
       const newScreenType: ScreenType = {
         orientation: e.matches ? "landscape" : "portrait",
-        device: window.matchMedia(query).matches ? "mobile" : "normal",
+        device: window.matchMedia(query).matches ? "mobile" : "desktop",
       };
       if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
         return prev;
@@ -32,7 +32,7 @@ const useCheckScreenType = () => {
       setScreenType((prev) => {
         const newScreenType: ScreenType = {
           orientation: "portrait",
-          device: e.matches ? "mobile" : "normal",
+          device: e.matches ? "mobile" : "desktop",
         };
         if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
           return prev;
@@ -45,7 +45,7 @@ const useCheckScreenType = () => {
       setScreenType((prev) => {
         const newScreenType: ScreenType = {
           orientation: "landscape",
-          device: e.matches ? "mobile" : "normal",
+          device: e.matches ? "mobile" : "desktop",
         };
         if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
           return prev;

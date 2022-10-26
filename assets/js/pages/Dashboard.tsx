@@ -18,7 +18,7 @@ const Dashboard = () => {
 
   return (
     <div className="Dashboard">
-      {screenType.device == "normal" && (
+      {screenType.device == "desktop" && (
         <SideDashboardPanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
       )}
       <div className="MainDashboardArea">

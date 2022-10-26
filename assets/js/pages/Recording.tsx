@@ -18,10 +18,10 @@ const Recording = () => {
 
   return (
     <div className="EventPage">
-      {(screenType.device == "normal" || screenType.orientation == "portrait") && (
+      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
         <Header client={client} eventChannel={undefined} isRecording={true} />
       )}
-      {(screenType.device == "normal" || screenType.orientation == "landscape") && (
+      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
         <div className="Stream">
           <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
         </div>

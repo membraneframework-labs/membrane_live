@@ -58,7 +58,7 @@ const WelcomePanel = ({ currentEvents, setCurrentEvents }: WelcomePanelProps) =>
           </>
         )}
       </div>
-      {screenType.device == "normal" && (
+      {screenType.device == "desktop" && (
         <div className="UserContainer">
           <UserField isAuthenticated={isAuthenticated} name={name} picture={picture} />
         </div>

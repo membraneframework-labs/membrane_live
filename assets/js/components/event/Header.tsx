@@ -73,7 +73,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
           )}
         </div>
       </div>
-      {screenType.device == "normal" && (
+      {screenType.device == "desktop" && (
         <div className="CopyLink">
           <p className="Link"> {window.location.href} </p>
           <button className="CopyButton" onClick={handleCopyButton}>
@@ -81,7 +81,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
           </button>
         </div>
       )}
-      {screenType.device == "normal" && (
+      {screenType.device == "desktop" && (
         <UserField
           eventChannel={eventChannel}
           isAuthenticated={client.isAuthenticated}
