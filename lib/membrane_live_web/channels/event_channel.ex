@@ -71,6 +71,8 @@ defmodule MembraneLiveWeb.EventChannel do
               is_auth: true
             })
 
+          if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
+
           {:ok, %{is_moderator: is_moderator}, socket}
         else
           %{metas: _presence} ->

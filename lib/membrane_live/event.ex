@@ -95,6 +95,7 @@ defmodule MembraneLive.Event do
        peer_channels: %{},
        network_options: network_options,
        trace_ctx: trace_ctx,
+       moderator_pid: nil,
        is_playlist_playable?: false
      }}
   end
@@ -208,6 +209,12 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
+  def handle_info({:moderator, moderator_pid}, state) do
+    Process.monitor(moderator_pid)
+    {:noreply, %{state | moderator_pid: moderator_pid}}
+  end
+
+  @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     result =
       state.peer_channels
@@ -220,6 +227,10 @@ defmodule MembraneLive.Event do
         |> Membrane.OpenTelemetry.end_span()
 
         {:stop, :normal, state}
+
+      pid == state.moderator_pid ->
+        state = %{state | moderator_pid: nil}
+        terminate_engine_if_empty(state)
 
       is_nil(result) ->
         {:noreply, state}
@@ -258,7 +269,7 @@ defmodule MembraneLive.Event do
   end
 
   defp terminate_engine_if_empty(state) do
-    if state.peer_channels == %{} do
+    if is_nil(state.moderator_pid) and state.peer_channels == %{} do
       Engine.terminate(state.rtc_engine)
       {:stop, :normal, state}
     else
