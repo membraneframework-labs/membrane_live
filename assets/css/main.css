@@ -25,7 +25,7 @@ html {
   overflow: hidden;
 }
 
-@media screen and (max-width: 768px), screen and (max-height: 768px) {
+@media screen and (max-width: 500px), screen and (max-height: 500px) {
   html {
     overflow: auto;
   }

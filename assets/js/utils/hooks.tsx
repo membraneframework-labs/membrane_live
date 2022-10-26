@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { ScreenType } from "../types";
 
 const useCheckScreenType = () => {
-  const breakPixelValue = 768;
+  const breakPixelValue = 500;
   const mqlLandscape = window.matchMedia("(orientation: landscape)");
   const mqlMobilePortrait = window.matchMedia(`(max-width: ${breakPixelValue}px)`);
   const mqlMobileLandscape = window.matchMedia(`(max-height: ${breakPixelValue}px)`);
