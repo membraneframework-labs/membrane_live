@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React  from "react";
 import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
 import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
 import type { Client } from "../types";
-import { logOut } from "../utils/dashboardUtils";
 import useCheckScreenType from "../utils/hooks";
 
 const Recording = () => {
@@ -16,12 +15,6 @@ const Recording = () => {
   const splitUrl = window.location.pathname.split("/");
   const hlsUrl = `${splitUrl[0]}/video/${splitUrl[2]}/index.m3u8`;
   const screenType = useCheckScreenType();
-
-  useEffect(() => {
-    if (screenType.device == "mobile" && localStorage.getItem("email")) {
-      logOut();
-    }
-  }, [screenType]);
 
   return (
     <div className="EventPage">

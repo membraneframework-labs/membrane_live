@@ -5,7 +5,6 @@ import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
 import useCheckScreenType from "../utils/hooks";
-import { logOut } from "../utils/dashboardUtils";
 import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {
@@ -16,12 +15,6 @@ const Dashboard = () => {
   useEffect(() => {
     document.title = pageTitlePrefix;
   }, []);
-
-  useEffect(() => {
-    if (screenType.device == "mobile" && localStorage.getItem("email")) {
-      logOut();
-    }
-  }, [screenType]);
 
   return (
     <div className="Dashboard">

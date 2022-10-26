@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom";
 import type { Client, Toast } from "../types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/hooks";
-import { logOut } from "../utils/dashboardUtils";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -75,12 +74,6 @@ const Event = () => {
       window.removeEventListener("beforeunload", storageSetReloaded);
     };
   }, []);
-
-  useEffect(() => {
-    if (screenType.device == "mobile" && localStorage.getItem("email")) {
-      logOut();
-    }
-  }, [screenType]);
 
   return (
     <div className="EventPage">
