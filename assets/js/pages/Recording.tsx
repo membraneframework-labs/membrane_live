@@ -1,4 +1,4 @@
-import React  from "react";
+import React from "react";
 import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
 import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
