@@ -38,18 +38,9 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
     [eventChannel]
   );
 
-  useEffect(() => {
-    const ref = setTimeout(() => setClicked(false), 5_000);
-    return () => {
-      clearTimeout(ref);
-    };
-  }, [isClicked]);
-
   const sendReaction = () => {
-    if (!isClicked) {
-      eventChannel?.push("reaction", {});
-      setClicked(true);
-    }
+    setClicked(!isClicked);
+    eventChannel?.push("reaction", {});
   };
 
   return (
