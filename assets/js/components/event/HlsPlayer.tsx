@@ -18,9 +18,13 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
         <div className="HlsPlayerWrapper">
           <ReactHlsPlayer
             src={hlsUrl}
-            hlsConfig={{ liveSyncDurationCount: 2 }}
-            autoPlay
-            muted
+            hlsConfig={{
+              liveSyncDurationCount: 2,
+              initialLifeManifestSize: 2,
+              backBufferLength: 30,
+            }}
+            autoPlay={true}
+            muted={true}
             controls
             className="HlsPlayer"
           />
