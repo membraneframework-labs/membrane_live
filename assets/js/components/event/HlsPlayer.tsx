@@ -1,4 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
+import AnimationComponent from "./HeartAnimation";
+import ReactHlsPlayer from "react-hls-player";
+import { Channel } from "phoenix";
 import {
   MediaController,
   MediaControlBar,
@@ -10,8 +13,8 @@ import {
   MediaSeekForwardButton,
   MediaMuteButton,
   MediaFullscreenButton,
+  MediaPipButton,
 } from "media-chrome/dist/react";
-import "hls-video-element";
 import {
   Speaker2,
   Speaker1,
@@ -24,9 +27,6 @@ import {
   Fullscreen,
 } from "react-swm-icon-pack";
 import "../../../css/event/hlsplayer.css";
-import AnimationComponent from "./HeartAnimation";
-import { Channel } from "phoenix";
-import ReactHlsPlayer from "react-hls-player";
 
 type HlsPlayerProps = {
   hlsUrl: string;
@@ -54,44 +54,44 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
             ></ReactHlsPlayer>
             <MediaControlBar className="MediaControlBar">
               <div className="TopBar">
-                <MediaTimeRange className="MediaTimeRange"></MediaTimeRange>
-                <MediaTimeDisplay className="MediaTimeDisplay" showDuration></MediaTimeDisplay>
+                <MediaTimeRange className="MediaTimeRange MediaBackground"></MediaTimeRange>
+                <MediaTimeDisplay
+                  className="MediaTimeDisplay MediaBackground"
+                  showDuration
+                ></MediaTimeDisplay>
               </div>
               <div className="BottomBar">
                 <div className="BottomBarLeft">
-                  <MediaMuteButton className="MediaMuteButton">
-                    <SpeakerCross color="white" slot="off"></SpeakerCross>
-                    <Speaker0 color="white" slot="low"></Speaker0>
-                    <Speaker1 color="white" slot="medium"></Speaker1>
-                    <Speaker2 color="white" slot="high"></Speaker2>
+                  <MediaMuteButton className="MediaMuteButton MediaBackground">
+                    <SpeakerCross className="ControlButtons" slot="off"></SpeakerCross>
+                    <Speaker0 className="ControlButtons" slot="low"></Speaker0>
+                    <Speaker1 className="ControlButtons" slot="medium"></Speaker1>
+                    <Speaker2 className="ControlButtons" slot="high"></Speaker2>
                   </MediaMuteButton>
-                  <MediaVolumeRange className="MediaVolumeRange"></MediaVolumeRange>
+                  <MediaVolumeRange className="MediaVolumeRange MediaBackground"></MediaVolumeRange>
                 </div>
 
                 <div className="BottomBarCenter">
-                  <MediaSeekBackwardButton className="MediaSeekBackwardButton" seekOffset={15}>
-                    <RotateLeft className="RewindButtons" slot="backward"></RotateLeft>
+                  <MediaSeekBackwardButton className="MediaBackground" seekOffset={15}>
+                    <RotateLeft className="ControlButtons" slot="backward"></RotateLeft>
                   </MediaSeekBackwardButton>
-                  <MediaPlayButton pause={Pause} play={Play} className="MediaPlayButton">
-                    <Pause color="white" slot="pause"></Pause>
-                    <Play color="white" slot="play"></Play>
+                  <MediaPlayButton
+                    pause={Pause}
+                    play={Play}
+                    className="MediaPlayButton MediaBackground"
+                  >
+                    <Pause className="ControlButtons" slot="pause"></Pause>
+                    <Play className="ControlButtons" slot="play"></Play>
                   </MediaPlayButton>
-                  <MediaSeekForwardButton className="MediaSeekForwardButton" seekOffset={15}>
-                    <RotateRight
-                      className="RewindButtons"
-                      color="white"
-                      slot="forward"
-                    ></RotateRight>
+                  <MediaSeekForwardButton className="MediaBackground" seekOffset={15}>
+                    <RotateRight className="ControlButtons" slot="forward"></RotateRight>
                   </MediaSeekForwardButton>
                 </div>
                 <div className="BottomBarRight">
-                  <MediaFullscreenButton className="MediaFullScreenButton">
-                    <Fullscreen
-                      className="FullScreenButton"
-                      color="white"
-                      slot="enter"
-                    ></Fullscreen>
-                    <Fullscreen className="FullScreenButton" color="white" slot="exit"></Fullscreen>
+                  <MediaPipButton className="MediaBackground"></MediaPipButton>
+                  <MediaFullscreenButton className="MediaBackground">
+                    <Fullscreen className="ControlButtons" slot="enter"></Fullscreen>
+                    <Fullscreen className="ControlButtons" slot="exit"></Fullscreen>
                   </MediaFullscreenButton>
                 </div>
               </div>
