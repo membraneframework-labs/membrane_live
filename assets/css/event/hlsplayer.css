@@ -71,9 +71,9 @@
 
 .MediaTimeRange {
   width: 93%;
-  --media-range-track-height: 10px;
-  --media-range-thumb-height: 20px;
-  --media-range-thumb-width: 20px;
+  --media-range-track-height: 7px;
+  --media-range-thumb-height: 14px;
+  --media-range-thumb-width: 14px;
   --media-range-thumb-background: red;
   --media-range-bar-color: red;
   --media-range-track-border-radius: 24px;

@@ -41,12 +41,16 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
         <div className="HlsPlayerWrapper">
           <MediaController className="HlsPlayerWrapper">
             <ReactHlsPlayer
-              hlsConfig={{liveSyncDuration: 10 }}
-              className="HlsPlayer"
+              hlsConfig={{
+                liveSyncDurationCount: 2,
+                initialLifeManifestSize: 2,
+                backBufferLength: 30,
+              }}
               autoPlay={true}
+              muted={true}
+              className="HlsPlayer"
               slot="media"
               src={hlsUrl}
-              muted={true}
             ></ReactHlsPlayer>
             <MediaControlBar className="MediaControlBar">
               <div className="TopBar">
