@@ -4,7 +4,6 @@ import { pageTitlePrefix } from "../../utils/const";
 import { fetchTokenAndRedirect } from "../../utils/googleAuthUtils";
 import { GoogleButtonOptions } from "../../types";
 import { Channel } from "phoenix";
-import "../../../css/authpage.css";
 
 type GoogleButtonProps = {
   eventChannel?: Channel;

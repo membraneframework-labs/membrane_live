@@ -10,11 +10,6 @@ defmodule MembraneLiveWeb.LoginController do
 
   action_fallback(MembraneLiveWeb.FallbackController)
 
-  def index(conn, _params) do
-    render(conn, "index.html")
-  end
-
-  # TODO add g_csrf handling
   def create(conn, %{"credential" => google_jwt}) do
     with {:ok, google_claims} <- Tokens.google_decode(google_jwt),
          {:ok, user} <- Accounts.create_user_if_not_exists(google_claims) do
