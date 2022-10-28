@@ -5,6 +5,7 @@ import { roundedGoogleButton } from "../../utils/const";
 import { sessionStorageSetName } from "../../utils/storageUtils";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../../types";
+import useCheckScreenType from "../../utils/hooks";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
 
@@ -17,10 +18,13 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
   const [name, setName] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const navigate = useNavigate();
+  const screenType = useCheckScreenType();
+
   const saveNameAndClosePopup = () => {
     if (name === "") return;
-    sessionStorageSetName(name);
-    setClient({ ...client, name: name });
+    const nameToSet = screenType.device == "mobile" ? `${name} 📱` : name;
+    sessionStorageSetName(nameToSet);
+    setClient({ ...client, name: nameToSet });
     setIsOpen(false);
   };
 
@@ -55,7 +59,7 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
           </div>
         </div>
         <div className="ModalFormFooter">
-          <GoogleButton options={roundedGoogleButton} />
+          {screenType.device == "desktop" && <GoogleButton options={roundedGoogleButton} />}
           <button onClick={saveNameAndClosePopup} className="SaveButton">
             Save
           </button>

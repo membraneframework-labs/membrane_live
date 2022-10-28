@@ -14,7 +14,6 @@
   padding: 1.6rem 1.4rem;
   outline: none;
   font-weight: 400;
-  width: 100%;
 }
 
 .PopupHeader {
@@ -22,4 +21,9 @@
   color: var(--font-dark-color);
   font-size: 1.6rem;
   font-weight: 600;
+}
+
+.ModalForm {
+  width: 90%;
+  max-width: 40rem;
 }

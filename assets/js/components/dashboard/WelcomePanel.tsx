@@ -1,19 +1,27 @@
 import React from "react";
 import { getIsAuthenticated, storageGetName, storageGetPicture } from "../../utils/storageUtils";
 import UserField from "./UserField";
+import useCheckScreenType from "../../utils/hooks";
+import MobileHeader from "./MobileHeader";
+import type { CurrentEvents } from "../../types";
 import "../../../css/dashboard/welcomepanel.css";
 
 type WelcomePanelProps = {
-  currentEvents: string;
+  currentEvents: CurrentEvents;
+  setCurrentEvents: React.Dispatch<React.SetStateAction<CurrentEvents>>;
 };
 
-const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
+const WelcomePanel = ({ currentEvents, setCurrentEvents }: WelcomePanelProps) => {
   const name = storageGetName();
   const picture = storageGetPicture();
   const isAuthenticated = getIsAuthenticated();
+  const screenType = useCheckScreenType();
 
   return (
     <div className="WelcomePanel">
+      {screenType.device == "mobile" && (
+        <MobileHeader currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
+      )}
       <div className="NamePanel">
         {currentEvents == "All events" && (
           <>
@@ -32,9 +40,11 @@ const WelcomePanel = ({ currentEvents }: WelcomePanelProps) => {
           </>
         )}
       </div>
-      <div className="UserContainer">
-        <UserField isAuthenticated={isAuthenticated} name={name} picture={picture} />
-      </div>
+      {screenType.device == "desktop" && (
+        <div className="UserContainer">
+          <UserField isAuthenticated={isAuthenticated} name={name} picture={picture} />
+        </div>
+      )}
     </div>
   );
 };

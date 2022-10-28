@@ -1,11 +1,13 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout, iconType } from "react-swm-icon-pack";
+import { logOut } from "../../utils/storageUtils";
+import type { CurrentEvents } from "../../types";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
-  currentEvents: string;
-  setCurrentEvents: React.Dispatch<React.SetStateAction<string>>;
+  currentEvents: CurrentEvents;
+  setCurrentEvents: React.Dispatch<React.SetStateAction<CurrentEvents>>;
 };
 
 const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPanelProps) => {
@@ -39,12 +41,7 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
         {getButton(QuestionCircle, "Help", () => {
           // TODO
         })}
-        {getButton(Logout, "Logout", () => {
-          ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
-            localStorage.removeItem(key);
-          });
-          window.location.reload();
-        })}
+        {getButton(Logout, "Logout", () => logOut())}
       </div>
     </div>
   );

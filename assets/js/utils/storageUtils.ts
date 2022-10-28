@@ -79,3 +79,10 @@ export const getIsAuthenticated = (): boolean => {
 export const clearSessionStorageName = (): void => {
   sessionStorage.removeItem(NAME);
 };
+
+export const logOut = () => {
+  ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
+    localStorage.removeItem(key);
+  });
+  window.location.reload();
+};

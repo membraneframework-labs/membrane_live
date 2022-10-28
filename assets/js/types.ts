@@ -94,3 +94,10 @@ export type GoogleButtonOptions = {
   width?: string;
   locale?: string;
 };
+
+export type ScreenType = {
+  orientation: "landscape" | "portrait";
+  device: "desktop" | "mobile";
+};
+
+export type CurrentEvents = "All events" | "Recorded events";

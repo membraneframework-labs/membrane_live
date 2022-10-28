@@ -18,6 +18,7 @@ import { presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import type { Client, Toast } from "../types";
 import NamePopup from "../components/event/NamePopup";
+import useCheckScreenType from "../utils/hooks";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -31,6 +32,7 @@ const Event = () => {
   });
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
+  const screenType = useCheckScreenType();
 
   const socket = new Socket("/socket");
   socket.connect();
@@ -76,11 +78,17 @@ const Event = () => {
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      <Header client={client} eventChannel={eventChannel} isRecording={false}></Header>
-      <div className="MainGrid">
-        <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
-        <ParticipantsList client={client} eventChannel={eventChannel} />
-      </div>
+      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
+        <Header client={client} eventChannel={eventChannel} isRecording={false} />
+      )}
+      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
+        <div className="MainGrid">
+          <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} />
+          {screenType.device == "desktop" && (
+            <ParticipantsList client={client} eventChannel={eventChannel} />
+          )}
+        </div>
+      )}
     </div>
   );
 };

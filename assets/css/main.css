@@ -25,6 +25,12 @@ html {
   overflow: hidden;
 }
 
+@media screen and (max-width: 500px), screen and (max-height: 500px) {
+  html {
+    overflow: auto;
+  }
+}
+
 .FlexContainer {
   display: flex;
   justify-content: space-between;

@@ -3,8 +3,9 @@ import ModePanel from "./ModePanel";
 import PresenterStreams from "./PresenterStreams";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
-import "../../../css/event/streamarea.css";
 import { Channel } from "phoenix";
+import useCheckScreenType from "../../utils/hooks";
+import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
   client: Client;
@@ -16,6 +17,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
   const [mode, setMode] = useState<Mode>("hls");
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
+  const screenType = useCheckScreenType();
 
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
     const link = window.location.href.split("event")[0] + "video/";
@@ -43,13 +45,15 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
 
   return (
     <div className="StreamArea">
-      <ModePanel
-        mode={mode}
-        setMode={setMode}
-        presenterName={presenterName}
-        eventChannel={eventChannel}
-        client={client}
-      />
+      {screenType.device == "desktop" && (
+        <ModePanel
+          mode={mode}
+          setMode={setMode}
+          presenterName={presenterName}
+          eventChannel={eventChannel}
+          client={client}
+        />
+      )}
       <div className="Stream">
         {mode == "hls" && (
           <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />

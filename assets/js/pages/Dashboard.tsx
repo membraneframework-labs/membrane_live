@@ -4,11 +4,14 @@ import SearchAndCreatePanel from "../components/dashboard/SearchAndCreatePanel";
 import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
+import useCheckScreenType from "../utils/hooks";
+import type { CurrentEvents } from "../types";
 import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {
   const [searchText, setSearchText] = useState("");
-  const [currentEvents, setCurrentEvents] = useState("All events");
+  const [currentEvents, setCurrentEvents] = useState<CurrentEvents>("All events");
+  const screenType = useCheckScreenType();
 
   useEffect(() => {
     document.title = pageTitlePrefix;
@@ -16,9 +19,11 @@ const Dashboard = () => {
 
   return (
     <div className="Dashboard">
-      <SideDashboardPanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
+      {screenType.device == "desktop" && (
+        <SideDashboardPanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
+      )}
       <div className="MainDashboardArea">
-        <WelcomePanel currentEvents={currentEvents} />
+        <WelcomePanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
         <SearchAndCreatePanel
           currentEvents={currentEvents}
           searchText={searchText}

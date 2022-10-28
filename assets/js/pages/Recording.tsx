@@ -1,24 +1,31 @@
 import React from "react";
 import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
-import { storageGetName, storageGetEmail } from "../utils/storageUtils";
+import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
 import type { Client } from "../types";
+import useCheckScreenType from "../utils/hooks";
 
 const Recording = () => {
   const client: Client = {
     name: storageGetName(),
     email: storageGetEmail(),
     isModerator: false,
+    isAuthenticated: getIsAuthenticated(),
   };
   const splitUrl = window.location.pathname.split("/");
   const hlsUrl = `${splitUrl[0]}/video/${splitUrl[2]}/index.m3u8`;
+  const screenType = useCheckScreenType();
 
   return (
     <div className="EventPage">
-      <Header client={client} eventChannel={null} isRecording={true} />
-      <div className="Stream">
-        <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
-      </div>
+      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
+        <Header client={client} eventChannel={undefined} isRecording={true} />
+      )}
+      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
+        <div className="Stream">
+          <HlsPlayer hlsUrl={hlsUrl} presenterName={""} />
+        </div>
+      )}
     </div>
   );
 };
