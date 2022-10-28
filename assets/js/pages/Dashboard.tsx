@@ -5,11 +5,12 @@ import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
 import useCheckScreenType from "../utils/hooks";
+import type { CurrentEvents } from "../types";
 import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {
   const [searchText, setSearchText] = useState("");
-  const [currentEvents, setCurrentEvents] = useState("All events");
+  const [currentEvents, setCurrentEvents] = useState<CurrentEvents>("All events");
   const screenType = useCheckScreenType();
 
   useEffect(() => {

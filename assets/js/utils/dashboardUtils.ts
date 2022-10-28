@@ -64,10 +64,3 @@ export const getWebinarsInfo = async (
 export const getEventType = (isRecording: boolean) => (isRecording ? "recordings" : "event");
 export const getEventResourcesType = (isRecording: boolean) =>
   isRecording ? "recordings" : "webinars";
-
-export const logOut = () => {
-  ["name", "picture", "email", "authJwt", "refreshJwt"].forEach((key) => {
-    localStorage.removeItem(key);
-  });
-  window.location.reload();
-};

@@ -1,12 +1,13 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout, iconType } from "react-swm-icon-pack";
-import { logOut } from "../../utils/dashboardUtils";
+import { logOut } from "../../utils/storageUtils";
+import type { CurrentEvents } from "../../types";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {
-  currentEvents: string;
-  setCurrentEvents: React.Dispatch<React.SetStateAction<string>>;
+  currentEvents: CurrentEvents;
+  setCurrentEvents: React.Dispatch<React.SetStateAction<CurrentEvents>>;
 };
 
 const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPanelProps) => {

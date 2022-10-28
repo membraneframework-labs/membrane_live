@@ -97,3 +97,5 @@ export type ScreenType = {
   orientation: "landscape" | "portrait";
   device: "desktop" | "mobile";
 };
+
+export type CurrentEvents = "All events" | "Recorded events";
