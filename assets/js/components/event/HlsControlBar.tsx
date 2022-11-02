@@ -22,11 +22,16 @@ import {
   RotateRight,
   Fullscreen,
 } from "react-swm-icon-pack";
+import useCheckScreenType from "../../utils/hooks";
 import "../../../css/event/hlscontrolbar.css";
 
 const HlsControlBar = () => {
+  const screenType = useCheckScreenType();
+
   return (
-    <MediaControlBar className="MediaControlBar">
+    <MediaControlBar
+      className={screenType.device == "mobile" ? "MediaControlBarMobile" : "MediaControlBar"}
+    >
       <div className="TopBar">
         <MediaTimeRange className="MediaTimeRange MediaBackground"></MediaTimeRange>
         <MediaTimeDisplay
@@ -36,7 +41,7 @@ const HlsControlBar = () => {
       </div>
       <div className="BottomBar">
         <div className="BottomBarLeft">
-          <MediaMuteButton className="MediaMuteButton MediaBackground">
+          <MediaMuteButton className="MediaBackground">
             <SpeakerCross className="ControlButtons" slot="off"></SpeakerCross>
             <Speaker0 className="ControlButtons" slot="low"></Speaker0>
             <Speaker1 className="ControlButtons" slot="medium"></Speaker1>
@@ -49,7 +54,7 @@ const HlsControlBar = () => {
           <MediaSeekBackwardButton className="MediaBackground" seekOffset={15}>
             <RotateLeft className="ControlButtons" slot="backward"></RotateLeft>
           </MediaSeekBackwardButton>
-          <MediaPlayButton pause={Pause} play={Play} className="MediaPlayButton MediaBackground">
+          <MediaPlayButton pause={Pause} play={Play} className="MediaBackground">
             <Pause className="ControlButtons" slot="pause"></Pause>
             <Play className="ControlButtons" slot="play"></Play>
           </MediaPlayButton>

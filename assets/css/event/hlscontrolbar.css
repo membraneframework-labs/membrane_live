@@ -5,6 +5,13 @@
   height: 15%;
 }
 
+.MediaControlBarMobile {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 25%;
+}
+
 .TopBar {
   height: 5%;
 }
@@ -34,7 +41,7 @@
 }
 
 .MediaTimeRange {
-  width: 93%;
+  width: 90%;
   --media-range-track-height: 0.6rem;
   --media-range-thumb-height: 1.2rem;
   --media-range-thumb-width: 1.2rem;
@@ -44,18 +51,10 @@
 }
 
 .MediaTimeDisplay {
-  width: 7%;
-}
-
-.MediaMuteButton {
-  width: 20%;
+  width: 10%;
 }
 
 .MediaVolumeRange {
-  width: 20%;
-}
-
-.MediaPlayButton {
   width: 20%;
 }
 
