@@ -6,9 +6,7 @@ import Router from "./components/Router";
 const main = document.getElementById("main");
 if (main != null)
   ReactDOM.createRoot(main).render(
-    <React.StrictMode>
-      <ChakraProvider>
-        <Router />
-      </ChakraProvider>
-    </React.StrictMode>
+    <ChakraProvider>
+      <Router />
+    </ChakraProvider>
   );
