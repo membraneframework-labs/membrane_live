@@ -4,6 +4,7 @@ import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
 import { Channel } from "phoenix";
+import ChatBox from "./ChatBox";
 import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
@@ -169,7 +170,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           Participants
         </button>
       </div>
-      {listMode && <div className="ParticipantsList">{parts}</div>}
+      {listMode ?  <div className="ParticipantsList">{parts}</div> : <ChatBox client={client} eventChannel={eventChannel}/>}
     </div>
   );
 };

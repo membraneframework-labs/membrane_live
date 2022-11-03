@@ -1,0 +1,5 @@
+@import "../main.css";
+
+.ChatBox {
+  color: var(--font-dark-color);
+}
