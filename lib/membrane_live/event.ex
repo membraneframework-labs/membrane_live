@@ -230,6 +230,9 @@ defmodule MembraneLive.Event do
 
       pid == state.moderator_pid ->
         state = %{state | moderator_pid: nil}
+        {:ok, state} = handle_peer_left(state, pid)
+
+        Engine.remove_peer(state.rtc_engine, pid)
         terminate_engine_if_empty(state)
 
       is_nil(result) ->
