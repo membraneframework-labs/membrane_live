@@ -4,8 +4,8 @@ defmodule MembraneLiveWeb.HLSController do
   alias MembraneLive.Helpers
   alias Plug
 
-  def index(conn, %{"prefix" => prefix, "filename" => filename} = params) do
-    prefix = Path.join(prefix, Map.get(params, "event_id", ""))
+  def index(conn, %{"event_id" => event_id, "filename" => filename} = params) do
+    prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
     path = Helpers.hls_output_path(prefix, filename)
 
     if File.exists?(path) do
