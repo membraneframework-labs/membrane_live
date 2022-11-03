@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client } from "../../types";
+import type { Participant, Client, ChatMessage } from "../../types";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
 import "../../../css/event/participants.css";
@@ -135,6 +135,7 @@ type ParticipantsListProps = {
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(true);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
     syncEventChannel(eventChannel, setParticipants, client.email);
@@ -170,7 +171,16 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           Participants
         </button>
       </div>
-      {listMode ?  <div className="ParticipantsList">{parts}</div> : <ChatBox client={client} eventChannel={eventChannel}/>}
+      {listMode ? (
+        <div className="ParticipantsList">{parts}</div>
+      ) : (
+        <ChatBox
+          client={client}
+          eventChannel={eventChannel}
+          messages={messages}
+          setMessages={setMessages}
+        />
+      )}
     </div>
   );
 };
