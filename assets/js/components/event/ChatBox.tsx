@@ -1,8 +1,8 @@
 import { Channel, Presence } from "phoenix";
 import React, { useEffect, useState } from "react";
 import { EmoteSmile } from "react-swm-icon-pack";
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
 import type { Client, ChatMessage, Metas } from "../../types";
 import "../../../css/event/chatbox.css";
@@ -12,7 +12,7 @@ const getByKey = (presence: Presence, keyEmail: string): string => {
   presence.list((email: string, metas: Metas) => {
     const data = metas.metas[0];
     if (email == keyEmail) {
-      const role = data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : ""; 
+      const role = data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : "";
       result = data.name + role;
     }
   });
@@ -79,9 +79,13 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
             </button>
           </PopoverTrigger>
           <PopoverContent>
-            <Picker data={data} theme="light" onEmojiSelect={(emoji: { native: string; }) => {
-              setMessageInput(prev => prev + emoji.native)
-            }} />
+            <Picker
+              data={data}
+              theme="light"
+              onEmojiSelect={(emoji: { native: string }) => {
+                setMessageInput((prev) => prev + emoji.native);
+              }}
+            />
           </PopoverContent>
         </Popover>
         <input
@@ -96,21 +100,29 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
         />
       </div>
       <div className="Messages">
-        {messages.map((message: ChatMessage) => (
-          <div
-            className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
-            key={message.messages[0]}
-          >
-            {message.email != client.email && <p className="ChatterName">{message.name}</p>}
-            <div className="MessageCluster">
-              {message.messages.map((message) => (
-                <p key={message} className="SingleMessage">
-                  {message}
-                </p>
-              ))}
-            </div>
-          </div>
-        )).reverse()}
+        {messages
+          .map((message: ChatMessage) => (
+              <div
+                className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
+                key={message.messages[0]}
+              >
+                {message.email != client.email && <p className="ChatterName">{message.name}</p>}
+                <div className="MessageCluster">
+                  {message.messages.map((messageString, index) => {
+                    let cornerClass = "";
+                    if (index == 0) cornerClass += "Top";
+                    if (index == message.messages.length - 1) cornerClass += " Bottom";
+
+                    return (
+                      <p key={messageString} className={`SingleMessage ${cornerClass}`}>
+                        {messageString}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          .reverse()}
       </div>
     </div>
   );

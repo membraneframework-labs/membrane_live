@@ -58,12 +58,35 @@
 .Own .SingleMessage {
   color: var(--bg-light-color-1);
   background-color: var(--font-medium-color);
+  border-radius: 24px 8px 8px 24px;
+}
+
+.Own .Top {
+  border-radius: 24px 24px 8px 24px;
+}
+
+.Own .Bottom {
+  border-radius: 24px 8px 24px 24px;
+}
+
+.Own .Top.Bottom,
+.Other .Top.Bottom {
+  border-radius: 24px 24px 24px 24px;
 }
 
 .Other .SingleMessage {
   color: var(--font-medium-color-2);
   background-color: var(--bg-light-color-1);
   border: 1px solid var(--bg-light-color-3);
+  border-radius: 8px 24px 24px 8px;
+}
+
+.Other .Top {
+  border-radius: 24px 24px 24px 8px;
+}
+
+.Other .Bottom {
+  border-radius: 8px 24px 24px 24px;
 }
 
 .MessageInputContainer {
