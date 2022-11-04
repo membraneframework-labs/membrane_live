@@ -124,15 +124,6 @@ export const syncPresenters = (
 
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
 
-export const getByKey = (presence: Presence, keyEmail: string): string => {
-  let result = "Unrecognized user";
-  presence.list((email: string, metas: Metas) => {
-    if (email == keyEmail) result = metas.metas[0].name;
-  });
-
-  return result;
-};
-
 const compareParticipants =
   (clientEmail: string) =>
   (x: Participant, y: Participant): number => {

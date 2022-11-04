@@ -1,12 +1,24 @@
 import { Channel, Presence } from "phoenix";
 import React, { useEffect, useState } from "react";
 import { EmoteSmile } from "react-swm-icon-pack";
-import { getByKey } from "../../utils/channelUtils";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
-import type { Client, ChatMessage } from "../../types";
+import type { Client, ChatMessage, Metas } from "../../types";
 import "../../../css/event/chatbox.css";
+
+const getByKey = (presence: Presence, keyEmail: string): string => {
+  let result = "Unrecognized user";
+  presence.list((email: string, metas: Metas) => {
+    const data = metas.metas[0];
+    if (email == keyEmail) {
+      const role = data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : ""; 
+      result = data.name + role;
+    }
+  });
+
+  return result;
+};
 
 type ChatBoxProps = {
   client: Client;
