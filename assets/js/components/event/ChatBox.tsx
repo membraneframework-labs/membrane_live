@@ -67,8 +67,8 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
     };
   }, [eventChannel]);
 
-  // todo auto scroll messages to the bottom
-
+  // the messages array is reversed because of reversed flex-direction
+  // thanks to that messages box is scrolled to the bottom by default
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
@@ -110,7 +110,7 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
               ))}
             </div>
           </div>
-        ))}
+        )).reverse()}
       </div>
     </div>
   );

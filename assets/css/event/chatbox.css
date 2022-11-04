@@ -13,11 +13,16 @@
 
 .Messages {
   overflow-y: auto;
+  scrollbar-width: none;
   font-size: 1.4rem;
   flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 2rem;
+}
+
+.Messages::-webkit-scrollbar {
+  display: none;
 }
 
 .MessageBox {
