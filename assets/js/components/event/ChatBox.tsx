@@ -2,6 +2,9 @@ import { Channel, Presence } from "phoenix";
 import React, { useEffect, useState } from "react";
 import { EmoteSmile } from "react-swm-icon-pack";
 import { getByKey } from "../../utils/channelUtils";
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
+import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types";
 import "../../../css/event/chatbox.css";
 
@@ -57,9 +60,18 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        <button className="EmojiPickerIcon">
-          <EmoteSmile className="EmojiIcon" />
-        </button>
+        <Popover>
+          <PopoverTrigger>
+            <button className="EmojiPickerIcon">
+              <EmoteSmile className="EmojiIcon" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <Picker data={data} theme="light" onEmojiSelect={(emoji: { native: string; }) => {
+              setMessageInput(prev => prev + emoji.native)
+            }} />
+          </PopoverContent>
+        </Popover>
         <input
           className="MessageInput"
           type="text"
