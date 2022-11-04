@@ -230,6 +230,9 @@ defmodule MembraneLive.Event do
 
       pid == state.moderator_pid ->
         state = %{state | moderator_pid: nil}
+        {:ok, state} = handle_peer_left(state, pid)
+
+        Engine.remove_peer(state.rtc_engine, pid)
         terminate_engine_if_empty(state)
 
       is_nil(result) ->
@@ -304,7 +307,7 @@ defmodule MembraneLive.Event do
 
     MembraneLiveWeb.Endpoint.broadcast!(
       "event:" <> state.event_id,
-      "playlist_playable",
+      "playlistPlayable",
       message
     )
 
@@ -315,6 +318,8 @@ defmodule MembraneLive.Event do
     start_stream_message = %{playlist_idl: state.event_id, name: "Live Stream 🎐"}
     stop_stream_message = %{playlist_idl: "", name: ""}
 
-    if state.is_playlist_playable?, do: start_stream_message, else: stop_stream_message
+    if state.is_playlist_playable? and map_size(state.peer_channels) > 0,
+      do: start_stream_message,
+      else: stop_stream_message
   end
 end

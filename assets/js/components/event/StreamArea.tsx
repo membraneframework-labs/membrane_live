@@ -32,7 +32,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
 
   useEffect(() => {
     if (eventChannel) {
-      eventChannel.on("playlist_playable", (message) => addHlsUrl(message));
+      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
     }
   }, [eventChannel]);

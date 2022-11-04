@@ -60,7 +60,6 @@ defmodule MembraneLiveWeb.Router do
   scope "/auth", MembraneLiveWeb do
     pipe_through(:browser)
 
-    get("/", LoginController, :index)
     post("/", LoginController, :create)
     post("/refresh", LoginController, :refresh)
   end
