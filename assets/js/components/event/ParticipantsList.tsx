@@ -134,7 +134,7 @@ type ParticipantsListProps = {
 
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [listMode, setListMode] = useState<boolean>(true);
+  const [listMode, setListMode] = useState<boolean>(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {

@@ -1,6 +1,8 @@
 import { Channel, Presence } from "phoenix";
 import React, { useEffect, useState } from "react";
-import type { Client, ChatMessage, Metas } from "../../types";
+import { EmoteSmile } from "react-swm-icon-pack";
+import { getByKey } from "../../utils/channelUtils";
+import type { Client, ChatMessage } from "../../types";
 import "../../../css/event/chatbox.css";
 
 type ChatBoxProps = {
@@ -9,18 +11,10 @@ type ChatBoxProps = {
   messages: ChatMessage[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 };
+
 const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
   let presence: Presence;
-
-  const getByKey = (presence: Presence, keyEmail: string): string => {
-    let result = "Undefined";
-    presence.list((email: string, metas: Metas) => {
-      if (email == keyEmail) result = metas.metas[0].name;
-    });
-
-    return result;
-  };
 
   const appendToMessages = ({ email, message }: { email: string; message: string }) => {
     setMessages((prev) => {
@@ -34,13 +28,16 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
         };
         prev.push(newChatMessage);
       }
-      console.log(prev);
+
       return [...prev];
     });
   };
 
   const sendChatMessage = (message: string) => {
-    if (eventChannel) eventChannel.push("chat_message", { email: client.email, message: message });
+    if (eventChannel) {
+      eventChannel.push("chat_message", { email: client.email, message: message });
+      setMessageInput("");
+    }
   };
 
   useEffect(() => {
@@ -55,25 +52,42 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
     };
   }, [eventChannel]);
 
+  // todo auto scroll messages to the bottom
+
   return (
     <div className="ChatBox">
+      <div className="MessageInputContainer">
+        <button className="EmojiPickerIcon">
+          <EmoteSmile className="EmojiIcon" />
+        </button>
+        <input
+          className="MessageInput"
+          type="text"
+          value={messageInput}
+          placeholder="Type your message here..."
+          onChange={(e) => setMessageInput(e.target.value)}
+          onKeyDown={(e) => {
+            e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);
+          }}
+        />
+      </div>
       <div className="Messages">
         {messages.map((message: ChatMessage) => (
-          <div className="MessageCluster" key={message.messages[0]}>
-            <p>{message.name}</p>
-            {/* TODO */}
+          <div
+            className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
+            key={message.messages[0]}
+          >
+            {message.email != client.email && <p className="ChatterName">{message.name}</p>}
+            <div className="MessageCluster">
+              {message.messages.map((message) => (
+                <p key={message} className="SingleMessage">
+                  {message}
+                </p>
+              ))}
+            </div>
           </div>
         ))}
       </div>
-      <input
-        className="MessageInput"
-        type="text"
-        placeholder="Type message here..."
-        onChange={(e) => setMessageInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key == "Enter" && messageInput.length > 0) sendChatMessage(messageInput);
-        }}
-      />
     </div>
   );
 };
