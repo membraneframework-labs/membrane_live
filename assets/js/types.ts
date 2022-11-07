@@ -66,7 +66,7 @@ export type AuthResponseData = {
 
 export type Toast = ReturnType<typeof useToast>;
 
-type MetasUser = {
+export type MetasUser = {
   is_moderator: boolean;
   is_presenter: boolean;
   name: string;

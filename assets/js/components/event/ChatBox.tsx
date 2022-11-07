@@ -1,6 +1,6 @@
 import { Channel } from "phoenix";
 import React, { useState } from "react";
-import { EmoteSmile } from "react-swm-icon-pack";
+import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
@@ -11,9 +11,10 @@ type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
   messages: ChatMessage[];
+  isBannedFromChat: boolean;
 };
 
-const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
+const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
 
   const sendChatMessage = (message: string) => {
@@ -28,27 +29,30 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        <Popover>
-          <PopoverTrigger>
-            <button className="EmojiPickerIcon">
-              <EmoteSmile className="EmojiIcon" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <Picker
-              data={data}
-              theme="light"
-              onEmojiSelect={(emoji: { native: string }) => {
-                setMessageInput((prev) => prev + emoji.native);
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+        {isBannedFromChat ? <CrossCircle className="EmojiIcon"/>:
+          <Popover>
+            <PopoverTrigger>
+              <button className="EmojiPickerIcon">
+                <EmoteSmile className="EmojiIcon" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <Picker
+                data={data}
+                theme="light"
+                onEmojiSelect={(emoji: { native: string }) => {
+                  setMessageInput((prev) => prev + emoji.native);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+        }
         <input
           className="MessageInput"
           type="text"
           value={messageInput}
-          placeholder="Type your message here..."
+          placeholder={isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."}
+          disabled={isBannedFromChat}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
             e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);

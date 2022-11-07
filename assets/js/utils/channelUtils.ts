@@ -1,5 +1,5 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas } from "../types";
+import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
@@ -38,6 +38,7 @@ export const createEventChannel = (
 export const syncEventChannel = (
   eventChannel: Channel,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
+  setIsBannedFromChat: React.Dispatch<React.SetStateAction<boolean>>,
   clientEmail: string
 ) => {
   const presence = new Presence(eventChannel);
@@ -62,10 +63,21 @@ export const syncEventChannel = (
 
   presence.onSync(() => {
     updateStates();
+    const isBanned = getByKey(presence, clientEmail)?.is_banned_from_chat;
+    isBanned != undefined && setIsBannedFromChat(isBanned);
   });
 
   eventChannel.push("sync_presence", {});
   return presence;
+};
+
+export const getByKey = (presence: Presence, keyEmail: string): MetasUser | undefined => {
+  let result: MetasUser | undefined;
+  presence.list((email: string, metas: Metas) => {
+    const data = metas.metas[0];
+    if (email == keyEmail) result = data;
+  });
+  return result;
 };
 
 export const createPrivateChannel = (
