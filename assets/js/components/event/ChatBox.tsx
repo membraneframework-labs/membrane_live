@@ -1,52 +1,20 @@
-import { Channel, Presence } from "phoenix";
-import React, { useEffect, useState } from "react";
+import { Channel } from "phoenix";
+import React, { useState } from "react";
 import { EmoteSmile } from "react-swm-icon-pack";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
-import type { Client, ChatMessage, Metas } from "../../types";
+import type { Client, ChatMessage } from "../../types";
 import "../../../css/event/chatbox.css";
-
-const getByKey = (presence: Presence, keyEmail: string): string => {
-  let result = "Unrecognized user";
-  presence.list((email: string, metas: Metas) => {
-    const data = metas.metas[0];
-    if (email == keyEmail) {
-      const role = data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : "";
-      result = data.name + role;
-    }
-  });
-
-  return result;
-};
 
 type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
   messages: ChatMessage[];
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 };
 
-const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) => {
+const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
-  let presence: Presence;
-
-  const appendToMessages = ({ email, message }: { email: string; message: string }) => {
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
-      if (last && last.email == email) last.messages.push(message);
-      else {
-        const newChatMessage: ChatMessage = {
-          email: email,
-          name: getByKey(presence, email),
-          messages: [message],
-        };
-        prev.push(newChatMessage);
-      }
-
-      return [...prev];
-    });
-  };
 
   const sendChatMessage = (message: string) => {
     if (eventChannel) {
@@ -54,18 +22,6 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
       setMessageInput("");
     }
   };
-
-  useEffect(() => {
-    if (eventChannel) {
-      presence = new Presence(eventChannel);
-      eventChannel.push("sync_presence", {});
-      eventChannel.on("chat_message", (data) => appendToMessages(data));
-    }
-
-    return () => {
-      if (eventChannel) eventChannel.off("chat_message");
-    };
-  }, [eventChannel]);
 
   // the messages array is reversed because of reversed flex-direction
   // thanks to that messages box is scrolled to the bottom by default

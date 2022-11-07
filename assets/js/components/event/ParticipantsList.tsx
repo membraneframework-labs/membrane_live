@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client, ChatMessage } from "../../types";
-import { Channel } from "phoenix";
+import type { Participant, Client, ChatMessage, Metas } from "../../types";
+import { Channel, Presence } from "phoenix";
 import ChatBox from "./ChatBox";
 import "../../../css/event/participants.css";
 
@@ -136,9 +136,47 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  let presence: Presence;
+
+  const getByKey = (keyEmail: string): string => {
+    let result = "Unrecognized user";
+    presence.list((email: string, metas: Metas) => {
+      const data = metas.metas[0];
+      if (email == keyEmail) {
+        const role = data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : "";
+        result = data.name + role;
+      }
+    });
+
+    return result;
+  };
+
+  const appendToMessages = ({ email, message }: { email: string; message: string }) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last && last.email == email) last.messages.push(message);
+      else {
+        const newChatMessage: ChatMessage = {
+          email: email,
+          name: getByKey(email),
+          messages: [message],
+        };
+        prev.push(newChatMessage);
+      }
+
+      return [...prev];
+    });
+  };
 
   useEffect(() => {
-    syncEventChannel(eventChannel, setParticipants, client.email);
+    if (eventChannel) {
+      presence = syncEventChannel(eventChannel, setParticipants, client.email);
+      eventChannel.on("chat_message", (data) => appendToMessages(data));
+    }
+
+    return () => {
+      if (eventChannel) eventChannel.off("chat_message");
+    };
   }, [eventChannel]);
 
   const parts: JSX.Element[] = [];
@@ -174,12 +212,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
       {listMode ? (
         <div className="ParticipantsList">{parts}</div>
       ) : (
-        <ChatBox
-          client={client}
-          eventChannel={eventChannel}
-          messages={messages}
-          setMessages={setMessages}
-        />
+        <ChatBox client={client} eventChannel={eventChannel} messages={messages} />
       )}
     </div>
   );
