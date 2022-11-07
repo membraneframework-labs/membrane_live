@@ -5,6 +5,14 @@ import type { Client, Mode } from "../../types";
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
+import {
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  Popover,
+  PopoverArrow,
+  PopoverHeader,
+} from "@chakra-ui/react";
 
 type ModeButtonProps = {
   onClick: () => void;
@@ -17,6 +25,42 @@ const ModeButton = ({ onClick, active, name }: ModeButtonProps) => {
     <button className={`ModeButton ${active && "Clicked"}`} onClick={onClick} name={name}>
       {name}
     </button>
+  );
+};
+
+type MenuPopoverProps = {
+  eventChannel: Channel | undefined;
+};
+
+const MenuPopover = ({ eventChannel }: MenuPopoverProps) => {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <button className="ModePopoverButton" onClick={() => undefined}>
+          END STREAM
+        </button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverHeader>
+          <div>
+            <p className="ModePopoverHeader">Are you sure?</p>
+          </div>
+        </PopoverHeader>
+        <PopoverBody>
+          <div>
+            <button
+              className="ModePopoverButton"
+              onClick={() => {
+                eventChannel?.push("finish_event", {});
+              }}
+            >
+              YES
+            </button>
+          </div>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -73,6 +117,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
             />
           </>
         )}
+        {client.isModerator && <MenuPopover eventChannel={eventChannel} />}
       </div>
     </div>
   );
