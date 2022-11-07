@@ -106,7 +106,11 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
               className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
               key={message.messages[0]}
             >
-              {message.email != client.email && <p className="ChatterName">{message.name}</p>}
+              {message.email != client.email ? (
+                <p className="ChatterName">{message.name}</p>
+              ) : (
+                <p className="YourName">You</p>
+              )}
               <div className="MessageCluster">
                 {message.messages.map((messageString, index) => {
                   let cornerClass = "";

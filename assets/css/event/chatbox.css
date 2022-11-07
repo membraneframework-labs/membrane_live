@@ -35,6 +35,11 @@
   color: var(--font-medium-color-3);
 }
 
+.YourName {
+  color: var(--font-medium-color-3);
+  text-align: right;
+}
+
 .MessageCluster {
   display: flex;
   flex-direction: column;
