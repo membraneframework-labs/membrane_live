@@ -102,26 +102,26 @@ const ChatBox = ({ client, eventChannel, messages, setMessages }: ChatBoxProps) 
       <div className="Messages">
         {messages
           .map((message: ChatMessage) => (
-              <div
-                className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
-                key={message.messages[0]}
-              >
-                {message.email != client.email && <p className="ChatterName">{message.name}</p>}
-                <div className="MessageCluster">
-                  {message.messages.map((messageString, index) => {
-                    let cornerClass = "";
-                    if (index == 0) cornerClass += "Top";
-                    if (index == message.messages.length - 1) cornerClass += " Bottom";
+            <div
+              className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
+              key={message.messages[0]}
+            >
+              {message.email != client.email && <p className="ChatterName">{message.name}</p>}
+              <div className="MessageCluster">
+                {message.messages.map((messageString, index) => {
+                  let cornerClass = "";
+                  if (index == 0) cornerClass += "Top";
+                  if (index == message.messages.length - 1) cornerClass += " Bottom";
 
-                    return (
-                      <p key={messageString} className={`SingleMessage ${cornerClass}`}>
-                        {messageString}
-                      </p>
-                    );
-                  })}
-                </div>
+                  return (
+                    <p key={messageString} className={`SingleMessage ${cornerClass}`}>
+                      {messageString}
+                    </p>
+                  );
+                })}
               </div>
-            ))
+            </div>
+          ))
           .reverse()}
       </div>
     </div>
