@@ -17,13 +17,22 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
-      eventChannel?.push("presenter_prop", {
-        moderatorTopic: link + moderatorClient.email,
-        presenterTopic: link + participant.email,
-      });
-    } else {
-      eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+    switch ((e.target as HTMLTextAreaElement).value) {
+      case "Set as a presenter":
+        eventChannel?.push("presenter_prop", {
+          moderatorTopic: link + moderatorClient.email,
+          presenterTopic: link + participant.email,
+        });
+        break;
+      case "Set as a normal participant":
+        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        break;
+      case "Ban from the chat":
+        eventChannel?.push("ban_from_chat", {email: participant.email});
+        break;
+      case "Unban from the chat":
+        eventChannel?.push("unban_from_chat", {email: participant.email});
+        break;
     }
   };
 
@@ -39,6 +48,13 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
           className="MenuOptionText"
         >
           {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+        </MenuItem>
+        <MenuItem
+          onClick={handleClick}
+          value={participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
+          className="MenuOptionText"
+        >
+          {participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
         </MenuItem>
       </MenuList>
     </Menu>

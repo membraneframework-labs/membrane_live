@@ -7,6 +7,7 @@ export type Participant = {
   isModerator: boolean;
   isAuth: boolean;
   isRequestPresenting: boolean;
+  isBannedFromChat: boolean;
 };
 
 export type Presenter = {
@@ -72,6 +73,7 @@ type MetasUser = {
   phx_ref: string;
   is_auth: boolean;
   is_request_presenting: boolean;
+  is_banned_from_chat: boolean;
 };
 
 export type Metas = {

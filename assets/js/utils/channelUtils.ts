@@ -53,6 +53,7 @@ export const syncEventChannel = (
         isModerator: participant.is_moderator,
         isAuth: participant.is_auth,
         isRequestPresenting: participant.is_request_presenting,
+        isBannedFromChat: participant.is_banned_from_chat,
       });
     });
     parts.sort(compareParticipants(clientEmail));
@@ -87,6 +88,14 @@ export const createPrivateChannel = (
       privateChannel.on("presenter_remove", () => {
         getInfoToast(toast, "You are no longer a presenter.");
         eventChannel.push("presenter_remove", { email: client.email });
+      });
+      privateChannel.on("ban_from_chat", () => {
+        getInfoToast(toast, "You have been banned from participating in the chat.");
+        eventChannel.push("ban_from_chat", { email: client.email, response: true });
+      });
+      privateChannel.on("unban_from_chat", () => {
+        getInfoToast(toast, "You have been unbanned from participating in the chat.");
+        eventChannel.push("unban_from_chat", { email: client.email, response: true });
       });
       setPrivateChannel(privateChannel);
     })
