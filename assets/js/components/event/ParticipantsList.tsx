@@ -51,13 +51,15 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
             {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
           </MenuItem>
         )}
-        <MenuItem
-          onClick={handleClick}
-          value={participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
-          className="MenuOptionText"
-        >
-          {participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
-        </MenuItem>
+        {!participant.isModerator && (
+          <MenuItem
+            onClick={handleClick}
+            value={participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
+            className="MenuOptionText"
+          >
+            {participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
+          </MenuItem>
+        )}
       </MenuList>
     </Menu>
   );
