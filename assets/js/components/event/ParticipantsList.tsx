@@ -28,10 +28,10 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
         break;
       case "Ban from the chat":
-        eventChannel?.push("ban_from_chat", {email: participant.email});
+        eventChannel?.push("ban_from_chat", { email: participant.email });
         break;
       case "Unban from the chat":
-        eventChannel?.push("unban_from_chat", {email: participant.email});
+        eventChannel?.push("unban_from_chat", { email: participant.email });
         break;
     }
   };
@@ -42,13 +42,15 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        <MenuItem
-          onClick={handleClick}
-          value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
-          className="MenuOptionText"
-        >
-          {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
-        </MenuItem>
+        {participant.isAuth && (
+          <MenuItem
+            onClick={handleClick}
+            value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+            className="MenuOptionText"
+          >
+            {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+          </MenuItem>
+        )}
         <MenuItem
           onClick={handleClick}
           value={participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
@@ -129,7 +131,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
           <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
-      {client.isModerator && participant.isAuth && (
+      {client.isModerator && (
         <ModeratorMenu
           moderatorClient={client}
           eventChannel={eventChannel}
@@ -160,8 +162,14 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
       const last = prev[prev.length - 1];
       if (last && last.email == email) last.messages.push(message);
       else {
-        const data: MetasUser | undefined = getByKey(presence, email)
-        const role = data ? (data.is_moderator ? " (moderator)" : data.is_presenter ? " (presenter)" : "") : "";
+        const data: MetasUser | undefined = getByKey(presence, email);
+        const role = data
+          ? data.is_moderator
+            ? " (moderator)"
+            : data.is_presenter
+            ? " (presenter)"
+            : ""
+          : "";
         const newChatMessage: ChatMessage = {
           email: email,
           name: data ? data.name + role : "Unrecognized user",
@@ -218,7 +226,12 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
       {listMode ? (
         <div className="ParticipantsList">{parts}</div>
       ) : (
-        <ChatBox client={client} eventChannel={eventChannel} messages={messages} isBannedFromChat={isBannedFromChat}/>
+        <ChatBox
+          client={client}
+          eventChannel={eventChannel}
+          messages={messages}
+          isBannedFromChat={isBannedFromChat}
+        />
       )}
     </div>
   );

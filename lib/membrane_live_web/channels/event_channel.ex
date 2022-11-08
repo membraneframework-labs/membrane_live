@@ -27,18 +27,17 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
         with gen_key <- UUID.uuid1(),
-             {:ok, is_banned_from_chat} = check_if_banned_from_chat(gen_key, id) do
-
+             {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
           Presence.track(socket, gen_key, %{
             name: name,
             is_moderator: false,
             is_presenter: false,
             is_auth: false,
-            is_banned_from_chat: is_banned_from_chat,
+            is_banned_from_chat: is_banned_from_chat
           })
 
           {:ok, %{generated_key: gen_key},
-          Phoenix.Socket.assign(socket, %{event_id: id, event_pid: nil})}
+           Phoenix.Socket.assign(socket, %{event_id: id, event_pid: nil})}
         end
 
       {:error, _error} ->
@@ -76,7 +75,7 @@ defmodule MembraneLiveWeb.EventChannel do
               is_presenter: is_presenter,
               is_request_presenting: is_request_presenting,
               is_auth: true,
-              is_banned_from_chat: is_banned_from_chat,
+              is_banned_from_chat: is_banned_from_chat
             })
 
           if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
@@ -155,8 +154,10 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def handle_in("chat_message", %{"email" => email} = data, %{topic: "event:" <> id} = socket) do
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
+
     if not is_banned_from_chat,
       do: broadcast(socket, "chat_message", data)
+
     {:noreply, socket}
   end
 
@@ -257,7 +258,13 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("ban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), "private:#{id}:#{email}", "ban_from_chat", %{})
+    MembraneLiveWeb.Endpoint.broadcast_from!(
+      self(),
+      "private:#{id}:#{email}",
+      "ban_from_chat",
+      %{}
+    )
+
     add_to_banned_from_chat(email, id)
 
     {:noreply, socket}
@@ -275,7 +282,13 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("unban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), "private:#{id}:#{email}", "unban_from_chat", %{})
+    MembraneLiveWeb.Endpoint.broadcast_from!(
+      self(),
+      "private:#{id}:#{email}",
+      "unban_from_chat",
+      %{}
+    )
+
     remove_from_banned_from_chat(email, id)
 
     {:noreply, socket}
@@ -416,7 +429,9 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp remove_from_banned_from_chat(email, id), do: remove_from_list_in_ets(:banned_from_chat, email, id)
+  defp remove_from_banned_from_chat(email, id),
+    do: remove_from_list_in_ets(:banned_from_chat, email, id)
+
   defp add_to_banned_from_chat(email, id), do: add_to_list_in_ets(:banned_from_chat, email, id)
 
   defp remove_from_presenters(email, id), do: remove_from_list_in_ets(:presenters, email, id)

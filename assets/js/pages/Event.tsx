@@ -54,7 +54,7 @@ const Event = () => {
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
-    if (!privateAlreadyJoined && eventAlreadyJoined && client.isAuthenticated) {
+    if (!privateAlreadyJoined && eventAlreadyJoined) {
       const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,

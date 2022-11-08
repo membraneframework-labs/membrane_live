@@ -29,7 +29,9 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        {isBannedFromChat ? <CrossCircle className="EmojiIcon"/>:
+        {isBannedFromChat ? (
+          <CrossCircle className="EmojiIcon" />
+        ) : (
           <Popover>
             <PopoverTrigger>
               <button className="EmojiPickerIcon">
@@ -46,12 +48,14 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
               />
             </PopoverContent>
           </Popover>
-        }
+        )}
         <input
           className="MessageInput"
           type="text"
           value={messageInput}
-          placeholder={isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."}
+          placeholder={
+            isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."
+          }
           disabled={isBannedFromChat}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
