@@ -7,7 +7,7 @@ import {
 } from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy, Redo } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
-import { useToast } from "@chakra-ui/react";
+import { ButtonGroup, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverFooter, PopoverHeader, PopoverTrigger, useDisclosure, useToast } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
@@ -15,6 +15,67 @@ import type { Client, EventInfo } from "../../types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/hooks";
 import "../../../css/event/header.css";
+
+
+type ArrowLeftPopoverProps = {
+  eventChannel: Channel | undefined;
+  redirectHome: () => void;
+};
+
+const ArrowLeftPopover = ({ eventChannel, redirectHome }: ArrowLeftPopoverProps) => {
+  const {onOpen, onClose, isOpen} = useDisclosure();
+  
+  return (
+    <Popover
+    placement="bottom-end"
+    returnFocusOnClose={false}
+    >
+      <PopoverTrigger>
+        <button onClick={onOpen}> 
+        <ArrowLeft className="Arrow" />
+        </button>   
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverHeader>
+          <div>
+            <p className="ModePopoverHeader">Leaving the event</p>
+          </div>
+        </PopoverHeader>
+        <PopoverBody>
+          <div className="ModePopoverDiv">
+          <button
+              className="ModePopoverButton"
+              onClick={redirectHome}
+            >
+              Leave
+            </button>
+            <button
+              className="ModePopoverButton"
+              onClick={() => {
+                eventChannel?.push("finish_event", {});
+              }}
+            >
+              End
+            </button>
+            <button
+              className="ModePopoverButton"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            {/* <p className="ModePopoverText"> Do you want to leave the event or finish it and save the recording?</p> */}
+          </div>
+        </PopoverBody>
+        {/* <PopoverFooter>
+          <ButtonGroup>
+
+          </ButtonGroup>
+        </PopoverFooter> */}
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 type HeaderProps = {
   eventChannel: Channel | undefined;
@@ -49,9 +110,14 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
 
   return (
     <div className="Header">
-      <button onClick={() => redirectToHomePage(navigate)}>
-        <ArrowLeft className="Arrow" />
-      </button>
+
+      {client.isModerator ?
+       <ArrowLeftPopover eventChannel={eventChannel} redirectHome={() => redirectToHomePage(navigate)}/> :
+        <button onClick={() => redirectToHomePage(navigate)}>
+          <ArrowLeft className="Arrow" />
+        </button>
+      }
+
       {screenType.device == "mobile" && (
         <div className="TurnDeviceContainer">
           <Redo className="TurnIcon" />

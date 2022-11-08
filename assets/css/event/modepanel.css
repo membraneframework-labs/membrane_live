@@ -50,6 +50,11 @@
   color: var(--font-dark-color);
 }
 
+.ModePopoverText {
+  font-size: 1.6rem;
+  color: var(--font-dark-color);
+}
+
 .ModePopoverBody {
   color: var(--font-dark-color);
   display: flex;
