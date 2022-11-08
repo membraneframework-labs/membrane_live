@@ -55,8 +55,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine",
-       branch: "LIVE-92-adding-compositor-to-hls-endpoint"},
+       github: "membraneframework/membrane_rtc_engine", branch: "add-synchronizer-to-compositor"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions",
@@ -78,8 +77,9 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "~> 1.0"},
 
       # HLS_Endpoint deps
-      {:membrane_http_adaptive_stream_plugin, "~> 0.8.1"},
-      {:membrane_mp4_plugin, "~> 0.16.0"},
+      {:membrane_http_adaptive_stream_plugin,
+       github: "membraneframework/membrane_http_adaptive_stream_plugin", optional: true},
+      {:membrane_mp4_plugin, github: "membraneframework/membrane_mp4_plugin", optional: true},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
