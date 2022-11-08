@@ -44,29 +44,3 @@
   background: var(--font-dark-color);
   color: var(--bg-light-color-1);
 }
-
-.ModePopoverHeader {
-  font-size: 2rem;
-  color: var(--font-dark-color);
-}
-
-.ModePopoverText {
-  font-size: 1.6rem;
-  color: var(--font-dark-color);
-}
-
-.ModePopoverBody {
-  color: var(--font-dark-color);
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.ModePopoverButton {
-  color: var(--bg-light-color-1);
-  background-color: var(--font-dark-color);
-  border-radius: 16px;
-  font-weight: 600;
-  font-size: 1.6rem;
-  padding: 1rem 1.5rem;
-}

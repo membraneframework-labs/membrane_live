@@ -14,7 +14,6 @@ import {
   ModalBody,
   PopoverTrigger,
   PopoverContent,
-  PopoverBody,
   Popover,
   PopoverArrow,
   PopoverHeader,
