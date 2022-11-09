@@ -9,7 +9,7 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.CompositorConfig
+  alias Membrane.RTC.Engine.Endpoint.HLS.{AudioMixerConfig, CompositorConfig}
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -78,12 +78,12 @@ defmodule MembraneLive.Event do
     Process.monitor(pid)
 
     endpoint = %HLS{
-      event_id: event_id,
       rtc_engine: pid,
       owner: self(),
-      output_directory: "output",
+      output_directory: "output/#{event_id}",
       target_window_duration: :infinity,
-      compositor_config: %CompositorConfig{}
+      mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
+      hls_mode: :muxed_av
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)
@@ -96,6 +96,7 @@ defmodule MembraneLive.Event do
        network_options: network_options,
        trace_ctx: trace_ctx,
        moderator_pid: nil,
+       playlist_idl: nil,
        is_playlist_playable?: false
      }}
   end
@@ -248,21 +249,21 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :audio}, state) do
+  def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
     # TODO: implement detecting when HLS starts
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:playlist_playable, :video}, state) do
-    state = %{state | is_playlist_playable?: true}
+  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
+    state = %{state | playlist_idl: Path.join(state.event_id, playlist_idl)}
     send_broadcast(state)
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:cleanup, _clean_function}, state) do
-    StorageCleanup.remove_directory(state.event_id)
+  def handle_info({:cleanup, _clean_function, playlist_idl}, state) do
+    StorageCleanup.remove_directory(Path.join(state.event_id, playlist_idl))
     {:noreply, state}
   end
 
@@ -315,11 +316,11 @@ defmodule MembraneLive.Event do
   end
 
   defp stream_response_message(state) do
-    start_stream_message = %{playlist_idl: state.event_id, name: "Live Stream 🎐"}
+    start_stream_message = %{playlist_idl: state.playlist_idl, name: "Live Stream 🎐"}
     stop_stream_message = %{playlist_idl: "", name: ""}
 
-    if state.is_playlist_playable? and map_size(state.peer_channels) > 0,
-      do: start_stream_message,
-      else: stop_stream_message
+    if is_nil(state.playlist_idl) or map_size(state.peer_channels) == 0,
+      do: stop_stream_message,
+      else: start_stream_message
   end
 end

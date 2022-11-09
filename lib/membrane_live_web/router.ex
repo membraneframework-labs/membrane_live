@@ -20,7 +20,8 @@ defmodule MembraneLiveWeb.Router do
     get("/", PageController, :index)
     get("/event/*page", PageController, :index)
     get("/recordings/*page", PageController, :index)
-    get("/video/:prefix/:filename", HLSController, :index)
+    get("/video/:event_id/:filename", HLSController, :index)
+    get("/video/:event_id/:stream_id/:filename", HLSController, :index)
   end
 
   scope "/", MembraneLiveWeb do
