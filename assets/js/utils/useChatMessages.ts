@@ -17,6 +17,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
       else {
         const data = getByKey(presence.current, email);
         const newChatMessage: ChatMessage = {
+          id: last ? last.id + 1 : 0,
           email: email,
           name: data ? data.name : "Unrecognized user",
           title: getTitle(data),

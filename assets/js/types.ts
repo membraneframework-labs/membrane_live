@@ -105,6 +105,7 @@ export type ScreenType = {
 export type CurrentEvents = "All events" | "Recorded events";
 
 export type ChatMessage = {
+  id: number;
   email: string;
   name: string;
   title: string;
