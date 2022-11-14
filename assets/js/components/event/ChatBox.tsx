@@ -90,7 +90,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
 
                     return (
                       <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
-                        {messageString}
+                        {index < message.moderatedNo ? <i>Moderated</i> : messageString}
                       </p>
                     );
                   })}

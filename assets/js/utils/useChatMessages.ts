@@ -20,6 +20,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
           email: email,
           name: data ? data.name : "Unrecognized user",
           title: getTitle(data),
+          moderatedNo: 0, // number of hiddend messages counting from the start
           messages: [message],
         };
         prev.push(newChatMessage);
@@ -29,11 +30,21 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
     });
   };
 
-  const updateTitles = () => {
+  const updateMessages = () => {
     setChatMessages((prev) => {
       let changed = false;
       prev.forEach((chatMessage) => {
         const data = getByKey(presence.current, chatMessage.email);
+        if (!data) return;
+
+        const moderatedNo = data.is_banned_from_chat
+          ? chatMessage.messages.length
+          : chatMessage.moderatedNo;
+        if (moderatedNo != chatMessage.moderatedNo) {
+          chatMessage.moderatedNo = moderatedNo;
+          changed = true;
+        }
+
         const newTitle = getTitle(data);
         if (chatMessage.title != newTitle) {
           chatMessage.title = newTitle;
@@ -50,7 +61,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
       presence.current = new Presence(eventChannel);
       eventChannel.push("sync_presence", {});
       eventChannel.on("chat_message", (data) => appendToChatMessages(data));
-      presence.current.onSync(updateTitles);
+      presence.current.onSync(updateMessages);
     }
 
     return () => {

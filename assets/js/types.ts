@@ -108,5 +108,6 @@ export type ChatMessage = {
   email: string;
   name: string;
   title: string;
+  moderatedNo: number;
   messages: string[];
 };
