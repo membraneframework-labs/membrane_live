@@ -1,34 +1,41 @@
 import { Channel } from "phoenix";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { EmoteSmile } from "react-swm-icon-pack";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
+import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types";
 import "../../../css/event/chatbox.css";
 
 type EmojiPopoverProps = {
   setMessageInput: React.Dispatch<React.SetStateAction<string>>;
+  inputRef: React.RefObject<HTMLInputElement>;
 };
 
-const EmojiPopover = ({ setMessageInput }: EmojiPopoverProps) => (
-  <Popover>
-    <PopoverTrigger>
-      <button className="EmojiPickerIcon">
-        <EmoteSmile className="EmojiIcon" />
-      </button>
-    </PopoverTrigger>
-    <PopoverContent>
-      <Picker
-        data={data}
-        theme="light"
-        onEmojiSelect={(emoji: { native: string }) => {
-          setMessageInput((prev) => prev + emoji.native);
-        }}
-      />
-    </PopoverContent>
-  </Popover>
-);
+const EmojiPopover = ({ setMessageInput, inputRef }: EmojiPopoverProps) => {
+  const { isOpen, onToggle, onClose } = useDisclosure();
+
+  return (
+    <Popover isOpen={isOpen} onClose={onClose}>
+      <PopoverTrigger>
+        <button className="EmojiPickerIcon" onClick={onToggle}>
+          <EmoteSmile className="EmojiIcon" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <Picker
+          data={data}
+          theme="light"
+          onEmojiSelect={(emoji: { native: string }) => {
+            setMessageInput((prev) => prev + emoji.native);
+            onToggle();
+            inputRef.current?.focus();
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 type ChatBoxProps = {
   client: Client;
@@ -38,6 +45,7 @@ type ChatBoxProps = {
 
 const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const sendChatMessage = (message: string) => {
     if (eventChannel) {
@@ -51,8 +59,9 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        <EmojiPopover setMessageInput={setMessageInput} />
+        <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
         <input
+          ref={inputRef}
           className="MessageInput"
           type="text"
           value={messageInput}
