@@ -107,5 +107,6 @@ export type CurrentEvents = "All events" | "Recorded events";
 export type ChatMessage = {
   email: string;
   name: string;
+  title: string;
   messages: string[];
 };

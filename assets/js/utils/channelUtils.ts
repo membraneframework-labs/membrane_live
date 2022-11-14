@@ -70,9 +70,12 @@ export const syncEventChannel = (
   eventChannel.push("sync_presence", {});
 };
 
-export const getByKey = (presence: Presence, keyEmail: string): MetasUser | undefined => {
+export const getByKey = (
+  presence: Presence | undefined,
+  keyEmail: string
+): MetasUser | undefined => {
   let result: MetasUser | undefined;
-  presence.list((email: string, metas: Metas) => {
+  presence?.list((email: string, metas: Metas) => {
     const data = metas.metas[0];
     if (email == keyEmail) result = data;
   });

@@ -78,7 +78,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
             return (
               <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
                 {!isMyself ? (
-                  <p className="ChatterName">{message.name}</p>
+                  <p className="ChatterName">{`${message.name} ${message.title}`}</p>
                 ) : (
                   <p className="YourName">You</p>
                 )}
