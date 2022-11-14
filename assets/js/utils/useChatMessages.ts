@@ -25,6 +25,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
       if (last && last.email == email) last.messages.push(message);
       else {
         const newChatMessage: ChatMessage = {
+          id: last ? last.id + 1 : 0,
           email: email,
           name: getByKey(email),
           messages: [message],

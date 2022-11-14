@@ -37,6 +37,30 @@ const EmojiPopover = ({ setMessageInput, inputRef }: EmojiPopoverProps) => {
   );
 };
 
+type MessageBoxProps = {
+  message: ChatMessage;
+  isMyself: boolean;
+};
+
+const MessageBox = ({ message, isMyself }: MessageBoxProps) => (
+  <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+    {!isMyself ? <p className="ChatterName">{message.name}</p> : <p className="YourName">You</p>}
+    <div className="MessageCluster">
+      {message.messages.map((messageString, index) => {
+        let cornerClass = "";
+        if (index == 0) cornerClass += "Top";
+        if (index == message.messages.length - 1) cornerClass += " Bottom";
+
+        return (
+          <p key={`${message.id}:${index}`} className={`SingleMessage ${cornerClass}`} lang="de">
+            {messageString}
+          </p>
+        );
+      })}
+    </div>
+  </div>
+);
+
 type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
@@ -74,31 +98,13 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
       </div>
       <div className="Messages">
         {messages
-          .map((message: ChatMessage) => {
-            const isMyself = message.email == client.email;
-            return (
-              <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
-                {!isMyself ? (
-                  <p className="ChatterName">{message.name}</p>
-                ) : (
-                  <p className="YourName">You</p>
-                )}
-                <div className="MessageCluster">
-                  {message.messages.map((messageString, index) => {
-                    let cornerClass = "";
-                    if (index == 0) cornerClass += "Top";
-                    if (index == message.messages.length - 1) cornerClass += " Bottom";
-
-                    return (
-                      <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
-                        {messageString}
-                      </p>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })
+          .map((message: ChatMessage) => (
+            <MessageBox
+              message={message}
+              isMyself={message.email == client.email}
+              key={message.id}
+            />
+          ))
           .reverse()}
       </div>
     </div>
