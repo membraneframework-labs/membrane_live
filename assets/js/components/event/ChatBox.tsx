@@ -7,6 +7,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types";
 import "../../../css/event/chatbox.css";
 
+type EmojiPopoverProps = {
+  setMessageInput: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const EmojiPopover = ({ setMessageInput }: EmojiPopoverProps) => (
+  <Popover>
+    <PopoverTrigger>
+      <button className="EmojiPickerIcon">
+        <EmoteSmile className="EmojiIcon" />
+      </button>
+    </PopoverTrigger>
+    <PopoverContent>
+      <Picker
+        data={data}
+        theme="light"
+        onEmojiSelect={(emoji: { native: string }) => {
+          setMessageInput((prev) => prev + emoji.native);
+        }}
+      />
+    </PopoverContent>
+  </Popover>
+);
+
 type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
@@ -28,22 +51,7 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        <Popover>
-          <PopoverTrigger>
-            <button className="EmojiPickerIcon">
-              <EmoteSmile className="EmojiIcon" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <Picker
-              data={data}
-              theme="light"
-              onEmojiSelect={(emoji: { native: string }) => {
-                setMessageInput((prev) => prev + emoji.native);
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+        <EmojiPopover setMessageInput={setMessageInput} />
         <input
           className="MessageInput"
           type="text"
@@ -51,37 +59,40 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
           placeholder="Type your message here..."
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
-            e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);
+            e.key == "Enter" &&
+              !e.shiftKey &&
+              messageInput.length > 0 &&
+              sendChatMessage(messageInput);
           }}
         />
       </div>
       <div className="Messages">
         {messages
-          .map((message: ChatMessage) => (
-            <div
-              className={`MessageBox ${message.email == client.email ? "Own" : "Other"}`}
-              key={message.messages[0]}
-            >
-              {message.email != client.email ? (
-                <p className="ChatterName">{message.name}</p>
-              ) : (
-                <p className="YourName">You</p>
-              )}
-              <div className="MessageCluster">
-                {message.messages.map((messageString, index) => {
-                  let cornerClass = "";
-                  if (index == 0) cornerClass += "Top";
-                  if (index == message.messages.length - 1) cornerClass += " Bottom";
+          .map((message: ChatMessage) => {
+            const isMyself = message.email == client.email;
+            return (
+              <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+                {!isMyself ? (
+                  <p className="ChatterName">{message.name}</p>
+                ) : (
+                  <p className="YourName">You</p>
+                )}
+                <div className="MessageCluster">
+                  {message.messages.map((messageString, index) => {
+                    let cornerClass = "";
+                    if (index == 0) cornerClass += "Top";
+                    if (index == message.messages.length - 1) cornerClass += " Bottom";
 
-                  return (
-                    <p key={messageString} className={`SingleMessage ${cornerClass}`}>
-                      {messageString}
-                    </p>
-                  );
-                })}
+                    return (
+                      <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
+                        {messageString}
+                      </p>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
           .reverse()}
       </div>
     </div>

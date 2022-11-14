@@ -64,7 +64,6 @@ export const syncEventChannel = (
   });
 
   eventChannel.push("sync_presence", {});
-  return presence;
 };
 
 export const createPrivateChannel = (

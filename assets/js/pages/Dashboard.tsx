@@ -4,7 +4,7 @@ import SearchAndCreatePanel from "../components/dashboard/SearchAndCreatePanel";
 import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
-import useCheckScreenType from "../utils/hooks";
+import useCheckScreenType from "../utils/useCheckScreenType";
 import type { CurrentEvents } from "../types";
 import "../../css/dashboard/dashboard.css";
 

@@ -5,7 +5,7 @@ import { roundedGoogleButton } from "../../utils/const";
 import { sessionStorageSetName } from "../../utils/storageUtils";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../../types";
-import useCheckScreenType from "../../utils/hooks";
+import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
 
