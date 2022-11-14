@@ -68,7 +68,6 @@ export const syncEventChannel = (
   });
 
   eventChannel.push("sync_presence", {});
-  return presence;
 };
 
 export const getByKey = (presence: Presence, keyEmail: string): MetasUser | undefined => {

@@ -3,7 +3,7 @@ import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
 import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
 import type { Client } from "../types";
-import useCheckScreenType from "../utils/hooks";
+import useCheckScreenType from "../utils/useCheckScreenType";
 
 const Recording = () => {
   const client: Client = {

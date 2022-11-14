@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { getByKey, syncEventChannel } from "../../utils/channelUtils";
+import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client, ChatMessage, MetasUser } from "../../types";
-import { Channel, Presence } from "phoenix";
+import type { Participant, Client } from "../../types";
+import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
 import "../../../css/event/participants.css";
+import { useChatMessages } from "../../utils/useChatMessages";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -155,57 +156,14 @@ type ParticipantsListProps = {
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const chatMessages = useChatMessages(eventChannel);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
-  let presence: Presence;
-
-  const appendToMessages = ({ email, message }: { email: string; message: string }) => {
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
-      if (last && last.email == email) last.messages.push(message);
-      else {
-        const data: MetasUser | undefined = getByKey(presence, email);
-        const role = data
-          ? data.is_moderator
-            ? " (moderator)"
-            : data.is_presenter
-            ? " (presenter)"
-            : ""
-          : "";
-        const newChatMessage: ChatMessage = {
-          email: email,
-          name: data ? data.name + role : "Unrecognized user",
-          messages: [message],
-        };
-        prev.push(newChatMessage);
-      }
-
-      return [...prev];
-    });
-  };
 
   useEffect(() => {
     if (eventChannel) {
-      presence = syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
-      eventChannel.on("chat_message", (data) => appendToMessages(data));
+      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
     }
-
-    return () => {
-      if (eventChannel) eventChannel.off("chat_message");
-    };
   }, [eventChannel]);
-
-  const parts: JSX.Element[] = [];
-  participants.map((participant) =>
-    parts.push(
-      <Participant
-        client={client}
-        key={participant.email}
-        participant={participant}
-        eventChannel={eventChannel}
-      />
-    )
-  );
 
   return (
     <div className="Participants">
@@ -226,12 +184,21 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
         </button>
       </div>
       {listMode ? (
-        <div className="ParticipantsList">{parts}</div>
+        <div className="ParticipantsList">
+          {participants.map((participant) => (
+            <Participant
+              client={client}
+              key={participant.email}
+              participant={participant}
+              eventChannel={eventChannel}
+            />
+          ))}
+        </div>
       ) : (
         <ChatBox
           client={client}
           eventChannel={eventChannel}
-          messages={messages}
+          messages={chatMessages}
           isBannedFromChat={isBannedFromChat}
         />
       )}

@@ -22,7 +22,7 @@ import {
   RotateRight,
   Fullscreen,
 } from "react-swm-icon-pack";
-import useCheckScreenType from "../../utils/hooks";
+import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/hlscontrolbar.css";
 
 const HlsControlBar = () => {

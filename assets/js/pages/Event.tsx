@@ -18,7 +18,7 @@ import { presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import type { Client, Toast } from "../types";
 import NamePopup from "../components/event/NamePopup";
-import useCheckScreenType from "../utils/hooks";
+import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
 
 const Event = () => {

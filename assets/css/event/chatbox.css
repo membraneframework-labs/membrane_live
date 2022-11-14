@@ -58,6 +58,7 @@
   width: fit-content;
   padding: 1rem;
   border-radius: 24px;
+  hyphens: auto;
 }
 
 .Own .SingleMessage {

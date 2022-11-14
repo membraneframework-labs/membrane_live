@@ -1,7 +1,7 @@
 import React from "react";
 import { getIsAuthenticated, storageGetName, storageGetPicture } from "../../utils/storageUtils";
 import UserField from "./UserField";
-import useCheckScreenType from "../../utils/hooks";
+import useCheckScreenType from "../../utils/useCheckScreenType";
 import MobileHeader from "./MobileHeader";
 import type { CurrentEvents } from "../../types";
 import "../../../css/dashboard/welcomepanel.css";
