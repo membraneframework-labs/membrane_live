@@ -43,26 +43,26 @@ type MessageBoxProps = {
 };
 
 const MessageBox = ({ message, isMyself }: MessageBoxProps) => (
-    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
-      {!isMyself ? (
-        <p className="ChatterName">{`${message.name} ${message.title}`}</p>
-      ) : (
-        <p className="YourName">You</p>
-      )}
-      <div className="MessageCluster">
-        {message.messages.map((messageString, index) => {
-          let cornerClass = "";
-          if (index == 0) cornerClass += "Top";
-          if (index == message.messages.length - 1) cornerClass += " Bottom";
+  <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+    {!isMyself ? (
+      <p className="ChatterName">{`${message.name} ${message.title}`}</p>
+    ) : (
+      <p className="YourName">You</p>
+    )}
+    <div className="MessageCluster">
+      {message.messages.map((messageString, index) => {
+        let cornerClass = "";
+        if (index == 0) cornerClass += "Top";
+        if (index == message.messages.length - 1) cornerClass += " Bottom";
 
-          return (
-            <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
-              {index < message.moderatedNo ? <i>Moderated</i> : messageString}
-            </p>
-          );
-        })}
-      </div>
+        return (
+          <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
+            {index < message.moderatedNo ? <i>Moderated</i> : messageString}
+          </p>
+        );
+      })}
     </div>
+  </div>
 );
 
 type ChatBoxProps = {
@@ -91,7 +91,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
         {isBannedFromChat ? (
           <CrossCircle className="EmojiIcon" />
         ) : (
-          <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef}/>
+          <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
         )}
         <input
           ref={inputRef}
