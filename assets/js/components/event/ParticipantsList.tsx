@@ -5,8 +5,8 @@ import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-ic
 import type { Participant, Client } from "../../types";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import "../../../css/event/participants.css";
 import { useChatMessages } from "../../utils/useChatMessages";
+import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -16,22 +16,30 @@ type ModeratorMenuProps = {
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
+  const presenterText = {
+    set: "Set as a presenter",
+    unset: "Set as a normal participant",
+  };
+  const banFromChatText = {
+    ban: "Ban from the chat",
+    unban: "Unban from the chat",
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     switch ((e.target as HTMLTextAreaElement).value) {
-      case "Set as a presenter":
+      case presenterText.set:
         eventChannel?.push("presenter_prop", {
           moderatorTopic: link + moderatorClient.email,
           presenterTopic: link + participant.email,
         });
         break;
-      case "Set as a normal participant":
+      case presenterText.unset:
         eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
         break;
-      case "Ban from the chat":
+      case banFromChatText.ban:
         eventChannel?.push("ban_from_chat", { email: participant.email });
         break;
-      case "Unban from the chat":
+      case banFromChatText.unban:
         eventChannel?.push("unban_from_chat", { email: participant.email });
         break;
     }
@@ -46,19 +54,19 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         {participant.isAuth && (
           <MenuItem
             onClick={handleClick}
-            value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+            value={participant.isPresenter ? presenterText.unset : presenterText.set}
             className="MenuOptionText"
           >
-            {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
+            {participant.isPresenter ? presenterText.unset : presenterText.set}
           </MenuItem>
         )}
         {!participant.isModerator && (
           <MenuItem
             onClick={handleClick}
-            value={participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
+            value={participant.isBannedFromChat ? banFromChatText.unban : banFromChatText.ban}
             className="MenuOptionText"
           >
-            {participant.isBannedFromChat ? "Unban from the chat" : "Ban from the chat"}
+            {participant.isBannedFromChat ? banFromChatText.unban : banFromChatText.ban}
           </MenuItem>
         )}
       </MenuList>

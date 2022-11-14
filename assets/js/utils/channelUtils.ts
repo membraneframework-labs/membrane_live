@@ -74,7 +74,6 @@ export const getByKey = (presence: Presence, keyEmail: string): MetasUser | unde
   let result: MetasUser | undefined;
   presence.list((email: string, metas: Metas) => {
     const data = metas.metas[0];
-    console.log("DATA", email, data);
     if (email == keyEmail) result = data;
   });
   return result;
