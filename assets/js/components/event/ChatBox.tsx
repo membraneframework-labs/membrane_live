@@ -59,10 +59,7 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
           placeholder="Type your message here..."
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
-            e.key == "Enter" &&
-              !e.shiftKey &&
-              messageInput.length > 0 &&
-              sendChatMessage(messageInput);
+            e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);
           }}
         />
       </div>
