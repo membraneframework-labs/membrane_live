@@ -52,8 +52,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
           changed = true;
         }
       });
-      if (changed) return [...prev];
-      else return prev;
+      return changed ? [...prev] : prev;
     });
   };
 

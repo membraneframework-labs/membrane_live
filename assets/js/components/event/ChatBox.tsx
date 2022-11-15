@@ -42,28 +42,32 @@ type MessageBoxProps = {
   isMyself: boolean;
 };
 
-const MessageBox = ({ message, isMyself }: MessageBoxProps) => (
-  <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
-    {!isMyself ? (
-      <p className="ChatterName">{`${message.name} ${message.title}`}</p>
-    ) : (
-      <p className="YourName">You</p>
-    )}
-    <div className="MessageCluster">
-      {message.messages.map((messageString, index) => {
-        let cornerClass = "";
-        if (index == 0) cornerClass += "Top";
-        if (index == message.messages.length - 1) cornerClass += " Bottom";
+const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
+  const getSingleMessage = (messageString: string, index: number) => {
+    let cornerClass = "";
+    if (index == 0) cornerClass += "Top";
+    if (index == message.messages.length - 1) cornerClass += " Bottom";
 
-        return (
-          <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
-            {index < message.moderatedNo ? <i>Moderated</i> : messageString}
-          </p>
-        );
-      })}
+    return (
+      <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
+        {index < message.moderatedNo ? <i>Moderated</i> : messageString}
+      </p>
+    );
+  };
+
+  return (
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+      {!isMyself ? (
+        <p className="ChatterName">{`${message.name} ${message.title}`}</p>
+      ) : (
+        <p className="YourName">You</p>
+      )}
+      <div className="MessageCluster">
+        {message.messages.map((messageString, index) => getSingleMessage(messageString, index))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 type ChatBoxProps = {
   client: Client;
