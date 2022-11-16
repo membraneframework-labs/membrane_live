@@ -55,7 +55,8 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine", branch: "add-synchronizer-to-compositor"},
+       github: "membraneframework/membrane_rtc_engine",
+       branch: "add-compositor-with-synchronization"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions",
@@ -84,9 +85,11 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
       {:membrane_h264_ffmpeg_plugin, "~> 0.23.0", override: true},
+      {:membrane_video_mixer_plugin, github: "kim-company/membrane_video_mixer_plugin"},
+      {:membrane_generator_plugin, "~> 0.6.0"},
+      {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
       {:membrane_framerate_converter_plugin, "~> 0.5.0"},
-      {:membrane_video_mix_plugin, github: "pkrucz00/membrane_video_mix_plugin"},
       {:membrane_audio_mix_plugin, "~> 0.10.0"}
     ]
   end
