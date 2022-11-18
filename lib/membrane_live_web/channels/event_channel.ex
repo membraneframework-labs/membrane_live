@@ -135,7 +135,10 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_info({:stream_start_timestamp, timestamp}, socket), do: {:ok, Socket.assign(socket, :start_time, timestamp)}
+  def handle_info({:stream_start_timestamp, timestamp}, socket) do
+    IO.inspect(timestamp, label: :TIMESTAMP)
+    {:noreply, Socket.assign(socket, :start_time, timestamp)}
+  end
 
   def handle_in("finish_event", %{}, socket) do
     "event:" <> uuid = socket.topic
@@ -169,7 +172,7 @@ defmodule MembraneLiveWeb.EventChannel do
         else
           0
         end
-
+      IO.inspect(offset, label: :OFFSET)
       Chats.add_chat_message(id, name, email, is_auth, content, offset)
       broadcast(socket, "chat_message", data)
     end
