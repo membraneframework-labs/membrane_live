@@ -14,7 +14,6 @@ import {
   ModalBody,
   PopoverTrigger,
   PopoverContent,
-  PopoverBody,
   Popover,
   PopoverArrow,
   PopoverHeader,
@@ -123,11 +122,7 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-type MenuPopoverProps = {
-  eventChannel: Channel | undefined;
-};
-
-const MenuPopover = ({ eventChannel }: MenuPopoverProps) => {
+const MenuPopover = () => {
   return (
     <Popover>
       <PopoverTrigger>
@@ -141,19 +136,6 @@ const MenuPopover = ({ eventChannel }: MenuPopoverProps) => {
         <PopoverHeader>
           <p className="OptionsPopoverHeader">Options</p>
         </PopoverHeader>
-        <PopoverBody>
-          <div className="OptionsPopoverBody">
-            <p>Do you want to finish the event?</p>
-            <button
-              className="OptionsPopoverButton"
-              onClick={() => {
-                eventChannel?.push("finish_event", {});
-              }}
-            >
-              YES
-            </button>
-          </div>
-        </PopoverBody>
       </PopoverContent>
     </Popover>
   );
@@ -272,7 +254,7 @@ const ControlPanel = ({
               setSharingScreen(false);
             }}
           />
-          <MenuPopover eventChannel={eventChannel} />
+          <MenuPopover />
         </div>
         <GenericButton
           icon={<UserPlus className="PanelButton" />}
