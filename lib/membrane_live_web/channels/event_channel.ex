@@ -60,7 +60,12 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
-             socket <- Socket.assign(socket, %{is_moderator: is_moderator, user_email: email, event_id: id}),
+             socket <-
+               Socket.assign(socket, %{
+                 is_moderator: is_moderator,
+                 user_email: email,
+                 event_id: id
+               }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
