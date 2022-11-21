@@ -84,6 +84,30 @@
   gap: 0.7rem;
 }
 
+.ArrowLeftPopoverHeader {
+  font-size: 2rem;
+  color: var(--font-dark-color);
+  padding: 0.5rem 0rem;
+}
+
+.ArrowLeftPopoverDiv {
+  color: var(--font-dark-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.5rem 0rem;
+}
+
+.ArrowLeftPopoverButton {
+  color: var(--bg-light-color-1);
+  background-color: var(--font-dark-color);
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1.6rem;
+  padding: 1rem 1.5rem;
+}
+
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   .Header {
     height: 100%;
