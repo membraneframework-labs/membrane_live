@@ -82,7 +82,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
 
   const sendChatMessage = (message: string) => {
     if (eventChannel) {
-      eventChannel.push("chat_message", { email: client.email, message: message });
+      eventChannel.push("chat_message", { message: message });
       setMessageInput("");
     }
   };

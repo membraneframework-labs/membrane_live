@@ -38,7 +38,7 @@ defmodule MembraneLiveWeb.EventChannel do
           })
 
           {:ok, %{generated_key: gen_key},
-           Phoenix.Socket.assign(socket, %{event_id: id, event_pid: nil})}
+           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key, event_pid: nil})}
         end
 
       {:error, _error} ->
@@ -61,7 +61,14 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
-             socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id, start_time: System.monotonic_time(:millisecond)}),  # temporary
+             # temporary
+             socket <-
+               Socket.assign(socket, %{
+                 is_moderator: is_moderator,
+                 event_id: id,
+                 user_email: email,
+                 start_time: System.monotonic_time(:millisecond)
+               }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
@@ -158,23 +165,32 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in("chat_message", %{"email" => email, "message" => content} = data, %{topic: "event:" <> id} = socket) do
+  def handle_in("chat_message", %{"message" => message}, %{topic: "event:" <> id} = socket) do
+    email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
 
     if not is_banned_from_chat do
       %{metas: [%{name: name, is_auth: is_auth}]} = Presence.get_by_key(socket, email)
 
-      offset = if is_auth and check_if_presenter(email, true, id) do
+      offset =
+        if is_auth and check_if_presenter(email, true, id) do
           start_time = socket.assigns.start_time
-          if is_nil(start_time), do: raise "Recieved chat message from presenter when there is no presenters connected to RTC Engine process"
+
+          if is_nil(start_time),
+            do:
+              raise(
+                "Recieved chat message from presenter when there is no presenters connected to RTC Engine process"
+              )
+
           cur_time = System.monotonic_time(:millisecond)
           cur_time - start_time
         else
           0
         end
+
       IO.inspect(offset, label: :OFFSET)
       Chats.add_chat_message(id, name, email, is_auth, content, offset)
-      broadcast(socket, "chat_message", data)
+      broadcast(socket, "chat_message", %{"email" => email, "message" => message})
     end
 
     {:noreply, socket}
@@ -277,14 +293,16 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("ban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(
-      self(),
-      "private:#{id}:#{email}",
-      "ban_from_chat",
-      %{}
-    )
+    if socket.assigns.is_moderator do
+      MembraneLiveWeb.Endpoint.broadcast_from!(
+        self(),
+        "private:#{id}:#{email}",
+        "ban_from_chat",
+        %{}
+      )
 
-    add_to_banned_from_chat(email, id)
+      add_to_banned_from_chat(email, id)
+    end
 
     {:noreply, socket}
   end
@@ -301,14 +319,16 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("unban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(
-      self(),
-      "private:#{id}:#{email}",
-      "unban_from_chat",
-      %{}
-    )
+    if socket.assigns.is_moderator do
+      MembraneLiveWeb.Endpoint.broadcast_from!(
+        self(),
+        "private:#{id}:#{email}",
+        "unban_from_chat",
+        %{}
+      )
 
-    remove_from_banned_from_chat(email, id)
+      remove_from_banned_from_chat(email, id)
+    end
 
     {:noreply, socket}
   end

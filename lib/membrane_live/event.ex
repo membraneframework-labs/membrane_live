@@ -130,7 +130,11 @@ defmodule MembraneLive.Event do
     peer_channel_pid = Map.get(state.peer_channels, peer.id)
     peer_node = node(peer_channel_pid)
 
-    state = if is_nil(state.start_timestamp), do: %{state | start_timestamp: System.monotonic_time(:millisecond)}, else: state
+    state =
+      if is_nil(state.start_timestamp),
+        do: %{state | start_timestamp: System.monotonic_time(:millisecond)},
+        else: state
+
     send(peer_channel_pid, {:stream_start_timestamp, state.start_timestamp})
 
     handshake_opts =

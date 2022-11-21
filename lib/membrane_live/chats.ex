@@ -16,7 +16,12 @@ defmodule MembraneLive.Chats do
   end
 
   defp add_anonnymous_chat_message(event_id, user_name, content, time_offset) do
-    attrs = %{event_id: event_id, user_name: user_name, content: content, time_offset: time_offset}
+    attrs = %{
+      event_id: event_id,
+      user_name: user_name,
+      content: content,
+      time_offset: time_offset
+    }
 
     %Chat{}
     |> Chat.changeset(attrs)
