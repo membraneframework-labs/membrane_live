@@ -27,8 +27,8 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
     test "lists all recording", %{conn: conn, webinars: webinars, user: user} do
       conn = get(conn, Routes.recordings_path(conn, :index))
 
-      assert json_response(conn, 200)["webinars"] ==
-               add_moderator_email_to_webinars(webinars, user)
+      assert Enum.sort(json_response(conn, 200)["webinars"]) ==
+               Enum.sort(add_moderator_email_to_webinars(webinars, user))
     end
 
     test "list chosen recording", %{conn: conn, webinars: webinars} do
@@ -55,8 +55,8 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
     test "lists all recording", %{conn: conn, webinars: webinars, user: user} do
       conn = get(conn, Routes.recordings_path(conn, :index))
 
-      assert json_response(conn, 200)["webinars"] ==
-               add_moderator_email_to_webinars(webinars, user)
+      assert Enum.sort(json_response(conn, 200)["webinars"]) ==
+               Enum.sort(add_moderator_email_to_webinars(webinars, user))
     end
 
     test "list chosen recording", %{conn: conn, webinars: webinars} do

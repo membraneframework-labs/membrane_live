@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
-import PresenterStreams from "./PresenterStreams";
+import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
 import { Channel } from "phoenix";
@@ -58,7 +58,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
         {mode == "hls" && (
           <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
         )}
-        <PresenterStreams
+        <PresenterArea
           client={client}
           eventChannel={eventChannel}
           mode={mode}
