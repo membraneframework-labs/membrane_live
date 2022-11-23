@@ -15,6 +15,7 @@
 .StreamsGrid {
   flex: 1;
   min-height: 0;
+  width: 100%;
   display: grid;
   gap: 1rem;
   justify-content: center;
