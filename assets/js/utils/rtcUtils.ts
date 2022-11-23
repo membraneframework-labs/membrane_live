@@ -9,11 +9,6 @@ export type Sources = {
   video: MediaDeviceInfo[];
 };
 
-export type SourcesInfo = {
-  audio: MediaDeviceInfo | undefined;
-  video: MediaDeviceInfo | undefined;
-};
-
 export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;
   cameraTrack: MediaStreamTrack | undefined;
@@ -186,6 +181,24 @@ export const connectWebrtc = async (
   return webrtc;
 };
 
+export const connectPresentersTracks = async (
+  playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
+) => {
+  setPresenters((presenters) => {
+    Object.values(presenters)
+      .filter(
+        (presenter) => presenter.status == "connecting" && presenter.connectCallbacks.length > 0
+      )
+      .forEach((presenter) => {
+        const playerCallback = playerCallbacks[presenter.email];
+        presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
+        presenters = { ...presenters, [presenter.email]: { ...presenter, connectCallbacks: [] } };
+      });
+    return presenters;
+  });
+};
+
 export const changeSource = async (
   webrtc: MembraneWebRTC | null,
   client: Client,
@@ -240,14 +253,14 @@ export const shareScreen = async (
     addOrReplaceTrack(client, track, playerCallback);
   });
 
-  if (!webrtc) return true;
-
   const newTrack = findTrackByType(client, "video");
 
   if (!newTrack) {
     removeMergedStream();
     return false;
   }
+  if (!webrtc) return true;
+
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
   else sourceIds["video"] = webrtc.addTrack(newTrack, presenterArea[client.email]);
   return true;

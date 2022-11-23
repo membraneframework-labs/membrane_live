@@ -180,13 +180,14 @@ const ControlPanel = ({
     if (sources != null) {
       setSources(sources);
 
-      const audio = getCurrentDeviceName(client, "audio");
-      if (audio === undefined)
-        setSourceById(client, sources.audio[0].deviceId, "audio", playerCallback);
+      const prepareDevice = (kind: "audio" | "video") => {
+        const deviceName = getCurrentDeviceName(client, kind);
+        if (deviceName === undefined)
+          setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
+      };
 
-      const video = getCurrentDeviceName(client, "video");
-      if (video === undefined)
-        setSourceById(client, sources.video[0].deviceId, "video", playerCallback);
+      prepareDevice("audio");
+      prepareDevice("video");
     }
   };
 
