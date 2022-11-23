@@ -3,7 +3,6 @@ import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
 import { Client, Presenter } from "../types";
 import { Channel } from "phoenix";
-import PresenterArea from "../components/event/PresenterArea";
 
 export type Sources = {
   audio: MediaDeviceInfo[];
@@ -13,10 +12,6 @@ export type Sources = {
 export type SourcesInfo = {
   audio: MediaDeviceInfo | undefined;
   video: MediaDeviceInfo | undefined;
-  enabled: {
-    audio: boolean;
-    video: boolean;
-  };
 };
 
 export type SourceType = "audio" | "video";
@@ -108,8 +103,6 @@ export const setSourceById = async (
 export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
-  playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
-  sourcesInfo: SourcesInfo,
   presenters: { [key: string]: Presenter },
   setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
 ) => {
@@ -120,7 +113,6 @@ export const connectWebrtc = async (
   const webrtc = new MembraneWebRTC({
     callbacks: {
       onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
-        console.log("onSendMediaEvent", mediaEvent);
         webrtcChannel?.push("mediaEvent", { data: mediaEvent });
       },
       onConnectionError: () => {
@@ -135,7 +127,10 @@ export const connectWebrtc = async (
             undefined,
             1500
           );
-          setPresenters({...presenters, [client.email]: { ...presenters[client.email], status: "connecting" }});
+          setPresenters({
+            ...presenters,
+            [client.email]: { ...presenters[client.email], status: "connecting" },
+          });
         });
         console.log("join success");
       },
@@ -143,15 +138,30 @@ export const connectWebrtc = async (
         onError("Error while joining WebRTC connection");
       },
       onTrackReady: ({ track, peer }) => {
-        if (track != null)
-          setPresenters({...presenters, [peer.metadata.email]: { ...presenters[peer.metadata.email], status: "connecting", connect: (playerCallback) => addOrReplaceTrack(peer.metadata, track, playerCallback)}});
+        if (track != null) {
+          const callback = (playerCallback: (sourceType: SourceType) => void) => {
+            addOrReplaceTrack(peer.metadata, track, playerCallback);
+          };
+
+          setPresenters({
+            ...presenters,
+            [peer.metadata.email]: {
+              ...presenters[peer.metadata.email],
+              status: "connecting",
+              connect: callback,
+            },
+          });
+        }
       },
       onTrackAdded: () => {
         // do nothing
       },
       onTrackRemoved: () => {
         if (presenterArea[client.email].getTracks().length == 0) {
-          setPresenters({...presenters, [client.email]: { ...presenters[client.email], status: "idle" }});
+          setPresenters({
+            ...presenters,
+            [client.email]: { ...presenters[client.email], status: "idle" },
+          });
         }
       },
       onPeerJoined: () => {
@@ -179,7 +189,7 @@ export const connectWebrtc = async (
 };
 
 export const changeSource = async (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   deviceId: string,
   sourceType: SourceType,
@@ -211,7 +221,7 @@ export const leaveWebrtc = (
 };
 
 export const shareScreen = async (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   playerCallback: (SourceType: SourceType) => void
 ): Promise<boolean> => {
@@ -244,7 +254,7 @@ export const shareScreen = async (
 };
 
 export const stopShareScreen = (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   playerCallback: (sourceType: SourceType) => void
 ) => {

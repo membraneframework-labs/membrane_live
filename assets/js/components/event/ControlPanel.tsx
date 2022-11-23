@@ -40,7 +40,7 @@ import {
   Sources,
   SourceType,
   stopShareScreen,
-  checkTrackIsEnabled as rtcCheckTrackIsEnabled,
+  checkTrackIsEnabled,
   SourcesInfo,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
@@ -194,24 +194,14 @@ const ControlPanel = ({
     console.log("updateChosenSources", sourceType, deviceId, device);
 
     setChosenSources({ ...chosenSources, [sourceType]: device });
-    if (webrtc != null) {
-      changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
-        rerender();
-      });
-    }
+    changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
+      rerender();
+    });
   };
 
   const changeTrackIsEnabled = async (sourceType) => {
-    setChosenSources({
-      ...chosenSources,
-      enabled: { ...chosenSources.enabled, [sourceType]: !chosenSources.enabled[sourceType] },
-    });
     rtcChangeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
     rerender();
-  };
-
-  const checkTrackIsEnabled = (sourceType) => {
-    return chosenSources.enabled[sourceType];
   };
 
   useEffect(() => {
@@ -244,7 +234,7 @@ const ControlPanel = ({
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(sourceType) ? (
+          checkTrackIsEnabled(client, sourceType) !== false ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />

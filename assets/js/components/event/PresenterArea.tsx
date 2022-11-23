@@ -34,7 +34,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [chosenSources, setChosenSources] = useState<SourcesInfo>({
     audio: undefined,
     video: undefined,
-    enabled: { video: true, audio: true },
   });
 
   useEffect(() => {
@@ -43,7 +42,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
       setIsControlPanelAvailable(true);
     } else if (!webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting) {
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, playerCallbacks, chosenSources, presenters, setPresenters).then((value) => {
+      connectWebrtc(eventChannel, client, presenters, setPresenters).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
@@ -59,10 +58,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     askForPermissions();
     presenterArea[client.email] = new MediaStream();
 
-    if (chosenSources.audio && chosenSources.enabled.audio)
+    if (chosenSources.audio)
       setSourceById(client, chosenSources.audio.deviceId, "audio", playerCallbacks[client.email]);
 
-    if (chosenSources.video && chosenSources.enabled.video)
+    if (chosenSources.video)
       setSourceById(client, chosenSources.video.deviceId, "video", playerCallbacks[client.email]);
   }, [chosenSources]);
 
@@ -87,7 +86,9 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     });
   }, [presenters]);
 
-  const visiblePresenters = Object.values(presenters).filter((presenter) => presenter.status != "idle" || presenter.email == client.email);
+  const visiblePresenters = Object.values(presenters).filter(
+    (presenter) => presenter.status != "idle" || presenter.email == client.email
+  );
 
   return client.email in presenters ? (
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
@@ -103,14 +104,22 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
               />
             );
           })}
-        </div>) : 
-          <RtcPlayer
+        </div>
+      ) : (
+        <RtcPlayer
           isMyself={true}
-          presenter={Object.values(presenters).find((presenter) => presenter.email == client.email) || {name: client.name, email: client.email, status: "idle", connect: undefined}}
-                playerCallbacks={playerCallbacks}
-                key={client.email}
-              />
-        }
+          presenter={
+            Object.values(presenters).find((presenter) => presenter.email == client.email) || {
+              name: client.name,
+              email: client.email,
+              status: "idle",
+              connect: undefined,
+            }
+          }
+          playerCallbacks={playerCallbacks}
+          key={client.email}
+        />
+      )}
       {isControlPanelAvailable && (
         <ControlPanel
           client={client}
