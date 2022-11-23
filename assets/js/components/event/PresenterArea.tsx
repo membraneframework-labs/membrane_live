@@ -80,7 +80,8 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
-    const clientIsPresenterWithNoMediaStream = client.email in presenters && presenterArea[client.email] == undefined;
+    const clientIsPresenterWithNoMediaStream =
+      client.email in presenters && presenterArea[client.email] == undefined;
     if (clientIsPresenterWithNoMediaStream) {
       askForPermissions();
       presenterArea[client.email] = new MediaStream();

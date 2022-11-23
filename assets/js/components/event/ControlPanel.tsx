@@ -144,7 +144,7 @@ const MenuPopover = () => {
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
-  setMode: React.Dispatch<React.SetStateAction<Mode>>,
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   eventChannel?.push("presenter_remove", { email: client.email });
   setMode("hls");
