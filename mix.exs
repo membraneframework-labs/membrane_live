@@ -85,7 +85,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
       {:membrane_h264_ffmpeg_plugin, "~> 0.23.0", override: true},
-      {:membrane_video_mixer_plugin, github: "kim-company/membrane_video_mixer_plugin"},
+      {:membrane_video_mixer_plugin, "~> 1.0.0", override: true},
       {:membrane_generator_plugin, "~> 0.6.0"},
       {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
