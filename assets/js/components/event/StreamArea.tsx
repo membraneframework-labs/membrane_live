@@ -11,15 +11,17 @@ type StreamAreaProps = {
   client: Client;
   eventChannel: Channel | undefined;
   privateChannel: Channel | undefined;
+  mode: Mode;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) => {
-  const [mode, setMode] = useState<Mode>("hls");
+const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
 
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
+    console.log("playlist_playable");
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
       setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);

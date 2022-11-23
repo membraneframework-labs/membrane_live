@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { connectWebrtc, leaveWebrtc, SourceType } from "../../utils/rtcUtils";
+import { connectWebrtc, leaveWebrtc, SourceType, SourcesInfo, presenterArea, askForPermissions, setSourceById} from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
@@ -26,26 +26,55 @@ type PresenterAreaProps = {
 const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<Presenter[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
+  const [isClientPresenting, setIsClientPresenting] = useState(false);
+  const [chosenSources, setChosenSources] = useState<SourcesInfo>(
+    { audio: undefined, video: undefined, enabled: {video: true, audio: true}});
 
   useEffect(() => {
-    const clientIsPresenter = includesKey(presenters, client.email);
-    if (!webrtcConnecting && webrtc == null && clientIsPresenter) {
+    const isClientPresenter = includesKey(presenters, client.email);
+    if (isClientPresenter && !isClientPresenting) {
+      setIsControlPanelAvailable(true);
+    } else if (!webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting) {
+      console.log("Connecting to presenter");
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, playerCallbacks).then((value) => {
+      connectWebrtc(eventChannel, client, playerCallbacks, chosenSources).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
-    } else if (webrtc != null && !clientIsPresenter) {
+    } else if (webrtc != null && !isClientPresenter) {
       leaveWebrtc(webrtc, client, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
     }
-  }, [presenters]);
+  }, [presenters, isClientPresenting]);
+
+  useEffect(() => {
+    askForPermissions();
+    presenterArea[client.email] = new MediaStream();
+    
+    console.log("sources", chosenSources);
+
+    if (chosenSources.audio && chosenSources.enabled.audio)
+      setSourceById(client, chosenSources.audio.deviceId, "audio", playerCallbacks[client.email]);
+
+    if (chosenSources.video && chosenSources.enabled.video)
+      setSourceById(client, chosenSources.video.deviceId, "video", playerCallbacks[client.email]);
+  }, [chosenSources]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
+
+  const onPresenterReady = () => {
+    setIsClientPresenting(true);
+  
+    console.log("presenter_ready push");
+    eventChannel.push("presenter_ready", {
+      email: client.email,
+      // moderatorTopic: moderatorTopic,
+    });
+  };
 
   return includesKey(presenters, client.email) ? (
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
@@ -61,14 +90,20 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           );
         })}
       </div>
-      {isControlPanelAvailable && webrtc && (
+      {isControlPanelAvailable && (
         <ControlPanel
           client={client}
           webrtc={webrtc}
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
-        />
+          chosenSources={chosenSources}
+          setChosenSources={setChosenSources}
+        />)}
+      {!isClientPresenting && (
+        <button className="StartPresentingButton" onClick={onPresenterReady}>
+        Start presenting
+    </button>
       )}
     </div>
   ) : (

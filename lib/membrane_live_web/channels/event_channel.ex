@@ -60,8 +60,6 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
              {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
-          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
-
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
@@ -196,29 +194,25 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"answer" => answer, "email" => email, "moderatorTopic" => moderator_topic},
         socket
       ) do
-    {:ok, socket} =
-      if answer == "accept" do
-        {:ok, _ref} =
-          Presence.update(
-            socket,
-            email,
-            &%{&1 | is_presenter: true, is_request_presenting: false}
-          )
+    if answer == "accept" do
+      {:ok, _ref} =
+        Presence.update(
+          socket,
+          email,
+          &%{&1 | is_presenter: true, is_request_presenting: false}
+        )
 
-        "event:" <> id = socket.topic
-        add_to_presenters(email, id)
-        remove_from_presenting_requests(email, id)
-        join_event(socket)
-      else
-        {:ok, _ref} =
-          Presence.update(
-            socket,
-            email,
-            &%{&1 | is_request_presenting: false}
-          )
-
-        {:ok, socket}
-      end
+      "event:" <> id = socket.topic
+      add_to_presenters(email, id)
+      remove_from_presenting_requests(email, id)
+    else
+      {:ok, _ref} =
+        Presence.update(
+          socket,
+          email,
+          &%{&1 | is_request_presenting: false}
+        )
+    end
 
     %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
 
@@ -226,6 +220,20 @@ defmodule MembraneLiveWeb.EventChannel do
       :name => name,
       :answer => answer
     })
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_ready",
+        %{"email" => email},
+        socket
+      ) do
+    IO.inspect("presenter_ready")
+    "event:" <> id = socket.topic
+    add_to_presenters(email, id)
+    remove_from_presenting_requests(email, id)
+    {:ok, socket} = join_event(socket)
 
     {:noreply, socket}
   end

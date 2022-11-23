@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client, Toast } from "../types";
+import type { Client, Mode, Toast } from "../types";
 import {
   QuestionCircle,
   CrossSmall,
@@ -20,7 +20,8 @@ export const presenterPopup = (
   toast: Toast,
   client: Client,
   eventChannel: Channel,
-  moderatorTopic: string
+  moderatorTopic: string,
+  setMode,
 ) => {
   let answer = "reject";
 
@@ -38,6 +39,7 @@ export const presenterPopup = (
           onClick={() => {
             answer = "accept";
             closeToast(toast, thisToast);
+            setMode("presenters");
           }}
         >
           YES

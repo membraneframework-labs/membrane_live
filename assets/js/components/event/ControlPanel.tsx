@@ -35,13 +35,13 @@ import {
 import {
   shareScreen,
   changeSource,
-  changeTrackIsEnabled,
-  getCurrentDeviceName,
+  changeTrackIsEnabled as rtcChangeTrackIsEnabled,
   getSources,
   Sources,
   SourceType,
   stopShareScreen,
-  checkTrackIsEnabled,
+  checkTrackIsEnabled as rtcCheckTrackIsEnabled,
+  SourcesInfo,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
@@ -157,10 +157,12 @@ const useRerender = () => {
 
 type ControlPanelProps = {
   client: Client;
-  webrtc: MembraneWebRTC;
+  webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
+  chosenSources: SourcesInfo;
+  setChosenSources: React.Dispatch<React.SetStateAction<SourcesInfo>>;
 };
 
 const ControlPanel = ({
@@ -169,23 +171,52 @@ const ControlPanel = ({
   eventChannel,
   playerCallback,
   setMode,
+  chosenSources,
+  setChosenSources,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
 
-  const updateSources = async () => {
+  const updateAvailableSources = async () => {
     const sources = await getSources();
-    if (sources != null) setSources(sources);
+    if (sources != null) {
+      setSources(sources);
+      const video = chosenSources.video === undefined ? sources.video[0] : chosenSources.video;
+      const audio = chosenSources.audio === undefined ? sources.audio[0] : chosenSources.audio;
+        setChosenSources({ ...chosenSources, video: video, audio: audio });
+    }
   };
 
+  const updateChosenSources = async (sourceType, deviceId) => {
+    const device = sources[sourceType].find((source) => source.deviceId === deviceId);
+    console.log("updateChosenSources", sourceType, deviceId, device);
+
+    setChosenSources({...chosenSources, [sourceType]: device});
+    if (webrtc != null) {
+      changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
+            rerender();
+          });
+    }
+  }
+
+  const changeTrackIsEnabled = async (sourceType) => {
+    setChosenSources({...chosenSources, enabled: {...chosenSources.enabled, [sourceType]: !chosenSources.enabled[sourceType]}});
+    rtcChangeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
+        rerender();
+  }
+
+  const checkTrackIsEnabled = (sourceType) => {
+    return chosenSources.enabled[sourceType];
+  }
+
   useEffect(() => {
-    updateSources();
+    updateAvailableSources();
   }, []);
 
   useEffect(() => {
-    navigator.mediaDevices.ondevicechange = updateSources;
+    navigator.mediaDevices.ondevicechange = updateAvailableSources;
 
     return () => {
       navigator.mediaDevices.ondevicechange = null;
@@ -197,31 +228,25 @@ const ControlPanel = ({
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(client, sourceType)}
+        currentSourceName={chosenSources[sourceType]?.deviceId}
         sources={sources[sourceType]}
-        onSelectSource={(deviceId) => {
-          changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
-            rerender();
-          });
-        }}
+        onSelectSource={(deviceId) => {updateChosenSources(sourceType, deviceId)}         
+        }
       />
     );
   };
 
-  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => {
+  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => { 
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(client, sourceType) ? (
+           checkTrackIsEnabled(sourceType) ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
-        onClick={() => {
-          changeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
-          rerender();
-        }}
+        onClick={() => {changeTrackIsEnabled(sourceType) }}
       />
     );
   };

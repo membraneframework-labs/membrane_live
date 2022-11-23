@@ -9,6 +9,16 @@ export type Sources = {
   audio: MediaDeviceInfo[];
   video: MediaDeviceInfo[];
 };
+
+export type SourcesInfo = {
+  audio: MediaDeviceInfo | undefined;
+  video: MediaDeviceInfo | undefined;
+  enabled: {
+    audio: boolean;
+    video: boolean;
+  }
+}
+
 export type SourceType = "audio" | "video";
 
 export type MergedScreenRef = {
@@ -33,7 +43,7 @@ export const findTrackByType = (client: Client, sourceType: SourceType) => {
 };
 
 export const changeTrackIsEnabled = (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
@@ -43,7 +53,7 @@ export const changeTrackIsEnabled = (
       ? mergedScreenRef.cameraTrack
       : findTrackByType(client, sourceType);
   if (track) track.enabled = !track.enabled;
-  if (sourceType == "video" && mergedScreenRef.cameraTrack) {
+  if (webrtc && sourceType == "video" && mergedScreenRef.cameraTrack) {
     shareScreen(webrtc, client, playerCallback);
   }
 };
@@ -98,23 +108,9 @@ export const setSourceById = async (
 export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
-  playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
+  playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
+  sourcesInfo: SourcesInfo,
 ) => {
-  await askForPermissions();
-  presenterArea[client.email] = new MediaStream();
-
-  const sources = await getSources();
-  const defaults: { audio: MediaDeviceInfo | undefined; video: MediaDeviceInfo | undefined } = {
-    audio: sources?.audio[0],
-    video: sources?.video[0],
-  };
-
-  if (defaults.audio)
-    await setSourceById(client, defaults.audio.deviceId, "audio", playerCallbacks[client.email]);
-
-  if (defaults.video)
-    await setSourceById(client, defaults.video.deviceId, "video", playerCallbacks[client.email]);
-
   const onError = (error: string) => {
     console.log(error);
   };
@@ -122,6 +118,7 @@ export const connectWebrtc = async (
   const webrtc = new MembraneWebRTC({
     callbacks: {
       onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
+        console.log("onSendMediaEvent", mediaEvent);
         webrtcChannel?.push("mediaEvent", { data: mediaEvent });
       },
       onConnectionError: () => {
@@ -137,6 +134,7 @@ export const connectWebrtc = async (
             1500
           );
         });
+        console.log("join success");
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
@@ -170,6 +168,7 @@ export const connectWebrtc = async (
 
   webrtcChannel?.on("mediaEvent", (event: { data: string }) => {
     webrtc.receiveMediaEvent(event.data);
+    console.log("media event received");
   });
   return webrtc;
 };
@@ -303,7 +302,7 @@ const removeStream = (client: Client) => {
   delete presenterArea[client.email];
 };
 
-const askForPermissions = async (): Promise<void> => {
+export const askForPermissions = async (): Promise<void> => {
   const hasVideoInput: boolean = (await navigator.mediaDevices.enumerateDevices()).some(
     (device) => device.kind === "videoinput"
   );
