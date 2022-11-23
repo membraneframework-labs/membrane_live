@@ -28,14 +28,7 @@ export const presenterPopup = (
   const thisToast = toast({
     duration: 15_000,
     onCloseComplete: () => {
-      sendAnswer(
-        toast,
-        thisToast,
-        eventChannel,
-        answer,
-        client.email,
-        moderatorTopic
-      );
+      sendAnswer(toast, thisToast, eventChannel, answer, client.email, moderatorTopic);
     },
     render: () => (
       <div className="Popup">
@@ -116,12 +109,7 @@ export const deleteEventPopup = (toast: Toast, uuid: string) => {
   });
 };
 
-const getToast = (
-  toast: Toast,
-  icon: iconType,
-  text: string,
-  duration: number
-) => {
+const getToast = (toast: Toast, icon: iconType, text: string, duration: number) => {
   const thisToast = toast({
     duration: duration,
     position: "top",
@@ -139,11 +127,7 @@ const getToast = (
   });
 };
 
-export const getErrorToast = (
-  toast: Toast,
-  text: string,
-  duration = 10_000
-) => {
+export const getErrorToast = (toast: Toast, text: string, duration = 10_000) => {
   getToast(toast, <WarningCircle className="PopupIcon" />, text, duration);
 };
 
