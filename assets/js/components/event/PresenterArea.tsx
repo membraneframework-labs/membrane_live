@@ -24,23 +24,14 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [isClientPresenting, setIsClientPresenting] = useState(false);
 
-  useEffect(() => {
-    const isClientPresenter = client.email in presenters;
-    if (isClientPresenter && !isClientPresenting) {
-      setIsControlPanelAvailable(true);
-    } else if (!webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting) {
-      webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPresenters).then((value) => {
-        webrtc = value;
-        setIsControlPanelAvailable(true);
-        webrtcConnecting = false;
+  const onPresenterReady = () => {
+    setIsClientPresenting(true);
+
+    eventChannel &&
+      eventChannel.push("presenter_ready", {
+        email: client.email,
       });
-    } else if (webrtc != null && !isClientPresenter) {
-      leaveWebrtc(webrtc, client, eventChannel);
-      webrtc = null;
-      setIsControlPanelAvailable(false);
-    }
-  }, [presenters, isClientPresenting]);
+  };
 
   useEffect(() => {
     askForPermissions();
@@ -48,28 +39,44 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   }, []);
 
   useEffect(() => {
+    const isClientPresenter = client.email in presenters;
+    const clientWantsToConnect =
+      !webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting;
+    const clientShouldDisconnect = webrtc != null && !isClientPresenter;
+
+    if (isClientPresenter && !isClientPresenting) {
+      setIsControlPanelAvailable(true);
+    } else if (clientWantsToConnect) {
+      webrtcConnecting = true;
+      connectWebrtc(eventChannel, client, setPresenters).then((value) => {
+        webrtc = value;
+        setIsControlPanelAvailable(true);
+        webrtcConnecting = false;
+      });
+    } else if (webrtc != null && clientShouldDisconnect) {
+      leaveWebrtc(webrtc, client, eventChannel);
+      webrtc = null;
+      setIsControlPanelAvailable(false);
+    }
+  }, [presenters, isClientPresenting]);
+
+  useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
 
-  const onPresenterReady = () => {
-    setIsClientPresenting(true);
-
-    eventChannel.push("presenter_ready", {
-      email: client.email,
-    });
-  };
-
   useEffect(() => {
-    Object.values(presenters).forEach((presenter) => {
-      if (presenter.status == "connecting" && presenter.connectCallbacks.length > 0) {
+    Object.values(presenters)
+      .filter(
+        (presenter) => presenter.status == "connecting" && presenter.connectCallbacks.length > 0
+      )
+      .forEach((presenter) => {
         const playerCallback = playerCallbacks[presenter.email];
         presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
         setPresenters({
           ...presenters,
           [presenter.email]: { ...presenter, connectCallbacks: [] },
         });
-      }
-    });
+      });
   }, [presenters]);
 
   const visiblePresenters = Object.values(presenters).filter(

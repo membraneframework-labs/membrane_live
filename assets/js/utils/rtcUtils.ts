@@ -125,7 +125,6 @@ export const connectWebrtc = async (
             1500
           );
           setPresenters((prev) => {
-            console.log("prev", prev);
             return { ...prev, [client.email]: { ...prev[client.email], status: "connecting" } };
           });
         });
