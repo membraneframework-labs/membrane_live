@@ -60,12 +60,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
         {mode == "hls" && (
           <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
         )}
-        <PresenterArea
-          client={client}
-          eventChannel={eventChannel}
-          mode={mode}
-          setMode={setMode}
-        />
+        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>
   );

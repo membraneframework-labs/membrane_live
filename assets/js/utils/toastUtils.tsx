@@ -21,7 +21,7 @@ export const presenterPopup = (
   client: Client,
   eventChannel: Channel,
   moderatorTopic: string,
-  setMode,
+  setMode
 ) => {
   let answer = "reject";
 

@@ -84,7 +84,13 @@ const Event = () => {
       )}
       {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
         <div className="MainGrid">
-          <StreamArea client={client} eventChannel={eventChannel} privateChannel={privateChannel} mode={mode} setMode={setMode} />
+          <StreamArea
+            client={client}
+            eventChannel={eventChannel}
+            privateChannel={privateChannel}
+            mode={mode}
+            setMode={setMode}
+          />
           {screenType.device == "desktop" && (
             <ParticipantsList client={client} eventChannel={eventChannel} />
           )}

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { connectWebrtc, leaveWebrtc, SourceType, SourcesInfo, presenterArea, askForPermissions, setSourceById} from "../../utils/rtcUtils";
+import {
+  connectWebrtc,
+  leaveWebrtc,
+  SourceType,
+  SourcesInfo,
+  presenterArea,
+  askForPermissions,
+  setSourceById,
+} from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
@@ -27,8 +35,11 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [presenters, setPresenters] = useState<Presenter[]>([]);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [isClientPresenting, setIsClientPresenting] = useState(false);
-  const [chosenSources, setChosenSources] = useState<SourcesInfo>(
-    { audio: undefined, video: undefined, enabled: {video: true, audio: true}});
+  const [chosenSources, setChosenSources] = useState<SourcesInfo>({
+    audio: undefined,
+    video: undefined,
+    enabled: { video: true, audio: true },
+  });
 
   useEffect(() => {
     const isClientPresenter = includesKey(presenters, client.email);
@@ -52,7 +63,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   useEffect(() => {
     askForPermissions();
     presenterArea[client.email] = new MediaStream();
-    
+
     console.log("sources", chosenSources);
 
     if (chosenSources.audio && chosenSources.enabled.audio)
@@ -68,7 +79,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   const onPresenterReady = () => {
     setIsClientPresenting(true);
-  
+
     console.log("presenter_ready push");
     eventChannel.push("presenter_ready", {
       email: client.email,
@@ -99,11 +110,12 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           setMode={setMode}
           chosenSources={chosenSources}
           setChosenSources={setChosenSources}
-        />)}
+        />
+      )}
       {!isClientPresenting && (
         <button className="StartPresentingButton" onClick={onPresenterReady}>
-        Start presenting
-    </button>
+          Start presenting
+        </button>
       )}
     </div>
   ) : (

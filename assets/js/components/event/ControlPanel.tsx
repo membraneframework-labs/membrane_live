@@ -185,7 +185,7 @@ const ControlPanel = ({
       setSources(sources);
       const video = chosenSources.video === undefined ? sources.video[0] : chosenSources.video;
       const audio = chosenSources.audio === undefined ? sources.audio[0] : chosenSources.audio;
-        setChosenSources({ ...chosenSources, video: video, audio: audio });
+      setChosenSources({ ...chosenSources, video: video, audio: audio });
     }
   };
 
@@ -193,23 +193,26 @@ const ControlPanel = ({
     const device = sources[sourceType].find((source) => source.deviceId === deviceId);
     console.log("updateChosenSources", sourceType, deviceId, device);
 
-    setChosenSources({...chosenSources, [sourceType]: device});
+    setChosenSources({ ...chosenSources, [sourceType]: device });
     if (webrtc != null) {
       changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
-            rerender();
-          });
+        rerender();
+      });
     }
-  }
+  };
 
   const changeTrackIsEnabled = async (sourceType) => {
-    setChosenSources({...chosenSources, enabled: {...chosenSources.enabled, [sourceType]: !chosenSources.enabled[sourceType]}});
+    setChosenSources({
+      ...chosenSources,
+      enabled: { ...chosenSources.enabled, [sourceType]: !chosenSources.enabled[sourceType] },
+    });
     rtcChangeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
-        rerender();
-  }
+    rerender();
+  };
 
   const checkTrackIsEnabled = (sourceType) => {
     return chosenSources.enabled[sourceType];
-  }
+  };
 
   useEffect(() => {
     updateAvailableSources();
@@ -230,23 +233,26 @@ const ControlPanel = ({
         mainText={`${sourceType} source`}
         currentSourceName={chosenSources[sourceType]?.deviceId}
         sources={sources[sourceType]}
-        onSelectSource={(deviceId) => {updateChosenSources(sourceType, deviceId)}         
-        }
+        onSelectSource={(deviceId) => {
+          updateChosenSources(sourceType, deviceId);
+        }}
       />
     );
   };
 
-  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => { 
+  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => {
     return (
       <GenericButton
         icon={
-           checkTrackIsEnabled(sourceType) ? (
+          checkTrackIsEnabled(sourceType) ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
-        onClick={() => {changeTrackIsEnabled(sourceType) }}
+        onClick={() => {
+          changeTrackIsEnabled(sourceType);
+        }}
       />
     );
   };

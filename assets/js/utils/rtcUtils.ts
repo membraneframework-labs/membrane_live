@@ -16,8 +16,8 @@ export type SourcesInfo = {
   enabled: {
     audio: boolean;
     video: boolean;
-  }
-}
+  };
+};
 
 export type SourceType = "audio" | "video";
 
@@ -109,7 +109,7 @@ export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
-  sourcesInfo: SourcesInfo,
+  sourcesInfo: SourcesInfo
 ) => {
   const onError = (error: string) => {
     console.log(error);
