@@ -3,7 +3,7 @@ import {
   connectWebrtc,
   connectPresentersTracks,
   leaveWebrtc,
-  presenterArea,
+  presenterStreams,
   askForPermissions,
 } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
@@ -63,10 +63,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
     const clientIsPresenterWithNoMediaStream =
-      clientStatus === "idle" && presenterArea[client.email] === undefined;
+      clientStatus === "idle" && presenterStreams[client.email] === undefined;
     if (clientIsPresenterWithNoMediaStream) {
       askForPermissions();
-      presenterArea[client.email] = new MediaStream();
+      presenterStreams[client.email] = new MediaStream();
     }
 
     const tryToConnectPresenter =

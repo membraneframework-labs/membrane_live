@@ -16,7 +16,7 @@ export type MergedScreenRef = {
   refreshId: NodeJS.Timeout | undefined;
 };
 
-export const presenterArea: { [key: string]: MediaStream } = {};
+export const presenterStreams: { [key: string]: MediaStream } = {};
 export const mergedScreenRef: MergedScreenRef = {
   screenTrack: undefined,
   cameraTrack: undefined,
@@ -27,7 +27,7 @@ export const mergedScreenRef: MergedScreenRef = {
 const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
 
 export const findTrackByType = (client: Client, sourceType: SourceType) => {
-  return presenterArea[client.email].getTracks().find((elem) => elem.kind == sourceType);
+  return presenterStreams[client.email].getTracks().find((elem) => elem.kind == sourceType);
 };
 
 export const changeTrackIsEnabled = (
@@ -111,10 +111,10 @@ export const connectWebrtc = async (
         onError("Error while connecting to WebRTC");
       },
       onJoinSuccess: () => {
-        presenterArea[client.email].getTracks().forEach((track) => {
+        presenterStreams[client.email].getTracks().forEach((track) => {
           sourceIds[track.kind] = webrtc.addTrack(
             track,
-            presenterArea[client.email],
+            presenterStreams[client.email],
             {},
             undefined,
             1500
@@ -146,7 +146,7 @@ export const connectWebrtc = async (
         // do nothing
       },
       onTrackRemoved: () => {
-        if (presenterArea[client.email].getTracks().length == 0) {
+        if (presenterStreams[client.email].getTracks().length == 0) {
           setPresenters((prev) => {
             return {
               ...prev,
@@ -212,7 +212,7 @@ export const changeSource = async (
     const newTrack = findTrackByType(client, sourceType);
     if (!newTrack) return;
     if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
-    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterArea[client.email]);
+    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   }
 };
 
@@ -222,7 +222,7 @@ export const leaveWebrtc = (
   webrtcChannel: Channel | undefined
 ) => {
   webrtcChannel?.off("mediaEvent");
-  presenterArea[client.email].getTracks().forEach((track) => track.stop());
+  presenterStreams[client.email].getTracks().forEach((track) => track.stop());
   mergedScreenRef.cameraTrack?.stop();
   removeMergedStream();
   removeStream(client);
@@ -236,11 +236,11 @@ export const shareScreen = async (
 ): Promise<boolean> => {
   let mergedStream: MediaStream;
 
-  const videoTrackLabel = presenterArea[client.email].getVideoTracks()[0].label;
+  const videoTrackLabel = presenterStreams[client.email].getVideoTracks()[0].label;
   if (videoTrackLabel != null) mergedScreenRef.deviceName = videoTrackLabel;
 
   try {
-    mergedStream = await getMergedTracks(mergedScreenRef, presenterArea[client.email]);
+    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[client.email]);
   } catch (err) {
     console.log(err, "(Propably clicked cancel on the screen sharing window)");
     removeMergedStream();
@@ -260,7 +260,7 @@ export const shareScreen = async (
   if (!webrtc) return true;
 
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-  else sourceIds["video"] = webrtc.addTrack(newTrack, presenterArea[client.email]);
+  else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   return true;
 };
 
@@ -276,7 +276,7 @@ export const stopShareScreen = (
     const newTrack = findTrackByType(client, "video");
     if (!webrtc || !newTrack) return;
     if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterArea[client.email]);
+    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   }
 };
 
@@ -299,15 +299,15 @@ const addOrReplaceTrack = (
   track: MediaStreamTrack,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  if (!presenterArea[client.email]) presenterArea[client.email] = new MediaStream();
+  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
   const curTrack = findTrackByType(client, track.kind as SourceType);
 
   if (curTrack && curTrack.id !== track.id && curTrack.id !== mergedScreenRef.screenTrack?.id) {
     curTrack.stop();
   }
 
-  curTrack && presenterArea[client.email].removeTrack(curTrack);
-  presenterArea[client.email].addTrack(track);
+  curTrack && presenterStreams[client.email].removeTrack(curTrack);
+  presenterStreams[client.email].addTrack(track);
 
   playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
 };
@@ -325,7 +325,7 @@ const removeMergedStream = () => {
 };
 
 const removeStream = (client: Client) => {
-  delete presenterArea[client.email];
+  delete presenterStreams[client.email];
 };
 
 export const askForPermissions = async (): Promise<void> => {
