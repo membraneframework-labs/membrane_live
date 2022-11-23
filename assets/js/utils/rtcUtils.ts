@@ -101,7 +101,6 @@ export const setSourceById = async (
 export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
-  presenters: { [key: string]: Presenter },
   setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
 ) => {
   const onError = (error: string) => {
@@ -125,9 +124,9 @@ export const connectWebrtc = async (
             undefined,
             1500
           );
-          setPresenters({
-            ...presenters,
-            [client.email]: { ...presenters[client.email], status: "connecting" },
+          setPresenters((prev) => {
+            console.log("prev", prev);
+            return { ...prev, [client.email]: { ...prev[client.email], status: "connecting" } };
           });
         });
       },
@@ -140,13 +139,15 @@ export const connectWebrtc = async (
             addOrReplaceTrack(peer.metadata, track, playerCallback);
           };
 
-          presenters[peer.metadata.email].connectCallbacks.push(callback);
-          setPresenters({
-            ...presenters,
-            [peer.metadata.email]: {
-              ...presenters[peer.metadata.email],
-              status: "connecting",
-            },
+          setPresenters((prev) => {
+            return {
+              ...prev,
+              [peer.metadata.email]: {
+                ...prev[peer.metadata.email],
+                status: "connecting",
+                connectCallbacks: prev[peer.metadata.email].connectCallbacks.concat(callback),
+              },
+            };
           });
         }
       },
@@ -155,9 +156,11 @@ export const connectWebrtc = async (
       },
       onTrackRemoved: () => {
         if (presenterArea[client.email].getTracks().length == 0) {
-          setPresenters({
-            ...presenters,
-            [client.email]: { ...presenters[client.email], status: "idle" },
+          setPresenters((prev) => {
+            return {
+              ...prev,
+              [client.email]: { ...prev[client.email], status: "idle" },
+            };
           });
         }
       },

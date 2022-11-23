@@ -30,7 +30,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
       setIsControlPanelAvailable(true);
     } else if (!webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting) {
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, presenters, setPresenters).then((value) => {
+      connectWebrtc(eventChannel, client, setPresenters).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
