@@ -58,11 +58,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     askForPermissions();
     presenterArea[client.email] = new MediaStream();
 
-    if (chosenSources.audio)
-      setSourceById(client, chosenSources.audio.deviceId, "audio", playerCallbacks[client.email]);
-
-    if (chosenSources.video)
-      setSourceById(client, chosenSources.video.deviceId, "video", playerCallbacks[client.email]);
   }, [chosenSources]);
 
   useEffect(() => {
@@ -79,9 +74,13 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     Object.values(presenters).forEach((presenter) => {
-      if (presenter.status == "connecting" && presenter.connect) {
-        const playerCallback = playerCallbacks[presenter.email];
-        presenter.connect(playerCallback);
+      if (presenter.status == "connecting" && presenter.connectCallbacks.length > 0) {
+      const playerCallback = playerCallbacks[presenter.email];
+        presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
+        setPresenters({
+          ...presenters,
+          [presenter.email]: { ...presenter, connectCallbacks: [] },
+        });
       }
     });
   }, [presenters]);
@@ -113,7 +112,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
               name: client.name,
               email: client.email,
               status: "idle",
-              connect: undefined,
+              connectCallbacks: [],
             }
           }
           playerCallbacks={playerCallbacks}

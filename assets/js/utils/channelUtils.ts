@@ -114,7 +114,7 @@ export const syncPresenters = (
             name: metas.metas[0].name,
             email: email,
             status: "idle",
-            connect: undefined,
+            connectCallbacks: [],
           };
       });
       setPresenters(presenters);

@@ -132,7 +132,6 @@ export const connectWebrtc = async (
             [client.email]: { ...presenters[client.email], status: "connecting" },
           });
         });
-        console.log("join success");
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
@@ -143,12 +142,12 @@ export const connectWebrtc = async (
             addOrReplaceTrack(peer.metadata, track, playerCallback);
           };
 
+          presenters[peer.metadata.email].connectCallbacks.push(callback);
           setPresenters({
             ...presenters,
             [peer.metadata.email]: {
               ...presenters[peer.metadata.email],
               status: "connecting",
-              connect: callback,
             },
           });
         }
@@ -288,6 +287,7 @@ const addOrReplaceTrack = (
   track: MediaStreamTrack,
   playerCallback: (sourceType: SourceType) => void
 ) => {
+  console.log("add or replace track", track, client, playerCallback);
   if (!presenterArea[client.email]) presenterArea[client.email] = new MediaStream();
   const curTrack = findTrackByType(client, track.kind as SourceType);
 

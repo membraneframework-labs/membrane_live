@@ -42,6 +42,9 @@ import {
   stopShareScreen,
   checkTrackIsEnabled,
   SourcesInfo,
+  setSourceById,
+  presenterArea,
+  askForPermissions,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
@@ -185,13 +188,15 @@ const ControlPanel = ({
       setSources(sources);
       const video = chosenSources.video === undefined ? sources.video[0] : chosenSources.video;
       const audio = chosenSources.audio === undefined ? sources.audio[0] : chosenSources.audio;
-      setChosenSources({ ...chosenSources, video: video, audio: audio });
+
+      askForPermissions();
+    setSourceById(client, audio.deviceId, "audio", playerCallback);
+    setSourceById(client, video.deviceId, "video", playerCallback);
     }
   };
 
   const updateChosenSources = async (sourceType, deviceId) => {
     const device = sources[sourceType].find((source) => source.deviceId === deviceId);
-    console.log("updateChosenSources", sourceType, deviceId, device);
 
     setChosenSources({ ...chosenSources, [sourceType]: device });
     changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
