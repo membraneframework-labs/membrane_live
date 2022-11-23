@@ -145,7 +145,7 @@ const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
   setMode: React.Dispatch<React.SetStateAction<Mode>>,
-  setIsClientPresenting: React.Dispatch<React.SetStateAction<Boolean>>,
+  setIsClientPresenting: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   eventChannel?.push("presenter_remove", { email: client.email });
   setIsClientPresenting(false);
@@ -163,7 +163,7 @@ type ControlPanelProps = {
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
-  setIsClientPresenting: React.Dispatch<React.SetStateAction<Boolean>>;
+  setIsClientPresenting: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ControlPanel = ({
