@@ -79,8 +79,8 @@ defmodule MembraneLive.Webinars do
     "/event/#{webinar.uuid}"
   end
 
-  @spec check_is_user_moderator(binary(), binary()) :: boolean()
-  def check_is_user_moderator(user_uuid, webinar_uuid) do
+  @spec is_user_moderator?(binary(), binary()) :: boolean()
+  def is_user_moderator?(user_uuid, webinar_uuid) do
     case get_webinar(webinar_uuid) do
       {:ok, webinar} -> user_uuid == webinar.moderator_id
       {:error, :no_webinar} -> false

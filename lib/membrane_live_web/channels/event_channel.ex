@@ -54,26 +54,26 @@ defmodule MembraneLiveWeb.EventChannel do
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
-             is_moderator <- Webinars.check_is_user_moderator(uuid, id),
-             socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id}),
+             is_moderator? <- Webinars.is_user_moderator?(uuid, id),
+             socket <- Socket.assign(socket, %{is_moderator?: is_moderator?, event_id: id}),
              [] <- Presence.get_by_key(socket, email),
-             {:ok, socket} <- create_event(socket),
-             {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
+             {:ok, is_presenter?} <- check_is_user_presenter(email, reloaded, id),
+             {:ok, socket} <- create_event(socket, is_presenter? || is_moderator?),
              {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
-          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
+          {:ok, socket} = if is_presenter?, do: join_event(socket), else: {:ok, socket}
 
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
-              is_moderator: is_moderator,
-              is_presenter: is_presenter,
+              is_moderator: is_moderator?,
+              is_presenter: is_presenter?,
               is_request_presenting: is_request_presenting,
               is_auth: true
             })
 
-          if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
+          if is_moderator?, do: send(socket.assigns.event_pid, {:moderator, self()})
 
-          {:ok, %{is_moderator: is_moderator}, socket}
+          {:ok, %{is_moderator: is_moderator?}, socket}
         else
           %{metas: _presence} ->
             {:error,
@@ -276,10 +276,10 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp create_event(socket) do
+  defp create_event(socket, can_create_event? \\ true) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        if socket.assigns.is_moderator,
+        if can_create_event?,
           do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
           else: {:error, :non_moderator}
 
@@ -339,7 +339,7 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp check_if_presenter(email, reloaded, id),
+  defp check_is_user_presenter(email, reloaded, id),
     do: check_if_exist_in_ets(:presenters, email, reloaded, id)
 
   defp check_if_request_presenting(email, reloaded, id),
