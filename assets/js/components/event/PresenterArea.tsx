@@ -10,7 +10,7 @@ import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import type { Presenter, Client, Mode, SourceType } from "../../types";
+import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../../types";
 import "../../../css/event/presenterarea.css";
 import { Channel } from "phoenix";
 
@@ -28,17 +28,17 @@ type PresenterAreaProps = {
 const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<{ [key: string]: Presenter }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
-  const [isClientPresenting, setIsClientPresenting] = useState(false);
+  const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
 
-  const idleClient = {
+  const disconnectedPresenter = {
     name: client.name,
     email: client.email,
-    status: "idle",
+    status: "disconnected",
     connectCallbacks: [],
   };
 
   const onPresenterReady = () => {
-    setIsClientPresenting(true);
+    setClientStatus("connected");
 
     eventChannel?.push("presenter_ready", {
       email: client.email,
@@ -47,49 +47,59 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   const getCurrentPresenter = () => {
     return (
-      Object.values(presenters).find((presenter) => presenter.email == client.email) || idleClient
+      Object.values(presenters).find((presenter) => presenter.email == client.email) ||
+      disconnectedPresenter
     );
   };
 
   useEffect(() => {
-    const isClientPresenter = client.email in presenters;
-    const clientWantsToConnect =
-      !webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting;
-    const clientShouldDisconnect = webrtc != null && !isClientPresenter;
+    if (client.email in presenters === false) {
+      setClientStatus("not_presenter");
+    } else if (client.email in presenters && clientStatus == "not_presenter") {
+      setClientStatus("idle");
+    }
+  }, [presenters]);
 
-    if (isClientPresenter && !isClientPresenting) {
+  useEffect(() => {
+    connectPresentersTracks(playerCallbacks, setPresenters);
+    const clientIsPresenterWithNoMediaStream =
+      clientStatus === "idle" && presenterArea[client.email] === undefined;
+    if (clientIsPresenterWithNoMediaStream) {
+      askForPermissions();
+      presenterArea[client.email] = new MediaStream();
+    }
+
+    const tryToConnectPresenter =
+      !webrtcConnecting && webrtc == null && clientStatus == "connected";
+    const clientShouldDisconnect =
+      webrtc != null && ["idle", "not_presenter"].includes(clientStatus);
+
+    if (clientStatus === "idle") {
       setIsControlPanelAvailable(true);
-    } else if (clientWantsToConnect) {
+    } else if (tryToConnectPresenter) {
+      setIsControlPanelAvailable(true);
       webrtcConnecting = true;
       connectWebrtc(eventChannel, client, setPresenters).then((value) => {
         webrtc = value;
-        setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
     } else if (webrtc != null && clientShouldDisconnect) {
+      setIsControlPanelAvailable(false);
       leaveWebrtc(webrtc, client, eventChannel);
       webrtc = null;
-      setIsControlPanelAvailable(false);
-      setIsClientPresenting(false);
+    } else if (webrtc != null) {
+      setIsControlPanelAvailable(true);
     }
-  }, [presenters, isClientPresenting]);
+  }, [presenters, clientStatus]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
 
-  useEffect(() => {
-    connectPresentersTracks(playerCallbacks, setPresenters);
-    const clientIsPresenterWithNoMediaStream =
-      client.email in presenters && presenterArea[client.email] == undefined;
-    if (clientIsPresenterWithNoMediaStream) {
-      askForPermissions();
-      presenterArea[client.email] = new MediaStream();
-    }
-  }, [presenters]);
-
   const visiblePresenters = Object.values(presenters).filter(
-    (presenter) => presenter.status != "idle" || presenter.email == client.email
+    (presenter) =>
+      ["connecting", "rtc_player_ready"].includes(presenter.rtcStatus) ||
+      presenter.email == client.email
   );
 
   const getRtcPlayer = (presenter: Presenter) => {
@@ -99,13 +109,14 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
         presenter={presenter}
         playerCallbacks={playerCallbacks}
         key={presenter.email}
+        setPresenters={setPresenters}
       />
     );
   };
 
-  return client.email in presenters ? (
+  return clientStatus != "not_presenter" ? (
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
-      {isClientPresenting ? (
+      {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${visiblePresenters.length}`}>
           {visiblePresenters.map((presenter) => {
             return getRtcPlayer(presenter);
@@ -123,7 +134,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           setMode={setMode}
         />
       )}
-      {!isClientPresenting && (
+      {clientStatus === "idle" && (
         <button className="StartPresentingButton" onClick={onPresenterReady}>
           Start presenting
         </button>

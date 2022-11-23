@@ -119,9 +119,6 @@ export const connectWebrtc = async (
             undefined,
             1500
           );
-          setPresenters((prev) => {
-            return { ...prev, [client.email]: { ...prev[client.email], status: "connecting" } };
-          });
         });
       },
       onJoinError: () => {
@@ -138,7 +135,7 @@ export const connectWebrtc = async (
               ...prev,
               [peer.metadata.email]: {
                 ...prev[peer.metadata.email],
-                status: "connecting",
+                rtcStatus: "connecting",
                 connectCallbacks: prev[peer.metadata.email].connectCallbacks.concat(callback),
               },
             };
@@ -188,7 +185,8 @@ export const connectPresentersTracks = async (
   setPresenters((presenters) => {
     Object.values(presenters)
       .filter(
-        (presenter) => presenter.status == "connecting" && presenter.connectCallbacks.length > 0
+        (presenter) =>
+          presenter.rtcStatus == "rtc_player_ready" && presenter.connectCallbacks.length > 0
       )
       .forEach((presenter) => {
         const playerCallback = playerCallbacks[presenter.email];

@@ -11,10 +11,14 @@ export type Participant = {
 
 export type SourceType = "audio" | "video";
 
+export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
+
+export type ClientStatus = "not_presenter" | "idle" | "connected";
+
 export type Presenter = {
   name: string;
   email: string;
-  status: "idle" | "connecting" | "connected";
+  rtcStatus: RtcStatus;
   connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
 };
 

@@ -8,9 +8,10 @@ type RtcPlayerProps = {
   isMyself: boolean;
   presenter: Presenter;
   playerCallbacks: { [key: string]: (sourceType: SourceType) => void };
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>;
 };
 
-const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -26,6 +27,13 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => 
   useEffect(() => {
     connectStreams("audio");
     connectStreams("video");
+
+    setPresenters((prev) => {
+      return {
+        ...prev,
+        [presenter.email]: { ...prev[presenter.email], rtcStatus: "rtc_player_ready" },
+      };
+    });
   }, []);
 
   return (
