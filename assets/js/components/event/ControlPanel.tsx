@@ -187,7 +187,7 @@ const ControlPanel = ({
       const audio = getCurrentDeviceName(client, "audio");
       if (audio === undefined)
         setSourceById(client, sources.audio[0].deviceId, "audio", playerCallback);
-      
+
       const video = getCurrentDeviceName(client, "video");
       if (video === undefined)
         setSourceById(client, sources.video[0].deviceId, "video", playerCallback);

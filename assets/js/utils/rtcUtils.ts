@@ -241,9 +241,11 @@ export const shareScreen = async (
     addOrReplaceTrack(client, track, playerCallback);
   });
 
+  if (!webrtc) return true;
+
   const newTrack = findTrackByType(client, "video");
 
-  if (!webrtc || !newTrack) {
+  if (!newTrack) {
     removeMergedStream();
     return false;
   }

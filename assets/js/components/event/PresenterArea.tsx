@@ -70,7 +70,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   useEffect(() => {
     Object.values(presenters).forEach((presenter) => {
       if (presenter.status == "connecting" && presenter.connectCallbacks.length > 0) {
-      const playerCallback = playerCallbacks[presenter.email];
+        const playerCallback = playerCallbacks[presenter.email];
         presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
         setPresenters({
           ...presenters,
