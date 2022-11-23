@@ -12,6 +12,8 @@ export type Participant = {
 export type Presenter = {
   name: string;
   email: string;
+  status: "idle" | "connecting" | "connected";
+  connect: ((callback: ((sourceType: any) => void)) => void) | undefined;
 };
 
 export type Mode = "presenters" | "hls";

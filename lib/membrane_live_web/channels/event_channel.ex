@@ -229,7 +229,6 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"email" => email},
         socket
       ) do
-    IO.inspect("presenter_ready")
     "event:" <> id = socket.topic
     add_to_presenters(email, id)
     remove_from_presenting_requests(email, id)

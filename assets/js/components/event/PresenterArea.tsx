@@ -20,10 +20,6 @@ const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
 
-const includesKey = (storage: Presenter[], key: string): boolean => {
-  return storage.some((e) => e.email === key);
-};
-
 type PresenterAreaProps = {
   client: Client;
   eventChannel: Channel | undefined;
@@ -32,7 +28,7 @@ type PresenterAreaProps = {
 };
 
 const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaProps) => {
-  const [presenters, setPresenters] = useState<Presenter[]>([]);
+  const [presenters, setPresenters] = useState<{ [key: string]: Presenter }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [isClientPresenting, setIsClientPresenting] = useState(false);
   const [chosenSources, setChosenSources] = useState<SourcesInfo>({
@@ -42,13 +38,12 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   });
 
   useEffect(() => {
-    const isClientPresenter = includesKey(presenters, client.email);
+    const isClientPresenter = client.email in presenters;
     if (isClientPresenter && !isClientPresenting) {
       setIsControlPanelAvailable(true);
     } else if (!webrtcConnecting && webrtc == null && isClientPresenter && isClientPresenting) {
-      console.log("Connecting to presenter");
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, playerCallbacks, chosenSources).then((value) => {
+      connectWebrtc(eventChannel, client, playerCallbacks, chosenSources, presenters, setPresenters).then((value) => {
         webrtc = value;
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
@@ -64,8 +59,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     askForPermissions();
     presenterArea[client.email] = new MediaStream();
 
-    console.log("sources", chosenSources);
-
     if (chosenSources.audio && chosenSources.enabled.audio)
       setSourceById(client, chosenSources.audio.deviceId, "audio", playerCallbacks[client.email]);
 
@@ -80,27 +73,44 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const onPresenterReady = () => {
     setIsClientPresenting(true);
 
-    console.log("presenter_ready push");
     eventChannel.push("presenter_ready", {
       email: client.email,
-      // moderatorTopic: moderatorTopic,
     });
   };
 
-  return includesKey(presenters, client.email) ? (
+  useEffect(() => {
+    Object.values(presenters).forEach((presenter) => {
+      if (presenter.status == "connecting" && presenter.connect) {
+        const playerCallback = playerCallbacks[presenter.email];
+        presenter.connect(playerCallback);
+      }
+    });
+  }, [presenters]);
+
+  const visiblePresenters = Object.values(presenters).filter((presenter) => presenter.status != "idle" || presenter.email == client.email);
+
+  return client.email in presenters ? (
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
-      <div className={`StreamsGrid Grid${presenters.length}`}>
-        {presenters.map((presenter) => {
-          return (
-            <RtcPlayer
-              isMyself={client.email == presenter.email}
-              presenter={presenter}
-              playerCallbacks={playerCallbacks}
-              key={presenter.email}
-            />
-          );
-        })}
-      </div>
+      {isClientPresenting ? (
+        <div className={`StreamsGrid Grid${visiblePresenters.length}`}>
+          {visiblePresenters.map((presenter) => {
+            return (
+              <RtcPlayer
+                isMyself={client.email == presenter.email}
+                presenter={presenter}
+                playerCallbacks={playerCallbacks}
+                key={presenter.email}
+              />
+            );
+          })}
+        </div>) : 
+          <RtcPlayer
+          isMyself={true}
+          presenter={Object.values(presenters).find((presenter) => presenter.email == client.email) || {name: client.name, email: client.email, status: "idle", connect: undefined}}
+                playerCallbacks={playerCallbacks}
+                key={client.email}
+              />
+        }
       {isControlPanelAvailable && (
         <ControlPanel
           client={client}

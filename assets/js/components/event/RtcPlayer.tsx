@@ -14,8 +14,6 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks }: RtcPlayerProps) => 
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  console.log(videoRef, presenterArea, "player");
-
   const connectStreams = (sourceType: SourceType) => {
     if (!presenterArea[presenter.email]) return;
     if (videoRef.current && sourceType == "video")

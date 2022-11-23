@@ -21,7 +21,6 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
   const screenType = useCheckScreenType();
 
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
-    console.log("playlist_playable");
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
       setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);
