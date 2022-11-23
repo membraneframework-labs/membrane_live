@@ -41,10 +41,7 @@ import {
   SourceType,
   stopShareScreen,
   checkTrackIsEnabled,
-  SourcesInfo,
   setSourceById,
-  presenterArea,
-  askForPermissions,
   getCurrentDeviceName,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";

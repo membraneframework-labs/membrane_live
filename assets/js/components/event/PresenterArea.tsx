@@ -3,10 +3,8 @@ import {
   connectWebrtc,
   leaveWebrtc,
   SourceType,
-  SourcesInfo,
   presenterArea,
   askForPermissions,
-  setSourceById,
 } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";

@@ -1,7 +1,7 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { Client, Presenter } from "../types";
+import { Client, Presenter, SourceType } from "../types";
 import { Channel } from "phoenix";
 
 export type Sources = {
@@ -13,8 +13,6 @@ export type SourcesInfo = {
   audio: MediaDeviceInfo | undefined;
   video: MediaDeviceInfo | undefined;
 };
-
-export type SourceType = "audio" | "video";
 
 export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;

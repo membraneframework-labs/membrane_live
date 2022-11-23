@@ -9,11 +9,13 @@ export type Participant = {
   isRequestPresenting: boolean;
 };
 
+export type SourceType = "audio" | "video";
+
 export type Presenter = {
   name: string;
   email: string;
   status: "idle" | "connecting" | "connected";
-  connectCallbacks: ((callback: (sourceType: any) => void) => void)[];
+  connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
 };
 
 export type Mode = "presenters" | "hls";
