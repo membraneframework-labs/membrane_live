@@ -30,30 +30,26 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [isClientPresenting, setIsClientPresenting] = useState(false);
 
+  const idleClient = {
+    name: client.name,
+    email: client.email,
+    status: "idle",
+    connectCallbacks: [],
+  };
+
   const onPresenterReady = () => {
     setIsClientPresenting(true);
 
-    eventChannel &&
-      eventChannel.push("presenter_ready", {
-        email: client.email,
-      });
+    eventChannel?.push("presenter_ready", {
+      email: client.email,
+    });
   };
 
   const getCurrentPresenter = () => {
     return (
-      Object.values(presenters).find((presenter) => presenter.email == client.email) || {
-        name: client.name,
-        email: client.email,
-        status: "idle",
-        connectCallbacks: [],
-      }
+      Object.values(presenters).find((presenter) => presenter.email == client.email) || idleClient
     );
   };
-
-  useEffect(() => {
-    askForPermissions();
-    presenterArea[client.email] = new MediaStream();
-  }, []);
 
   useEffect(() => {
     const isClientPresenter = client.email in presenters;
@@ -83,6 +79,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
+    if (client.email in presenters && presenterArea[client.email] == undefined) {
+      askForPermissions();
+      presenterArea[client.email] = new MediaStream();
+    }
   }, [presenters]);
 
   const visiblePresenters = Object.values(presenters).filter(
@@ -118,6 +118,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
+          setIsClientPresenting={setIsClientPresenting}
         />
       )}
       {!isClientPresenting && (

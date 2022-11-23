@@ -144,9 +144,11 @@ const MenuPopover = () => {
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
-  setMode: React.Dispatch<React.SetStateAction<Mode>>
+  setMode: React.Dispatch<React.SetStateAction<Mode>>,
+  setIsClientPresenting: React.Dispatch<React.SetStateAction<Boolean>>,
 ) => {
   eventChannel?.push("presenter_remove", { email: client.email });
+  setIsClientPresenting(false);
   setMode("hls");
 };
 
@@ -161,6 +163,7 @@ type ControlPanelProps = {
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
+  setIsClientPresenting: React.Dispatch<React.SetStateAction<Boolean>>;
 };
 
 const ControlPanel = ({
@@ -169,6 +172,7 @@ const ControlPanel = ({
   eventChannel,
   playerCallback,
   setMode,
+  setIsClientPresenting,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
@@ -246,7 +250,7 @@ const ControlPanel = ({
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
             icon={<PhoneDown className="DisconnectButton" />}
-            onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
+            onClick={() => stopBeingPresenter(eventChannel, client, setMode, setIsClientPresenting)}
           />
           <GenericButton
             icon={
