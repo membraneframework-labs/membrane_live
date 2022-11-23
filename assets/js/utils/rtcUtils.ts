@@ -180,7 +180,6 @@ export const connectWebrtc = async (
 
   webrtcChannel?.on("mediaEvent", (event: { data: string }) => {
     webrtc.receiveMediaEvent(event.data);
-    console.log("media event received");
   });
   return webrtc;
 };
@@ -287,7 +286,6 @@ const addOrReplaceTrack = (
   track: MediaStreamTrack,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  console.log("add or replace track", track, client, playerCallback);
   if (!presenterArea[client.email]) presenterArea[client.email] = new MediaStream();
   const curTrack = findTrackByType(client, track.kind as SourceType);
 

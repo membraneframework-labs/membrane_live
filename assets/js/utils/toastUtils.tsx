@@ -21,7 +21,7 @@ export const presenterPopup = (
   client: Client,
   eventChannel: Channel,
   moderatorTopic: string,
-  setMode
+  setMode: React.Dispatch<React.SetStateAction<string>>
 ) => {
   let answer = "reject";
 
@@ -87,7 +87,7 @@ export const deleteEventPopup = (toast: Toast, uuid: string) => {
   const thisToast = toast({
     duration: 15_000,
     onCloseComplete: () => {
-      if (answer === "accept") deleteEvent(uuid, toast);
+      if (answer === "accept") deleteEvent(uuid, toast, false);
     },
     render: () => (
       <div className="Popup">

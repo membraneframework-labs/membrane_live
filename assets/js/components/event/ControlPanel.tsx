@@ -35,10 +35,9 @@ import {
 import {
   shareScreen,
   changeSource,
-  changeTrackIsEnabled as rtcChangeTrackIsEnabled,
+  changeTrackIsEnabled,
   getSources,
   Sources,
-  SourceType,
   stopShareScreen,
   checkTrackIsEnabled,
   setSourceById,
@@ -46,7 +45,7 @@ import {
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client } from "../../types";
+import type { Mode, Client, SourceType } from "../../types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
@@ -191,17 +190,6 @@ const ControlPanel = ({
     }
   };
 
-  const updateChosenSources = async (sourceType, deviceId) => {
-    changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
-      rerender();
-    });
-  };
-
-  const changeTrackIsEnabled = async (sourceType) => {
-    rtcChangeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
-    rerender();
-  };
-
   useEffect(() => {
     updateAvailableSources();
   }, []);
@@ -222,7 +210,9 @@ const ControlPanel = ({
         currentSourceName={getCurrentDeviceName(client, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          updateChosenSources(sourceType, deviceId);
+          changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
+            rerender();
+          });
         }}
       />
     );
@@ -239,7 +229,8 @@ const ControlPanel = ({
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(sourceType);
+          changeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
+          rerender();
         }}
       />
     );

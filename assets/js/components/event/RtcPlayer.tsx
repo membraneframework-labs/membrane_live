@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { presenterArea, SourceType } from "../../utils/rtcUtils";
+import { presenterArea } from "../../utils/rtcUtils";
 import { User1 } from "react-swm-icon-pack";
-import type { Presenter } from "../../types";
+import type { Presenter, SourceType } from "../../types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {

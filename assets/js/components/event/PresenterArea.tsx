@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  connectWebrtc,
-  leaveWebrtc,
-  SourceType,
-  presenterArea,
-  askForPermissions,
-} from "../../utils/rtcUtils";
+import { connectWebrtc, leaveWebrtc, presenterArea, askForPermissions } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import type { Presenter, Client, Mode } from "../../types";
+import type { Presenter, Client, Mode, SourceType } from "../../types";
 import "../../../css/event/presenterarea.css";
 import { Channel } from "phoenix";
 
