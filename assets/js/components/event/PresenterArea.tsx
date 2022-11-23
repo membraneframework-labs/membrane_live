@@ -70,8 +70,8 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
         setIsControlPanelAvailable(true);
         webrtcConnecting = false;
       });
-    } else if (clientShouldDisconnect) {
-      leaveWebrtc(webrtc!, client, eventChannel);
+    } else if (webrtc != null && clientShouldDisconnect) {
+      leaveWebrtc(webrtc, client, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
     }
