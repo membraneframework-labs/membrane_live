@@ -31,10 +31,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [presenters, setPresenters] = useState<{ [key: string]: Presenter }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [isClientPresenting, setIsClientPresenting] = useState(false);
-  const [chosenSources, setChosenSources] = useState<SourcesInfo>({
-    audio: undefined,
-    video: undefined,
-  });
 
   useEffect(() => {
     const isClientPresenter = client.email in presenters;
@@ -57,8 +53,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   useEffect(() => {
     askForPermissions();
     presenterArea[client.email] = new MediaStream();
-
-  }, [chosenSources]);
+  }, []);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
@@ -126,8 +121,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
-          chosenSources={chosenSources}
-          setChosenSources={setChosenSources}
         />
       )}
       {!isClientPresenting && (

@@ -45,6 +45,7 @@ import {
   setSourceById,
   presenterArea,
   askForPermissions,
+  getCurrentDeviceName,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
@@ -164,8 +165,6 @@ type ControlPanelProps = {
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
-  chosenSources: SourcesInfo;
-  setChosenSources: React.Dispatch<React.SetStateAction<SourcesInfo>>;
 };
 
 const ControlPanel = ({
@@ -174,8 +173,6 @@ const ControlPanel = ({
   eventChannel,
   playerCallback,
   setMode,
-  chosenSources,
-  setChosenSources,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
@@ -186,19 +183,18 @@ const ControlPanel = ({
     const sources = await getSources();
     if (sources != null) {
       setSources(sources);
-      const video = chosenSources.video === undefined ? sources.video[0] : chosenSources.video;
-      const audio = chosenSources.audio === undefined ? sources.audio[0] : chosenSources.audio;
 
-      askForPermissions();
-    setSourceById(client, audio.deviceId, "audio", playerCallback);
-    setSourceById(client, video.deviceId, "video", playerCallback);
+      const audio = getCurrentDeviceName(client, "audio");
+      if (audio === undefined)
+        setSourceById(client, sources.audio[0].deviceId, "audio", playerCallback);
+      
+      const video = getCurrentDeviceName(client, "video");
+      if (video === undefined)
+        setSourceById(client, sources.video[0].deviceId, "video", playerCallback);
     }
   };
 
   const updateChosenSources = async (sourceType, deviceId) => {
-    const device = sources[sourceType].find((source) => source.deviceId === deviceId);
-
-    setChosenSources({ ...chosenSources, [sourceType]: device });
     changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
       rerender();
     });
@@ -226,7 +222,7 @@ const ControlPanel = ({
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={chosenSources[sourceType]?.deviceId}
+        currentSourceName={getCurrentDeviceName(client, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
           updateChosenSources(sourceType, deviceId);
