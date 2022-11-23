@@ -70,6 +70,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
       leaveWebrtc(webrtc, client, eventChannel);
       webrtc = null;
       setIsControlPanelAvailable(false);
+      setIsClientPresenting(false);
     }
   }, [presenters, isClientPresenting]);
 
@@ -119,7 +120,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
-          setIsClientPresenting={setIsClientPresenting}
         />
       )}
       {!isClientPresenting && (
