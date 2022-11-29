@@ -150,17 +150,13 @@ const stopBeingPresenter = (
   setMode("hls");
 };
 
-const useRerender = () => {
-  const [value, setValue] = useState(0);
-  return () => setValue(value + 1);
-};
-
 type ControlPanelProps = {
   client: Client;
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
+  rerender: () => void;
 };
 
 const ControlPanel = ({
@@ -169,11 +165,11 @@ const ControlPanel = ({
   eventChannel,
   playerCallback,
   setMode,
+  rerender,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const rerender = useRerender();
 
   const updateAvailableSources = async () => {
     const sources = await getSources();

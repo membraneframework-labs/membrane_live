@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { presenterStreams } from "../../utils/rtcUtils";
-import { User1 } from "react-swm-icon-pack";
+import { checkTrackIsEnabled, presenterStreams } from "../../utils/rtcUtils";
+import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
 import type { Presenter, SourceType } from "../../types";
 import "../../../css/event/rtcplayer.css";
 
@@ -24,6 +24,9 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
   };
   playerCallbacks[presenter.email] = connectStreams;
 
+  const isMuted = isMyself ? !checkTrackIsEnabled(presenter, "audio") : !presenter.isMicOn;
+  const isCamDisabled = isMyself ? !checkTrackIsEnabled(presenter, "video") : !presenter.isCamOn;
+
   useEffect(() => {
     connectStreams("audio");
     connectStreams("video");
@@ -38,6 +41,18 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   return (
     <div className="RtcPlayer">
+      <div className="UpperBar">
+        {isMuted && (
+          <div className="IconDisabled">
+            <MicrophoneDisabled className="PresenterDisabledSource" />
+          </div>
+        )}
+        {isCamDisabled && (
+          <div className="IconDisabled">
+            <CamDisabled className="PresenterDisabledSource" />
+          </div>
+        )}
+      </div>
       <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
       <div className="BottomBar">
         <div className="PresenterName">
@@ -45,7 +60,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
           {isMyself ? "You" : presenter.name}
         </div>
       </div>
-      <div className="TopBar"></div>
+      <div className="AudioBar"></div>
       {!isMyself && <audio autoPlay ref={audioRef} />}
     </div>
   );

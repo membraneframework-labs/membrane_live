@@ -10,6 +10,29 @@
   width: 100%;
 }
 
+.UpperBar {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  padding: 2.4rem 2.4rem;
+}
+
+.IconDisabled {
+  background: var(--name-background-color);
+  padding: 1.2rem;
+  border-radius: 1.6rem;
+}
+
+.PresenterDisabledSource path {
+  stroke: var(--font-light-color);
+}
+
 .PresenterVideo {
   object-fit: cover;
   min-height: 100%;
