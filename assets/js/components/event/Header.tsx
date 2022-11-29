@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
+  Tooltip,
   useToast,
 } from "@chakra-ui/react";
 import { monthNames, pageTitlePrefix } from "../../utils/const";
@@ -46,17 +47,29 @@ const ArrowLeftPopover = ({ eventChannel, redirectHome }: ArrowLeftPopoverProps)
         </PopoverHeader>
         <PopoverBody>
           <div className="ArrowLeftPopoverDiv">
-            <button className="ArrowLeftPopoverButton" onClick={redirectHome}>
-              Leave
-            </button>
-            <button
-              className="ArrowLeftPopoverButton"
-              onClick={() => {
-                eventChannel?.push("finish_event", {});
-              }}
+            <Tooltip
+              label={`Leave the event without closing it.`}
+              placement="bottom-start"
+              className="BackArrowInfoTooltip"
             >
-              End
-            </button>
+              <button className="ArrowLeftPopoverButton" onClick={redirectHome}>
+                Leave
+              </button>
+            </Tooltip>
+            <Tooltip
+              label={"End the event and save its recording."}
+              placement="bottom"
+              className="BackArrowInfoTooltip"
+            >
+              <button
+                className="ArrowLeftPopoverButton"
+                onClick={() => {
+                  eventChannel?.push("finish_event", {});
+                }}
+              >
+                End
+              </button>
+            </Tooltip>
           </div>
         </PopoverBody>
       </PopoverContent>
