@@ -12,11 +12,6 @@ import {
   ModalCloseButton,
   Modal,
   ModalBody,
-  PopoverTrigger,
-  PopoverContent,
-  Popover,
-  PopoverArrow,
-  PopoverHeader,
 } from "@chakra-ui/react";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import {
@@ -24,12 +19,9 @@ import {
   CamDisabled,
   Microphone,
   MicrophoneDisabled,
-  Settings,
   PhoneDown,
   ScreenShare,
   ScreenDisabled,
-  MenuHorizontal,
-  UserPlus,
   Icon,
 } from "react-swm-icon-pack";
 import {
@@ -47,6 +39,10 @@ import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client, SourceType, PeersState } from "../../types/types";
 import "../../../css/event/controlpanel.css";
+import MenuPopover from "../helpers/MenuPopover";
+import useCheckScreenType from "../../utils/useCheckScreenType";
+import { ModeButton } from "./ModePanel";
+import { storageUnsetIsPresenter } from "../../utils/storageUtils";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -113,28 +109,13 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-const MenuPopover = () => {
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
-      </PopoverTrigger>
-      <PopoverContent>
-        <PopoverArrow />
-        <PopoverHeader>
-          <p className="OptionsPopoverHeader">Options</p>
-        </PopoverHeader>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   eventChannel?.push("presenter_remove", { email: client.email });
+  storageUnsetIsPresenter();
   setMode("hls");
 };
 
@@ -161,6 +142,7 @@ const ControlPanel = ({
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const screenType = useCheckScreenType();
 
   const updateAvailableSources = useCallback(async () => {
     await askForPermissions();
@@ -231,7 +213,6 @@ const ControlPanel = ({
   return (
     <>
       <div className="ControlPanel">
-        <GenericButton icon={<Settings className="PanelButton" />} onClick={onOpen} />
         <div className="CenterIcons">
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
@@ -241,28 +222,28 @@ const ControlPanel = ({
           />
           <GenericButton
             icon={
-              !isSharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />
+              !isSharingScreen && screenType.device !== "mobile" ? (
+                <ScreenShare className="PanelButton" />
+              ) : (
+                <ScreenDisabled className="PanelButton" />
+              )
             }
             onClick={() => {
               if (!isSharingScreen) shareScreen(webrtc, client, peersState, setPeersState);
               else stopShareScreen(webrtc, client, setPeersState);
             }}
-            disabled={!canShareScreen}
+            disabled={!canShareScreen || screenType.device === "mobile"}
           />
-          <MenuPopover />
+          <MenuPopover setMode={setMode}>
+            <ModeButton name="Options" onClick={onOpen} />
+            <SettingsModal
+              isOpen={isOpen}
+              onClose={onClose}
+              elements={[getDropdownButton("audio"), getDropdownButton("video")]}
+            />
+          </MenuPopover>
         </div>
-        <GenericButton
-          icon={<UserPlus className="PanelButton" />}
-          onClick={() => {
-            // do nothing
-          }}
-        />
       </div>
-      <SettingsModal
-        isOpen={isOpen}
-        onClose={onClose}
-        elements={[getDropdownButton("audio"), getDropdownButton("video")]}
-      />
     </>
   );
 };

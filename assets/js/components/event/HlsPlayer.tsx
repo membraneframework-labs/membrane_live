@@ -5,6 +5,7 @@ import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
 import { RotateLeft } from "react-swm-icon-pack";
 import "../../../css/event/hlsplayer.css";
+import useCheckScreenType from "../../utils/useCheckScreenType";
 
 type HlsPlayerProps = {
   hlsUrl: string;
@@ -13,6 +14,8 @@ type HlsPlayerProps = {
 };
 
 const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
+  const screenType = useCheckScreenType();
+
   return (
     <div className="HlsStream">
       {hlsUrl ? (
@@ -25,6 +28,8 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
                 backBufferLength: 30,
               }}
               autoPlay={true}
+              playsInline
+              controls={false}
               muted={true}
               className="HlsPlayer"
               slot="media"
@@ -32,7 +37,11 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
             ></ReactHlsPlayer>
             <HlsControlBar></HlsControlBar>
           </MediaController>
-          <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>
+          {screenType.device === "desktop" && presenterName && (
+            <div className="HlsTopBar">
+              <div className="HlsPresenterName">{presenterName}</div>
+            </div>
+          )}
           <div className="HlsBottomBar">
             <AnimationComponent eventChannel={eventChannel} />
           </div>

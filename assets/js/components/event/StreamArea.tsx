@@ -6,6 +6,10 @@ import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import type { Mode, Client } from "../../types/types";
 import "../../../css/event/streamarea.css";
+import { syncAmIPresenter } from "../../utils/modePanelUtils";
+
+import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
+import MobileHlsBar from "./MobileHlsBar";
 
 type StreamAreaProps = {
   client: Client;
@@ -13,10 +17,12 @@ type StreamAreaProps = {
   privateChannel: Channel | undefined;
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
+  eventTitle: string;
 };
 
-const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
+const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, eventTitle }: StreamAreaProps) => {
   const [hlsUrl, setHlsUrl] = useState<string>("");
+  const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
 
@@ -35,6 +41,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
     if (eventChannel) {
       eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
   }, [eventChannel]);
 
@@ -56,7 +63,22 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
         />
       )}
       <div className="Stream">
-        {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />}
+        {mode === "hls" && (
+          <div className="HlsDiv">
+            <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
+            {screenType.device == "mobile" && (
+              <MobileHlsBar
+                client={client}
+                eventTitle={eventTitle}
+                amIPresenter={amIPresenter}
+                setMode={setMode}
+                switchAsking={(isAsking) => {
+                  switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+                }}
+              />
+            )}
+          </div>
+        )}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>
