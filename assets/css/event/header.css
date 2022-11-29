@@ -117,43 +117,21 @@
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   .Header {
-    height: 100%;
-    flex-direction: column-reverse;
+    flex-direction: column;
     justify-content: space-around;
   }
 
   .InfoWrapper {
     width: 100%;
-    align-items: center;
-    justify-content: center;
+    align-items: baseline;
+  }
+
+  .ArrowButton {
+    margin-right: auto;
   }
 
   .Title {
     text-align: center;
     white-space: pre-line;
-  }
-
-  .TurnIcon {
-    width: 4rem;
-    height: auto;
-  }
-
-  .TurnIcon path {
-    stroke: var(--font-dark-color);
-  }
-
-  .TurnDeviceContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .TurnDeviceText {
-    display: inline-block;
-    font-size: 2rem;
-    color: var(--font-dark-color);
-    inline-size: 18ch;
-    white-space: pre-line;
-    text-align: center;
   }
 }

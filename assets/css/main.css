@@ -30,6 +30,10 @@ html {
   html {
     overflow: auto;
   }
+
+  .chakra-ui-light {
+    position: fixed;
+  }
 }
 
 .FlexContainer {

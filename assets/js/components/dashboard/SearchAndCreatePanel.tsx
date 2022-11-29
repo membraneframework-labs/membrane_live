@@ -2,6 +2,8 @@ import React from "react";
 import { Search } from "react-swm-icon-pack";
 import ModalForm from "./ModalForm";
 import { getIsAuthenticated } from "../../utils/storageUtils";
+import useCheckScreenType from "../../utils/useCheckScreenType";
+
 import "../../../css/dashboard/searchandcreatepanel.css";
 
 type SearchAndCreatePanelProps = {
@@ -11,6 +13,7 @@ type SearchAndCreatePanelProps = {
 };
 
 const SearchAndCreatePanel = ({ currentEvents, searchText, setSearchText }: SearchAndCreatePanelProps) => {
+  const screenType = useCheckScreenType();
   const isAuthenticated = getIsAuthenticated();
 
   return (
@@ -24,7 +27,7 @@ const SearchAndCreatePanel = ({ currentEvents, searchText, setSearchText }: Sear
           className="SearchInput"
         />
       </div>
-      {currentEvents == "All events" && isAuthenticated && (
+      {screenType.device == "desktop" && currentEvents == "All events" && isAuthenticated && (
         <ModalForm type="create" activationButtonClass="ModalFormCreateButton" />
       )}
     </div>

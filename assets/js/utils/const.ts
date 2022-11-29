@@ -14,12 +14,20 @@ export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
 
 export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
-  video: { width: 1280, height: 720, frameRate: FRAME_RATE },
+  video: {
+    width: 1280,
+    height: 720,
+    frameRate: FRAME_RATE,
+  },
 };
 
 export const SCREEN_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
-  video: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, frameRate: FRAME_RATE },
+  video: {
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
+    frameRate: FRAME_RATE,
+  },
 };
 
 export const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];

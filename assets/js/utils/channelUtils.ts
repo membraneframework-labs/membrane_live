@@ -149,7 +149,22 @@ export const syncPresenters = (
   }
 };
 
+export const switchAskingForBeingPresenter = (
+  eventChannel: Channel | undefined,
+  email: string,
+  isAlreadyAsking: boolean
+) => {
+  const message = isAlreadyAsking ? "cancel_presenting_request" : "presenting_request";
+  eventChannel?.push(message, { email });
+};
+
+export const cancelPresentingRequest = (eventChannel: Channel | undefined, email: string) => {
+  eventChannel?.push("cancel_presenting_request", { email });
+};
+
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
+
+export const getPrivateChannelLink = (): string => "private:" + getChannelId() + ":";
 
 const compareParticipants =
   (clientEmail: string) =>

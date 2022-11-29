@@ -20,3 +20,15 @@
   position: absolute;
   z-index: -1;
 }
+
+@media screen and (max-width: 500px), screen and (max-height: 500px) {
+  .MobileHlsBar {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .MobileControlButton {
+    margin-left: auto;
+  }
+}

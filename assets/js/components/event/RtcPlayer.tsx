@@ -31,8 +31,6 @@ const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
     connectStreams("video");
   }, [presenterStream]);
 
-  console.log("zxcvz");
-
   return (
     <div className="RtcPlayer">
       <div className="UpperBarPresenter">
@@ -47,7 +45,15 @@ const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
           </div>
         )}
       </div>
-      <video key={presenterStream.email} autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
+      <video
+        key={presenterStream.email}
+        autoPlay
+        playsInline
+        disablePictureInPicture
+        muted={true}
+        ref={videoRef}
+        className="PresenterVideo"
+      />
       <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}
