@@ -4,7 +4,9 @@ import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types";
 import { Channel } from "phoenix";
+import ChatBox from "./ChatBox";
 import "../../../css/event/participants.css";
+import { useChatMessages } from "../../utils/useChatMessages";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -133,23 +135,14 @@ type ParticipantsListProps = {
 
 const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [listMode, setListMode] = useState<boolean>(true);
+  const [listMode, setListMode] = useState<boolean>(false);
+  const chatMessages = useChatMessages(eventChannel);
 
   useEffect(() => {
-    syncEventChannel(eventChannel, setParticipants, client.email);
+    if (eventChannel) {
+      syncEventChannel(eventChannel, setParticipants, client.email);
+    }
   }, [eventChannel]);
-
-  const parts: JSX.Element[] = [];
-  participants.map((participant) =>
-    parts.push(
-      <Participant
-        client={client}
-        key={participant.email}
-        participant={participant}
-        eventChannel={eventChannel}
-      />
-    )
-  );
 
   return (
     <div className="Participants">
@@ -169,7 +162,20 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           Participants
         </button>
       </div>
-      {listMode && <div className="ParticipantsList">{parts}</div>}
+      {listMode ? (
+        <div className="ParticipantsList">
+          {participants.map((participant) => (
+            <Participant
+              client={client}
+              key={participant.email}
+              participant={participant}
+              eventChannel={eventChannel}
+            />
+          ))}
+        </div>
+      ) : (
+        <ChatBox client={client} eventChannel={eventChannel} messages={chatMessages} />
+      )}
     </div>
   );
 };

@@ -5,7 +5,9 @@ import { roundedGoogleButton } from "../../utils/const";
 import { sessionStorageSetName } from "../../utils/storageUtils";
 import { useNavigate } from "react-router-dom";
 import { Client } from "../../types";
-import useCheckScreenType from "../../utils/hooks";
+import useCheckScreenType from "../../utils/useCheckScreenType";
+import { getErrorToast } from "../../utils/toastUtils";
+import { useToast } from "@chakra-ui/react";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
 
@@ -17,11 +19,15 @@ type NamePopupProps = {
 const NamePopup = ({ client, setClient }: NamePopupProps) => {
   const [name, setName] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(true);
+  const toast = useToast();
   const navigate = useNavigate();
   const screenType = useCheckScreenType();
 
   const saveNameAndClosePopup = () => {
-    if (name === "") return;
+    if (name.trim() === "") {
+      getErrorToast(toast, "Username cannot be empty or contain only whitespaces");
+      return;
+    }
     const nameToSet = screenType.device == "mobile" ? `${name} 📱` : name;
     sessionStorageSetName(nameToSet);
     setClient({ ...client, name: nameToSet });

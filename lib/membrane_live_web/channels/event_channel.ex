@@ -145,6 +145,11 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
+  def handle_in("chat_message", data, socket) do
+    broadcast(socket, "chat_message", data)
+    {:noreply, socket}
+  end
+
   # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
   # server (sends information to presenter) -> presenter (shows alert that it's been removed
   # and sends message back) -> server (updates presenter in Presence)

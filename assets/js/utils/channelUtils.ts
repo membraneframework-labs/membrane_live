@@ -36,36 +36,34 @@ export const createEventChannel = (
 };
 
 export const syncEventChannel = (
-  eventChannel: Channel | undefined,
+  eventChannel: Channel,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
   clientEmail: string
 ) => {
-  if (eventChannel) {
-    const presence = new Presence(eventChannel);
+  const presence = new Presence(eventChannel);
 
-    const updateStates = () => {
-      const parts: Participant[] = [];
-      presence.list((email: string, metas: Metas) => {
-        const participant = metas.metas[0];
-        parts.push({
-          email: email,
-          name: participant.name,
-          isPresenter: participant.is_presenter,
-          isModerator: participant.is_moderator,
-          isAuth: participant.is_auth,
-          isRequestPresenting: participant.is_request_presenting,
-        });
+  const updateStates = () => {
+    const parts: Participant[] = [];
+    presence.list((email: string, metas: Metas) => {
+      const participant = metas.metas[0];
+      parts.push({
+        email: email,
+        name: participant.name,
+        isPresenter: participant.is_presenter,
+        isModerator: participant.is_moderator,
+        isAuth: participant.is_auth,
+        isRequestPresenting: participant.is_request_presenting,
       });
-      parts.sort(compareParticipants(clientEmail));
-      setParticipants(parts);
-    };
-
-    presence.onSync(() => {
-      updateStates();
     });
+    parts.sort(compareParticipants(clientEmail));
+    setParticipants(parts);
+  };
 
-    eventChannel.push("sync_presence", {});
-  }
+  presence.onSync(() => {
+    updateStates();
+  });
+
+  eventChannel.push("sync_presence", {});
 };
 
 export const createPrivateChannel = (
