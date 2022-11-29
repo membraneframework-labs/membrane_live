@@ -20,7 +20,6 @@
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   .EventPage {
-    padding: 1rem;
     overflow: scroll;
   }
 }

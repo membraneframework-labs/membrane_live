@@ -12,11 +12,6 @@ import {
   ModalCloseButton,
   Modal,
   ModalBody,
-  PopoverTrigger,
-  PopoverContent,
-  Popover,
-  PopoverArrow,
-  PopoverHeader,
 } from "@chakra-ui/react";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import {
@@ -24,12 +19,9 @@ import {
   CamDisabled,
   Microphone,
   MicrophoneDisabled,
-  Settings,
   PhoneDown,
   ScreenShare,
   ScreenDisabled,
-  MenuHorizontal,
-  UserPlus,
   Icon,
 } from "react-swm-icon-pack";
 import {
@@ -47,6 +39,9 @@ import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client, SourceType } from "../../types/types";
 import "../../../css/event/controlpanel.css";
+import MenuPopover from "../helpers/MenuPopover";
+import useCheckScreenType from "../../utils/useCheckScreenType";
+import { ModeButton } from "./ModePanel";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -113,22 +108,6 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-const MenuPopover = () => {
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
-      </PopoverTrigger>
-      <PopoverContent>
-        <PopoverArrow />
-        <PopoverHeader>
-          <p className="OptionsPopoverHeader">Options</p>
-        </PopoverHeader>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
@@ -143,14 +122,16 @@ type ControlPanelProps = {
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
+  mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   rerender: () => void;
 };
 
-const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, rerender }: ControlPanelProps) => {
+const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, mode, setMode, rerender }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const screenType = useCheckScreenType();
 
   const updateAvailableSources = async () => {
     const sources = await getSources();
@@ -216,7 +197,6 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
   return (
     <>
       <div className="ControlPanel">
-        <GenericButton icon={<Settings className="PanelButton" />} onClick={onOpen} />
         <div className="CenterIcons">
           {getMuteButton("video", Cam, CamDisabled)}
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
@@ -225,27 +205,30 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
             onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
           />
           <GenericButton
-            icon={!sharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />}
+            icon={
+              !sharingScreen && screenType.device !== "mobile" ? (
+                <ScreenShare className="PanelButton" />
+              ) : (
+                <ScreenDisabled className="PanelButton" />
+              )
+            }
+            disabled={screenType.device === "mobile"}
             onClick={() => {
               if (!sharingScreen) shareScreen(webrtc, client, playerCallback).then((value) => setSharingScreen(value));
               else stopShareScreen(webrtc, client, playerCallback);
               setSharingScreen(false);
             }}
           />
-          <MenuPopover />
+          <MenuPopover mode={mode} setMode={setMode}>
+            <ModeButton name="Options" onClick={onOpen} />
+            <SettingsModal
+              isOpen={isOpen}
+              onClose={onClose}
+              elements={[getDropdownButton("audio"), getDropdownButton("video")]}
+            />
+          </MenuPopover>
         </div>
-        <GenericButton
-          icon={<UserPlus className="PanelButton" />}
-          onClick={() => {
-            // do nothing
-          }}
-        />
       </div>
-      <SettingsModal
-        isOpen={isOpen}
-        onClose={onClose}
-        elements={[getDropdownButton("audio"), getDropdownButton("video")]}
-      />
     </>
   );
 };

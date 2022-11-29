@@ -56,7 +56,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
           </div>
         )}
       </div>
-      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
+      <video autoPlay playsInline disablePictureInPicture muted={true} ref={videoRef} className="PresenterVideo" />
       <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}

@@ -6,13 +6,13 @@ import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
 
-type ModeButtonProps = {
+export type ModeButtonProps = {
   onClick: () => void;
-  active: boolean;
   name: string;
+  active?: boolean;
 };
 
-const ModeButton = ({ onClick, active, name }: ModeButtonProps) => {
+export const ModeButton = ({ onClick, name, active = true }: ModeButtonProps) => {
   return (
     <button className={`ModeButton ${active && "Clicked"}`} onClick={onClick} name={name}>
       {name}

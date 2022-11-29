@@ -137,6 +137,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           webrtc={webrtc}
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
+          mode={mode}
           setMode={setMode}
           rerender={rerender}
         />

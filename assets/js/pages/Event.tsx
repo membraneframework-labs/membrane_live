@@ -6,20 +6,22 @@ import Header from "../components/event/Header";
 import {
   storageGetName,
   storageGetAuthToken,
-  storageGetReloaded,
-  storageSetReloaded,
+  storageGetIsPresenter,
   storageGetEmail,
   sessionStorageGetName,
   getIsAuthenticated,
+  storageGetPresentingRequest,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, Toast, Mode } from "../types/types";
+import type { Client, EventInfo, Mode, Toast } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
+import { getEventInfo, initEventInfo } from "../utils/headerUtils";
+import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
 
 const Event = () => {
@@ -33,11 +35,18 @@ const Event = () => {
   });
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
+  const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
 
   const socket = new Socket("/socket");
   socket.connect();
+
+  useEffect(() => getEventInfo(toast, setEventInfo, false), []);
+  useEffect(() => {
+    if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
+  }, [eventInfo]);
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
@@ -47,7 +56,8 @@ const Event = () => {
         ? axiosWithInterceptor.get("/me").then(() => {
             return {
               token: storageGetAuthToken(),
-              reloaded: storageGetReloaded(),
+              presenter: storageGetIsPresenter(),
+              requestPresenting: storageGetPresentingRequest(),
             };
           })
         : Promise.resolve({ username: client.name });
@@ -75,31 +85,23 @@ const Event = () => {
     }
   }, [eventChannel, privateChannel]);
 
-  useEffect(() => {
-    window.addEventListener("beforeunload", storageSetReloaded);
-    return () => {
-      window.removeEventListener("beforeunload", storageSetReloaded);
-    };
-  }, []);
-
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
-        <Header client={client} eventChannel={eventChannel} isRecording={false} />
+      {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
+        <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
       )}
-      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
-        <div className="MainGrid">
-          <StreamArea
-            client={client}
-            eventChannel={eventChannel}
-            privateChannel={privateChannel}
-            mode={mode}
-            setMode={setMode}
-          />
-          {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
-        </div>
-      )}
+      <div className="MainGrid">
+        <StreamArea
+          client={client}
+          eventChannel={eventChannel}
+          privateChannel={privateChannel}
+          mode={mode}
+          setMode={setMode}
+          eventTitle={eventInfo.title}
+        />
+        {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
+      </div>
     </div>
   );
 };

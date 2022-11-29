@@ -117,13 +117,16 @@ export const setSourceById = async (
   let localStream: MediaStream;
   try {
     const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
+    const curTrack = findTrackByType(client, sourceType);
+    curTrack && removeTrack(client, curTrack);
+
     localStream = await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
 
     localStream.getTracks().forEach((track) => {
-      addOrReplaceTrack(client, track, playerCallback);
+      addTrack(track, client, playerCallback);
     });
   } catch (error) {
-    console.error("Couldn't get microphone permission:", error);
+    console.error(`Couldn't get ${sourceType} device permission:`, error);
   }
 };
 
@@ -330,17 +333,24 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
 };
 
 const addOrReplaceTrack = (client: User, track: MediaStreamTrack, playerCallback: (sourceType: SourceType) => void) => {
-  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
-  const curTrack = findTrackByType(client, track.kind as SourceType);
-
-  if (curTrack && curTrack.id !== track.id && curTrack.id !== mergedScreenRef.screenTrack?.id) {
-    curTrack.stop();
+  if (presenterStreams[client.email]) {
+    const curTrack = findTrackByType(client, track.kind as SourceType);
+    if (curTrack && curTrack.id !== track.id) removeTrack(client, curTrack);
   }
+  addTrack(track, client, playerCallback);
+};
 
-  curTrack && presenterStreams[client.email].removeTrack(curTrack);
+const addTrack = (track: MediaStreamTrack, client: User, playerCallback: (sourceType: SourceType) => void) => {
+  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
   presenterStreams[client.email].addTrack(track);
+  playerCallback(track.kind as SourceType);
+};
 
-  playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
+const removeTrack = (client: User, track: MediaStreamTrack) => {
+  if (track.id !== mergedScreenRef.screenTrack?.id) {
+    track.stop();
+    presenterStreams[client.email].removeTrack(track);
+  }
 };
 
 const removeMergedStream = () => {

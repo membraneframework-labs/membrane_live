@@ -4,7 +4,7 @@ const NAME = "name";
 const EMAIL = "email";
 const REQUEST_PRESENTING = "isRequestPresenting";
 const PICTURE = "picture";
-const RELOAD = "reloaded";
+const PRESENTER = "isPresenter";
 
 export const authTokenKey: AuthTokenKey = "authJwt";
 export const refreshTokenKey: RefreshTokenKey = "refreshJwt";
@@ -33,7 +33,7 @@ export const storageGetEmail = (): string => {
 };
 
 export const storageGetPresentingRequest = (): boolean => {
-  return localStorage.getItem(REQUEST_PRESENTING) === "true";
+  return sessionStorage.getItem(REQUEST_PRESENTING) === "true";
 };
 export const storageGetPicture = (): string => {
   const picture: string | null = localStorage.getItem(PICTURE);
@@ -49,18 +49,23 @@ export const storageSetEmail = (email: string): void => {
 };
 
 export const storageSetPresentingRequest = (requestedPresenting: boolean): void => {
-  localStorage.setItem(REQUEST_PRESENTING, requestedPresenting ? "true" : "false");
+  sessionStorage.setItem(REQUEST_PRESENTING, requestedPresenting ? "true" : "false");
 };
 
 export const storageSetPicture = (picture: string): void => {
   localStorage.setItem(PICTURE, picture);
 };
 
-export const storageSetReloaded = (): void => {
-  sessionStorage.setItem(RELOAD, "true");
+export const storageSetIsPresenter = (): void => {
+  sessionStorage.setItem(PRESENTER, "true");
 };
-export const storageGetReloaded = (): boolean => {
-  return !!sessionStorage.getItem(RELOAD);
+
+export const storageUnsetIsPresenter = (): void => {
+  sessionStorage.setItem(PRESENTER, "false");
+};
+
+export const storageGetIsPresenter = (): boolean => {
+  return sessionStorage.getItem(PRESENTER) === "true";
 };
 
 export const sessionStorageSetName = (name: string): void => {

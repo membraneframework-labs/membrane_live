@@ -46,7 +46,15 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   @impl true
-  def join("event:" <> id, %{"token" => token, "reloaded" => reloaded}, socket) do
+  def join(
+        "event:" <> id,
+        %{
+          "token" => token,
+          "presenter" => should_be_presenter,
+          "requestPresenting" => requests_presenting
+        },
+        socket
+      ) do
     case webinar_exists(id) do
       {:ok, false} ->
         {:error, %{reason: "This event doesn't exists."}}
@@ -68,9 +76,12 @@ defmodule MembraneLiveWeb.EventChannel do
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
-             {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
+             {:ok, is_presenter} <- check_if_presenter(email, should_be_presenter, id),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
-             {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
+             {:ok, is_request_presenting} <-
+               check_if_request_presenting(email, requests_presenting, id) do
+          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
+
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
@@ -423,17 +434,17 @@ defmodule MembraneLiveWeb.EventChannel do
   defp check_if_banned_from_chat(email, id),
     do: check_if_exist_in_ets(:banned_from_chat, email, true, id)
 
-  defp check_if_presenter(email, reloaded, id),
-    do: check_if_exist_in_ets(:presenters, email, reloaded, id)
+  defp check_if_presenter(email, should_be_presenter, id),
+    do: check_if_exist_in_ets(:presenters, email, should_be_presenter, id)
 
-  defp check_if_request_presenting(email, reloaded, id),
-    do: check_if_exist_in_ets(:presenting_requests, email, reloaded, id)
+  defp check_if_request_presenting(email, requests_presenting, id),
+    do: check_if_exist_in_ets(:presenting_requests, email, requests_presenting, id)
 
-  defp check_if_exist_in_ets(ets_key, email, reloaded, id) do
+  defp check_if_exist_in_ets(ets_key, email, client_bool, id) do
     [{_key, presenters}] = :ets.lookup(ets_key, id)
     in_ets = MapSet.member?(presenters, email)
 
-    case {reloaded, in_ets} do
+    case {client_bool, in_ets} do
       {true, _in_ets} ->
         {:ok, in_ets}
 

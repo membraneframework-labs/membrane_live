@@ -5,6 +5,7 @@ import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
 import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
+import { storageSetIsPresenter, storageSetPresentingRequest } from "./storageUtils";
 
 const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
@@ -32,6 +33,8 @@ export const presenterPopup = (
           className="PresenterPopupButton"
           onClick={() => {
             answer = "accept";
+            storageSetIsPresenter();
+            storageSetPresentingRequest(false);
             closeToast(toast, thisToast);
             setMode("presenters");
           }}
