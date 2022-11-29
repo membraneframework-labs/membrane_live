@@ -116,6 +116,10 @@
   flex-grow: 1;
 }
 
+.MessageInput:disabled {
+  background-color: var(--bg-light-color-1);
+}
+
 .EmojiIcon {
   height: 2.4rem;
   width: auto;

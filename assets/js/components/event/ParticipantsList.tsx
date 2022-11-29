@@ -5,8 +5,8 @@ import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-ic
 import type { Participant, Client } from "../../types";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import "../../../css/event/participants.css";
 import { useChatMessages } from "../../utils/useChatMessages";
+import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -16,15 +16,32 @@ type ModeratorMenuProps = {
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
+  const presenterText = {
+    set: "Set as a presenter",
+    unset: "Set as a normal participant",
+  };
+  const banFromChatText = {
+    ban: "Ban from the chat",
+    unban: "Unban from the chat",
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if ((e.target as HTMLTextAreaElement).value === "Set as a presenter") {
-      eventChannel?.push("presenter_prop", {
-        moderatorTopic: link + moderatorClient.email,
-        presenterTopic: link + participant.email,
-      });
-    } else {
-      eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+    switch ((e.target as HTMLTextAreaElement).value) {
+      case presenterText.set:
+        eventChannel?.push("presenter_prop", {
+          moderatorTopic: link + moderatorClient.email,
+          presenterTopic: link + participant.email,
+        });
+        break;
+      case presenterText.unset:
+        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        break;
+      case banFromChatText.ban:
+        eventChannel?.push("ban_from_chat", { email: participant.email });
+        break;
+      case banFromChatText.unban:
+        eventChannel?.push("unban_from_chat", { email: participant.email });
+        break;
     }
   };
 
@@ -34,13 +51,24 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        <MenuItem
-          onClick={handleClick}
-          value={participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
-          className="MenuOptionText"
-        >
-          {participant.isPresenter ? "Set as a normal participant" : "Set as a presenter"}
-        </MenuItem>
+        {participant.isAuth && (
+          <MenuItem
+            onClick={handleClick}
+            value={participant.isPresenter ? presenterText.unset : presenterText.set}
+            className="MenuOptionText"
+          >
+            {participant.isPresenter ? presenterText.unset : presenterText.set}
+          </MenuItem>
+        )}
+        {!participant.isModerator && (
+          <MenuItem
+            onClick={handleClick}
+            value={participant.isBannedFromChat ? banFromChatText.unban : banFromChatText.ban}
+            className="MenuOptionText"
+          >
+            {participant.isBannedFromChat ? banFromChatText.unban : banFromChatText.ban}
+          </MenuItem>
+        )}
       </MenuList>
     </Menu>
   );
@@ -114,7 +142,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
           <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
-      {client.isModerator && participant.isAuth && (
+      {client.isModerator && (
         <ModeratorMenu
           moderatorClient={client}
           eventChannel={eventChannel}
@@ -137,10 +165,11 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<boolean>(false);
   const chatMessages = useChatMessages(eventChannel);
+  const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   useEffect(() => {
     if (eventChannel) {
-      syncEventChannel(eventChannel, setParticipants, client.email);
+      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
     }
   }, [eventChannel]);
 
@@ -174,7 +203,12 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           ))}
         </div>
       ) : (
-        <ChatBox client={client} eventChannel={eventChannel} messages={chatMessages} />
+        <ChatBox
+          client={client}
+          eventChannel={eventChannel}
+          messages={chatMessages}
+          isBannedFromChat={isBannedFromChat}
+        />
       )}
     </div>
   );

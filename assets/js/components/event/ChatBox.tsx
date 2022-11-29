@@ -1,6 +1,6 @@
 import { Channel } from "phoenix";
-import React, { useRef, useState } from "react";
-import { EmoteSmile } from "react-swm-icon-pack";
+import React, { useState, useRef } from "react";
+import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
@@ -42,38 +42,47 @@ type MessageBoxProps = {
   isMyself: boolean;
 };
 
-const MessageBox = ({ message, isMyself }: MessageBoxProps) => (
-  <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
-    {!isMyself ? <p className="ChatterName">{message.name}</p> : <p className="YourName">You</p>}
-    <div className="MessageCluster">
-      {message.messages.map((messageString, index) => {
-        let cornerClass = "";
-        if (index == 0) cornerClass += "Top";
-        if (index == message.messages.length - 1) cornerClass += " Bottom";
+const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
+  const getSingleMessage = (messageString: string, index: number) => {
+    let cornerClass = "";
+    if (index == 0) cornerClass += "Top";
+    if (index == message.messages.length - 1) cornerClass += " Bottom";
 
-        return (
-          <p key={`${message.id}:${index}`} className={`SingleMessage ${cornerClass}`} lang="de">
-            {messageString}
-          </p>
-        );
-      })}
+    return (
+      <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
+        {index < message.moderatedNo ? <i>Moderated</i> : messageString}
+      </p>
+    );
+  };
+
+  return (
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+      {!isMyself ? (
+        <p className="ChatterName">{`${message.name} ${message.title}`}</p>
+      ) : (
+        <p className="YourName">You</p>
+      )}
+      <div className="MessageCluster">
+        {message.messages.map((messageString, index) => getSingleMessage(messageString, index))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
   messages: ChatMessage[];
+  isBannedFromChat: boolean;
 };
 
-const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
+const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const sendChatMessage = (message: string) => {
     if (eventChannel) {
-      eventChannel.push("chat_message", { email: client.email, message: message });
+      eventChannel.push("chat_message", { message: message });
       setMessageInput("");
     }
   };
@@ -83,13 +92,20 @@ const ChatBox = ({ client, eventChannel, messages }: ChatBoxProps) => {
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">
-        <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
+        {isBannedFromChat ? (
+          <CrossCircle className="EmojiIcon" />
+        ) : (
+          <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
+        )}
         <input
           ref={inputRef}
           className="MessageInput"
           type="text"
-          value={messageInput}
-          placeholder="Type your message here..."
+          value={isBannedFromChat ? "" : messageInput}
+          placeholder={
+            isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."
+          }
+          disabled={isBannedFromChat}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
             e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);

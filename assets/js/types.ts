@@ -7,6 +7,7 @@ export type Participant = {
   isModerator: boolean;
   isAuth: boolean;
   isRequestPresenting: boolean;
+  isBannedFromChat: boolean;
 };
 
 export type Presenter = {
@@ -65,13 +66,14 @@ export type AuthResponseData = {
 
 export type Toast = ReturnType<typeof useToast>;
 
-type MetasUser = {
+export type MetasUser = {
   is_moderator: boolean;
   is_presenter: boolean;
   name: string;
   phx_ref: string;
   is_auth: boolean;
   is_request_presenting: boolean;
+  is_banned_from_chat: boolean;
 };
 
 export type Metas = {
@@ -106,5 +108,7 @@ export type ChatMessage = {
   id: number;
   email: string;
   name: string;
+  title: string;
+  moderatedNo: number;
   messages: string[];
 };

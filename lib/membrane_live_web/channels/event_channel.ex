@@ -24,17 +24,21 @@ defmodule MembraneLiveWeb.EventChannel do
         {:error, %{reason: "This event doesn't exists."}}
 
       {:ok, true} ->
-        gen_key = UUID.uuid1()
+        :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
-        Presence.track(socket, gen_key, %{
-          name: name,
-          is_moderator: false,
-          is_presenter: false,
-          is_auth: false
-        })
+        with gen_key <- UUID.uuid1(),
+             {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
+          Presence.track(socket, gen_key, %{
+            name: name,
+            is_moderator: false,
+            is_presenter: false,
+            is_auth: false,
+            is_banned_from_chat: is_banned_from_chat
+          })
 
-        {:ok, %{generated_key: gen_key},
-         Phoenix.Socket.assign(socket, %{event_id: id, event_pid: nil})}
+          {:ok, %{generated_key: gen_key},
+           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key, event_pid: nil})}
+        end
 
       {:error, _error} ->
         {:error, %{reason: "This link is wrong."}}
@@ -50,15 +54,22 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, true} ->
         :ets.insert_new(:presenters, {id, MapSet.new()})
         :ets.insert_new(:presenting_requests, {id, MapSet.new()})
+        :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
              {:ok, email} <- Accounts.get_email(uuid),
              is_moderator <- Webinars.check_is_user_moderator(uuid, id),
-             socket <- Socket.assign(socket, %{is_moderator: is_moderator, event_id: id}),
+             socket <-
+               Socket.assign(socket, %{
+                 is_moderator: is_moderator,
+                 user_email: email,
+                 event_id: id
+               }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
+             {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
              {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
           {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
 
@@ -68,7 +79,8 @@ defmodule MembraneLiveWeb.EventChannel do
               is_moderator: is_moderator,
               is_presenter: is_presenter,
               is_request_presenting: is_request_presenting,
-              is_auth: true
+              is_auth: true,
+              is_banned_from_chat: is_banned_from_chat
             })
 
           if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
@@ -145,8 +157,13 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in("chat_message", data, socket) do
-    broadcast(socket, "chat_message", data)
+  def handle_in("chat_message", %{"message" => message}, %{topic: "event:" <> id} = socket) do
+    email = socket.assigns.user_email
+    {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
+
+    if not is_banned_from_chat,
+      do: broadcast(socket, "chat_message", %{"email" => email, "message" => message})
+
     {:noreply, socket}
   end
 
@@ -231,6 +248,58 @@ defmodule MembraneLiveWeb.EventChannel do
       :name => name,
       :answer => answer
     })
+
+    {:noreply, socket}
+  end
+
+  def handle_in("ban_from_chat", %{"email" => email, "response" => true}, socket) do
+    {:ok, _ref} =
+      Presence.update(
+        socket,
+        email,
+        &%{&1 | is_banned_from_chat: true}
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_in("ban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
+    if socket.assigns.is_moderator do
+      MembraneLiveWeb.Endpoint.broadcast_from!(
+        self(),
+        "private:#{id}:#{email}",
+        "ban_from_chat",
+        %{}
+      )
+
+      add_to_banned_from_chat(email, id)
+    end
+
+    {:noreply, socket}
+  end
+
+  def handle_in("unban_from_chat", %{"email" => email, "response" => true}, socket) do
+    {:ok, _ref} =
+      Presence.update(
+        socket,
+        email,
+        &%{&1 | is_banned_from_chat: false}
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_in("unban_from_chat", %{"email" => email}, %{topic: "event:" <> id} = socket) do
+    if socket.assigns.is_moderator do
+      MembraneLiveWeb.Endpoint.broadcast_from!(
+        self(),
+        "private:#{id}:#{email}",
+        "unban_from_chat",
+        %{}
+      )
+
+      remove_from_banned_from_chat(email, id)
+    end
 
     {:noreply, socket}
   end
@@ -344,6 +413,9 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
+  defp check_if_banned_from_chat(email, id),
+    do: check_if_exist_in_ets(:banned_from_chat, email, true, id)
+
   defp check_if_presenter(email, reloaded, id),
     do: check_if_exist_in_ets(:presenters, email, reloaded, id)
 
@@ -366,6 +438,11 @@ defmodule MembraneLiveWeb.EventChannel do
         {:ok, false}
     end
   end
+
+  defp remove_from_banned_from_chat(email, id),
+    do: remove_from_list_in_ets(:banned_from_chat, email, id)
+
+  defp add_to_banned_from_chat(email, id), do: add_to_list_in_ets(:banned_from_chat, email, id)
 
   defp remove_from_presenters(email, id), do: remove_from_list_in_ets(:presenters, email, id)
   defp add_to_presenters(email, id), do: add_to_list_in_ets(:presenters, email, id)

@@ -1,5 +1,5 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas } from "../types";
+import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
@@ -38,6 +38,7 @@ export const createEventChannel = (
 export const syncEventChannel = (
   eventChannel: Channel,
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>,
+  setIsBannedFromChat: React.Dispatch<React.SetStateAction<boolean>>,
   clientEmail: string
 ) => {
   const presence = new Presence(eventChannel);
@@ -53,6 +54,7 @@ export const syncEventChannel = (
         isModerator: participant.is_moderator,
         isAuth: participant.is_auth,
         isRequestPresenting: participant.is_request_presenting,
+        isBannedFromChat: participant.is_banned_from_chat,
       });
     });
     parts.sort(compareParticipants(clientEmail));
@@ -61,9 +63,23 @@ export const syncEventChannel = (
 
   presence.onSync(() => {
     updateStates();
+    const isBanned = getByKey(presence, clientEmail)?.is_banned_from_chat;
+    isBanned != undefined && setIsBannedFromChat(isBanned);
   });
 
   eventChannel.push("sync_presence", {});
+};
+
+export const getByKey = (
+  presence: Presence | undefined,
+  keyEmail: string
+): MetasUser | undefined => {
+  let result: MetasUser | undefined;
+  presence?.list((email: string, metas: Metas) => {
+    const data = metas.metas[0];
+    if (email == keyEmail) result = data;
+  });
+  return result;
 };
 
 export const createPrivateChannel = (
@@ -86,6 +102,14 @@ export const createPrivateChannel = (
       privateChannel.on("presenter_remove", () => {
         getInfoToast(toast, "You are no longer a presenter.");
         eventChannel.push("presenter_remove", { email: client.email });
+      });
+      privateChannel.on("ban_from_chat", () => {
+        getInfoToast(toast, "You have been banned from participating in the chat.");
+        eventChannel.push("ban_from_chat", { email: client.email, response: true });
+      });
+      privateChannel.on("unban_from_chat", () => {
+        getInfoToast(toast, "You have been unbanned from participating in the chat.");
+        eventChannel.push("unban_from_chat", { email: client.email, response: true });
       });
       setPrivateChannel(privateChannel);
     })

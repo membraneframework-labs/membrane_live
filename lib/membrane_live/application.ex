@@ -13,6 +13,7 @@ defmodule MembraneLive.Application do
 
     :ets.new(:presenters, [:public, :set, :named_table])
     :ets.new(:presenting_requests, [:public, :set, :named_table])
+    :ets.new(:banned_from_chat, [:public, :set, :named_table])
     opts = [strategy: :one_for_one, name: MembraneLive.Supervisor]
     Supervisor.start_link(children, opts)
   end
