@@ -41,7 +41,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   return (
     <div className="RtcPlayer">
-      <div className="UpperBar">
+      <div className="UpperBarPresenter">
         {isMuted && (
           <div className="IconDisabled">
             <MicrophoneDisabled className="PresenterDisabledSource" />
@@ -54,7 +54,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
         )}
       </div>
       <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
-      <div className="BottomBar">
+      <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}
           {isMyself ? "You" : presenter.name}
