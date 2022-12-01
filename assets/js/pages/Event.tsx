@@ -20,6 +20,7 @@ import type { Client, Toast, Mode } from "../types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
+import axiosWithInterceptor from "../services";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -40,15 +41,21 @@ const Event = () => {
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
+
     if (!alreadyJoined && client.name) {
-      const channelMsg = client.isAuthenticated
-        ? {
-            token: storageGetAuthToken(),
-            reloaded: storageGetReloaded(),
-          }
-        : { username: client.name };
-      const channel = socket.channel(`event:${getChannelId()}`, channelMsg);
-      createEventChannel(toast, client, channel, setEventChannel, setClient, navigate);
+      const promise = client.isAuthenticated
+        ? axiosWithInterceptor.get("/me").then((v) => {
+            return {
+              token: storageGetAuthToken(),
+              reloaded: storageGetReloaded(),
+            };
+          })
+        : Promise.resolve({ username: client.name });
+
+      promise.then((msg) => {
+        const channel = socket.channel(`event:${getChannelId()}`, msg);
+        createEventChannel(toast, client, channel, setEventChannel, setClient, navigate);
+      });
     }
   }, [eventChannel, client.name]);
 
