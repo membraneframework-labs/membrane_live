@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
-import PresenterStreams from "./PresenterStreams";
+import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
 import { Channel } from "phoenix";
@@ -11,10 +11,11 @@ type StreamAreaProps = {
   client: Client;
   eventChannel: Channel | undefined;
   privateChannel: Channel | undefined;
+  mode: Mode;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) => {
-  const [mode, setMode] = useState<Mode>("hls");
+const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
@@ -58,12 +59,7 @@ const StreamArea = ({ client, eventChannel, privateChannel }: StreamAreaProps) =
         {mode == "hls" && (
           <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
         )}
-        <PresenterStreams
-          client={client}
-          eventChannel={eventChannel}
-          mode={mode}
-          setMode={setMode}
-        />
+        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>
   );

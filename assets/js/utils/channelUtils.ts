@@ -121,17 +121,23 @@ export const createPrivateChannel = (
 
 export const syncPresenters = (
   eventChannel: Channel | undefined,
-  setPresenters: React.Dispatch<React.SetStateAction<Presenter[]>>
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 
     const updatePresenters = () => {
-      const presenters: Presenter[] = [];
+      const presenters: { [key: string]: Presenter } = {};
 
       presence.list((email: string, metas: Metas) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
-        metas.metas[0].is_presenter && presenters.push({ name: metas.metas[0].name, email: email });
+        if (metas.metas[0].is_presenter)
+          presenters[email] = {
+            name: metas.metas[0].name,
+            email: email,
+            status: "idle",
+            connectCallbacks: [],
+          };
       });
       setPresenters(presenters);
     };

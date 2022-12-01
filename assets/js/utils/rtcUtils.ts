@@ -1,14 +1,13 @@
 import { MembraneWebRTC, SerializedMediaEvent } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { Client } from "../types";
+import { Client, Presenter, SourceType } from "../types";
 import { Channel } from "phoenix";
 
 export type Sources = {
   audio: MediaDeviceInfo[];
   video: MediaDeviceInfo[];
 };
-export type SourceType = "audio" | "video";
 
 export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;
@@ -32,7 +31,7 @@ export const findTrackByType = (client: Client, sourceType: SourceType) => {
 };
 
 export const changeTrackIsEnabled = (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
@@ -42,7 +41,7 @@ export const changeTrackIsEnabled = (
       ? mergedScreenRef.cameraTrack
       : findTrackByType(client, sourceType);
   if (track) track.enabled = !track.enabled;
-  if (sourceType == "video" && mergedScreenRef.cameraTrack) {
+  if (webrtc && sourceType == "video" && mergedScreenRef.cameraTrack) {
     shareScreen(webrtc, client, playerCallback);
   }
 };
@@ -97,23 +96,8 @@ export const setSourceById = async (
 export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
-  playerCallbacks: { [key: string]: (sourceType: SourceType) => void }
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
 ) => {
-  await askForPermissions();
-  presenterStreams[client.email] = new MediaStream();
-
-  const sources = await getSources();
-  const defaults: { audio: MediaDeviceInfo | undefined; video: MediaDeviceInfo | undefined } = {
-    audio: sources?.audio[0],
-    video: sources?.video[0],
-  };
-
-  if (defaults.audio)
-    await setSourceById(client, defaults.audio.deviceId, "audio", playerCallbacks[client.email]);
-
-  if (defaults.video)
-    await setSourceById(client, defaults.video.deviceId, "video", playerCallbacks[client.email]);
-
   const onError = (error: string) => {
     console.log(error);
   };
@@ -141,14 +125,35 @@ export const connectWebrtc = async (
         onError("Error while joining WebRTC connection");
       },
       onTrackReady: ({ track, peer }) => {
-        if (track != null)
-          addOrReplaceTrack(peer.metadata, track, playerCallbacks[peer.metadata.email]);
+        if (track != null) {
+          const callback = (playerCallback: (sourceType: SourceType) => void) => {
+            addOrReplaceTrack(peer.metadata, track, playerCallback);
+          };
+
+          setPresenters((prev) => {
+            return {
+              ...prev,
+              [peer.metadata.email]: {
+                ...prev[peer.metadata.email],
+                rtcStatus: "connecting",
+                connectCallbacks: prev[peer.metadata.email].connectCallbacks.concat(callback),
+              },
+            };
+          });
+        }
       },
       onTrackAdded: () => {
         // do nothing
       },
       onTrackRemoved: () => {
-        // do nothing
+        if (presenterStreams[client.email].getTracks().length == 0) {
+          setPresenters((prev) => {
+            return {
+              ...prev,
+              [client.email]: { ...prev[client.email], status: "idle" },
+            };
+          });
+        }
       },
       onPeerJoined: () => {
         // do nothing
@@ -173,8 +178,27 @@ export const connectWebrtc = async (
   return webrtc;
 };
 
+export const connectPresentersTracks = async (
+  playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
+) => {
+  setPresenters((presenters) => {
+    Object.values(presenters)
+      .filter(
+        (presenter) =>
+          presenter.rtcStatus == "rtc_player_ready" && presenter.connectCallbacks.length > 0
+      )
+      .forEach((presenter) => {
+        const playerCallback = playerCallbacks[presenter.email];
+        presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
+        presenters = { ...presenters, [presenter.email]: { ...presenter, connectCallbacks: [] } };
+      });
+    return presenters;
+  });
+};
+
 export const changeSource = async (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   deviceId: string,
   sourceType: SourceType,
@@ -206,7 +230,7 @@ export const leaveWebrtc = (
 };
 
 export const shareScreen = async (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   playerCallback: (SourceType: SourceType) => void
 ): Promise<boolean> => {
@@ -229,17 +253,19 @@ export const shareScreen = async (
 
   const newTrack = findTrackByType(client, "video");
 
-  if (!webrtc || !newTrack) {
+  if (!newTrack) {
     removeMergedStream();
     return false;
   }
+  if (!webrtc) return true;
+
   if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
   else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
   return true;
 };
 
 export const stopShareScreen = (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   playerCallback: (sourceType: SourceType) => void
 ) => {
@@ -302,7 +328,7 @@ const removeStream = (client: Client) => {
   delete presenterStreams[client.email];
 };
 
-const askForPermissions = async (): Promise<void> => {
+export const askForPermissions = async (): Promise<void> => {
   const hasVideoInput: boolean = (await navigator.mediaDevices.enumerateDevices()).some(
     (device) => device.kind === "videoinput"
   );

@@ -36,16 +36,16 @@ import {
   shareScreen,
   changeSource,
   changeTrackIsEnabled,
-  getCurrentDeviceName,
   getSources,
   Sources,
-  SourceType,
   stopShareScreen,
   checkTrackIsEnabled,
+  setSourceById,
+  getCurrentDeviceName,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client } from "../../types";
+import type { Mode, Client, SourceType } from "../../types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
@@ -157,7 +157,7 @@ const useRerender = () => {
 
 type ControlPanelProps = {
   client: Client;
-  webrtc: MembraneWebRTC;
+  webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
@@ -175,17 +175,28 @@ const ControlPanel = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const rerender = useRerender();
 
-  const updateSources = async () => {
+  const updateAvailableSources = async () => {
     const sources = await getSources();
-    if (sources != null) setSources(sources);
+    if (sources != null) {
+      setSources(sources);
+
+      const prepareDevice = (kind: "audio" | "video") => {
+        const deviceName = getCurrentDeviceName(client, kind);
+        if (deviceName === undefined)
+          setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
+      };
+
+      prepareDevice("audio");
+      prepareDevice("video");
+    }
   };
 
   useEffect(() => {
-    updateSources();
+    updateAvailableSources();
   }, []);
 
   useEffect(() => {
-    navigator.mediaDevices.ondevicechange = updateSources;
+    navigator.mediaDevices.ondevicechange = updateAvailableSources;
 
     return () => {
       navigator.mediaDevices.ondevicechange = null;
@@ -212,7 +223,7 @@ const ControlPanel = ({
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(client, sourceType) ? (
+          checkTrackIsEnabled(client, sourceType) !== false ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />

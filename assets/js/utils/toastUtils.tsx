@@ -20,7 +20,8 @@ export const presenterPopup = (
   toast: Toast,
   client: Client,
   eventChannel: Channel,
-  moderatorTopic: string
+  moderatorTopic: string,
+  setMode: React.Dispatch<React.SetStateAction<string>>
 ) => {
   let answer = "reject";
 
@@ -38,6 +39,7 @@ export const presenterPopup = (
           onClick={() => {
             answer = "accept";
             closeToast(toast, thisToast);
+            setMode("presenters");
           }}
         >
           YES
@@ -78,7 +80,7 @@ export const deleteEventPopup = (toast: Toast, uuid: string) => {
   const thisToast = toast({
     duration: 15_000,
     onCloseComplete: () => {
-      if (answer === "accept") deleteEvent(uuid, toast);
+      if (answer === "accept") deleteEvent(uuid, toast, false);
     },
     render: () => (
       <div className="Popup">
