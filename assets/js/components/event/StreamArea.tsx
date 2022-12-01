@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
-import PresenterArea from "./PresenterStreams";
+import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
 import { Channel } from "phoenix";
