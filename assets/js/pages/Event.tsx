@@ -44,7 +44,7 @@ const Event = () => {
 
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
-        ? axiosWithInterceptor.get("/me").then((v) => {
+        ? axiosWithInterceptor.get("/me").then(() => {
             return {
               token: storageGetAuthToken(),
               reloaded: storageGetReloaded(),
