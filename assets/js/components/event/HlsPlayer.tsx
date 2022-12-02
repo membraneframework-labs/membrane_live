@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import AnimationComponent from "./HeartAnimation";
-import ReactHlsPlayer from "react-hls-player";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
@@ -8,29 +7,24 @@ import { RotateLeft } from "react-swm-icon-pack";
 import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
-  hlsUrl: string;
+  attachVideo: (videoElem: HTMLVideoElement | null) => void;
   presenterName: string;
   eventChannel: Channel | undefined;
 };
 
-const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps) => {
+  const playerRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    attachVideo(playerRef.current);
+  }, [presenterName]);
+
   return (
     <div className="HlsStream">
-      {hlsUrl ? (
+      {presenterName ? (
         <div className="HlsPlayerWrapper">
           <MediaController className="HlsPlayerWrapper">
-            <ReactHlsPlayer
-              hlsConfig={{
-                liveSyncDurationCount: 2,
-                initialLifeManifestSize: 2,
-                backBufferLength: 30,
-              }}
-              autoPlay={true}
-              muted={true}
-              className="HlsPlayer"
-              slot="media"
-              src={hlsUrl}
-            ></ReactHlsPlayer>
+            <video ref={playerRef} slot="media" className="HlsPlayer" />
             <HlsControlBar></HlsControlBar>
           </MediaController>
           <div className="HlsTopBar">

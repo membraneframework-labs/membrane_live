@@ -4,6 +4,7 @@ import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types";
 import { Channel } from "phoenix";
+import { useHls } from "../../utils/hlsUtils";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";
 
@@ -16,17 +17,21 @@ type StreamAreaProps = {
 };
 
 const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
-  const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
+  const { attachVideo, setSrc } = useHls(true, {
+    liveSyncDurationCount: 2,
+    initialLiveManifestSize: 2,
+    backBufferLength: 30,
+  });
   const screenType = useCheckScreenType();
 
   const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
-      setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);
+      setSrc(`${link}${message.playlist_idl}/index.m3u8`);
       setPresenterName(message.name);
     } else {
-      setHlsUrl("");
+      setSrc("");
       setPresenterName("");
     }
   };
@@ -57,7 +62,11 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
       )}
       <div className="Stream">
         {mode == "hls" && (
-          <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
+          <HlsPlayer
+            attachVideo={attachVideo}
+            presenterName={presenterName}
+            eventChannel={eventChannel}
+          />
         )}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>

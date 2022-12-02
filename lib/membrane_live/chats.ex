@@ -3,10 +3,10 @@ defmodule MembraneLive.Chats do
   The Chats context.
   """
 
-  alias MembraneLive.Repo
-  alias MembraneLive.Chats.Chat
   alias MembraneLive.Accounts
   alias MembraneLive.Accounts.User
+  alias MembraneLive.Chats.Chat
+  alias MembraneLive.Repo
 
   def add_chat_message(event_id, user_name, user_email, is_auth, content, time_offset) do
     case is_auth do

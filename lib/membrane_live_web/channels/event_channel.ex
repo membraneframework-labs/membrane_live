@@ -141,7 +141,6 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_info({:stream_start_timestamp, timestamp}, socket) do
-    IO.inspect(timestamp, label: :TIMESTAMP)
     {:noreply, Socket.assign(socket, :start_time, timestamp)}
   end
 
@@ -186,7 +185,6 @@ defmodule MembraneLiveWeb.EventChannel do
           0
         end
 
-      IO.inspect(offset, label: :OFFSET)
       Chats.add_chat_message(id, name, email, is_auth, message, offset)
       broadcast(socket, "chat_message", %{"email" => email, "message" => message})
     end
