@@ -1,6 +1,6 @@
 @import "../main.css";
 
-.PresenterStreams {
+.PresenterArea {
   height: 100%;
   width: 100%;
   flex: 1;
@@ -15,6 +15,7 @@
 .StreamsGrid {
   flex: 1;
   min-height: 0;
+  width: 100%;
   display: grid;
   gap: 1rem;
   justify-content: center;
@@ -36,4 +37,13 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr;
+}
+
+.StartPresentingButton {
+  color: var(--bg-light-color-1);
+  background: var(--font-dark-color);
+  font-size: 1.6rem;
+  font-weight: 600;
+  border-radius: 40px;
+  padding: 1.3rem 3rem;
 }

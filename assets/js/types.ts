@@ -10,9 +10,17 @@ export type Participant = {
   isBannedFromChat: boolean;
 };
 
+export type SourceType = "audio" | "video";
+
+export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
+
+export type ClientStatus = "not_presenter" | "idle" | "connected";
+
 export type Presenter = {
   name: string;
   email: string;
+  rtcStatus: RtcStatus;
+  connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
 };
 
 export type Mode = "presenters" | "hls";

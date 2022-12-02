@@ -74,8 +74,6 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, is_presenter} <- check_if_presenter(email, reloaded, id),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
              {:ok, is_request_presenting} <- check_if_request_presenting(email, reloaded, id) do
-          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
-
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
@@ -189,7 +187,7 @@ defmodule MembraneLiveWeb.EventChannel do
         end
 
       IO.inspect(offset, label: :OFFSET)
-      Chats.add_chat_message(id, name, email, is_auth, content, offset)
+      Chats.add_chat_message(id, name, email, is_auth, message, offset)
       broadcast(socket, "chat_message", %{"email" => email, "message" => message})
     end
 
@@ -247,29 +245,25 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"answer" => answer, "email" => email, "moderatorTopic" => moderator_topic},
         socket
       ) do
-    {:ok, socket} =
-      if answer == "accept" do
-        {:ok, _ref} =
-          Presence.update(
-            socket,
-            email,
-            &%{&1 | is_presenter: true, is_request_presenting: false}
-          )
+    if answer == "accept" do
+      {:ok, _ref} =
+        Presence.update(
+          socket,
+          email,
+          &%{&1 | is_presenter: true, is_request_presenting: false}
+        )
 
-        "event:" <> id = socket.topic
-        add_to_presenters(email, id)
-        remove_from_presenting_requests(email, id)
-        join_event(socket)
-      else
-        {:ok, _ref} =
-          Presence.update(
-            socket,
-            email,
-            &%{&1 | is_request_presenting: false}
-          )
-
-        {:ok, socket}
-      end
+      "event:" <> id = socket.topic
+      add_to_presenters(email, id)
+      remove_from_presenting_requests(email, id)
+    else
+      {:ok, _ref} =
+        Presence.update(
+          socket,
+          email,
+          &%{&1 | is_request_presenting: false}
+        )
+    end
 
     %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
 
@@ -329,6 +323,19 @@ defmodule MembraneLiveWeb.EventChannel do
 
       remove_from_banned_from_chat(email, id)
     end
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_ready",
+        %{"email" => email},
+        socket
+      ) do
+    "event:" <> id = socket.topic
+    add_to_presenters(email, id)
+    remove_from_presenting_requests(email, id)
+    {:ok, socket} = join_event(socket)
 
     {:noreply, socket}
   end
