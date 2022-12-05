@@ -145,12 +145,12 @@ export const connectWebrtc = async (
       onTrackAdded: () => {
         // do nothing
       },
-      onTrackRemoved: () => {
-        if (presenterStreams[client.email].getTracks().length == 0) {
+      onTrackRemoved: ({ peer }) => {
+        if (presenterStreams[peer.metadata.email].getTracks().length == 0) {
           setPresenters((prev) => {
             return {
               ...prev,
-              [client.email]: { ...prev[client.email], status: "idle" },
+              [peer.metadata.email]: { ...prev[peer.metadata.email], rtcStatus: "disconnected" },
             };
           });
         }

@@ -127,19 +127,28 @@ export const syncPresenters = (
     const presence = new Presence(eventChannel);
 
     const updatePresenters = () => {
-      const presenters: { [key: string]: Presenter } = {};
+      setPresenters((prev) => {
+        const presenters: { [key: string]: Presenter } = {};
 
-      presence.list((email: string, metas: Metas) => {
-        // sometimes presence create two object in metas, for example if you open two windows with the same user.
-        if (metas.metas[0].is_presenter)
-          presenters[email] = {
-            name: metas.metas[0].name,
-            email: email,
-            status: "idle",
-            connectCallbacks: [],
-          };
+        presence.list((email: string, metas: Metas) => {
+          // sometimes presence create two object in metas, for example if you open two windows with the same user.
+
+          if (metas.metas[0].is_presenter) {
+            if (email in prev) {
+              presenters[email] = prev[email];
+            } else {
+              presenters[email] = {
+                name: metas.metas[0].name,
+                email: email,
+                rtcStatus: "disconnected",
+                connectCallbacks: [],
+              };
+            }
+          }
+        });
+
+        return presenters;
       });
-      setPresenters(presenters);
     };
 
     presence.onSync(() => {
