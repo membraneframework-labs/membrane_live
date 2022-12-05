@@ -55,7 +55,7 @@ export const changeTrackIsEnabled = (
 
 export const checkTrackIsEnabled = (client: User, sourceType: SourceType) => {
   if (!(client.email in presenterStreams)) {
-    return true;
+    return false;
   }
   const track =
     sourceType == "video" && mergedScreenRef.cameraTrack
@@ -64,7 +64,9 @@ export const checkTrackIsEnabled = (client: User, sourceType: SourceType) => {
   return track?.enabled;
 };
 
-export const updatePresentersMicAndCamStatuses = (presenters: {[key: string]: Presenter}): {[key: string]: Presenter} => {
+export const updatePresentersMicAndCamStatuses = (presenters: {
+  [key: string]: Presenter;
+}): { [key: string]: Presenter } => {
   const updatePresenterMicAndCamStatus = (presenter: Presenter): Presenter => {
     return {
       ...presenter,
@@ -72,13 +74,13 @@ export const updatePresentersMicAndCamStatuses = (presenters: {[key: string]: Pr
       isCamOn: checkTrackIsEnabled(presenter, "video"),
     };
   };
-  
+
   const updatedPresenters = Object.keys(presenters).reduce((result, key) => {
     result[key] = updatePresenterMicAndCamStatus(presenters[key]);
     return result;
   }, {});
   return updatedPresenters;
-}
+};
 
 export const getCurrentDeviceName = (client: Client, sourceType: SourceType) => {
   return mergedScreenRef.deviceName
@@ -123,7 +125,7 @@ export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
   setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>,
-  updateMicAndCamStatusCallback: () => void,
+  updateMicAndCamStatusCallback: () => void
 ) => {
   const onError = (error: string) => {
     console.log(error);

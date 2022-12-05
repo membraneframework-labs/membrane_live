@@ -32,7 +32,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
   const rerender = useRerender();
 
-  const disconnectedPresenter : Presenter = {
+  const disconnectedPresenter: Presenter = {
     name: client.name,
     email: client.email,
     rtcStatus: "disconnected",
@@ -48,7 +48,9 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   };
 
   const refreshPresentersMicAndCamStatus = () => {
-    setPresenters((presenters) => {return updatePresentersMicAndCamStatuses(presenters)});
+    setPresenters((presenters) => {
+      return updatePresentersMicAndCamStatuses(presenters);
+    });
   };
 
   const getCurrentPresenter = () => {
@@ -85,11 +87,13 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (tryToConnectPresenter) {
       setIsControlPanelAvailable(true);
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPresenters, refreshPresentersMicAndCamStatus).then((value) => {
-        webrtc = value;
-        webrtcConnecting = false;
-        refreshPresentersMicAndCamStatus();
-      });
+      connectWebrtc(eventChannel, client, setPresenters, refreshPresentersMicAndCamStatus).then(
+        (value) => {
+          webrtc = value;
+          webrtcConnecting = false;
+          refreshPresentersMicAndCamStatus();
+        }
+      );
     } else if (webrtc != null && clientShouldDisconnect) {
       setIsControlPanelAvailable(false);
       leaveWebrtc(webrtc, client, eventChannel);

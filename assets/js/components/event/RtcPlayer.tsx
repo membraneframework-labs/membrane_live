@@ -24,8 +24,13 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
   };
   playerCallbacks[presenter.email] = connectStreams;
 
-  const isMuted = isMyself ? !checkTrackIsEnabled(presenter, "audio") : !presenter.isMicOn;
-  const isCamDisabled = isMyself ? !checkTrackIsEnabled(presenter, "video") : !presenter.isCamOn;
+  const isSourceDisabled = (sourceType: SourceType) => {
+    const isEnabled = checkTrackIsEnabled(presenter, sourceType);
+    return isEnabled !== undefined && !isEnabled;
+  };
+
+  const isMuted = isSourceDisabled("audio");
+  const isCamDisabled = isSourceDisabled("video");
 
   useEffect(() => {
     connectStreams("audio");

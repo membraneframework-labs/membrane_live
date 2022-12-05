@@ -1,6 +1,5 @@
 import { useToast } from "@chakra-ui/react";
 
-
 export type Mode = "presenters" | "hls";
 
 export type SourceType = "audio" | "video";
