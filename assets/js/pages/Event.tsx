@@ -34,7 +34,7 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
   const screenType = useCheckScreenType();
-  const [mode, setMode] = useState<Mode>("presenters");
+  const [mode, setMode] = useState<Mode>("hls");
 
   const socket = new Socket("/socket");
   socket.connect();

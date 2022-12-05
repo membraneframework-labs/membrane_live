@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client, Toast } from "../types";
+import type { Client, Mode, Toast } from "../types";
 import {
   QuestionCircle,
   CrossSmall,
@@ -21,7 +21,7 @@ export const presenterPopup = (
   client: Client,
   eventChannel: Channel,
   moderatorTopic: string,
-  setMode: React.Dispatch<React.SetStateAction<string>>
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   let answer = "reject";
 

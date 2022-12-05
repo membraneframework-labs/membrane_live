@@ -62,6 +62,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
+
+    if (clientStatus != "not_presenter")
+      setMode("presenters");
+
     const clientIsPresenterWithNoMediaStream =
       clientStatus === "idle" && presenterStreams[client.email] === undefined;
     if (clientIsPresenterWithNoMediaStream) {
