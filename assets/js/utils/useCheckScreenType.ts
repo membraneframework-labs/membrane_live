@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ScreenType } from "../types";
+import type { ScreenType } from "../components/types/types";
 
 const useCheckScreenType = () => {
   const breakPixelValue = 500;
@@ -9,16 +9,13 @@ const useCheckScreenType = () => {
   const localStorageDevice = localStorage.getItem("deviceType") || "";
 
   const setDevice = (isMobile: boolean): "desktop" | "mobile" => {
-    if (localStorageDevice == "desktop" || localStorageDevice == "mobile")
-      return localStorageDevice;
+    if (localStorageDevice == "desktop" || localStorageDevice == "mobile") return localStorageDevice;
     return isMobile ? "mobile" : "desktop";
   };
 
   const [screenType, setScreenType] = useState<ScreenType>({
     orientation: mqlLandscape.matches ? "landscape" : "portrait",
-    device: setDevice(
-      mqlLandscape.matches ? mqlMobileLandscape.matches : mqlMobilePortrait.matches
-    ),
+    device: setDevice(mqlLandscape.matches ? mqlMobileLandscape.matches : mqlMobilePortrait.matches),
   });
 
   const onLandscapeChange = (e: MediaQueryListEvent) => {
@@ -28,8 +25,7 @@ const useCheckScreenType = () => {
         orientation: e.matches ? "landscape" : "portrait",
         device: setDevice(window.matchMedia(query).matches),
       };
-      if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
-        return prev;
+      if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation) return prev;
       return newScreenType;
     });
   };
@@ -41,8 +37,7 @@ const useCheckScreenType = () => {
           orientation: "portrait",
           device: setDevice(e.matches),
         };
-        if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
-          return prev;
+        if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation) return prev;
         return newScreenType;
       });
   };
@@ -54,8 +49,7 @@ const useCheckScreenType = () => {
           orientation: "landscape",
           device: setDevice(e.matches),
         };
-        if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation)
-          return prev;
+        if (prev.device == newScreenType.device && prev.orientation == newScreenType.orientation) return prev;
         return newScreenType;
       });
   };

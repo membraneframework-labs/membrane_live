@@ -30,7 +30,7 @@ import {
   ScreenDisabled,
   MenuHorizontal,
   UserPlus,
-  iconType,
+  Icon,
 } from "react-swm-icon-pack";
 import {
   shareScreen,
@@ -45,7 +45,7 @@ import {
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client, SourceType } from "../../types";
+import type { Mode, Client, SourceType } from "../types/types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
@@ -78,22 +78,13 @@ type DropdownButtonProps = {
   onSelectSource: (id: string) => void;
 };
 
-const DropdownButton = ({
-  sources,
-  currentSourceName,
-  mainText,
-  onSelectSource,
-}: DropdownButtonProps) => {
+const DropdownButton = ({ sources, currentSourceName, mainText, onSelectSource }: DropdownButtonProps) => {
   return (
     <Menu>
       <MenuButton as={Button} className="MenuButton">
         <p className="MenuButtonText">{mainText}</p>
       </MenuButton>
-      <DropdownList
-        sources={sources}
-        currentSourceName={currentSourceName}
-        itemSelectFunc={onSelectSource}
-      />
+      <DropdownList sources={sources} currentSourceName={currentSourceName} itemSelectFunc={onSelectSource} />
     </Menu>
   );
 };
@@ -126,10 +117,7 @@ const MenuPopover = () => {
   return (
     <Popover>
       <PopoverTrigger>
-        <GenericButton
-          icon={<MenuHorizontal className="PanelButton" />}
-          onClick={() => undefined}
-        />
+        <GenericButton icon={<MenuHorizontal className="PanelButton" />} onClick={() => undefined} />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />
@@ -163,13 +151,7 @@ type ControlPanelProps = {
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const ControlPanel = ({
-  client,
-  webrtc,
-  eventChannel,
-  playerCallback,
-  setMode,
-}: ControlPanelProps) => {
+const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -182,8 +164,7 @@ const ControlPanel = ({
 
       const prepareDevice = (kind: "audio" | "video") => {
         const deviceName = getCurrentDeviceName(client, kind);
-        if (deviceName === undefined)
-          setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
+        if (deviceName === undefined) setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
       };
 
       prepareDevice("audio");
@@ -219,7 +200,7 @@ const ControlPanel = ({
     );
   };
 
-  const getMuteButton = (sourceType: SourceType, IconEnabled: iconType, IconDisabled: iconType) => {
+  const getMuteButton = (sourceType: SourceType, IconEnabled: Icon, IconDisabled: Icon) => {
     return (
       <GenericButton
         icon={
@@ -249,18 +230,9 @@ const ControlPanel = ({
             onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
           />
           <GenericButton
-            icon={
-              !sharingScreen ? (
-                <ScreenShare className="PanelButton" />
-              ) : (
-                <ScreenDisabled className="PanelButton" />
-              )
-            }
+            icon={!sharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />}
             onClick={() => {
-              if (!sharingScreen)
-                shareScreen(webrtc, client, playerCallback).then((value) =>
-                  setSharingScreen(value)
-                );
+              if (!sharingScreen) shareScreen(webrtc, client, playerCallback).then((value) => setSharingScreen(value));
               else stopShareScreen(webrtc, client, playerCallback);
               setSharingScreen(false);
             }}

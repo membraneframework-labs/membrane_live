@@ -1,6 +1,6 @@
 import React from "react";
 import { Channel, Presence } from "phoenix";
-import type { Client, Metas } from "../types";
+import type { Client, Metas } from "../components/types/types";
 
 export const syncPresentersNumber = (
   eventChannel: Channel | undefined,

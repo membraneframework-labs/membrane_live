@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
-import type { Client, Mode } from "../../types";
+import type { Client, Mode } from "../types/types";
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
@@ -33,10 +33,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
   const [amIPresenter, setAmIPresenter] = useState(false);
   const [isClicked, setClicked] = useState(false);
 
-  useEffect(
-    () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
-    [eventChannel]
-  );
+  useEffect(() => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client), [eventChannel]);
 
   useEffect(() => {
     const ref = setTimeout(() => setClicked(false), 5_000);
@@ -58,10 +55,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       </div>
       <div className="ModeButtons">
         {presenterName && (
-          <div
-            className={`heartButton ${isClicked ? "isActive" : ""}`}
-            onClick={() => sendReaction()}
-          />
+          <div className={`heartButton ${isClicked ? "isActive" : ""}`} onClick={() => sendReaction()} />
         )}
         {amIPresenter && (
           <>

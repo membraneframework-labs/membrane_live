@@ -16,7 +16,7 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, Toast, Mode } from "../types";
+import type { Client, Toast, Mode } from "../components/types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
@@ -69,8 +69,7 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, moderatorTopic: string) =>
-          presenterPopup(toast, client, eventChannel, moderatorTopic, setMode),
+        (toast, moderatorTopic: string) => presenterPopup(toast, client, eventChannel, moderatorTopic, setMode),
         setPrivateChannel
       );
     }
@@ -98,9 +97,7 @@ const Event = () => {
             mode={mode}
             setMode={setMode}
           />
-          {screenType.device == "desktop" && (
-            <ParticipantsList client={client} eventChannel={eventChannel} />
-          )}
+          {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
         </div>
       )}
     </div>

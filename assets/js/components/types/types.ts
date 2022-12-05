@@ -20,6 +20,7 @@ export type Presenter = {
   name: string;
   email: string;
   rtcStatus: RtcStatus;
+  status: ClientStatus;
   connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
 };
 
@@ -86,23 +87,6 @@ export type MetasUser = {
 
 export type Metas = {
   metas: [MetasUser];
-};
-
-export type GoogleResponse = {
-  clientId: string;
-  credential: string;
-  select_by: string;
-};
-
-export type GoogleButtonOptions = {
-  type?: "standard" | "icon";
-  theme?: "outline" | "filled_blue" | "filled_black";
-  size?: "large" | "medium" | "small";
-  text?: "signin_with" | "signup_with" | "continue_with" | "signin";
-  shape?: "rectangular" | "pill" | "circle" | "square";
-  logo_alignment?: "left" | "center";
-  width?: string;
-  locale?: string;
 };
 
 export type ScreenType = {

@@ -1,10 +1,10 @@
 import { Channel } from "phoenix";
 import React, { useState, useRef } from "react";
 import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
-import data from "@emoji-mart/data";
+import data from "@emoji-mart/react";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
-import type { Client, ChatMessage } from "../../types";
+import type { Client, ChatMessage } from "../types/types";
 import "../../../css/event/chatbox.css";
 
 type EmojiPopoverProps = {
@@ -102,9 +102,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
           className="MessageInput"
           type="text"
           value={isBannedFromChat ? "" : messageInput}
-          placeholder={
-            isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."
-          }
+          placeholder={isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."}
           disabled={isBannedFromChat}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
@@ -115,11 +113,7 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
       <div className="Messages">
         {messages
           .map((message: ChatMessage) => (
-            <MessageBox
-              message={message}
-              isMyself={message.email == client.email}
-              key={message.id}
-            />
+            <MessageBox message={message} isMyself={message.email == client.email} key={message.id} />
           ))
           .reverse()}
       </div>

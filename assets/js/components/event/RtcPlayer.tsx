@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { presenterStreams } from "../../utils/rtcUtils";
 import { User1 } from "react-swm-icon-pack";
-import type { Presenter, SourceType } from "../../types";
+import type { Presenter, SourceType } from "../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
@@ -17,10 +17,8 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   const connectStreams = (sourceType: SourceType) => {
     if (!presenterStreams[presenter.email]) return;
-    if (videoRef.current && sourceType == "video")
-      videoRef.current.srcObject = presenterStreams[presenter.email];
-    if (audioRef.current && sourceType == "audio")
-      audioRef.current.srcObject = presenterStreams[presenter.email];
+    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStreams[presenter.email];
+    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStreams[presenter.email];
   };
   playerCallbacks[presenter.email] = connectStreams;
 

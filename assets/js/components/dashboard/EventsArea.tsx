@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import EventField from "./EventField";
 import { getWebinarsInfo } from "../../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";
-import type { EventInfo } from "../../types";
+import type { EventInfo } from "../types/types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventsAreaProps = {
@@ -20,16 +20,12 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
 
     const filtered_events = events
       .filter((elem) => {
-        const upcomingEventCondition = upcoming
-          ? elem.startDate >= curDate
-          : elem.startDate < curDate;
+        const upcomingEventCondition = upcoming ? elem.startDate >= curDate : elem.startDate < curDate;
         return isRecording || upcomingEventCondition;
       })
       .filter((elem) => elem.title.toLowerCase().includes(searchText.toLowerCase()))
       .sort((a, b) =>
-        upcoming
-          ? a.startDate.getTime() - b.startDate.getTime()
-          : b.startDate.getTime() - a.startDate.getTime()
+        upcoming ? a.startDate.getTime() - b.startDate.getTime() : b.startDate.getTime() - a.startDate.getTime()
       )
       .map((elem) => <EventField key={elem.uuid} isRecording={isRecording} webinarInfo={elem} />);
 
@@ -51,14 +47,10 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
           <>
             <p className="HeaderText">Upcoming events</p>
             <div className="EventList">
-              {listWebinars(true) || (
-                <p className="EmptyText">No upcoming events! Create one with the button above!</p>
-              )}
+              {listWebinars(true) || <p className="EmptyText">No upcoming events! Create one with the button above!</p>}
             </div>
             <p className="HeaderText">Past events</p>
-            <div className="EventList">
-              {listWebinars(false) || <p className="EmptyText">No past events!</p>}
-            </div>
+            <div className="EventList">{listWebinars(false) || <p className="EmptyText">No past events!</p>}</div>
           </>
         )}
         {currentEvents == "Recorded events" && (

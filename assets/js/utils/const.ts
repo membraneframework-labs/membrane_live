@@ -1,4 +1,4 @@
-import { GoogleButtonOptions } from "../types";
+import { GsiButtonConfiguration } from "google-one-tap";
 
 export const FRAME_RATE = 24;
 export const CANVAS_WIDTH = 1920;
@@ -22,20 +22,7 @@ export const SCREEN_CONSTRAINTS: MediaStreamConstraints = {
   video: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, frameRate: FRAME_RATE },
 };
 
-export const shortMonthNames = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "June",
-  "July",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+export const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export const monthNames = [
   "January",
@@ -54,7 +41,7 @@ export const monthNames = [
 
 export const pageTitlePrefix = "Membrane Live";
 
-export const roundedGoogleButton: GoogleButtonOptions = {
+export const roundedGoogleButton: GsiButtonConfiguration = {
   theme: "outline",
   type: "icon",
   size: "large",
@@ -62,7 +49,7 @@ export const roundedGoogleButton: GoogleButtonOptions = {
   shape: "circle",
 };
 
-export const rectangleGoogleButton: GoogleButtonOptions = {
+export const rectangleGoogleButton: GsiButtonConfiguration = {
   theme: "outline",
   size: "large",
   logo_alignment: "left",

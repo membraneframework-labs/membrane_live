@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client } from "../../types";
+import type { Participant, Client } from "../types/types";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
 import { useChatMessages } from "../../utils/useChatMessages";
@@ -122,11 +122,7 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   ) : (
     <User1 className="ParticipantIcon" />
   );
-  const role = participant.isModerator
-    ? "Moderator"
-    : participant.isPresenter
-    ? "Presenter"
-    : "Participant";
+  const role = participant.isModerator ? "Moderator" : participant.isPresenter ? "Presenter" : "Participant";
 
   const isMyself: boolean = client.email == participant.email;
   const isMyselfParticipant = client.isAuthenticated && role == "Participant" && isMyself;
@@ -143,15 +139,9 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
         </Tooltip>
       )}
       {client.isModerator && (
-        <ModeratorMenu
-          moderatorClient={client}
-          eventChannel={eventChannel}
-          participant={participant}
-        />
+        <ModeratorMenu moderatorClient={client} eventChannel={eventChannel} participant={participant} />
       )}
-      {isMyselfParticipant && (
-        <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />
-      )}
+      {isMyselfParticipant && <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />}
     </div>
   );
 };
@@ -183,11 +173,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
         >
           Group Chat
         </button>
-        <button
-          className={`ParticipantsButton ${listMode && "Clicked"}`}
-          name="list"
-          onClick={() => setListMode(true)}
-        >
+        <button className={`ParticipantsButton ${listMode && "Clicked"}`} name="list" onClick={() => setListMode(true)}>
           Participants
         </button>
       </div>

@@ -5,7 +5,7 @@ import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
 import useCheckScreenType from "../utils/useCheckScreenType";
-import type { CurrentEvents } from "../types";
+import type { CurrentEvents } from "../components/types/types";
 import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {
@@ -24,11 +24,7 @@ const Dashboard = () => {
       )}
       <div className="MainDashboardArea">
         <WelcomePanel currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
-        <SearchAndCreatePanel
-          currentEvents={currentEvents}
-          searchText={searchText}
-          setSearchText={setSearchText}
-        />
+        <SearchAndCreatePanel currentEvents={currentEvents} searchText={searchText} setSearchText={setSearchText} />
         <EventsArea searchText={searchText} currentEvents={currentEvents} />
       </div>
     </div>

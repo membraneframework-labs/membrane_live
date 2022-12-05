@@ -1,9 +1,14 @@
+import { AxiosRequestConfig } from "axios";
 import { authTokenKey, refreshTokenKey } from "../utils/storageUtils";
 import { storageGetRefreshToken, storageGetAuthToken } from "../utils/storageUtils";
 
-export const addJwtToHeader = (config) => {
-  config.headers.Authorization = getAuthBearer();
-  config.headers.RefreshToken = storageGetRefreshToken();
+export const addJwtToHeader = (config: AxiosRequestConfig<unknown>) => {
+  if (config.headers) {
+    config.headers.Authorization = getAuthBearer();
+    const refreshToken = storageGetRefreshToken();
+    if (refreshToken) config.headers.RefreshToken = refreshToken;
+    else console.log("Jwt refresh token is not defined");
+  }
   return config;
 };
 

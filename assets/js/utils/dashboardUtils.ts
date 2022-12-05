@@ -1,7 +1,7 @@
 import axios from "../services";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types";
+import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../components/types/types";
 import axiosWithInterceptor from "../services";
 
 export const checkEventForm = (eventForm: EventFormInput): boolean => {
@@ -13,11 +13,7 @@ const methodMap = {
   update: axiosWithInterceptor.put,
 };
 
-export const sendEventForm = async (
-  modalType: ModalForm,
-  eventForm: EventFormInput,
-  uuid = ""
-): Promise<void> => {
+export const sendEventForm = async (modalType: ModalForm, eventForm: EventFormInput, uuid = ""): Promise<void> => {
   const endpoint = "resources/webinars/" + uuid;
   const method = methodMap[modalType];
 
@@ -62,5 +58,4 @@ export const getWebinarsInfo = async (
 };
 
 export const getEventType = (isRecording: boolean) => (isRecording ? "recordings" : "event");
-export const getEventResourcesType = (isRecording: boolean) =>
-  isRecording ? "recordings" : "webinars";
+export const getEventResourcesType = (isRecording: boolean) => (isRecording ? "recordings" : "webinars");
