@@ -30,10 +30,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
 
-  const disconnectedPresenter = {
+  const disconnectedPresenter: Presenter = {
     name: client.name,
     email: client.email,
-    status: "disconnected",
+    rtcStatus: "disconnected",
     connectCallbacks: [],
   };
 
@@ -62,9 +62,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
-
-    if (clientStatus != "not_presenter")
-      setMode("presenters");
 
     const clientIsPresenterWithNoMediaStream =
       clientStatus === "idle" && presenterStreams[client.email] === undefined;
@@ -99,6 +96,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
+
+  useEffect(() => {
+    if (clientStatus != "not_presenter") setMode("presenters");
+  }, [clientStatus]);
 
   const visiblePresenters = Object.values(presenters).filter(
     (presenter) =>
