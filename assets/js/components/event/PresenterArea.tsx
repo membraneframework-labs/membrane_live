@@ -7,7 +7,8 @@ import {
   askForPermissions,
   updatePresentersMicAndCamStatuses,
 } from "../../utils/rtcUtils";
-import { syncPresenters, useRerender } from "../../utils/channelUtils";
+import { syncPresenters } from "../../utils/channelUtils";
+import { useRerender } from "../../utils/reactUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";

@@ -4,7 +4,6 @@ import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { updatePresentersMicAndCamStatuses } from "./rtcUtils";
-import { useState } from "react";
 
 type EventChannelJoinResponse = {
   is_moderator?: boolean;
@@ -153,11 +152,6 @@ export const syncPresenters = (
 };
 
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
-
-export const useRerender = () => {
-  const [value, setValue] = useState(0);
-  return () => setValue(value + 1);
-};
 
 const compareParticipants =
   (clientEmail: string) =>

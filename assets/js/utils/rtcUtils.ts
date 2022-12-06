@@ -175,7 +175,7 @@ export const connectWebrtc = async (
         onError("Error while joining WebRTC connection");
       },
       onTrackReady: ({ track, peer, metadata }) => {
-        if (track != null) {
+        if (track) {
           const callback = (playerCallback: (sourceType: SourceType) => void) => {
             addOrReplaceTrack(peer.metadata, track, playerCallback);
           };
@@ -191,13 +191,15 @@ export const connectWebrtc = async (
             };
           });
 
-          if ("enabled" in metadata) track.enabled = metadata.enabled;
-          updateMicAndCamStatusCallback();
+          if ("enabled" in metadata) {
+            track.enabled = metadata.enabled;
+            updateMicAndCamStatusCallback();
+          }
         }
       },
       onTrackUpdated({ track, metadata }: TrackContext) {
-        if (track != null) {
-          if ("enabled" in metadata) track.enabled = metadata.enabled;
+        if (track && "enabled" in metadata) {
+          track.enabled = metadata.enabled;
           updateMicAndCamStatusCallback();
         }
       },

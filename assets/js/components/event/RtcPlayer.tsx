@@ -26,7 +26,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   const isSourceDisabled = (sourceType: SourceType) => {
     const isEnabled = checkTrackIsEnabled(presenter, sourceType);
-    return isEnabled !== undefined && !isEnabled;
+    return isEnabled === false;
   };
 
   const isMuted = isSourceDisabled("audio");
