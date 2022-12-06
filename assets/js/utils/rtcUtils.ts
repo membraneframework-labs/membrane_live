@@ -40,17 +40,36 @@ export const changeTrackIsEnabled = (
   sourceType: SourceType,
   playerCallback: (sourceType: SourceType) => void
 ) => {
-  const track =
-    sourceType == "video" && mergedScreenRef.cameraTrack
-      ? mergedScreenRef.cameraTrack
-      : findTrackByType(client, sourceType);
+  const track = findTrackOrScreenshare(client, sourceType);
   if (track) {
     track.enabled = !track.enabled;
-    webrtc && webrtc.updateTrackMetadata(sourceIds[sourceType], { enabled: track.enabled });
+    webrtc && sendTrackEnabledMetadata(webrtc, track);
   }
   if (webrtc && sourceType == "video" && mergedScreenRef.cameraTrack) {
     shareScreen(webrtc, client, playerCallback);
   }
+};
+
+export const updateTrackEnabled = (
+  webrtc: MembraneWebRTC,
+  client: User,
+  sourceType: SourceType
+): void => {
+  const track = findTrackOrScreenshare(client, sourceType);
+  track && sendTrackEnabledMetadata(webrtc, track);
+};
+
+const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack) => {
+  webrtc.updateTrackMetadata(sourceIds[track.kind as SourceType], { enabled: track.enabled });
+};
+
+const findTrackOrScreenshare = (
+  client: User,
+  sourceType: SourceType
+): MediaStreamTrack | undefined => {
+  return sourceType === "video" && mergedScreenRef.cameraTrack
+    ? mergedScreenRef.cameraTrack
+    : findTrackByType(client, sourceType);
 };
 
 export const checkTrackIsEnabled = (client: User, sourceType: SourceType) => {
@@ -149,6 +168,8 @@ export const connectWebrtc = async (
             1500
           );
         });
+        updateTrackEnabled(webrtc, client, "audio");
+        updateTrackEnabled(webrtc, client, "video");
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
