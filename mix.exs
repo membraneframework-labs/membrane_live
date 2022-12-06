@@ -55,7 +55,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine", branch: "synchronize-streams-wallclock"},
+      github: "membraneframework/membrane_rtc_engine", branch: "synchronize-streams-wallclock"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions-working",
@@ -71,10 +71,10 @@ defmodule Membrane.Live.Mixfile do
       {:ex_libsrtp, "~> 0.5.1", override: true},
 
       # Otel
-      {:opentelemetry, "~> 1.0"},
-      {:opentelemetry_api, "~> 1.0"},
+      {:opentelemetry, "1.0.5"},
+      {:opentelemetry_api, "1.0.3"},
       {:opentelemetry_exporter, "1.0.4"},
-      {:opentelemetry_zipkin, "~> 1.0"},
+      {:opentelemetry_zipkin, "1.0.0"},
 
       # HLS_Endpoint deps
       {:membrane_http_adaptive_stream_plugin,
@@ -86,11 +86,10 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_h264_ffmpeg_plugin, "~> 0.24.0", override: true},
       {:membrane_video_compositor_plugin,
        github: "membraneframework-labs/membrane_video_compositor_plugin"},
-      # {:membrane_video_mixer_plugin, github: "kim-company/membrane_video_mixer_plugin"},
       {:membrane_generator_plugin, "~> 0.6.0"},
       {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
-      {:membrane_framerate_converter_plugin, "~> 0.5.0"},
+      {:membrane_framerate_converter_plugin, "~> 0.5.1"},
       {:membrane_audio_mix_plugin, "~> 0.10.0"}
     ]
   end
