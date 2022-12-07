@@ -3,6 +3,7 @@ import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "..
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
+import { updatePresentersMicAndCamStatuses } from "./rtcUtils";
 
 type EventChannelJoinResponse = {
   is_moderator?: boolean;
@@ -135,11 +136,11 @@ export const syncPresenters = (
           presenters[email] = {
             name: metas.metas[0].name,
             email: email,
-            status: "idle",
+            rtcStatus: "disconnected",
             connectCallbacks: [],
           };
       });
-      setPresenters(presenters);
+      setPresenters(updatePresentersMicAndCamStatuses(presenters));
     };
 
     presence.onSync(() => {
