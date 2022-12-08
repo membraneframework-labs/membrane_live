@@ -5,7 +5,7 @@ import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";
 import EventsArea from "../components/dashboard/EventsArea";
 import { pageTitlePrefix } from "../utils/const";
 import useCheckScreenType from "../utils/useCheckScreenType";
-import type { CurrentEvents } from "../components/types/types";
+import type { CurrentEvents } from "../types/types";
 import "../../css/dashboard/dashboard.css";
 
 const Dashboard = () => {

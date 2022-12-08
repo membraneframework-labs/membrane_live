@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Plus, Minus, CalendarClock } from "react-swm-icon-pack";
 
-import { EventFormInput, EventInfo } from "../types/types";
+import { EventFormInput, EventInfo } from "../../types/types";
 
 import GenericButton from "../helpers/GenericButton";
 

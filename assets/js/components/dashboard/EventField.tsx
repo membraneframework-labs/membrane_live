@@ -6,7 +6,7 @@ import { useToast } from "@chakra-ui/react";
 import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
 import { getIsAuthenticated, storageGetEmail, clearSessionStorageName } from "../../utils/storageUtils";
-import type { EventInfo } from "../types/types";
+import type { EventInfo } from "../../types/types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {

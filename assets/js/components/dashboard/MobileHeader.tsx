@@ -1,6 +1,6 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
-import type { CurrentEvents } from "../types/types";
+import type { CurrentEvents } from "../../types/types";
 import "../../../css/dashboard/welcomepanel.css";
 
 type MobileHeaderProps = {

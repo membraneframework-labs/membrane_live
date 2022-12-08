@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type { Mode, Client } from "../types/types";
+import type { Mode, Client } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";

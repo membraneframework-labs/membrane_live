@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ScreenType } from "../components/types/types";
+import type { ScreenType } from "../types/types";
 
 const useCheckScreenType = () => {
   const breakPixelValue = 500;

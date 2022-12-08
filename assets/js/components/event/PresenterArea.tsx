@@ -5,12 +5,14 @@ import {
   leaveWebrtc,
   presenterStreams,
   askForPermissions,
+  updatePresentersMicAndCamStatuses,
 } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
+import { useRerender } from "../../utils/reactUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../types/types";
+import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../../types/types";
 import "../../../css/event/presenterarea.css";
 import { Channel } from "phoenix";
 
@@ -29,6 +31,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [presenters, setPresenters] = useState<{ [key: string]: Presenter }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
+  const rerender = useRerender();
 
   const disconnectedPresenter: Presenter = {
     name: client.name,
@@ -43,6 +46,12 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
     eventChannel?.push("presenter_ready", {
       email: client.email,
+    });
+  };
+
+  const refreshPresentersMicAndCamStatus = () => {
+    setPresenters((presenters) => {
+      return updatePresentersMicAndCamStatuses(presenters);
     });
   };
 
@@ -76,9 +85,10 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (tryToConnectPresenter) {
       setIsControlPanelAvailable(true);
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPresenters).then((value) => {
+      connectWebrtc(eventChannel, client, setPresenters, refreshPresentersMicAndCamStatus).then((value) => {
         webrtc = value;
         webrtcConnecting = false;
+        refreshPresentersMicAndCamStatus();
       });
     } else if (webrtc != null && clientShouldDisconnect) {
       setIsControlPanelAvailable(false);
@@ -128,6 +138,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
+          rerender={rerender}
         />
       )}
       {clientStatus === "idle" && (

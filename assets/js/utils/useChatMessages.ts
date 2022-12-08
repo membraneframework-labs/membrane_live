@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
-import { ChatMessage, MetasUser } from "../components/types/types";
+import { ChatMessage, MetasUser } from "../types/types";
 import { getByKey } from "./channelUtils";
 
 export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[] => {

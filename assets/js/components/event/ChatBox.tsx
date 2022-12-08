@@ -4,7 +4,7 @@ import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
 import data from "@emoji-mart/react";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
-import type { Client, ChatMessage } from "../types/types";
+import type { Client, ChatMessage } from "../../types/types";
 import "../../../css/event/chatbox.css";
 
 type EmojiPopoverProps = {

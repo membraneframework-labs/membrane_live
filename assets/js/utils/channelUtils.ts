@@ -1,8 +1,9 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../components/types/types";
+import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types/types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
+import { updatePresentersMicAndCamStatuses } from "./rtcUtils";
 
 type EventChannelJoinResponse = {
   is_moderator?: boolean;
@@ -132,12 +133,12 @@ export const syncPresenters = (
           presenters[email] = {
             name: metas.metas[0].name,
             email: email,
+            rtcStatus: "disconnected",
             status: "idle",
             connectCallbacks: [],
-            rtcStatus: "disconnected",
           };
       });
-      setPresenters(presenters);
+      setPresenters(updatePresentersMicAndCamStatuses(presenters));
     };
 
     presence.onSync(() => {

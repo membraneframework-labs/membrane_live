@@ -33,6 +33,12 @@
   flex-direction: column;
 }
 
+.BackArrowInfoTooltip {
+  background: var(--font-dark-color) !important;
+  border-radius: 16px !important;
+  font-size: 1.3rem !important;
+}
+
 .WebinarInfo {
   color: var(--font-dark-color);
   font-size: 1.6rem;
@@ -106,6 +112,7 @@
   font-weight: 600;
   font-size: 1.6rem;
   padding: 1rem 1.5rem;
+  min-width: 7.6rem;
 }
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {

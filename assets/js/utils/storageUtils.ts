@@ -1,4 +1,4 @@
-import type { AuthTokenKey, RefreshTokenKey, AuthResponseData } from "../components/types/types";
+import type { AuthTokenKey, RefreshTokenKey, AuthResponseData } from "../types/types";
 
 const NAME = "name";
 const EMAIL = "email";

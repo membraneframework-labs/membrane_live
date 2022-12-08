@@ -2,7 +2,7 @@ import axios from "axios";
 import { Channel } from "phoenix";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
-import { Toast } from "../components/types/types";
+import { Toast } from "../types/types";
 import { storageSetJwt, storageSetName, storageSetEmail, storageSetPicture } from "../utils/storageUtils";
 import { CredentialResponse } from "google-one-tap";
 import { getErrorToast } from "../utils/toastUtils";

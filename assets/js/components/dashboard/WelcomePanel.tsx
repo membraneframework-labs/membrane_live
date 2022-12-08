@@ -3,7 +3,7 @@ import { getIsAuthenticated, storageGetName, storageGetPicture } from "../../uti
 import UserField from "./UserField";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import MobileHeader from "./MobileHeader";
-import type { CurrentEvents } from "../types/types";
+import type { CurrentEvents } from "../../types/types";
 import "../../../css/dashboard/welcomepanel.css";
 
 type WelcomePanelProps = {

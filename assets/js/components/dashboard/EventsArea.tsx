@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import EventField from "./EventField";
 import { getWebinarsInfo } from "../../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";
-import type { EventInfo } from "../types/types";
+import type { EventInfo } from "../../types/types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventsAreaProps = {

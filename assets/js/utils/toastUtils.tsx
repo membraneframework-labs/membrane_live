@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client, Mode, Toast } from "../components/types/types";
+import type { Client, Mode, Toast } from "../types/types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";

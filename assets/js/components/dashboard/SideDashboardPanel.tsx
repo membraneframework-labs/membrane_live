@@ -2,7 +2,7 @@ import React from "react";
 import MembraneLogo from "./MembraneLogo";
 import { Calendar, Package, QuestionCircle, Logout, Icon } from "react-swm-icon-pack";
 import { logOut } from "../../utils/storageUtils";
-import type { CurrentEvents } from "../types/types";
+import type { CurrentEvents } from "../../types/types";
 import "../../../css/dashboard/sidedashboardpanel.css";
 
 type SideDashboardPanelProps = {

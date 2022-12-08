@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
-import type { Client, Mode } from "../types/types";
+import type { Client, Mode } from "../../types/types";
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
