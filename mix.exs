@@ -78,19 +78,19 @@ defmodule Membrane.Live.Mixfile do
 
       # HLS_Endpoint deps
       {:membrane_http_adaptive_stream_plugin,
-       github: "membraneframework/membrane_http_adaptive_stream_plugin"},
-      {:membrane_mp4_plugin, github: "membraneframework/membrane_mp4_plugin"},
+       github: "membraneframework/membrane_http_adaptive_stream_plugin", optional: true},
+      {:membrane_mp4_plugin, "~> 0.17.0", override: true, optional: true},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},
+      {:membrane_opus_plugin, "~> 0.15.0", override: true},
       {:membrane_h264_ffmpeg_plugin, "~> 0.24.0", override: true},
       {:membrane_video_compositor_plugin,
-       github: "membraneframework-labs/membrane_video_compositor_plugin"},
-      {:membrane_generator_plugin, "~> 0.6.0"},
+       github: "membraneframework-labs/membrane_video_compositor_plugin", branch: "staging-live", override: true},
+      {:membrane_generator_plugin, "~> 0.7.0", override: true},
       {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
       {:membrane_framerate_converter_plugin, "~> 0.5.1"},
-      {:membrane_audio_mix_plugin, "~> 0.10.0"}
+      {:membrane_audio_mix_plugin, "~> 0.11.0"}
     ]
   end
 
