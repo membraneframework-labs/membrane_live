@@ -7,7 +7,7 @@ export const addJwtToHeader = (config: AxiosRequestConfig<unknown>) => {
     config.headers.Authorization = getAuthBearer();
     const refreshToken = storageGetRefreshToken();
     if (refreshToken) config.headers.RefreshToken = refreshToken;
-    else console.log("Jwt refresh token is not defined");
+    else console.error("Jwt refresh token is not defined");
   }
   return config;
 };
