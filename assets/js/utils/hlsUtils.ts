@@ -1,16 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Hls, { HlsConfig } from "hls.js";
+import { StreamStartContext } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
-  hlsConfig?: Partial<HlsConfig>
+  hlsConfig?: Partial<HlsConfig>,
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
 } => {
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
+  const { setStreamStart } = useContext(StreamStartContext);
   const [src, setSrc] = useState<string>("");
+  const totalDuration = useRef<number | null>(null);
 
   const attachVideo = (video_ref: HTMLVideoElement | null) => {
     if (hls && video_ref) {
@@ -58,6 +61,19 @@ export const useHls = (
           }
         }
       });
+
+      hls.current.on(Hls.Events.LEVEL_LOADED, (_event, data) => {
+        // cos sie znowu zepsulo z ptsami
+        console.log("TOTAL DURATION", data.details.totalduration);
+        totalDuration.current = data.details.totalduration;
+      })
+
+      hls.current.once(Hls.Events.FRAG_LOADED, () => {
+        if (totalDuration.current != null && setStreamStart) {
+          console.log("START TIME", new Date(Date.now() - totalDuration.current * 1000))
+          setStreamStart(new Date(Date.now() - totalDuration.current * 1000));
+        }
+      })
     };
 
     if (Hls.isSupported()) initHls();

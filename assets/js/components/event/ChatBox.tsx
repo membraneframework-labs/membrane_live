@@ -49,7 +49,7 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
     if (index == message.messages.length - 1) cornerClass += " Bottom";
 
     return (
-      <p key={messageString} className={`SingleMessage ${cornerClass}`} lang="de">
+      <p key={index} className={`SingleMessage ${cornerClass}`} lang="de">
         {index < message.moderatedNo ? <i>Moderated</i> : messageString}
       </p>
     );

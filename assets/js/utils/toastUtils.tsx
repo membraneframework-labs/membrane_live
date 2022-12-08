@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client, Toast } from "../types";
+import type { Client, Mode, Toast } from "../types";
 import {
   QuestionCircle,
   CrossSmall,
@@ -8,9 +8,9 @@ import {
   iconType,
 } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
-import "../../css/toast.css";
 import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
+import "../../css/toast.css";
 
 const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
@@ -21,7 +21,7 @@ export const presenterPopup = (
   client: Client,
   eventChannel: Channel,
   moderatorTopic: string,
-  setMode: React.Dispatch<React.SetStateAction<string>>
+  setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   let answer = "reject";
 

@@ -169,8 +169,10 @@ defmodule MembraneLiveWeb.EventChannel do
     if not is_banned_from_chat do
       %{metas: [%{name: name, is_auth: is_auth}]} = Presence.get_by_key(socket, email)
 
+      {:ok, is_presenter} = check_if_presenter(email, true, id)
+
       offset =
-        if is_auth and check_if_presenter(email, true, id) do
+        if is_auth and is_presenter do
           start_time = socket.assigns.start_time
 
           if is_nil(start_time),
@@ -186,7 +188,7 @@ defmodule MembraneLiveWeb.EventChannel do
         end
 
       Chats.add_chat_message(id, name, email, is_auth, message, offset)
-      broadcast(socket, "chat_message", %{"email" => email, "message" => message})
+      broadcast(socket, "chat_message", %{"email" => email, "message" => message, "offset" => offset})
     end
 
     {:noreply, socket}

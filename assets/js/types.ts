@@ -120,3 +120,9 @@ export type ChatMessage = {
   moderatedNo: number;
   messages: string[];
 };
+
+export type AwaitingMessage = {
+  email: string;
+  message: string;
+  time: Date;
+}
