@@ -135,7 +135,6 @@ defmodule MembraneLive.Event do
         do: %{state | start_timestamp: System.monotonic_time(:millisecond)},
         else: state
 
-    # TODO: this won't do unfortunately, starts when moderator joins
     send(peer_channel_pid, {:stream_start_timestamp, state.start_timestamp})
 
     handshake_opts =

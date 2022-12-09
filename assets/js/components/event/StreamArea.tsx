@@ -4,7 +4,7 @@ import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import type { Mode, Client } from "../../types/types";
 import { Channel } from "phoenix";
-import { useHls } from "../../utils/hlsUtils";
+import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";
 

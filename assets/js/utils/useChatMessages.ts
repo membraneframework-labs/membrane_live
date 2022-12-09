@@ -5,9 +5,9 @@ import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 
 export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[] => {
-  const presence = useRef<Presence>();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const { streamStart } = useContext(StreamStartContext);
+  const presence = useRef<Presence>();
   const futureChatMessags = useRef<AwaitingMessage[]>([]);
 
   const getTitle = (data: MetasUser | undefined) =>

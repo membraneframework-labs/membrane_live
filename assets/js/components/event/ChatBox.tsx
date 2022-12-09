@@ -1,7 +1,6 @@
 import { Channel } from "phoenix";
 import React, { useState, useRef } from "react";
 import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
-import data from "@emoji-mart/react";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types/types";
@@ -24,7 +23,6 @@ const EmojiPopover = ({ setMessageInput, inputRef }: EmojiPopoverProps) => {
       </PopoverTrigger>
       <PopoverContent>
         <Picker
-          data={data}
           theme="light"
           onEmojiSelect={(emoji: { native: string }) => {
             setMessageInput((prev) => prev + emoji.native);
