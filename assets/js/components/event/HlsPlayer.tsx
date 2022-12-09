@@ -1,6 +1,6 @@
 import React from "react";
 import AnimationComponent from "./HeartAnimation";
-import ReactHlsPlayer from "react-hls-player";
+import ReactHlsPlayer from "../../utils/ReactHlsPlayer";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
@@ -10,7 +10,7 @@ import "../../../css/event/hlsplayer.css";
 type HlsPlayerProps = {
   hlsUrl: string;
   presenterName: string;
-  eventChannel: Channel | undefined;
+  eventChannel?: Channel | undefined;
 };
 
 const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
@@ -22,7 +22,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
             <ReactHlsPlayer
               hlsConfig={{
                 liveSyncDurationCount: 2,
-                initialLifeManifestSize: 2,
+                initialLiveManifestSize: 2,
                 backBufferLength: 30,
               }}
               autoPlay={true}
@@ -33,9 +33,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
             ></ReactHlsPlayer>
             <HlsControlBar></HlsControlBar>
           </MediaController>
-          <div className="HlsTopBar">
-            {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
-          </div>
+          <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>
           <div className="HlsBottomBar">
             <AnimationComponent eventChannel={eventChannel} />
           </div>

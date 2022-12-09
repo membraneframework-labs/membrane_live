@@ -5,12 +5,8 @@ import ModalForm from "./ModalForm";
 import { useToast } from "@chakra-ui/react";
 import { getEventType } from "../../utils/dashboardUtils";
 import { deleteEventPopup } from "../../utils/toastUtils";
-import {
-  getIsAuthenticated,
-  storageGetEmail,
-  clearSessionStorageName,
-} from "../../utils/storageUtils";
-import type { EventInfo } from "../../types";
+import { getIsAuthenticated, storageGetEmail, clearSessionStorageName } from "../../utils/storageUtils";
+import type { EventInfo } from "../../types/types";
 import "../../../css/dashboard/eventsarea.css";
 
 type EventFieldProps = {
@@ -35,11 +31,7 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
     <div className="EventField">
       <div className="InfoBox">
         <p className="EventPresenters">{webinarInfo.presenters.join(", ")}</p>
-        <a
-          href={`${eventType}/${webinarInfo.uuid}`}
-          className="EventTitle"
-          onClick={() => clearSessionStorageName()}
-        >
+        <a href={`${eventType}/${webinarInfo.uuid}`} className="EventTitle" onClick={() => clearSessionStorageName()}>
           {webinarInfo.title}
         </a>
         <p className="EventDescription">{webinarInfo.description}</p>
@@ -51,16 +43,9 @@ const EventField = ({ isRecording, webinarInfo }: EventFieldProps) => {
           {isAuthenticated && isUserEventModerator && (
             <div className="EventModifyBox">
               {!isRecording && (
-                <ModalForm
-                  type="update"
-                  activationButtonClass="EventUpdateButton"
-                  webinar={webinarInfo}
-                />
+                <ModalForm type="update" activationButtonClass="EventUpdateButton" webinar={webinarInfo} />
               )}
-              <button
-                className="EventDeleteButton"
-                onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}
-              >
+              <button className="EventDeleteButton" onClick={() => deleteEventPopup(toast, webinarInfo.uuid)}>
                 Delete
               </button>
             </div>

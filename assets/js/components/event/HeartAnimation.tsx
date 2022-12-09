@@ -25,7 +25,7 @@ const cursorYOffset = -5;
 const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   const [hearts, setHearts] = useState<HeartElement[]>([]);
 
-  const generateHeartElement = (left, top, scale) => {
+  const generateHeartElement = (left: number, top: number, scale: number) => {
     return (
       <div
         key={`${left}${top}${scale}`}
@@ -39,7 +39,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
     );
   };
 
-  const generateHeart = (x, y, xBound, xStart, scale) => {
+  const generateHeart = (x: number, y: number, xBound: number, xStart: number, scale: number) => {
     return {
       elem: generateHeartElement(x, y, scale),
       time: duration,
@@ -63,9 +63,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
         .map((heart: HeartElement) => {
           const newYPosition = heart.y - speed;
           const newXPosition =
-            heart.x +
-            ((heart.direction * heart.bound * Math.sin((heart.y * heart.scale) / 30)) / heart.y) *
-              100;
+            heart.x + ((heart.direction * heart.bound * Math.sin((heart.y * heart.scale) / 30)) / heart.y) * 100;
           const newElem = generateHeartElement(newXPosition, newYPosition, heart.scale);
           const newTime = heart.time - deltaTime;
           const newHeart = { ...heart, elem: newElem, time: newTime, y: newYPosition };
@@ -102,13 +100,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
     const randomXFactor = Math.random() * 200;
     const randomYFactor = Math.random() * 20;
 
-    return generateHeart(
-      200 + cursorXOffset + randomXFactor,
-      10 + cursorYOffset + randomYFactor,
-      bound,
-      start,
-      scale
-    );
+    return generateHeart(200 + cursorXOffset + randomXFactor, 10 + cursorYOffset + randomYFactor, bound, start, scale);
   };
 
   return <div className={"animatedContainer"}>{hearts.map((heart) => heart.elem)}</div>;

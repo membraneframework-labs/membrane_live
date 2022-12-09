@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  getEventInfo,
-  initEventInfo,
-  redirectToHomePage,
-  syncParticipantsNumber,
-} from "../../utils/headerUtils";
+import { getEventInfo, initEventInfo, redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy, Redo } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
 import {
@@ -20,7 +15,7 @@ import {
 import { monthNames, pageTitlePrefix } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
-import type { Client, EventInfo } from "../../types";
+import type { Client, EventInfo } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/header.css";
@@ -111,10 +106,7 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   return (
     <div className="Header">
       {client.isModerator ? (
-        <ArrowLeftPopover
-          eventChannel={eventChannel}
-          redirectHome={() => redirectToHomePage(navigate)}
-        />
+        <ArrowLeftPopover eventChannel={eventChannel} redirectHome={() => redirectToHomePage(navigate)} />
       ) : (
         <button onClick={() => redirectToHomePage(navigate)}>
           <ArrowLeft className="Arrow" />

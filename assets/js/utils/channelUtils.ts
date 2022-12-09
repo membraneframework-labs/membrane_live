@@ -1,5 +1,5 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types";
+import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types/types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
@@ -71,10 +71,7 @@ export const syncEventChannel = (
   eventChannel.push("sync_presence", {});
 };
 
-export const getByKey = (
-  presence: Presence | undefined,
-  keyEmail: string
-): MetasUser | undefined => {
+export const getByKey = (presence: Presence | undefined, keyEmail: string): MetasUser | undefined => {
   let result: MetasUser | undefined;
   presence?.list((email: string, metas: Metas) => {
     const data = metas.metas[0];
@@ -137,6 +134,7 @@ export const syncPresenters = (
             name: metas.metas[0].name,
             email: email,
             rtcStatus: "disconnected",
+            status: "idle",
             connectCallbacks: [],
           };
       });
@@ -156,19 +154,9 @@ export const getChannelId = (): string => window.location.pathname.split("/")[2]
 const compareParticipants =
   (clientEmail: string) =>
   (x: Participant, y: Participant): number => {
-    return x.email == clientEmail
-      ? -1
-      : y.email == clientEmail
-      ? 1
-      : participantToNumber(x) - participantToNumber(y);
+    return x.email == clientEmail ? -1 : y.email == clientEmail ? 1 : participantToNumber(x) - participantToNumber(y);
   };
 
 const participantToNumber = (participant: Participant): number => {
-  return participant.isModerator
-    ? 1
-    : participant.isPresenter
-    ? 2
-    : participant.isRequestPresenting
-    ? 3
-    : 4;
+  return participant.isModerator ? 1 : participant.isPresenter ? 2 : participant.isRequestPresenting ? 3 : 4;
 };

@@ -82,7 +82,11 @@ jobs:
           command: npm run format:check
           name: Run prettier on front-end
       - run:
-          command: npm run linter
+          command: npm run tsc:check
+          name: Run typescript typechecking on front-end
+      - run:
+          command: npm run lint
+          name: Run linter on front-end
           
 
 workflows:

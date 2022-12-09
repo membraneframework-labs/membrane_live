@@ -1,11 +1,7 @@
-import {
-  MembraneWebRTC,
-  SerializedMediaEvent,
-  TrackContext,
-} from "@membraneframework/membrane-webrtc-js";
+import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { User, Client, Presenter, SourceType } from "../types";
+import { User, Client, Presenter, SourceType } from "../types/types";
 import { Channel } from "phoenix";
 
 export type Sources = {
@@ -17,7 +13,7 @@ export type MergedScreenRef = {
   screenTrack: MediaStreamTrack | undefined;
   cameraTrack: MediaStreamTrack | undefined;
   deviceName: string;
-  refreshId: NodeJS.Timeout | undefined;
+  refreshId: number | undefined;
 };
 
 export const presenterStreams: { [key: string]: MediaStream } = {};
@@ -28,7 +24,7 @@ export const mergedScreenRef: MergedScreenRef = {
   refreshId: undefined,
 };
 
-const sourceIds: { audio: string; video: string } = { audio: "", video: "" };
+const sourceIds: { audio: string; video: string; [key: string]: string } = { audio: "", video: "" };
 
 export const findTrackByType = (client: User, sourceType: SourceType) => {
   return presenterStreams[client.email].getTracks().find((elem) => elem.kind == sourceType);
@@ -50,11 +46,7 @@ export const changeTrackIsEnabled = (
   }
 };
 
-export const updateTrackEnabled = (
-  webrtc: MembraneWebRTC,
-  client: User,
-  sourceType: SourceType
-): void => {
+export const updateTrackEnabled = (webrtc: MembraneWebRTC, client: User, sourceType: SourceType): void => {
   const track = findTrackOrScreenshare(client, sourceType);
   track && sendTrackEnabledMetadata(webrtc, track);
 };
@@ -63,10 +55,7 @@ const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrac
   webrtc.updateTrackMetadata(sourceIds[track.kind as SourceType], { enabled: track.enabled });
 };
 
-const findTrackOrScreenshare = (
-  client: User,
-  sourceType: SourceType
-): MediaStreamTrack | undefined => {
+const findTrackOrScreenshare = (client: User, sourceType: SourceType): MediaStreamTrack | undefined => {
   return sourceType === "video" && mergedScreenRef.cameraTrack
     ? mergedScreenRef.cameraTrack
     : findTrackByType(client, sourceType);
@@ -94,7 +83,7 @@ export const updatePresentersMicAndCamStatuses = (presenters: {
     };
   };
 
-  const updatedPresenters = Object.keys(presenters).reduce((result, key) => {
+  const updatedPresenters = Object.keys(presenters).reduce((result: { [key: string]: Presenter }, key) => {
     result[key] = updatePresenterMicAndCamStatus(presenters[key]);
     return result;
   }, {});
@@ -102,9 +91,7 @@ export const updatePresentersMicAndCamStatuses = (presenters: {
 };
 
 export const getCurrentDeviceName = (client: Client, sourceType: SourceType) => {
-  return mergedScreenRef.deviceName
-    ? mergedScreenRef.deviceName
-    : findTrackByType(client, sourceType)?.label;
+  return mergedScreenRef.deviceName ? mergedScreenRef.deviceName : findTrackByType(client, sourceType)?.label;
 };
 
 export const getSources = async () => {
@@ -160,13 +147,7 @@ export const connectWebrtc = async (
       },
       onJoinSuccess: () => {
         presenterStreams[client.email].getTracks().forEach((track) => {
-          sourceIds[track.kind] = webrtc.addTrack(
-            track,
-            presenterStreams[client.email],
-            {},
-            undefined,
-            1500
-          );
+          sourceIds[track.kind] = webrtc.addTrack(track, presenterStreams[client.email], {}, undefined, 1500);
         });
         updateTrackEnabled(webrtc, client, "audio");
         updateTrackEnabled(webrtc, client, "video");
@@ -244,10 +225,9 @@ export const connectPresentersTracks = async (
   setPresenters((presenters) => {
     Object.values(presenters)
       .filter(
-        (presenter) =>
-          presenter.rtcStatus == "rtc_player_ready" && presenter.connectCallbacks.length > 0
+        (presenter: Presenter) => presenter.rtcStatus == "rtc_player_ready" && presenter.connectCallbacks.length > 0
       )
-      .forEach((presenter) => {
+      .forEach((presenter: Presenter) => {
         const playerCallback = playerCallbacks[presenter.email];
         presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
         presenters = { ...presenters, [presenter.email]: { ...presenter, connectCallbacks: [] } };
@@ -275,11 +255,7 @@ export const changeSource = async (
   }
 };
 
-export const leaveWebrtc = (
-  webrtc: MembraneWebRTC,
-  client: Client,
-  webrtcChannel: Channel | undefined
-) => {
+export const leaveWebrtc = (webrtc: MembraneWebRTC, client: Client, webrtcChannel: Channel | undefined) => {
   webrtcChannel?.off("mediaEvent");
   presenterStreams[client.email].getTracks().forEach((track) => track.stop());
   mergedScreenRef.cameraTrack?.stop();
@@ -353,11 +329,7 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
   return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
 };
 
-const addOrReplaceTrack = (
-  client: User,
-  track: MediaStreamTrack,
-  playerCallback: (sourceType: SourceType) => void
-) => {
+const addOrReplaceTrack = (client: User, track: MediaStreamTrack, playerCallback: (sourceType: SourceType) => void) => {
   if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
   const curTrack = findTrackByType(client, track.kind as SourceType);
 

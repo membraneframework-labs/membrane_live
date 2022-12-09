@@ -1,10 +1,7 @@
 import { FRAME_RATE, SCREEN_CONSTRAINTS, CANVAS_HEIGHT, CANVAS_WIDTH } from "./const";
 import type { MergedScreenRef } from "./rtcUtils";
 
-export const getMergedTracks = async (
-  mergedScreenRef: MergedScreenRef,
-  presenterStream: MediaStream
-) => {
+export const getMergedTracks = async (mergedScreenRef: MergedScreenRef, presenterStream: MediaStream) => {
   mergedScreenRef.refreshId && stopRefreshingAndRemovePreviousScreen(mergedScreenRef);
 
   const screenStream: MediaStream = mergedScreenRef.screenTrack
