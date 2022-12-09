@@ -1,12 +1,6 @@
 import React from "react";
-import type { Client, Mode, Toast } from "../types";
-import {
-  QuestionCircle,
-  CrossSmall,
-  WarningCircle,
-  InfoCircle,
-  iconType,
-} from "react-swm-icon-pack";
+import type { Client, Mode, Toast } from "../types/types";
+import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
@@ -109,7 +103,7 @@ export const deleteEventPopup = (toast: Toast, uuid: string) => {
   });
 };
 
-const getToast = (toast: Toast, icon: iconType, text: string, duration: number) => {
+const getToast = (toast: Toast, icon: JSX.Element, text: string, duration: number) => {
   const thisToast = toast({
     duration: duration,
     position: "top",

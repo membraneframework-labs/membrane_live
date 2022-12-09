@@ -10,11 +10,7 @@ type SearchAndCreatePanelProps = {
   setSearchText: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const SearchAndCreatePanel = ({
-  currentEvents,
-  searchText,
-  setSearchText,
-}: SearchAndCreatePanelProps) => {
+const SearchAndCreatePanel = ({ currentEvents, searchText, setSearchText }: SearchAndCreatePanelProps) => {
   const isAuthenticated = getIsAuthenticated();
 
   return (

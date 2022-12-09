@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { presenterStreams } from "../../utils/rtcUtils";
-import { User1 } from "react-swm-icon-pack";
-import type { Presenter, SourceType } from "../../types";
+import { checkTrackIsEnabled, presenterStreams } from "../../utils/rtcUtils";
+import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
+import type { Presenter, SourceType } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
@@ -17,12 +17,18 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   const connectStreams = (sourceType: SourceType) => {
     if (!presenterStreams[presenter.email]) return;
-    if (videoRef.current && sourceType == "video")
-      videoRef.current.srcObject = presenterStreams[presenter.email];
-    if (audioRef.current && sourceType == "audio")
-      audioRef.current.srcObject = presenterStreams[presenter.email];
+    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStreams[presenter.email];
+    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStreams[presenter.email];
   };
   playerCallbacks[presenter.email] = connectStreams;
+
+  const isSourceDisabled = (sourceType: SourceType) => {
+    const isEnabled = checkTrackIsEnabled(presenter, sourceType);
+    return isEnabled === false;
+  };
+
+  const isMuted = isSourceDisabled("audio");
+  const isCamDisabled = isSourceDisabled("video");
 
   useEffect(() => {
     connectStreams("audio");
@@ -38,14 +44,26 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
 
   return (
     <div className="RtcPlayer">
+      <div className="UpperBarPresenter">
+        {isMuted && (
+          <div className="IconDisabled">
+            <MicrophoneDisabled className="PresenterDisabledSource" />
+          </div>
+        )}
+        {isCamDisabled && (
+          <div className="IconDisabled">
+            <CamDisabled className="PresenterDisabledSource" />
+          </div>
+        )}
+      </div>
       <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
-      <div className="BottomBar">
+      <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}
           {isMyself ? "You" : presenter.name}
         </div>
       </div>
-      <div className="TopBar"></div>
+      <div className="AudioBar"></div>
       {!isMyself && <audio autoPlay ref={audioRef} />}
     </div>
   );

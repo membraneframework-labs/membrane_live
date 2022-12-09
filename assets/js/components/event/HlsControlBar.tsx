@@ -29,15 +29,10 @@ const HlsControlBar = () => {
   const screenType = useCheckScreenType();
 
   return (
-    <MediaControlBar
-      className={screenType.device == "mobile" ? "MediaControlBarMobile" : "MediaControlBar"}
-    >
+    <MediaControlBar className={screenType.device == "mobile" ? "MediaControlBarMobile" : "MediaControlBar"}>
       <div className="TopBar">
         <MediaTimeRange className="MediaTimeRange MediaBackground"></MediaTimeRange>
-        <MediaTimeDisplay
-          className="MediaTimeDisplay MediaBackground"
-          showDuration
-        ></MediaTimeDisplay>
+        <MediaTimeDisplay className="MediaTimeDisplay MediaBackground" showDuration></MediaTimeDisplay>
       </div>
       <div className="BottomBar">
         <div className="BottomBarLeft">

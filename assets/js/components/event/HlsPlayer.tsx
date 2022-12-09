@@ -9,7 +9,7 @@ import "../../../css/event/hlsplayer.css";
 type HlsPlayerProps = {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   presenterName: string;
-  eventChannel: Channel | undefined;
+  eventChannel?: Channel | undefined;
 };
 
 const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps) => {
@@ -27,9 +27,7 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
             <video ref={playerRef} slot="media" className="HlsPlayer" />
             <HlsControlBar></HlsControlBar>
           </MediaController>
-          <div className="HlsTopBar">
-            {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
-          </div>
+          <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>
           <div className="HlsBottomBar">
             <AnimationComponent eventChannel={eventChannel} />
           </div>

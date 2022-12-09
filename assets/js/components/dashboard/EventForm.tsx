@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Plus, Minus, CalendarClock } from "react-swm-icon-pack";
 
-import { EventFormInput, EventInfo } from "../../types";
+import { EventFormInput, EventInfo } from "../../types/types";
 
 import GenericButton from "../helpers/GenericButton";
 
@@ -83,13 +83,7 @@ const DateField = ({ value, inputSetter }: FieldProps) => {
     <div className="EventFormFieldDiv">
       <label className="EventFormFieldLabel">Date & Time</label>
       <div className="EventFormFieldInput EventFormFieldWithButtonDiv">
-        <input
-          type="datetime-local"
-          value={value}
-          ref={ref}
-          onChange={(e) => changeElement(e, inputSetter)}
-          required
-        />
+        <input type="datetime-local" value={value} ref={ref} onChange={(e) => changeElement(e, inputSetter)} required />
         <GenericButton
           icon={<CalendarClock />}
           onClick={() => (ref && ref.current ? ref.current.showPicker() : undefined)}

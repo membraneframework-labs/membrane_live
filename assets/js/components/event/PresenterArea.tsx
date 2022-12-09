@@ -5,12 +5,14 @@ import {
   leaveWebrtc,
   presenterStreams,
   askForPermissions,
+  updatePresentersMicAndCamStatuses,
 } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
+import { useRerender } from "../../utils/reactUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../../types";
+import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../../types/types";
 import "../../../css/event/presenterarea.css";
 import { Channel } from "phoenix";
 
@@ -29,11 +31,13 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [presenters, setPresenters] = useState<{ [key: string]: Presenter }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
+  const rerender = useRerender();
 
-  const disconnectedPresenter = {
+  const disconnectedPresenter: Presenter = {
     name: client.name,
     email: client.email,
-    status: "disconnected",
+    rtcStatus: "disconnected",
+    status: "idle",
     connectCallbacks: [],
   };
 
@@ -45,10 +49,15 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     });
   };
 
+  const refreshPresentersMicAndCamStatus = () => {
+    setPresenters((presenters) => {
+      return updatePresentersMicAndCamStatuses(presenters);
+    });
+  };
+
   const getCurrentPresenter = () => {
     return (
-      Object.values(presenters).find((presenter) => presenter.email == client.email) ||
-      disconnectedPresenter
+      Object.values(presenters).find((presenter: Presenter) => presenter.email == client.email) || disconnectedPresenter
     );
   };
 
@@ -62,26 +71,24 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
-    const clientIsPresenterWithNoMediaStream =
-      clientStatus === "idle" && presenterStreams[client.email] === undefined;
+    const clientIsPresenterWithNoMediaStream = clientStatus === "idle" && presenterStreams[client.email] === undefined;
     if (clientIsPresenterWithNoMediaStream) {
       askForPermissions();
       presenterStreams[client.email] = new MediaStream();
     }
 
-    const tryToConnectPresenter =
-      !webrtcConnecting && webrtc == null && clientStatus == "connected";
-    const clientShouldDisconnect =
-      webrtc != null && ["idle", "not_presenter"].includes(clientStatus);
+    const tryToConnectPresenter = !webrtcConnecting && webrtc == null && clientStatus == "connected";
+    const clientShouldDisconnect = webrtc != null && ["idle", "not_presenter"].includes(clientStatus);
 
     if (clientStatus === "idle") {
       setIsControlPanelAvailable(true);
     } else if (tryToConnectPresenter) {
       setIsControlPanelAvailable(true);
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPresenters).then((value) => {
+      connectWebrtc(eventChannel, client, setPresenters, refreshPresentersMicAndCamStatus).then((value) => {
         webrtc = value;
         webrtcConnecting = false;
+        refreshPresentersMicAndCamStatus();
       });
     } else if (webrtc != null && clientShouldDisconnect) {
       setIsControlPanelAvailable(false);
@@ -97,9 +104,8 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   }, [eventChannel]);
 
   const visiblePresenters = Object.values(presenters).filter(
-    (presenter) =>
-      ["connecting", "rtc_player_ready"].includes(presenter.rtcStatus) ||
-      presenter.email == client.email
+    (presenter: Presenter) =>
+      ["connecting", "rtc_player_ready"].includes(presenter.rtcStatus) || presenter.email == client.email
   );
 
   const getRtcPlayer = (presenter: Presenter) => {
@@ -118,7 +124,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${visiblePresenters.length}`}>
-          {visiblePresenters.map((presenter) => {
+          {visiblePresenters.map((presenter: Presenter) => {
             return getRtcPlayer(presenter);
           })}
         </div>
@@ -132,6 +138,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}
           setMode={setMode}
+          rerender={rerender}
         />
       )}
       {clientStatus === "idle" && (

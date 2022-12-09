@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
-import { AwaitingMessage, ChatMessage, MetasUser } from "../types";
+import { AwaitingMessage, ChatMessage, MetasUser } from "../types/types";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 
@@ -49,9 +49,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
         const data = getByKey(presence.current, chatMessage.email);
         if (!data) return;
 
-        const moderatedNo = data.is_banned_from_chat
-          ? chatMessage.messages.length
-          : chatMessage.moderatedNo;
+        const moderatedNo = data.is_banned_from_chat ? chatMessage.messages.length : chatMessage.moderatedNo;
         if (moderatedNo != chatMessage.moderatedNo) {
           chatMessage.moderatedNo = moderatedNo;
           changed = true;
