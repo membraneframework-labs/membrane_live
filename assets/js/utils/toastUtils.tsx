@@ -70,14 +70,14 @@ const sendAnswer = (
 
 export const lastPersonPopup = (
   toast: Toast,
-  client: Client,
   eventChannel: Channel,
+  timeout: number,
   redirectToHomePage: () => void
 ) => {
   let answer = "leave";
 
   const thisToast = toast({
-    duration: 2 * 60 * 1000,
+    duration: timeout,
     onCloseComplete: () => {
       sendLastViewerAnswer(toast, thisToast, eventChannel, answer);
     },
@@ -109,12 +109,7 @@ export const lastPersonPopup = (
   });
 };
 
-const sendLastViewerAnswer = (
-  toast: Toast,
-  toastName: ToastId,
-  eventChannel: Channel,
-  answer: string
-) => {
+const sendLastViewerAnswer = (toast: Toast, toastName: ToastId, eventChannel: Channel, answer: string) => {
   eventChannel.push("last_viewer_answer", {
     answer: answer,
   });

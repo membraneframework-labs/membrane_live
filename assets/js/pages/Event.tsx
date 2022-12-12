@@ -55,9 +55,16 @@ const Event = () => {
 
       promise.then((msg) => {
         const channel = socket.channel(`event:${getChannelId()}`, msg);
-        createEventChannel(toast, client, channel, setEventChannel, setClient, navigate, (toast) =>
-          lastPersonPopup(toast, client, channel, () => redirectToHomePage(navigate))
-      );
+        createEventChannel(
+          toast,
+          client,
+          channel,
+          setEventChannel,
+          setClient,
+          navigate,
+          (toast: Toast, timeout: number) =>
+            lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
+        );
       });
     }
   }, [eventChannel, client.name]);

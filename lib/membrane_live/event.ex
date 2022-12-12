@@ -283,12 +283,13 @@ defmodule MembraneLive.Event do
   def handle_info({:timer_timeout, action}, %{timer: timer} = state) do
     case action do
       :notify ->
-        {:ok, timer} =
-          Timer.handle_action(timer, :start_kill,
-            timeout: MembraneLive.get_env!(:last_peer_timeout_short_ms)
-          )
+        timeout = MembraneLive.get_env!(:last_peer_timeout_short_ms)
 
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "last_viewer_active", %{})
+        {:ok, timer} = Timer.handle_action(timer, :start_kill, timeout: timeout)
+
+        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "last_viewer_active", %{
+          timeout: timeout
+        })
 
         {:noreply, %{state | timer: timer}}
 

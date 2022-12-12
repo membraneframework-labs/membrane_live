@@ -17,7 +17,7 @@ export const createEventChannel = (
   setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>,
   navigate: NavigateFunction,
-  lastViewerPopup: (toast: Toast) => void
+  lastViewerPopup: (toast: Toast, timeout: number) => void
 ) => {
   eventChannel
     .join()
@@ -26,8 +26,8 @@ export const createEventChannel = (
         redirectToHomePage(navigate);
         getInfoToast(toast, "The event has finished.");
       });
-      eventChannel.on("last_viewer_active", () => {
-        lastViewerPopup(toast);
+      eventChannel.on("last_viewer_active", (message: { timeout: number }) => {
+        lastViewerPopup(toast, message.timeout);
       });
       setEventChannel(eventChannel);
       const isModerator = response?.is_moderator ? true : false;
