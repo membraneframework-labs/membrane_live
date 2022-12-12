@@ -19,10 +19,6 @@ defmodule MembraneLive.Event do
 
   @mix_env Mix.env()
 
-  @minute 60 * 1000
-  @timeout_long 10 * 1000
-  @timeout_short 10 * 1000
-
   def start(init_arg, opts) do
     GenServer.start(__MODULE__, init_arg, opts)
   end
@@ -273,7 +269,9 @@ defmodule MembraneLive.Event do
   end
 
   def handle_info({:timer_action, action}, %{timer: timer} = state) do
-    case Timer.handle_action(timer, action, timeout: @timeout_long) do
+    case Timer.handle_action(timer, action,
+           timeout: MembraneLive.get_env!(:last_peer_timeout_long_ms)
+         ) do
       {:ok, timer} ->
         {:noreply, %{state | timer: timer}}
 
@@ -285,7 +283,10 @@ defmodule MembraneLive.Event do
   def handle_info({:timer_timeout, action}, %{timer: timer} = state) do
     case action do
       :notify ->
-        {:ok, timer} = Timer.handle_action(timer, :start_kill, timeout: @timeout_short)
+        {:ok, timer} =
+          Timer.handle_action(timer, :start_kill,
+            timeout: MembraneLive.get_env!(:last_peer_timeout_short_ms)
+          )
 
         MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "last_viewer_active", %{})
 

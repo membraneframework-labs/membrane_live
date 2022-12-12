@@ -22,7 +22,9 @@ config :membrane_live,
   google_private_key_path: Path.expand("./test/files/keys/jwtRS256.key"),
   google_invalid_priv_key_path: Path.expand("./test/files/keys/jwtRS256-invalid.key"),
   google_public_key_path: Path.expand("./test/files/keys/jwtRS256.key.pub"),
-  google_pems_url: "http://localhost:#{bypass_port}"
+  google_pems_url: "http://localhost:#{bypass_port}",
+  last_peer_timeout_long_ms: 20,
+  last_peer_timeout_short_ms: 20
 
 config :logger, level: :warn
 
