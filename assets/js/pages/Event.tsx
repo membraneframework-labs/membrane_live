@@ -21,6 +21,7 @@ import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
 import axiosWithInterceptor from "../services";
+import { redirectToHomePage } from "../utils/headerUtils";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -55,7 +56,7 @@ const Event = () => {
       promise.then((msg) => {
         const channel = socket.channel(`event:${getChannelId()}`, msg);
         createEventChannel(toast, client, channel, setEventChannel, setClient, navigate, (toast) =>
-          lastPersonPopup(toast, client, channel)
+          lastPersonPopup(toast, client, channel, () => redirectToHomePage(navigate))
       );
       });
     }

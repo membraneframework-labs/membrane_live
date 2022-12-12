@@ -68,7 +68,12 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
-export const lastPersonPopup = (toast: Toast, client: Client, eventChannel: Channel) => {
+export const lastPersonPopup = (
+  toast: Toast,
+  client: Client,
+  eventChannel: Channel,
+  redirectToHomePage: () => void
+) => {
   let answer = "leave";
 
   const thisToast = toast({
@@ -93,6 +98,7 @@ export const lastPersonPopup = (toast: Toast, client: Client, eventChannel: Chan
           className="PresenterPopupButton"
           onClick={() => {
             answer = "leave";
+            redirectToHomePage();
             closeToast(toast, thisToast);
           }}
         >
