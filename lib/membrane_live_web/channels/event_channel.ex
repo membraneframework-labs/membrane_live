@@ -26,6 +26,8 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, true} ->
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
+        maybe_send_timer_action(socket, id, :join)
+
         with gen_key <- UUID.uuid1(),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
           Presence.track(socket, gen_key, %{
@@ -55,6 +57,8 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:presenters, {id, MapSet.new()})
         :ets.insert_new(:presenting_requests, {id, MapSet.new()})
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
+
+        maybe_send_timer_action(socket, id, :join)
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
@@ -112,6 +116,46 @@ defmodule MembraneLiveWeb.EventChannel do
   def join(_topic, _params, _socket) do
     {:error, %{reason: "This link is wrong."}}
   end
+
+  defp maybe_send_timer_action(socket, event_id, event_channel_action)
+       when event_channel_action in [:join, :terminate] do
+    event_pid = :global.whereis_name(event_id)
+
+    if event_pid != :undefined do
+      with {:ok, action} <- get_timer_action(socket, event_channel_action) do
+        send(event_pid, {:timer_action, action})
+      end
+    end
+  end
+
+  defp get_timer_action(socket, event_channel_action) do
+    prev_users_no = Presence.list(socket) |> map_size
+
+    case {prev_users_no, event_channel_action} do
+      {0, :join} ->
+        {:ok, :start_notify}
+
+      {1, :join} ->
+        {:ok, :stop}
+
+      {2, :terminate} ->
+        {:ok, :start_notify}
+
+      {1, :terminate} ->
+        {:ok, :start_kill}
+
+      _other ->
+        :noaction
+    end
+  end
+
+  @impl true
+  def terminate(_reason, %Socket{topic: "event:" <> id} = socket) do
+    maybe_send_timer_action(socket, id, :terminate)
+    :ok
+  end
+
+  def terminate(_reason, _socket), do: :ok
 
   @impl true
   def handle_info(
@@ -307,6 +351,22 @@ defmodule MembraneLiveWeb.EventChannel do
     add_to_presenters(email, id)
     remove_from_presenting_requests(email, id)
     {:ok, socket} = join_event(socket)
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "last_viewer_answer",
+        %{"answer" => answer},
+        socket
+      ) do
+    msg =
+      case answer do
+        "leave" -> {:timer_action, :end_event}
+        "stay" -> {:timer_action, :reset}
+      end
+
+    send(socket.assigns.event_pid, msg)
 
     {:noreply, socket}
   end
