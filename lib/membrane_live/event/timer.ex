@@ -27,18 +27,12 @@ defmodule MembraneLive.Event.Timer do
           {:ok | :timeout, __MODULE__.t()}
   def handle_action(timer, action, opts \\ [])
 
-  def handle_action(timer, :start_notify, timeout: timeout) do
+  def handle_action(timer, action, timeout: timeout)
+      when action in [:start_notify, :start_kill] do
     cancel(timer)
 
-    ref = Process.send_after(timer.receiver, {:timer_timeout, :notify}, timeout)
+    ref = Process.send_after(timer.receiver, {:timer_timeout, action_to_timeout(action)}, timeout)
     {:ok, %{timer | timer_ref: ref, state: :notify}}
-  end
-
-  def handle_action(timer, :start_kill, timeout: timeout) do
-    cancel(timer)
-
-    ref = Process.send_after(timer.receiver, {:timer_timeout, :kill}, timeout)
-    {:ok, %{timer | timer_ref: ref, state: :kill}}
   end
 
   def handle_action(timer, :stop, _opts) do
@@ -76,4 +70,8 @@ defmodule MembraneLive.Event.Timer do
       ref -> Process.cancel_timer(ref)
     end
   end
+
+  defp action_to_timeout(:start_notify), do: :notify
+
+  defp action_to_timeout(:start_kill), do: :kill
 end
