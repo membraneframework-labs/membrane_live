@@ -10,12 +10,6 @@ defmodule MembraneLive.Event.Timer do
           receiver: pid() | atom()
         }
 
-  @minute 60 * 1000
-
-  @notify_timeout 15 * @minute
-  @kill_timeout_long 15 * @minute
-  @kill_timeout_short 2 * @minute
-
   @spec create(pid() | atom()) :: __MODULE__.t()
   def create(receiver) do
     %__MODULE__{
@@ -25,27 +19,55 @@ defmodule MembraneLive.Event.Timer do
     }
   end
 
-  @spec start_notify(__MODULE__.t()) :: __MODULE__.t()
-  def start_notify(timer) do
+  @spec handle_action(
+          __MODULE__.t(),
+          :start_notify | :start_kill | :reset | :stop | :end_event,
+          Keyword.t()
+        ) ::
+          {:ok | :timeout, __MODULE__.t()}
+  def handle_action(timer, action, opts \\ [])
+
+  def handle_action(timer, :start_notify, timeout: timeout) do
     cancel(timer)
 
-    ref = Process.send_after(timer.receiver, :notify, @notify_timeout)
-    %__MODULE__{timer | timer_ref: ref, state: :notify}
+    ref = Process.send_after(timer.receiver, {:timer_timeout, :notify}, timeout)
+    {:ok, %{timer | timer_ref: ref, state: :notify}}
   end
 
-  @spec start_kill(__MODULE__.t()) :: __MODULE__.t()
-  def start_kill(timer) do
+  def handle_action(timer, :start_kill, timeout: timeout) do
     cancel(timer)
 
-    ref = Process.send_after(timer.receiver, :kill, @kill_timeout_long)
-    %__MODULE__{timer | timer_ref: ref, state: :kill}
+    ref = Process.send_after(timer.receiver, {:timer_timeout, :kill}, timeout)
+    {:ok, %{timer | timer_ref: ref, state: :kill}}
   end
 
-  @spec stop(__MODULE__.t()) :: __MODULE__.t()
-  def stop(timer) do
+  def handle_action(timer, :stop, _opts) do
     cancel(timer)
 
-    %__MODULE__{timer | timer_ref: nil, state: :idle}
+    {:ok, %{timer | timer_ref: nil, state: :idle}}
+  end
+
+  def handle_action(timer, :reset, timeout: timeout) do
+    case timer.state do
+      :kill ->
+        cancel(timer)
+        ref = Process.send_after(timer.receiver, {:timer_timeout, :notify}, timeout)
+        {:ok, %{timer | timer_ref: ref, state: :notify}}
+
+      _state ->
+        {:ok, timer}
+    end
+  end
+
+  def handle_action(timer, :end_event, _opts) do
+    case timer.state do
+      :kill ->
+        cancel(timer)
+        {:timeout, %{timer | timer_ref: nil, state: :idle}}
+
+      _state ->
+        {:ok, timer}
+    end
   end
 
   defp cancel(timer) do

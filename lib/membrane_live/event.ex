@@ -14,8 +14,13 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.StorageCleanup
+  alias MembraneLive.Event.Timer
 
   @mix_env Mix.env()
+
+  @minute 60 * 1000
+  @timeout_long 15 * @minute
+  @timeout_short 15 * @minute
 
   def start(init_arg, opts) do
     GenServer.start(__MODULE__, init_arg, opts)
@@ -96,7 +101,8 @@ defmodule MembraneLive.Event do
        trace_ctx: trace_ctx,
        moderator_pid: nil,
        playlist_idl: nil,
-       is_playlist_playable?: false
+       is_playlist_playable?: false,
+       timer: Timer.create(self())
      }}
   end
 
@@ -264,6 +270,28 @@ defmodule MembraneLive.Event do
   def handle_info({:cleanup, _clean_function, playlist_idl}, state) do
     StorageCleanup.remove_directory(Path.join(state.event_id, playlist_idl))
     {:noreply, state}
+  end
+
+  def handle_info({:timer_action, action}, %{timer: timer} = state) do
+    case Timer.handle_action(timer, action, timeout: @timeout_long) do
+      {:ok, timer} -> {:noreply, %{state | timer: timer}}
+      {:timeout, timer} -> {:stop, :normal, %{state | timer: timer}}
+    end
+  end
+
+  def handle_info({:timer_timeout, action}, %{timer: timer} = state) do
+    case action do
+      :notify ->
+        {:ok, timer} = Timer.handle_action(timer, :start_kill, timeout: @timeout_short)
+        {:noreply, %{state | timer: timer}}
+
+      :kill ->
+        close_webinar(state)
+    end
+  end
+
+  defp close_webinar(state) do
+    {:stop, :normal, state}
   end
 
   @impl true
