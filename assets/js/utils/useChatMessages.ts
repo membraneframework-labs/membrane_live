@@ -17,6 +17,7 @@ export const useChatMessages = (
     data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
 
   const appendToChatMessages = ({ email, name, content, offset }: RecievedMessage, startTime: Date | null) => {
+    // TODO now every message can have some offset so code below can break
     if (offset == 0 || !startTime) {
       setChatMessages((prev) => {
         const last = prev[prev.length - 1];

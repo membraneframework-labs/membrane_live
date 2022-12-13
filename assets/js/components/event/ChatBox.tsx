@@ -1,10 +1,11 @@
 import { Channel } from "phoenix";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { EmoteSmile, CrossCircle, RotateLeft } from "react-swm-icon-pack";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types/types";
 import "../../../css/event/chatbox.css";
+import { StreamStartContext } from "../../utils/StreamStartContext";
 
 type EmojiPopoverProps = {
   setMessageInput: React.Dispatch<React.SetStateAction<string>>;
@@ -78,16 +79,21 @@ type ChatBoxProps = {
 const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromChat }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { streamStart } = useContext(StreamStartContext);
 
   const sendChatMessage = (content: string) => {
     if (eventChannel) {
-      eventChannel.push("chat_message", { content: content });
+      eventChannel.push("chat_message", { 
+        content: content, 
+        offset: streamStart ? Math.abs(new Date().getTime() - streamStart.getTime()) : 0,
+      });
       setMessageInput("");
     }
   };
-
+  
   // the messages array is reversed because of reversed flex-direction
   // thanks to that messages box is scrolled to the bottom by default
+  // TODO some of the messages are not properly rendered
   return (
     <div className="ChatBox">
       <div className="MessageInputContainer">

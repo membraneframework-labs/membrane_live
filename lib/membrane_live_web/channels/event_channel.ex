@@ -176,7 +176,7 @@ defmodule MembraneLiveWeb.EventChannel do
     {:reply, {:ok, chat_messages}, socket}
   end
 
-  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
+  def handle_in("chat_message", %{"content" => content, "offset" => offset}, %{topic: "event:" <> id} = socket) do
     email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
 
@@ -185,7 +185,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
       {:ok, is_presenter} = check_if_presenter(email, true, id)
 
-      offset =
+      new_offset =
         if is_auth and is_presenter do
           start_time = socket.assigns.start_time
 
@@ -198,16 +198,16 @@ defmodule MembraneLiveWeb.EventChannel do
           cur_time = System.monotonic_time(:millisecond)
           cur_time - start_time
         else
-          0
+          offset
         end
 
-      Chats.add_chat_message(id, name, email, is_auth, content, offset)
+      Chats.add_chat_message(id, name, email, is_auth, content, new_offset)
 
       broadcast(socket, "chat_message", %{
         "email" => email,
         "name" => name,
         "content" => content,
-        "offset" => offset
+        "offset" => new_offset
       })
     end
 
