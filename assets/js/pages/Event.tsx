@@ -14,13 +14,14 @@ import {
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { presenterPopup } from "../utils/toastUtils";
+import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import type { Client, Toast, Mode } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
 import axiosWithInterceptor from "../services";
+import { redirectToHomePage } from "../utils/headerUtils";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -54,7 +55,16 @@ const Event = () => {
 
       promise.then((msg) => {
         const channel = socket.channel(`event:${getChannelId()}`, msg);
-        createEventChannel(toast, client, channel, setEventChannel, setClient, navigate);
+        createEventChannel(
+          toast,
+          client,
+          channel,
+          setEventChannel,
+          setClient,
+          navigate,
+          (toast: Toast, timeout: number) =>
+            lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
+        );
       });
     }
   }, [eventChannel, client.name]);

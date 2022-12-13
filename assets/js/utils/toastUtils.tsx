@@ -68,6 +68,54 @@ const sendAnswer = (
   if (toast) toast.close(toastName);
 };
 
+export const lastPersonPopup = (
+  toast: Toast,
+  eventChannel: Channel,
+  timeout: number,
+  redirectToHomePage: () => void
+) => {
+  let answer = "leave";
+
+  const thisToast = toast({
+    duration: timeout,
+    onCloseComplete: () => {
+      sendLastViewerAnswer(toast, thisToast, eventChannel, answer);
+    },
+    render: () => (
+      <div className="Popup">
+        <QuestionCircle className="PopupIcon" />
+        <div className="PopupText">Do you want to stay at this Webinar?</div>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "stay";
+            closeToast(toast, thisToast);
+          }}
+        >
+          STAY
+        </button>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "leave";
+            redirectToHomePage();
+            closeToast(toast, thisToast);
+          }}
+        >
+          LEAVE
+        </button>
+      </div>
+    ),
+  });
+};
+
+const sendLastViewerAnswer = (toast: Toast, toastName: ToastId, eventChannel: Channel, answer: string) => {
+  eventChannel.push("last_viewer_answer", {
+    answer: answer,
+  });
+  if (toast) toast.close(toastName);
+};
+
 export const deleteEventPopup = (toast: Toast, uuid: string) => {
   let answer = "reject";
 
