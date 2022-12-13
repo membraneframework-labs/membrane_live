@@ -46,7 +46,7 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.17.5"},
-      {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
+      {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
