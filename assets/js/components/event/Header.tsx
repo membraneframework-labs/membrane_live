@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy, Redo } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";

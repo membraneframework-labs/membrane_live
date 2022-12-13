@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
 

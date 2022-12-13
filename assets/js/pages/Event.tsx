@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ParticipantsList from "../components/event/ParticipantsList";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";

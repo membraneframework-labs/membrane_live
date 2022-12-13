@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import EventField from "./EventField";
 import { getWebinarsInfo } from "../../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";

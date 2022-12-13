@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useToast } from "@chakra-ui/react";
 import { pageTitlePrefix } from "../../utils/const";
 import { fetchTokenAndRedirect } from "../../utils/googleAuthUtils";
