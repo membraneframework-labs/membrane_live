@@ -161,7 +161,22 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in("chat_message", %{"message" => message}, %{topic: "event:" <> id} = socket) do
+  def handle_in("sync_chat_messages", %{}, %{topic: "event:" <> id} = socket) do
+    chat_messages =
+      Chats.get_event_chat_messages(id)
+      |> Enum.map(
+        &%{
+          content: &1.content,
+          email: (if is_nil(&1.anon_id), do: &1.auth_user_email, else: &1.anon_id),
+          name: (if is_nil(&1.user_name), do: &1.auth_user_name, else: &1.user_name),
+          offset: &1.offset
+        }
+      )
+
+    {:reply, {:ok, chat_messages}, socket}
+  end
+
+  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
     email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
 
@@ -186,8 +201,14 @@ defmodule MembraneLiveWeb.EventChannel do
           0
         end
 
-      Chats.add_chat_message(id, name, email, is_auth, message, offset)
-      broadcast(socket, "chat_message", %{"email" => email, "message" => message, "offset" => offset})
+      Chats.add_chat_message(id, name, email, is_auth, content, offset)
+
+      broadcast(socket, "chat_message", %{
+        "email" => email,
+        "name" => name,
+        "content" => content,
+        "offset" => offset
+      })
     end
 
     {:noreply, socket}

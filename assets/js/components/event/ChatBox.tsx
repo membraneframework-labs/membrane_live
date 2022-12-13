@@ -1,6 +1,6 @@
 import { Channel } from "phoenix";
 import React, { useState, useRef } from "react";
-import { EmoteSmile, CrossCircle } from "react-swm-icon-pack";
+import { EmoteSmile, CrossCircle, RotateLeft } from "react-swm-icon-pack";
 import Picker from "@emoji-mart/react";
 import { Popover, PopoverContent, PopoverTrigger, useDisclosure } from "@chakra-ui/react";
 import type { Client, ChatMessage } from "../../types/types";
@@ -44,7 +44,7 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
   const getSingleMessage = (messageString: string, index: number) => {
     let cornerClass = "";
     if (index == 0) cornerClass += "Top";
-    if (index == message.messages.length - 1) cornerClass += " Bottom";
+    if (index == message.contents.length - 1) cornerClass += " Bottom";
 
     return (
       <p key={index} className={`SingleMessage ${cornerClass}`} lang="de">
@@ -54,14 +54,14 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
   };
 
   return (
-    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.messages[0]}>
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.contents[0]}>
       {!isMyself ? (
         <p className="ChatterName">{`${message.name} ${message.title}`}</p>
       ) : (
         <p className="YourName">You</p>
       )}
       <div className="MessageCluster">
-        {message.messages.map((messageString, index) => getSingleMessage(messageString, index))}
+        {message.contents.map((messageString, index) => getSingleMessage(messageString, index))}
       </div>
     </div>
   );
@@ -71,16 +71,17 @@ type ChatBoxProps = {
   client: Client;
   eventChannel: Channel | undefined;
   messages: ChatMessage[];
+  isChatLoaded: boolean;
   isBannedFromChat: boolean;
 };
 
-const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxProps) => {
+const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromChat }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const sendChatMessage = (message: string) => {
+  const sendChatMessage = (content: string) => {
     if (eventChannel) {
-      eventChannel.push("chat_message", { message: message });
+      eventChannel.push("chat_message", { content: content });
       setMessageInput("");
     }
   };
@@ -108,13 +109,20 @@ const ChatBox = ({ client, eventChannel, messages, isBannedFromChat }: ChatBoxPr
           }}
         />
       </div>
-      <div className="Messages">
-        {messages
-          .map((message: ChatMessage) => (
-            <MessageBox message={message} isMyself={message.email == client.email} key={message.id} />
-          ))
-          .reverse()}
-      </div>
+      {isChatLoaded ? (
+        <div className="Messages">
+          {messages
+            .map((message: ChatMessage) => (
+              <MessageBox message={message} isMyself={message.email == client.email} key={message.id} />
+            ))
+            .reverse()}
+        </div>
+      ) : (
+        <div className="ChatLoadingMessage">
+          <RotateLeft className="LoadingIcon" />
+          <i>Chat is loading...</i>
+        </div>
+      )}
     </div>
   );
 };

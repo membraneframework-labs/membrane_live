@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -62,11 +62,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
       )}
       <div className="Stream">
         {mode == "hls" && (
-          <HlsPlayer
-            attachVideo={attachVideo}
-            presenterName={presenterName}
-            eventChannel={eventChannel}
-          />
+          <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
         )}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>

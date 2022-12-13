@@ -4,7 +4,7 @@ import { StreamStartContext } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
-  hlsConfig?: Partial<HlsConfig>,
+  hlsConfig?: Partial<HlsConfig>
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
@@ -38,9 +38,7 @@ export const useHls = (
         if (autoPlay) {
           playerRef?.current
             ?.play()
-            .catch(() =>
-              console.log("Unable to autoplay, HTMLVideoElement propably does not exist")
-            );
+            .catch(() => console.log("Unable to autoplay, HTMLVideoElement propably does not exist"));
         }
       });
 
@@ -65,13 +63,13 @@ export const useHls = (
       hls.current.once(Hls.Events.LEVEL_LOADED, (_event, data) => {
         // this is very much approximated, almost guessed and eventually should be improved
         totalDuration.current = data.details.totalduration - data.details.targetduration;
-      })
+      });
 
       hls.current.once(Hls.Events.FRAG_LOADED, () => {
         if (totalDuration.current != null && setStreamStart) {
           setStreamStart(new Date(Date.now() - totalDuration.current * 1000));
         }
-      })
+      });
     };
 
     if (Hls.isSupported()) initHls();

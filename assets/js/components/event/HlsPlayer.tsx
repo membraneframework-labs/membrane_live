@@ -24,7 +24,7 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
       {presenterName ? (
         <div className="HlsPlayerWrapper">
           <MediaController className="HlsPlayerWrapper">
-            <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true}/>
+            <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
             <HlsControlBar></HlsControlBar>
           </MediaController>
           <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>

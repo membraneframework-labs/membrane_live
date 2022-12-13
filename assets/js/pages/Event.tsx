@@ -91,7 +91,7 @@ const Event = () => {
         <Header client={client} eventChannel={eventChannel} isRecording={false} />
       )}
       {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
-        <StreamStartContext.Provider value={{streamStart, setStreamStart}}>
+        <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
           <div className="MainGrid">
             <StreamArea
               client={client}
@@ -100,9 +100,7 @@ const Event = () => {
               mode={mode}
               setMode={setMode}
             />
-            {screenType.device == "desktop" && (
-              <ParticipantsList client={client} eventChannel={eventChannel} />
-            )}
+            {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
           </div>
         </StreamStartContext.Provider>
       )}
