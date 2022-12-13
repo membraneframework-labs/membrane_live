@@ -7,7 +7,7 @@ import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
 import { useChatMessages } from "../../utils/useChatMessages";
 import "../../../css/event/participants.css";
-import { storageUnsetIsPresenter } from "../../utils/storageUtils";
+import { storageSetPresentingRequest, storageUnsetIsPresenter } from "../../utils/storageUtils";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -87,7 +87,8 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     const shouldAskForBeingPresenter = (e.target as HTMLTextAreaElement).value === askText;
 
-    switchAskingForBeingPresenter(eventChannel, participant.email, shouldAskForBeingPresenter);
+    switchAskingForBeingPresenter(eventChannel, participant.email, !shouldAskForBeingPresenter);
+    storageSetPresentingRequest(!shouldAskForBeingPresenter);
   };
 
   const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;
