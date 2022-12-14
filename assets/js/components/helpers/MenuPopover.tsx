@@ -7,17 +7,16 @@ import { ModeButton } from "../event/ModePanel";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 
 type MenuPopoverProps = {
-  mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   className?: string;
   children?: React.ReactNode;
 };
 
-const MenuPopover = ({ mode, setMode, className, children }: MenuPopoverProps) => {
+const MenuPopover = ({ setMode, className, children }: MenuPopoverProps) => {
   const screenType = useCheckScreenType();
 
   const switchMode = () => {
-    setMode(mode === "hls" ? "presenters" : "hls");
+    setMode((mode) => (mode === "hls" ? "presenters" : "hls"));
   };
 
   return (

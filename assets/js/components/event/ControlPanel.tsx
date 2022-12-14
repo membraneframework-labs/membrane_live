@@ -124,12 +124,11 @@ type ControlPanelProps = {
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
-  mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   rerender: () => void;
 };
 
-const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, mode, setMode, rerender }: ControlPanelProps) => {
+const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, rerender }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -221,7 +220,7 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, mode, setM
               setSharingScreen(false);
             }}
           />
-          <MenuPopover mode={mode} setMode={setMode}>
+          <MenuPopover setMode={setMode}>
             <ModeButton name="Options" onClick={onOpen} />
             <SettingsModal
               isOpen={isOpen}

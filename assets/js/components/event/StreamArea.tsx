@@ -71,7 +71,6 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
                 client={client}
                 eventTitle={eventTitle}
                 amIPresenter={amIPresenter}
-                mode={mode}
                 setMode={setMode}
                 switchAsking={(isAsking) => {
                   switchAskingForBeingPresenter(eventChannel, client.email, isAsking);

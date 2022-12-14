@@ -25,7 +25,7 @@ import type { Client, EventInfo } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/header.css";
-import { cancelPresentingRequest } from "../../utils/channelUtils";
+import { cancelPresentingRequest, getPrivateChannelLink } from "../../utils/channelUtils";
 
 type ArrowLeftPopoverProps = {
   eventChannel: Channel | undefined;
@@ -105,7 +105,7 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
 
   const unsetPresenter = () => {
     if (storageGetIsPresenter()) {
-      const link = "private:" + window.location.pathname.split("/")[2] + ":";
+      const link = getPrivateChannelLink();
       eventChannel?.push("presenter_remove", { presenterTopic: link + client.email });
       storageUnsetIsPresenter();
     }

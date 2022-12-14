@@ -12,12 +12,11 @@ type MobileHlsBarProps = {
   client: Client;
   eventTitle: string;
   amIPresenter: boolean;
-  mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   switchAsking: (isAsking: boolean) => void;
 };
 
-const MobileHlsBar = ({ client, eventTitle, amIPresenter, mode, setMode, switchAsking }: MobileHlsBarProps) => {
+const MobileHlsBar = ({ client, eventTitle, amIPresenter, setMode, switchAsking }: MobileHlsBarProps) => {
   const toast = useToast();
   const screenType = useCheckScreenType();
 
@@ -31,7 +30,7 @@ const MobileHlsBar = ({ client, eventTitle, amIPresenter, mode, setMode, switchA
     };
 
     return amIPresenter ? (
-      <MenuPopover mode={mode} setMode={setMode} className={className} />
+      <MenuPopover setMode={setMode} className={className} />
     ) : (
       <GenericButton
         icon={<UserPlus className="PanelButton" />}

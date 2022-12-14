@@ -333,7 +333,7 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
 };
 
 const addOrReplaceTrack = (client: User, track: MediaStreamTrack, playerCallback: (sourceType: SourceType) => void) => {
-  if (presenterStreams[client.email]) {
+  if (client.email in presenterStreams) {
     const curTrack = findTrackByType(client, track.kind as SourceType);
     if (curTrack && curTrack.id !== track.id) removeTrack(client, curTrack);
   }
@@ -341,7 +341,7 @@ const addOrReplaceTrack = (client: User, track: MediaStreamTrack, playerCallback
 };
 
 const addTrack = (track: MediaStreamTrack, client: User, playerCallback: (sourceType: SourceType) => void) => {
-  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
+  if (!(client.email in presenterStreams)) presenterStreams[client.email] = new MediaStream();
   presenterStreams[client.email].addTrack(track);
   playerCallback(track.kind as SourceType);
 };

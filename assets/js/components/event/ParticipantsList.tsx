@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
+import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import type { Participant, Client } from "../../types/types";
 import { Channel } from "phoenix";
@@ -16,7 +16,7 @@ type ModeratorMenuProps = {
 };
 
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
-  const link = "private:" + window.location.pathname.split("/")[2] + ":";
+  const link = getPrivateChannelLink();
   const presenterText = {
     set: "Set as a presenter",
     unset: "Set as a normal participant",

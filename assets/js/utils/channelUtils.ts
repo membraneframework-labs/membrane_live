@@ -149,25 +149,22 @@ export const syncPresenters = (
   }
 };
 
-export const isClientAPresenter = (client: Client, presenters: Presenter[]) => {
-  return presenters.some((presenter) => presenter.email === client.email);
-};
-
 export const switchAskingForBeingPresenter = (
   eventChannel: Channel | undefined,
   email: string,
   isAlreadyAsking: boolean
-) => pushToChannel(eventChannel, email, isAlreadyAsking ? "cancel_presenting_request" : "presenting_request");
-
-export const cancelPresentingRequest = (eventChannel: Channel | undefined, email: string) => {
-  pushToChannel(eventChannel, email, "cancel_presenting_request");
-};
-
-const pushToChannel = (eventChannel: Channel | undefined, email: string, message: string): void => {
+) => {
+  const message = isAlreadyAsking ? "cancel_presenting_request" : "presenting_request";
   eventChannel?.push(message, { email });
 };
 
+export const cancelPresentingRequest = (eventChannel: Channel | undefined, email: string) => {
+  eventChannel?.push("cancel_presenting_request", { email });
+};
+
 export const getChannelId = (): string => window.location.pathname.split("/")[2];
+
+export const getPrivateChannelLink = (): string => "private:" + getChannelId() + ":";
 
 const compareParticipants =
   (clientEmail: string) =>
