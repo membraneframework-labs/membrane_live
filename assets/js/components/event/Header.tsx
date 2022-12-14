@@ -86,14 +86,14 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const navigate = useNavigate();
   const screenType = useCheckScreenType();
 
-  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), [isRecording, toast]);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
 
-  if (!isRecording) {
-    useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
-  }
+  useEffect(() => {
+    if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];
+  }, [eventChannel, isRecording]);
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);

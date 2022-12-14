@@ -38,7 +38,7 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
   useEffect(() => {
     getWebinarsInfo(toast, setWebinars, false);
     getWebinarsInfo(toast, setRecordings, true);
-  }, []);
+  }, [toast]);
 
   return (
     <div className="FogWrapper">

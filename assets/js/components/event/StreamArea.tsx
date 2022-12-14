@@ -42,7 +42,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
     if (privateChannel) {
       privateChannel.on("presenter_remove", () => setMode("hls"));
     }
-  }, [privateChannel]);
+  }, [privateChannel, setMode]);
 
   return (
     <div className="StreamArea">

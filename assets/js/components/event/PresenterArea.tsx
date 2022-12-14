@@ -67,7 +67,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (client.email in presenters && clientStatus == "not_presenter") {
       setClientStatus("idle");
     }
-  }, [presenters]);
+  }, [client.email, clientStatus, presenters]);
 
   useEffect(() => {
     connectPresentersTracks(playerCallbacks, setPresenters);
@@ -97,7 +97,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (webrtc != null) {
       setIsControlPanelAvailable(true);
     }
-  }, [presenters, clientStatus]);
+  }, [presenters, clientStatus, client, eventChannel]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);

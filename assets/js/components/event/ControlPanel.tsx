@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Menu,
@@ -152,7 +152,7 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const updateAvailableSources = async () => {
+  const updateAvailableSources = useCallback(async () => {
     const sources = await getSources();
     if (sources != null) {
       setSources(sources);
@@ -165,11 +165,11 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
       prepareDevice("audio");
       prepareDevice("video");
     }
-  };
+  }, [client, playerCallback]);
 
   useEffect(() => {
     updateAvailableSources();
-  }, []);
+  }, [updateAvailableSources]);
 
   useEffect(() => {
     navigator.mediaDevices.ondevicechange = updateAvailableSources;
@@ -177,7 +177,7 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
     return () => {
       navigator.mediaDevices.ondevicechange = null;
     };
-  }, [getSources]);
+  }, [updateAvailableSources]);
 
   const getDropdownButton = (sourceType: SourceType) => {
     return (

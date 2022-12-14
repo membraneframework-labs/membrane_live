@@ -33,7 +33,10 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
   const [amIPresenter, setAmIPresenter] = useState(false);
   const [isClicked, setClicked] = useState(false);
 
-  useEffect(() => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client), [eventChannel]);
+  useEffect(
+    () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
+    [client, eventChannel]
+  );
 
   useEffect(() => {
     const ref = setTimeout(() => setClicked(false), 5_000);

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { checkTrackIsEnabled, presenterStreams } from "../../utils/rtcUtils";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
 import type { Presenter, SourceType } from "../../types/types";
@@ -15,11 +15,14 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const connectStreams = (sourceType: SourceType) => {
-    if (!presenterStreams[presenter.email]) return;
-    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStreams[presenter.email];
-    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStreams[presenter.email];
-  };
+  const connectStreams = useCallback(
+    (sourceType: SourceType) => {
+      if (!presenterStreams[presenter.email]) return;
+      if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStreams[presenter.email];
+      if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStreams[presenter.email];
+    },
+    [presenter.email]
+  );
   playerCallbacks[presenter.email] = connectStreams;
 
   const isSourceDisabled = (sourceType: SourceType) => {
@@ -40,7 +43,7 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
         [presenter.email]: { ...prev[presenter.email], rtcStatus: "rtc_player_ready" },
       };
     });
-  }, []);
+  }, [connectStreams, presenter.email, setPresenters]);
 
   return (
     <div className="RtcPlayer">

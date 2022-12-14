@@ -161,7 +161,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     if (eventChannel) {
       syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
     }
-  }, [eventChannel]);
+  }, [client.email, eventChannel]);
 
   return (
     <div className="Participants">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
 import { ChatMessage, MetasUser } from "../types/types";
 import { getByKey } from "./channelUtils";
@@ -10,7 +10,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
   const getTitle = (data: MetasUser | undefined) =>
     data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
 
-  const appendToChatMessages = ({ email, message }: { email: string; message: string }) => {
+  const appendToChatMessages = useCallback(({ email, message }: { email: string; message: string }) => {
     setChatMessages((prev) => {
       const last = prev[prev.length - 1];
       if (last && last.email == email) last.messages.push(message);
@@ -29,9 +29,9 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
 
       return [...prev];
     });
-  };
+  }, []);
 
-  const updateMessages = () => {
+  const updateMessages = useCallback(() => {
     setChatMessages((prev) => {
       let changed = false;
       prev.forEach((chatMessage) => {
@@ -52,7 +52,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
       });
       return changed ? [...prev] : prev;
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (eventChannel) {
@@ -66,7 +66,7 @@ export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[
       if (eventChannel) eventChannel.off("chat_message");
       presence.current = undefined;
     };
-  }, [eventChannel]);
+  }, [appendToChatMessages, eventChannel, updateMessages]);
 
   return chatMessages;
 };

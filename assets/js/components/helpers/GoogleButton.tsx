@@ -32,7 +32,7 @@ const GoogleButton = ({ eventChannel, options }: GoogleButtonProps) => {
 
     const buttonElement = document.getElementById(buttonId);
     if (buttonElement) google.accounts.id.renderButton(buttonElement, options);
-  }, []);
+  }, [buttonId, eventChannel, options, toast]);
 
   return <div id={buttonId} />;
 };

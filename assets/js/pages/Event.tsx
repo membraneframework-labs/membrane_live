@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ParticipantsList from "../components/event/ParticipantsList";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
@@ -37,7 +37,7 @@ const Event = () => {
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
 
-  const socket = new Socket("/socket");
+  const socket = useMemo(() => new Socket("/socket"), []);
   socket.connect();
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const Event = () => {
         );
       });
     }
-  }, [eventChannel, client.name]);
+  }, [eventChannel, client.name, client, socket, toast, navigate]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
@@ -83,7 +83,7 @@ const Event = () => {
         setPrivateChannel
       );
     }
-  }, [eventChannel, privateChannel]);
+  }, [client, eventChannel, privateChannel, socket, toast]);
 
   useEffect(() => {
     window.addEventListener("beforeunload", storageSetReloaded);
