@@ -40,12 +40,12 @@ import {
   Sources,
   stopShareScreen,
   checkTrackIsEnabled,
-  setSourceById,
   getCurrentDeviceName,
+  askForPermissions,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client, SourceType } from "../../types/types";
+import type { Mode, Client, SourceType, PeersState } from "../../types/types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
@@ -142,24 +142,37 @@ type ControlPanelProps = {
   client: Client;
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
-  playerCallback: (sourceType: SourceType) => void;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   rerender: () => void;
+  peersState: PeersState;
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
+  canShareScreen: boolean;
 };
 
-const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, rerender }: ControlPanelProps) => {
+const ControlPanel = ({
+  client,
+  webrtc,
+  eventChannel,
+  setMode,
+  peersState,
+  setPeersState,
+  canShareScreen,
+  rerender,
+}: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
-  const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const updateAvailableSources = async () => {
+    await askForPermissions();
     const sources = await getSources();
     if (sources != null) {
       setSources(sources);
 
-      const prepareDevice = (kind: "audio" | "video") => {
-        const deviceName = getCurrentDeviceName(client, kind);
-        if (deviceName === undefined) setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
+      const prepareDevice = (kind: SourceType) => {
+        const deviceName = getCurrentDeviceName(client, kind, peersState);
+        if (deviceName === undefined) {
+          changeSource(webrtc, client, sources[kind][0].deviceId, kind, setPeersState);
+        }
       };
 
       prepareDevice("audio");
@@ -177,17 +190,17 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
     return () => {
       navigator.mediaDevices.ondevicechange = null;
     };
-  }, [getSources]);
+  }, [getSources, peersState]);
 
   const getDropdownButton = (sourceType: SourceType) => {
     return (
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(client, sourceType)}
+        currentSourceName={getCurrentDeviceName(client, sourceType, peersState)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
+          changeSource(webrtc, client, deviceId, sourceType, setPeersState).then(() => {
             rerender();
           });
         }}
@@ -199,19 +212,21 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(client, sourceType) !== false ? (
+          checkTrackIsEnabled(client, sourceType, peersState) !== false ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
+          changeTrackIsEnabled(webrtc, client, sourceType, peersState, setPeersState);
           rerender();
         }}
       />
     );
   };
+
+  const isSharingScreen: boolean = peersState.mergedScreenRef.screenTrack != undefined;
 
   return (
     <>
@@ -225,12 +240,14 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
             onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
           />
           <GenericButton
-            icon={!sharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />}
+            icon={
+              !isSharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />
+            }
             onClick={() => {
-              if (!sharingScreen) shareScreen(webrtc, client, playerCallback).then((value) => setSharingScreen(value));
-              else stopShareScreen(webrtc, client, playerCallback);
-              setSharingScreen(false);
+              if (!isSharingScreen) shareScreen(webrtc, client, peersState, setPeersState);
+              else stopShareScreen(webrtc, client, setPeersState);
             }}
+            disabled={!canShareScreen}
           />
           <MenuPopover />
         </div>

@@ -1,9 +1,8 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types/types";
+import type { Participant, Client, User, Toast, Metas, MetasUser } from "../types/types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
-import { updatePresentersMicAndCamStatuses } from "./rtcUtils";
 
 type EventChannelJoinResponse = {
   is_moderator?: boolean;
@@ -123,13 +122,13 @@ export const createPrivateChannel = (
 
 export const syncPresenters = (
   eventChannel: Channel | undefined,
-  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
+  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: User }>>
 ) => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
 
     const updatePresenters = () => {
-      const presenters: { [key: string]: Presenter } = {};
+      const presenters: { [key: string]: User } = {};
 
       presence.list((email: string, metas: Metas) => {
         // sometimes presence create two object in metas, for example if you open two windows with the same user.
@@ -137,12 +136,9 @@ export const syncPresenters = (
           presenters[email] = {
             name: metas.metas[0].name,
             email: email,
-            rtcStatus: "disconnected",
-            status: "idle",
-            connectCallbacks: [],
           };
       });
-      setPresenters(updatePresentersMicAndCamStatuses(presenters));
+      setPresenters(presenters);
     };
 
     presence.onSync(() => {
