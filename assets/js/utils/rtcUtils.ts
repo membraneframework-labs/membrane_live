@@ -1,7 +1,7 @@
 import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { User, Client, Presenter, SourceType } from "../types/types";
+import { User, Client, SourceType, PeersState } from "../types/types";
 import { Channel } from "phoenix";
 
 export type Sources = {
@@ -9,89 +9,71 @@ export type Sources = {
   video: MediaDeviceInfo[];
 };
 
-export type MergedScreenRef = {
-  screenTrack: MediaStreamTrack | undefined;
-  cameraTrack: MediaStreamTrack | undefined;
-  deviceName: string;
-  refreshId: number | undefined;
-};
-
-export const presenterStreams: { [key: string]: MediaStream } = {};
-export const mergedScreenRef: MergedScreenRef = {
-  screenTrack: undefined,
-  cameraTrack: undefined,
-  deviceName: "",
-  refreshId: undefined,
-};
-
-const sourceIds: { audio: string; video: string; [key: string]: string } = { audio: "", video: "" };
-
-export const findTrackByType = (client: User, sourceType: SourceType) => {
-  return presenterStreams[client.email].getTracks().find((elem) => elem.kind == sourceType);
+export const findTrackByType = (
+  user: User,
+  sourceType: SourceType,
+  peersState: PeersState
+): MediaStreamTrack | undefined => {
+  return peersState.peers[user.email]?.stream.getTracks().find((elem) => elem.kind == sourceType);
 };
 
 export const changeTrackIsEnabled = (
   webrtc: MembraneWebRTC | null,
-  client: User,
+  user: User,
   sourceType: SourceType,
-  playerCallback: (sourceType: SourceType) => void
+  peersState: PeersState,
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ) => {
-  const track = findTrackOrScreenshare(client, sourceType);
+  const track = findTrackOrScreenshare(user, sourceType, peersState);
+
   if (track) {
+    const turningOffCameraDuringScreenShare: boolean =
+      track === peersState.mergedScreenRef.cameraTrack && track.enabled;
     track.enabled = !track.enabled;
-    webrtc && sendTrackEnabledMetadata(webrtc, track);
+    webrtc && !turningOffCameraDuringScreenShare && sendTrackEnabledMetadata(webrtc, track, peersState);
   }
-  if (webrtc && sourceType == "video" && mergedScreenRef.cameraTrack) {
-    shareScreen(webrtc, client, playerCallback);
+
+  if (webrtc && sourceType == "video" && peersState.mergedScreenRef.cameraTrack) {
+    shareScreen(webrtc, user, peersState, setPeersState);
   }
 };
 
-export const updateTrackEnabled = (webrtc: MembraneWebRTC, client: User, sourceType: SourceType): void => {
-  const track = findTrackOrScreenshare(client, sourceType);
-  track && sendTrackEnabledMetadata(webrtc, track);
+export const sendTrackStatusUpdate = (
+  webrtc: MembraneWebRTC,
+  user: User,
+  sourceType: SourceType,
+  peersState: PeersState
+): void => {
+  const track = findTrackOrScreenshare(user, sourceType, peersState);
+  track && sendTrackEnabledMetadata(webrtc, track, peersState);
 };
 
-const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack) => {
-  webrtc.updateTrackMetadata(sourceIds[track.kind as SourceType], { enabled: track.enabled });
+const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack, peersState: PeersState) => {
+  webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], { enabled: track.enabled });
 };
 
-const findTrackOrScreenshare = (client: User, sourceType: SourceType): MediaStreamTrack | undefined => {
-  return sourceType === "video" && mergedScreenRef.cameraTrack
-    ? mergedScreenRef.cameraTrack
-    : findTrackByType(client, sourceType);
+const findTrackOrScreenshare = (
+  user: User,
+  sourceType: SourceType,
+  peersState: PeersState
+): MediaStreamTrack | undefined => {
+  return sourceType === "video" && peersState.mergedScreenRef.cameraTrack
+    ? peersState.mergedScreenRef.cameraTrack
+    : findTrackByType(user, sourceType, peersState);
 };
 
-export const checkTrackIsEnabled = (client: User, sourceType: SourceType) => {
-  if (!(client.email in presenterStreams)) {
-    return false;
-  }
+export const checkTrackIsEnabled = (user: User, sourceType: SourceType, peersState: PeersState, isMyself = true) => {
   const track =
-    sourceType == "video" && mergedScreenRef.cameraTrack
-      ? mergedScreenRef.cameraTrack
-      : findTrackByType(client, sourceType);
+    isMyself && sourceType == "video" && peersState.mergedScreenRef.cameraTrack
+      ? peersState.mergedScreenRef.cameraTrack
+      : findTrackByType(user, sourceType, peersState);
   return track?.enabled;
 };
 
-export const updatePresentersMicAndCamStatuses = (presenters: {
-  [key: string]: Presenter;
-}): { [key: string]: Presenter } => {
-  const updatePresenterMicAndCamStatus = (presenter: Presenter): Presenter => {
-    return {
-      ...presenter,
-      isMicOn: checkTrackIsEnabled(presenter, "audio"),
-      isCamOn: checkTrackIsEnabled(presenter, "video"),
-    };
-  };
-
-  const updatedPresenters = Object.keys(presenters).reduce((result: { [key: string]: Presenter }, key) => {
-    result[key] = updatePresenterMicAndCamStatus(presenters[key]);
-    return result;
-  }, {});
-  return updatedPresenters;
-};
-
-export const getCurrentDeviceName = (client: Client, sourceType: SourceType) => {
-  return mergedScreenRef.deviceName ? mergedScreenRef.deviceName : findTrackByType(client, sourceType)?.label;
+export const getCurrentDeviceName = (client: Client, sourceType: SourceType, peersState: PeersState) => {
+  return peersState.mergedScreenRef.deviceName
+    ? peersState.mergedScreenRef.deviceName
+    : findTrackByType(client, sourceType, peersState)?.label;
 };
 
 export const getSources = async () => {
@@ -108,30 +90,10 @@ export const getSources = async () => {
   }
 };
 
-export const setSourceById = async (
-  client: Client,
-  deviceId: string,
-  sourceType: SourceType,
-  playerCallback: (sourceType: SourceType) => void
-) => {
-  let localStream: MediaStream;
-  try {
-    const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
-    localStream = await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
-
-    localStream.getTracks().forEach((track) => {
-      addOrReplaceTrack(client, track, playerCallback);
-    });
-  } catch (error) {
-    console.error("Couldn't get microphone permission:", error);
-  }
-};
-
 export const connectWebrtc = async (
   webrtcChannel: Channel | undefined,
   client: Client,
-  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>,
-  updateMicAndCamStatusCallback: () => void
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ) => {
   const onError = (error: string) => {
     console.log(error);
@@ -146,60 +108,62 @@ export const connectWebrtc = async (
         onError("Error while connecting to WebRTC");
       },
       onJoinSuccess: () => {
-        presenterStreams[client.email].getTracks().forEach((track) => {
-          sourceIds[track.kind] = webrtc.addTrack(track, presenterStreams[client.email], {}, undefined, 1500);
+        setPeersState((prev) => {
+          const presenterStream = prev.peers[client.email] || {
+            name: client.name,
+            email: client.email,
+            stream: new MediaStream(),
+          };
+
+          presenterStream.stream.getTracks().forEach((track) => {
+            prev.sourceIds[track.kind as SourceType] = webrtc.addTrack(
+              track,
+              presenterStream.stream,
+              {},
+              undefined,
+              1500
+            );
+          });
+
+          const peersState = { ...prev, peers: { ...prev.peers, [client.email]: presenterStream } };
+
+          sendTrackStatusUpdate(webrtc, client, "audio", peersState);
+          sendTrackStatusUpdate(webrtc, client, "video", peersState);
+
+          return peersState;
         });
-        updateTrackEnabled(webrtc, client, "audio");
-        updateTrackEnabled(webrtc, client, "video");
       },
       onJoinError: () => {
         onError("Error while joining WebRTC connection");
       },
       onTrackReady: ({ track, peer, metadata }) => {
-        if (track) {
-          const callback = (playerCallback: (sourceType: SourceType) => void) => {
-            addOrReplaceTrack(peer.metadata, track, playerCallback);
-          };
+        if (!(peer && track)) return;
 
-          setPresenters((prev) => {
-            return {
-              ...prev,
-              [peer.metadata.email]: {
-                ...prev[peer.metadata.email],
-                rtcStatus: "connecting",
-                connectCallbacks: prev[peer.metadata.email].connectCallbacks.concat(callback),
-              },
-            };
+        setPeersState((prev) => addOrReplaceTrack(peer.metadata, track, prev));
+
+        if ("enabled" in metadata) {
+          track.enabled = metadata.enabled;
+          setPeersState((prev) => {
+            return { ...prev };
           });
-
-          if ("enabled" in metadata) {
-            track.enabled = metadata.enabled;
-            updateMicAndCamStatusCallback();
-          }
         }
       },
       onTrackUpdated({ track, metadata }: TrackContext) {
-        if (track && "enabled" in metadata) {
-          track.enabled = metadata.enabled;
-          updateMicAndCamStatusCallback();
-        }
-      },
+        if (!(track && "enabled" in metadata)) return;
 
+        track.enabled = metadata.enabled;
+        setPeersState((prev) => {
+          return { ...prev };
+        });
+      },
       onTrackRemoved: () => {
-        if (presenterStreams[client.email].getTracks().length == 0) {
-          setPresenters((prev) => {
-            return {
-              ...prev,
-              [client.email]: { ...prev[client.email], status: "idle" },
-            };
-          });
-        }
+        // do nothing (We only update state, when peer leaves and do nothing when a single track is removed)
       },
       onPeerJoined: () => {
         // do nothing
       },
       onPeerLeft: (peer) => {
-        removeStream(peer.metadata.email);
+        setPeersState((prev) => removeStream(peer.metadata, prev));
       },
       onPeerUpdated: () => {
         // do nothing
@@ -218,101 +182,137 @@ export const connectWebrtc = async (
   return webrtc;
 };
 
-export const connectPresentersTracks = async (
-  playerCallbacks: { [key: string]: (sourceType: SourceType) => void },
-  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>
-) => {
-  setPresenters((presenters) => {
-    Object.values(presenters)
-      .filter(
-        (presenter: Presenter) => presenter.rtcStatus == "rtc_player_ready" && presenter.connectCallbacks.length > 0
-      )
-      .forEach((presenter: Presenter) => {
-        const playerCallback = playerCallbacks[presenter.email];
-        presenter.connectCallbacks.forEach((callback) => callback(playerCallback));
-        presenters = { ...presenters, [presenter.email]: { ...presenter, connectCallbacks: [] } };
-      });
-    return presenters;
-  });
-};
-
 export const changeSource = async (
   webrtc: MembraneWebRTC | null,
   client: Client,
   deviceId: string,
   sourceType: SourceType,
-  playerCallback: (sourceType: SourceType) => void
-) => {
-  await setSourceById(client, deviceId, sourceType, playerCallback);
-  if (!webrtc) return;
-  if (mergedScreenRef.refreshId && sourceType == "video") {
-    shareScreen(webrtc, client, playerCallback);
-  } else {
-    const newTrack = findTrackByType(client, sourceType);
-    if (!newTrack) return;
-    if (sourceIds[sourceType]) webrtc.replaceTrack(sourceIds[sourceType], newTrack);
-    else sourceIds[sourceType] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
+): Promise<void> => {
+  const localStream: MediaStream | undefined = await getLocalStream(sourceType, deviceId);
+  if (!localStream) return;
+
+  setPeersState((prev: PeersState) => {
+    let peersState: PeersState = { ...prev };
+
+    localStream.getTracks().forEach((track) => {
+      peersState = addOrReplaceTrack(client, track, peersState);
+    });
+
+    if (!webrtc) return peersState; // If webrtc is null, we only add media source locally
+    if (peersState.mergedScreenRef.refreshId && sourceType == "video") {
+      // Rebuild the canvas if camera source changed during screenShare
+      shareScreen(webrtc, client, peersState, setPeersState);
+      return peersState;
+    }
+
+    const newTrack = findTrackByType(client, sourceType, peersState);
+    if (!newTrack) return peersState;
+    if (peersState.sourceIds[sourceType]) webrtc.replaceTrack(peersState.sourceIds[sourceType], newTrack);
+    else peersState.sourceIds[sourceType] = webrtc.addTrack(newTrack, peersState.peers[client.email].stream);
+
+    return peersState;
+  });
+};
+
+const getLocalStream = async (sourceType: SourceType, deviceId: string): Promise<MediaStream | undefined> => {
+  try {
+    const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
+    return await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
+  } catch (error) {
+    console.error("Couldn't get microphone permission:", error);
+    return undefined;
   }
 };
 
-export const leaveWebrtc = (webrtc: MembraneWebRTC, client: Client, webrtcChannel: Channel | undefined) => {
+export const leaveWebrtc = (
+  webrtc: MembraneWebRTC,
+  client: Client,
+  webrtcChannel: Channel | undefined,
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
+) => {
   webrtcChannel?.off("mediaEvent");
-  presenterStreams[client.email].getTracks().forEach((track) => track.stop());
-  mergedScreenRef.cameraTrack?.stop();
-  removeMergedStream();
-  removeStream(client);
+
+  setPeersState((prev) => {
+    prev.peers[client.email].stream.getTracks().forEach((track) => track.stop());
+    prev = removeMergedStream(prev);
+    return removeStream(client, prev);
+  });
+
   webrtc.leave();
 };
 
 export const shareScreen = async (
   webrtc: MembraneWebRTC | null,
-  client: User,
-  playerCallback: (SourceType: SourceType) => void
-): Promise<boolean> => {
+  user: User,
+  peersState: PeersState,
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
+): Promise<void> => {
+  if (!webrtc) return;
+
   let mergedStream: MediaStream;
 
-  const videoTrackLabel = presenterStreams[client.email].getVideoTracks()[0].label;
-  if (videoTrackLabel != null) mergedScreenRef.deviceName = videoTrackLabel;
+  const videoTrackLabel = peersState.peers[user.email].stream.getVideoTracks()[0]?.label;
+  if (videoTrackLabel != null) peersState.mergedScreenRef.deviceName = videoTrackLabel;
 
   try {
-    mergedStream = await getMergedTracks(mergedScreenRef, presenterStreams[client.email]);
+    mergedStream = await getMergedTracks(peersState.mergedScreenRef, peersState.peers[user.email].stream);
   } catch (err) {
     console.log(err, "(Probably clicked cancel on the screen sharing window)");
-    removeMergedStream();
-    return false;
+    setPeersState((prev) => removeMergedStream(prev));
+    return;
   }
 
-  mergedStream.getTracks().forEach((track) => {
-    addOrReplaceTrack(client, track, playerCallback);
+  setPeersState((prev) => {
+    let peersState = prev;
+
+    mergedStream.getTracks().forEach((track) => {
+      peersState = addOrReplaceTrack(user, track, peersState);
+
+      // When peer's video is muted we want to enable it, so other peers see the screenshare
+      sendTrackEnabledMetadata(webrtc, track, peersState);
+    });
+
+    const newTrack = findTrackByType(user, "video", peersState);
+
+    if (!newTrack) {
+      peersState = removeMergedStream(peersState);
+      return peersState;
+    }
+
+    if (peersState.sourceIds["video"]) webrtc.replaceTrack(peersState.sourceIds["video"], newTrack);
+    else
+      peersState = {
+        ...peersState,
+        sourceIds: {
+          ...peersState.sourceIds,
+          ["video"]: webrtc.addTrack(newTrack, peersState.peers[user.email].stream),
+        },
+      };
+
+    return peersState;
   });
-
-  const newTrack = findTrackByType(client, "video");
-
-  if (!newTrack) {
-    removeMergedStream();
-    return false;
-  }
-  if (!webrtc) return true;
-
-  if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-  else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
-  return true;
 };
 
 export const stopShareScreen = (
   webrtc: MembraneWebRTC | null,
-  client: Client,
-  playerCallback: (sourceType: SourceType) => void
+  user: User,
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ) => {
-  if (mergedScreenRef.cameraTrack) {
-    const newCameraStream: MediaStream = new MediaStream([mergedScreenRef.cameraTrack]).clone();
-    addOrReplaceTrack(client, newCameraStream.getTracks()[0], playerCallback);
-    removeMergedStream();
-    const newTrack = findTrackByType(client, "video");
-    if (!webrtc || !newTrack) return;
-    if (sourceIds["video"]) webrtc.replaceTrack(sourceIds["video"], newTrack);
-    else sourceIds["video"] = webrtc.addTrack(newTrack, presenterStreams[client.email]);
-  }
+  setPeersState((peersState: PeersState) => {
+    if (peersState.mergedScreenRef.cameraTrack) {
+      const newCameraStream: MediaStream = new MediaStream([peersState.mergedScreenRef.cameraTrack]).clone();
+      peersState = addOrReplaceTrack(user, newCameraStream.getTracks()[0], peersState);
+      peersState = removeMergedStream(peersState);
+      const videoTrack = findTrackByType(user, "video", peersState);
+      if (!(webrtc && videoTrack)) return peersState;
+      if (peersState.sourceIds["video"]) webrtc.replaceTrack(peersState.sourceIds["video"], videoTrack);
+      else peersState.sourceIds["video"] = webrtc.addTrack(videoTrack, peersState.peers[user.email].stream);
+      sendTrackEnabledMetadata(webrtc, videoTrack, peersState);
+    }
+
+    return { ...peersState };
+  });
 };
 
 const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
@@ -329,21 +329,22 @@ const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
   return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
 };
 
-const addOrReplaceTrack = (client: User, track: MediaStreamTrack, playerCallback: (sourceType: SourceType) => void) => {
-  if (!presenterStreams[client.email]) presenterStreams[client.email] = new MediaStream();
-  const curTrack = findTrackByType(client, track.kind as SourceType);
+export const addOrReplaceTrack = (user: User, track: MediaStreamTrack, peersState: PeersState): PeersState => {
+  const presenterStream = peersState.peers[user.email] || { ...user, stream: new MediaStream() };
 
-  if (curTrack && curTrack.id !== track.id && curTrack.id !== mergedScreenRef.screenTrack?.id) {
+  const curTrack = findTrackByType(user, track.kind as SourceType, peersState);
+  if (curTrack && curTrack.id !== track.id && curTrack.id !== peersState.mergedScreenRef.screenTrack?.id) {
     curTrack.stop();
   }
+  curTrack && presenterStream.stream.removeTrack(curTrack);
 
-  curTrack && presenterStreams[client.email].removeTrack(curTrack);
-  presenterStreams[client.email].addTrack(track);
+  presenterStream.stream.addTrack(track);
 
-  playerCallback(track.kind as SourceType); // to attach MediaStream to HTMLVideoElement object in DOM
+  return { ...peersState, peers: { ...peersState.peers, [user.email]: presenterStream } };
 };
 
-const removeMergedStream = () => {
+const removeMergedStream = (peersState: PeersState) => {
+  const mergedScreenRef = peersState.mergedScreenRef;
   mergedScreenRef.screenTrack?.stop();
   mergedScreenRef.cameraTrack?.stop();
   mergedScreenRef.screenTrack = undefined;
@@ -353,10 +354,14 @@ const removeMergedStream = () => {
   mergedScreenRef.refreshId = undefined;
 
   mergedScreenRef.deviceName = "";
+
+  return { ...peersState, mergedScreenRef: mergedScreenRef };
 };
 
-const removeStream = (client: User) => {
-  delete presenterStreams[client.email];
+const removeStream = (user: User, peersState: PeersState) => {
+  const updatedPeers = peersState.peers;
+  delete updatedPeers[user.email];
+  return { ...peersState, peers: updatedPeers };
 };
 
 export const askForPermissions = async (): Promise<void> => {

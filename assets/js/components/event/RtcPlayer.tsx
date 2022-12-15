@@ -1,29 +1,25 @@
 import React, { useEffect, useRef } from "react";
-import { checkTrackIsEnabled, presenterStreams } from "../../utils/rtcUtils";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
-import type { Presenter, SourceType } from "../../types/types";
+import type { PresenterStream, SourceType } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
   isMyself: boolean;
-  presenter: Presenter;
-  playerCallbacks: { [key: string]: (sourceType: SourceType) => void };
-  setPresenters: React.Dispatch<React.SetStateAction<{ [key: string]: Presenter }>>;
+  presenterStream: PresenterStream;
 };
 
-const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const connectStreams = (sourceType: SourceType) => {
-    if (!presenterStreams[presenter.email]) return;
-    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStreams[presenter.email];
-    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStreams[presenter.email];
+    if (!presenterStream) return;
+    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStream.stream;
+    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStream.stream;
   };
-  playerCallbacks[presenter.email] = connectStreams;
 
   const isSourceDisabled = (sourceType: SourceType) => {
-    const isEnabled = checkTrackIsEnabled(presenter, sourceType);
+    const isEnabled = presenterStream?.stream.getTracks().find((elem) => elem.kind == sourceType)?.enabled;
     return isEnabled === false;
   };
 
@@ -33,14 +29,9 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
   useEffect(() => {
     connectStreams("audio");
     connectStreams("video");
+  }, [presenterStream]);
 
-    setPresenters((prev) => {
-      return {
-        ...prev,
-        [presenter.email]: { ...prev[presenter.email], rtcStatus: "rtc_player_ready" },
-      };
-    });
-  }, []);
+  console.log("zxcvz");
 
   return (
     <div className="RtcPlayer">
@@ -56,11 +47,11 @@ const RtcPlayer = ({ isMyself, presenter, playerCallbacks, setPresenters }: RtcP
           </div>
         )}
       </div>
-      <video autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
+      <video key={presenterStream.email} autoPlay muted={true} ref={videoRef} className="PresenterVideo" />
       <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}
-          {isMyself ? "You" : presenter.name}
+          {isMyself ? "You" : presenterStream.name}
         </div>
       </div>
       <div className="AudioBar"></div>
