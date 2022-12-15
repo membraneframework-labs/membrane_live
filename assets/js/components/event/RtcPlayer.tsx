@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { checkTrackIsEnabled } from "../../utils/rtcUtils";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
-import type { PresenterStream, PeersState, SourceType, User } from "../../types/types";
+import type { PresenterStream, SourceType } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
@@ -9,7 +8,7 @@ type RtcPlayerProps = {
   presenterStream: PresenterStream;
 };
 
-const RtcPlayer = ({ isMyself, presenterStream}: RtcPlayerProps) => {
+const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
