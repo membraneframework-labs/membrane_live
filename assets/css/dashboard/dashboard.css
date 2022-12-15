@@ -2,8 +2,8 @@
 
 .Dashboard {
   background: var(--bg-light-color-1);
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   overflow: hidden;
   padding: 2.5rem;
   display: flex;
