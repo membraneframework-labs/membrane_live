@@ -45,7 +45,7 @@ import {
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client, SourceType } from "../../types/types";
+import type { Mode, SourceType, Presenter, User } from "../../types/types";
 import "../../../css/event/controlpanel.css";
 
 type DropdownListProps = {
@@ -131,15 +131,15 @@ const MenuPopover = () => {
 
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
-  client: Client,
+  user: User,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
-  eventChannel?.push("presenter_remove", { email: client.email });
+  eventChannel?.push("presenter_remove", { email: user.email });
   setMode("hls");
 };
 
 type ControlPanelProps = {
-  client: Client;
+  presenter: Presenter;
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
   playerCallback: (sourceType: SourceType) => void;
@@ -147,7 +147,7 @@ type ControlPanelProps = {
   rerender: () => void;
 };
 
-const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, rerender }: ControlPanelProps) => {
+const ControlPanel = ({ presenter, webrtc, eventChannel, playerCallback, setMode, rerender }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const [sharingScreen, setSharingScreen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -158,8 +158,8 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
       setSources(sources);
 
       const prepareDevice = (kind: "audio" | "video") => {
-        const deviceName = getCurrentDeviceName(client, kind);
-        if (deviceName === undefined) setSourceById(client, sources[kind][0].deviceId, kind, playerCallback);
+        const deviceName = getCurrentDeviceName(presenter, kind);
+        if (deviceName === undefined) setSourceById(presenter, sources[kind][0].deviceId, kind, playerCallback);
       };
 
       prepareDevice("audio");
@@ -184,10 +184,10 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
       <DropdownButton
         key={sourceType}
         mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(client, sourceType)}
+        currentSourceName={getCurrentDeviceName(presenter, sourceType)}
         sources={sources[sourceType]}
         onSelectSource={(deviceId) => {
-          changeSource(webrtc, client, deviceId, sourceType, playerCallback).then(() => {
+          changeSource(webrtc, presenter, deviceId, sourceType, playerCallback).then(() => {
             rerender();
           });
         }}
@@ -199,14 +199,14 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
     return (
       <GenericButton
         icon={
-          checkTrackIsEnabled(client, sourceType) !== false ? (
+          checkTrackIsEnabled(presenter, sourceType) !== false ? (
             <IconEnabled className="PanelButton Enabled" />
           ) : (
             <IconDisabled className="PanelButton Disabled" />
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(webrtc, client, sourceType, playerCallback);
+          changeTrackIsEnabled(webrtc, presenter, sourceType, playerCallback);
           rerender();
         }}
       />
@@ -222,13 +222,14 @@ const ControlPanel = ({ client, webrtc, eventChannel, playerCallback, setMode, r
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
             icon={<PhoneDown className="DisconnectButton" />}
-            onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
+            onClick={() => stopBeingPresenter(eventChannel, presenter, setMode)}
           />
           <GenericButton
             icon={!sharingScreen ? <ScreenShare className="PanelButton" /> : <ScreenDisabled className="PanelButton" />}
             onClick={() => {
-              if (!sharingScreen) shareScreen(webrtc, client, playerCallback).then((value) => setSharingScreen(value));
-              else stopShareScreen(webrtc, client, playerCallback);
+              if (!sharingScreen)
+                shareScreen(webrtc, presenter, playerCallback).then((value) => setSharingScreen(value));
+              else stopShareScreen(webrtc, presenter, playerCallback);
               setSharingScreen(false);
             }}
           />

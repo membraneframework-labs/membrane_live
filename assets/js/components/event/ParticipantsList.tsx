@@ -17,7 +17,8 @@ type ModeratorMenuProps = {
 const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
   const presenterText = {
-    set: "Set as a presenter",
+    setBasic: "Set as a presenter",
+    setMain: "Set as a main presenter",
     unset: "Set as a normal participant",
   };
   const banFromChatText = {
@@ -27,10 +28,18 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     switch ((e.target as HTMLTextAreaElement).value) {
-      case presenterText.set:
+      case presenterText.setBasic:
         eventChannel?.push("presenter_prop", {
           moderatorTopic: link + moderatorClient.email,
           presenterTopic: link + participant.email,
+          mainPresenter: false,
+        });
+        break;
+      case presenterText.setMain:
+        eventChannel?.push("presenter_prop", {
+          moderatorTopic: link + moderatorClient.email,
+          presenterTopic: link + participant.email,
+          mainPresenter: true,
         });
         break;
       case presenterText.unset:
@@ -51,14 +60,19 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        {participant.isAuth && (
-          <MenuItem
-            onClick={handleClick}
-            value={participant.isPresenter ? presenterText.unset : presenterText.set}
-            className="MenuOptionText"
-          >
-            {participant.isPresenter ? presenterText.unset : presenterText.set}
+        {participant.isAuth && participant.isPresenter ? (
+          <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
+            {presenterText.unset}
           </MenuItem>
+        ) : (
+          <>
+            <MenuItem onClick={handleClick} value={presenterText.setBasic} className="MenuOptionText">
+              {presenterText.setBasic}
+            </MenuItem>
+            <MenuItem onClick={handleClick} value={presenterText.setMain} className="MenuOptionText">
+              {presenterText.setMain}
+            </MenuItem>{" "}
+          </>
         )}
         {!participant.isModerator && (
           <MenuItem

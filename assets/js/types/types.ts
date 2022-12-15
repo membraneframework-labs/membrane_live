@@ -26,6 +26,7 @@ export interface Presenter extends User {
   connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
   isMicOn?: boolean;
   isCamOn?: boolean;
+  isMainPresenter: boolean;
 }
 
 export interface Client extends User {
@@ -83,6 +84,7 @@ export type MetasUser = {
   is_auth: boolean;
   is_request_presenting: boolean;
   is_banned_from_chat: boolean;
+  is_main_presenter: boolean;
 };
 
 export type Metas = {
@@ -103,4 +105,9 @@ export type ChatMessage = {
   title: string;
   moderatedNo: number;
   messages: string[];
+};
+
+export type PresenterProposition = {
+  moderatorTopic: string;
+  mainPresenter: boolean;
 };

@@ -10,11 +10,11 @@ import {
 import { syncPresenters } from "../../utils/channelUtils";
 import { useRerender } from "../../utils/reactUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
+import { Channel } from "phoenix";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import type { Presenter, Client, Mode, SourceType, ClientStatus } from "../../types/types";
 import "../../../css/event/presenterarea.css";
-import { Channel } from "phoenix";
 
 const playerCallbacks: { [key: string]: (sourceType: SourceType) => void } = {};
 let webrtc: MembraneWebRTC | null = null;
@@ -33,14 +33,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
   const rerender = useRerender();
 
-  const disconnectedPresenter: Presenter = {
-    name: client.name,
-    email: client.email,
-    rtcStatus: "disconnected",
-    status: "idle",
-    connectCallbacks: [],
-  };
-
   const onPresenterReady = () => {
     setClientStatus("connected");
 
@@ -53,12 +45,6 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     setPresenters((presenters) => {
       return updatePresentersMicAndCamStatuses(presenters);
     });
-  };
-
-  const getCurrentPresenter = () => {
-    return (
-      Object.values(presenters).find((presenter: Presenter) => presenter.email == client.email) || disconnectedPresenter
-    );
   };
 
   useEffect(() => {
@@ -85,11 +71,13 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (tryToConnectPresenter) {
       setIsControlPanelAvailable(true);
       webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPresenters, refreshPresentersMicAndCamStatus).then((value) => {
-        webrtc = value;
-        webrtcConnecting = false;
-        refreshPresentersMicAndCamStatus();
-      });
+      connectWebrtc(eventChannel, presenters[client.email], setPresenters, refreshPresentersMicAndCamStatus).then(
+        (value) => {
+          webrtc = value;
+          webrtcConnecting = false;
+          refreshPresentersMicAndCamStatus();
+        }
+      );
     } else if (webrtc != null && clientShouldDisconnect) {
       setIsControlPanelAvailable(false);
       leaveWebrtc(webrtc, client, eventChannel);
@@ -129,11 +117,11 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
           })}
         </div>
       ) : (
-        getRtcPlayer(getCurrentPresenter())
+        getRtcPlayer(presenters[client.email])
       )}
-      {isControlPanelAvailable && (
+      {isControlPanelAvailable && presenters[client.email] && (
         <ControlPanel
-          client={client}
+          presenter={presenters[client.email]}
           webrtc={webrtc}
           eventChannel={eventChannel}
           playerCallback={playerCallbacks[client.email]}

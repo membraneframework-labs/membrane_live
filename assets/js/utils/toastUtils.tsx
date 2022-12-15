@@ -1,5 +1,5 @@
 import React from "react";
-import type { Client, Mode, Toast } from "../types/types";
+import type { Client, Mode, PresenterProposition, Toast } from "../types/types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import "../../css/toast.css";
@@ -14,7 +14,7 @@ export const presenterPopup = (
   toast: Toast,
   client: Client,
   eventChannel: Channel,
-  moderatorTopic: string,
+  message: PresenterProposition,
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   let answer = "reject";
@@ -22,7 +22,7 @@ export const presenterPopup = (
   const thisToast = toast({
     duration: 15_000,
     onCloseComplete: () => {
-      sendAnswer(toast, thisToast, eventChannel, answer, client.email, moderatorTopic);
+      sendAnswer(toast, thisToast, eventChannel, answer, client.email, message);
     },
     render: () => (
       <div className="Popup">
@@ -58,11 +58,12 @@ const sendAnswer = (
   eventChannel: Channel,
   answer: string,
   email: string,
-  moderatorTopic: string
+  message: PresenterProposition
 ) => {
   eventChannel.push("presenter_answer", {
     email: email,
-    moderatorTopic: moderatorTopic,
+    moderatorTopic: message.moderatorTopic,
+    mainPresenter: message.mainPresenter,
     answer: answer,
   });
   if (toast) toast.close(toastName);

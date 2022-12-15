@@ -95,15 +95,17 @@ defmodule MembraneLiveWeb.EventChannelTest do
     defp add_presenter(socket, uuid, response) do
       push(socket, "presenter_prop", %{
         "moderatorTopic" => "private:#{uuid}:#{@email}",
-        "presenterTopic" => "private:#{uuid}:#{@email}"
+        "presenterTopic" => "private:#{uuid}:#{@email}",
+        "mainPresenter" => false
       })
 
-      assert_broadcast("presenter_prop", %{moderator_topic: _})
+      assert_broadcast("presenter_prop", %{moderator_topic: _, main_presenter: _})
 
       push(socket, "presenter_answer", %{
         "moderatorTopic" => "private:#{uuid}:#{@email}",
         "email" => "#{@email}",
-        "answer" => response
+        "answer" => response,
+        "mainPresenter" => false
       })
 
       assert_broadcast("presenter_answer", %{name: "#{@user}", answer: ^response})

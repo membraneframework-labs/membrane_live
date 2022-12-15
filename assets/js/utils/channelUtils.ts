@@ -1,5 +1,5 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, Presenter, Toast, Metas, MetasUser } from "../types/types";
+import type { Participant, Client, Presenter, Toast, Metas, MetasUser, PresenterProposition } from "../types/types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
@@ -85,17 +85,20 @@ export const createPrivateChannel = (
   privateChannel: Channel,
   eventChannel: Channel,
   client: Client,
-  presenterPopup: (toast: Toast, moderatorTopic: string) => void,
+  presenterPopup: (toast: Toast, moderatorTopic: PresenterProposition) => void,
   setPrivateChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>
 ) => {
   privateChannel
     .join()
     .receive("ok", () => {
-      privateChannel.on("presenter_prop", (message: { moderator_topic: string }) => {
-        presenterPopup(toast, message.moderator_topic);
+      privateChannel.on("presenter_prop", (message: { moderator_topic: string; main_presenter: boolean }) => {
+        presenterPopup(toast, { moderatorTopic: message.moderator_topic, mainPresenter: message.main_presenter });
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
         getInfoToast(toast, `User ${message.name} ${message.answer}ed your request.`);
+      });
+      privateChannel.on("error", (message: { message: string }) => {
+        getInfoToast(toast, message.message);
       });
       privateChannel.on("presenter_remove", () => {
         getInfoToast(toast, "You are no longer a presenter.");
@@ -136,6 +139,7 @@ export const syncPresenters = (
             rtcStatus: "disconnected",
             status: "idle",
             connectCallbacks: [],
+            isMainPresenter: metas.metas[0].is_main_presenter,
           };
       });
       setPresenters(updatePresentersMicAndCamStatuses(presenters));
