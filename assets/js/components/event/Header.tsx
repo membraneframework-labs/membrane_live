@@ -15,9 +15,9 @@ import {
 import { monthNames, pageTitlePrefix } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
-import type { Client, EventInfo } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import type { Client, EventInfo } from "../../types/types";
 import "../../../css/event/header.css";
 
 type ArrowLeftPopoverProps = {

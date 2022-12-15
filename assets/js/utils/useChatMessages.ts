@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
-import { ChatMessage, MetasUser } from "../types/types";
 import { getByKey } from "./channelUtils";
+import type { ChatMessage, MetasUser } from "../types/types";
 
 export const useChatMessages = (eventChannel: Channel | undefined): ChatMessage[] => {
   const presence = useRef<Presence>();

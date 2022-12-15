@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
+import { Channel } from "phoenix";
 import type { Client, Mode } from "../../types/types";
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
-import { Channel } from "phoenix";
 
 type ModeButtonProps = {
   onClick: () => void;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ParticipantsList from "../components/event/ParticipantsList";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
@@ -16,12 +16,12 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, Toast, Mode } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
-import "../../css/event/event.css";
 import axiosWithInterceptor from "../services";
 import { redirectToHomePage } from "../utils/headerUtils";
+import type { Client, Toast, Mode } from "../types/types";
+import "../../css/event/event.css";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -37,8 +37,8 @@ const Event = () => {
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
 
-  const socket = useMemo(() => new Socket("/socket"), []);
-  socket.connect();
+  const socket = useRef(new Socket("/socket"));
+  socket.current.connect();
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
@@ -54,7 +54,7 @@ const Event = () => {
         : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {
-        const channel = socket.channel(`event:${getChannelId()}`, msg);
+        const channel = socket.current.channel(`event:${getChannelId()}`, msg);
         createEventChannel(
           toast,
           client,
@@ -73,7 +73,7 @@ const Event = () => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (!privateAlreadyJoined && eventAlreadyJoined) {
-      const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
+      const channel = socket.current.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,
         channel,

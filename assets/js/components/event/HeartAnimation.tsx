@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import "../../../css/event/animation.css";
 import { Channel } from "phoenix";
+import "../../../css/event/animation.css";
 
 type HeartElement = {
   elem: JSX.Element;

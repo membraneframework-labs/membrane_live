@@ -1,10 +1,10 @@
 import { Channel, Presence } from "phoenix";
 import axios from "../services/index";
 import { getChannelId } from "../utils/channelUtils";
-import type { EventInfo, OriginalEventInfo, Toast } from "../types/types";
 import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
 import { NavigateFunction } from "react-router-dom";
+import type { EventInfo, OriginalEventInfo, Toast } from "../types/types";
 
 export const initEventInfo = (): EventInfo => {
   return {
