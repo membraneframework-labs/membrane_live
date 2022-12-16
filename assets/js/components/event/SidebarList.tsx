@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { syncEventChannel } from "../../utils/channelUtils";
-import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client } from "../../types/types";
-import { Channel } from "phoenix";
+import React, {useEffect, useState} from "react";
+import {Menu, MenuButton, MenuItem, MenuList, Tooltip} from "@chakra-ui/react";
+import {syncEventChannel} from "../../utils/channelUtils";
+import {Crown1, MenuVertical, QuestionCircle, Star1, User1} from "react-swm-icon-pack";
+import type {Client, Participant} from "../../types/types";
+import {Channel} from "phoenix";
 import ChatBox from "./ChatBox";
-import { useChatMessages } from "../../utils/useChatMessages";
+import {useChatMessages} from "../../utils/useChatMessages";
 import "../../../css/event/participants.css";
+import {ProductComponent} from "./ProductComponent";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -14,7 +15,7 @@ type ModeratorMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
   const link = "private:" + window.location.pathname.split("/")[2] + ":";
   const presenterText = {
     set: "Set as a presenter",
@@ -34,13 +35,13 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         });
         break;
       case presenterText.unset:
-        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        eventChannel?.push("presenter_remove", {presenterTopic: link + participant.email});
         break;
       case banFromChatText.ban:
-        eventChannel?.push("ban_from_chat", { email: participant.email });
+        eventChannel?.push("ban_from_chat", {email: participant.email});
         break;
       case banFromChatText.unban:
-        eventChannel?.push("unban_from_chat", { email: participant.email });
+        eventChannel?.push("unban_from_chat", {email: participant.email});
         break;
     }
   };
@@ -48,7 +49,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton" />
+        <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
         {participant.isAuth && (
@@ -79,7 +80,7 @@ type ClientParticipantMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
+const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMenuProps) => {
   const askText = "Ask to become a presenter";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -88,7 +89,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
         email: participant.email,
       });
     } else {
-      eventChannel?.push("cancel_presenting_request", { email: participant.email });
+      eventChannel?.push("cancel_presenting_request", {email: participant.email});
     }
   };
 
@@ -97,7 +98,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton" />
+        <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
         <MenuItem onClick={handleClick} value={text} className="MenuOptionText">
@@ -114,13 +115,13 @@ type ParticipantProps = {
   eventChannel: Channel | undefined;
 };
 
-const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
+const Participant = ({client, participant, eventChannel}: ParticipantProps) => {
   const icon = participant.isModerator ? (
-    <Crown1 className="ParticipantIcon" />
+    <Crown1 className="ParticipantIcon"/>
   ) : participant.isPresenter ? (
-    <Star1 className="ParticipantIcon" />
+    <Star1 className="ParticipantIcon"/>
   ) : (
-    <User1 className="ParticipantIcon" />
+    <User1 className="ParticipantIcon"/>
   );
   const role = participant.isModerator ? "Moderator" : participant.isPresenter ? "Presenter" : "Participant";
 
@@ -135,13 +136,15 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
       <p className="ParticipantText">{participant.name}</p>
       {participant.isRequestPresenting && (client.isModerator || isMyself) && (
         <Tooltip label={"This user is asking to become a presenter"} className="InfoTooltip">
-          <QuestionCircle className="ParticipantIcon" />
+          <QuestionCircle className="ParticipantIcon"/>
         </Tooltip>
       )}
       {client.isModerator && (
-        <ModeratorMenu moderatorClient={client} eventChannel={eventChannel} participant={participant} />
+        <ModeratorMenu moderatorClient={client} eventChannel={eventChannel}
+                       participant={participant}/>
       )}
-      {isMyselfParticipant && <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />}
+      {isMyselfParticipant &&
+        <ClientParticipantMenu eventChannel={eventChannel} participant={participant}/>}
     </div>
   );
 };
@@ -151,9 +154,103 @@ type ParticipantsListProps = {
   eventChannel: Channel | undefined;
 };
 
-const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
+type SidebarMode = "participants" | "products" | "chat"
+
+export type Product = {
+  id: string,
+  name: string,
+  price: string,
+  itemUrl: string,
+  imageUrl: string,
+}
+
+const imageSize: string = "200/150"
+
+const products: Product[] = [{
+  id: "1",
+  name: "Kawiarnia",
+  price: "999$",
+  itemUrl: "#",
+  imageUrl: `https://picsum.photos/id/42/${imageSize}`,
+}, {
+  id: "2",
+  name: "Most",
+  price: "15$",
+  itemUrl: "#",
+  imageUrl: `https://picsum.photos/id/43/${imageSize}`,
+}, {
+  id: "3",
+  name: "Laptop",
+  price: "79.99$",
+  itemUrl: "#",
+  imageUrl: `https://picsum.photos/id/48/${imageSize}`,
+}, {
+  id: "4",
+  name: "Kulki",
+  price: "999$",
+  itemUrl: "#",
+  imageUrl: `https://picsum.photos/id/56/${imageSize}`,
+}, {
+  id: "5",
+  name: "Natura rozwkita ponownie",
+  price: "1 $",
+  itemUrl: "#",
+  imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+},
+  {
+    id: "6",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "7",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "8",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "9",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "10",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "11",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+  {
+    id: "12",
+    name: "Natura rozwkita ponownie",
+    price: "1 $",
+    itemUrl: "#",
+    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
+  },
+]
+
+const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [listMode, setListMode] = useState<boolean>(false);
+  const [listMode, setListMode] = useState<SidebarMode>("products");
   const chatMessages = useChatMessages(eventChannel);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
@@ -167,17 +264,23 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     <div className="Participants">
       <div className="ParticipantsButtons">
         <button
-          className={`ParticipantsButton ${!listMode && "Clicked"}`}
-          onClick={() => setListMode(false)}
+          className={`ParticipantsButton ${listMode === "chat" && "Clicked"}`}
+          onClick={() => setListMode("chat")}
           name="chat"
         >
           Group Chat
         </button>
-        <button className={`ParticipantsButton ${listMode && "Clicked"}`} name="list" onClick={() => setListMode(true)}>
+        <button className={`ParticipantsButton ${listMode == "participants" && "Clicked"}`}
+                name="list"
+                onClick={() => setListMode("participants")}>
           Participants
         </button>
+        <button className={`ParticipantsButton ${listMode === "products" && "Clicked"}`} name="list"
+                onClick={() => setListMode("products")}>
+          Products
+        </button>
       </div>
-      {listMode ? (
+      {listMode === "participants" && (
         <div className="ParticipantsList">
           {participants.map((participant) => (
             <Participant
@@ -188,7 +291,8 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
             />
           ))}
         </div>
-      ) : (
+      )}
+      {listMode === "chat" && (
         <ChatBox
           client={client}
           eventChannel={eventChannel}
@@ -196,8 +300,11 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           isBannedFromChat={isBannedFromChat}
         />
       )}
+      {listMode === "products" && <div className="ProductList">
+        {products.map((product) => <ProductComponent {...product} />)}
+      </div>}
     </div>
   );
 };
 
-export default ParticipantsList;
+export default SidebarList;

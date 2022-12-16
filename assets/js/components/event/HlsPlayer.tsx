@@ -25,7 +25,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
                 initialLiveManifestSize: 2,
                 backBufferLength: 30,
               }}
-              autoPlay={true}
+              autoPlay={false}
               muted={true}
               className="HlsPlayer"
               slot="media"

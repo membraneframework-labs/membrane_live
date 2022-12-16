@@ -56,7 +56,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
         />
       )}
       <div className="Stream">
-        {mode == "hls" && <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />}
+        {mode == "hls" && <HlsPlayer hlsUrl="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" presenterName={presenterName} eventChannel={eventChannel} />}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>

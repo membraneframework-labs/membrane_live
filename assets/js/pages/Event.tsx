@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ParticipantsList from "../components/event/ParticipantsList";
+import SidebarList from "../components/event/SidebarList";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import Header from "../components/event/Header";
@@ -107,7 +107,7 @@ const Event = () => {
             mode={mode}
             setMode={setMode}
           />
-          {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
+          {screenType.device == "desktop" && <SidebarList client={client} eventChannel={eventChannel} />}
         </div>
       )}
     </div>
