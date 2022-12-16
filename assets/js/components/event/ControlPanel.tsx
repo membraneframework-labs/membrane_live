@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Menu,
@@ -162,7 +162,7 @@ const ControlPanel = ({
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const updateAvailableSources = async () => {
+  const updateAvailableSources = useCallback(async () => {
     await askForPermissions();
     const sources = await getSources();
     if (sources != null) {
@@ -178,11 +178,11 @@ const ControlPanel = ({
       prepareDevice("audio");
       prepareDevice("video");
     }
-  };
+  }, [client, peersState, setPeersState, webrtc]);
 
   useEffect(() => {
     updateAvailableSources();
-  }, []);
+  }, [updateAvailableSources]);
 
   useEffect(() => {
     navigator.mediaDevices.ondevicechange = updateAvailableSources;
@@ -190,7 +190,7 @@ const ControlPanel = ({
     return () => {
       navigator.mediaDevices.ondevicechange = null;
     };
-  }, [getSources, peersState]);
+  }, [peersState, updateAvailableSources]);
 
   const getDropdownButton = (sourceType: SourceType) => {
     return (

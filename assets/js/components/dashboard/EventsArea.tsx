@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import EventField from "./EventField";
 import { getWebinarsInfo } from "../../utils/dashboardUtils";
 import { useToast } from "@chakra-ui/react";
@@ -38,7 +38,7 @@ const EventsArea = ({ searchText, currentEvents }: EventsAreaProps) => {
   useEffect(() => {
     getWebinarsInfo(toast, setWebinars, false);
     getWebinarsInfo(toast, setRecordings, true);
-  }, []);
+  }, [toast]);
 
   return (
     <div className="FogWrapper">

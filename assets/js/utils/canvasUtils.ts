@@ -1,5 +1,5 @@
-import { MergedScreenRef } from "../types/types";
 import { FRAME_RATE, SCREEN_CONSTRAINTS, CANVAS_HEIGHT, CANVAS_WIDTH } from "./const";
+import { MergedScreenRef } from "../types/types";
 
 export const getMergedTracks = async (mergedScreenRef: MergedScreenRef, presenterStream: MediaStream) => {
   mergedScreenRef.refreshId && stopRefreshingAndRemovePreviousScreen(mergedScreenRef);

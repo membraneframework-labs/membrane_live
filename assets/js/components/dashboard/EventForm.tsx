@@ -186,7 +186,7 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       start_date: inputDate,
       presenters: inputPresenters,
     });
-  }, [inputTitle, inputDescription, inputDate, inputPresenters]);
+  }, [inputTitle, inputDescription, inputDate, inputPresenters, setParentInput]);
 
   return (
     <div className="EventFormDiv">

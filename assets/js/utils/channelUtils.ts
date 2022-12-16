@@ -1,8 +1,8 @@
 import { Channel, Presence } from "phoenix";
-import type { Participant, Client, User, Toast, Metas, MetasUser } from "../types/types";
 import { NavigateFunction } from "react-router-dom";
 import { redirectToHomePage } from "./headerUtils";
 import { getErrorToast, getInfoToast } from "./toastUtils";
+import type { Participant, Client, User, Toast, Metas, MetasUser } from "../types/types";
 
 type EventChannelJoinResponse = {
   is_moderator?: boolean;

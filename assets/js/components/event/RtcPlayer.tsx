@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
 import type { PresenterStream, SourceType } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
@@ -12,11 +12,14 @@ const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const connectStreams = (sourceType: SourceType) => {
-    if (!presenterStream) return;
-    if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStream.stream;
-    if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStream.stream;
-  };
+  const connectStreams = useCallback(
+    (sourceType: SourceType) => {
+      if (!presenterStream) return;
+      if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStream.stream;
+      if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStream.stream;
+    },
+    [presenterStream]
+  );
 
   const isSourceDisabled = (sourceType: SourceType) => {
     const isEnabled = presenterStream?.stream.getTracks().find((elem) => elem.kind == sourceType)?.enabled;
@@ -29,9 +32,7 @@ const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
   useEffect(() => {
     connectStreams("audio");
     connectStreams("video");
-  }, [presenterStream]);
-
-  console.log("zxcvz");
+  }, [connectStreams, presenterStream]);
 
   return (
     <div className="RtcPlayer">

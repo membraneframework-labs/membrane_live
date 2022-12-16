@@ -1,4 +1,3 @@
-import React from "react";
 import AnimationComponent from "./HeartAnimation";
 import ReactHlsPlayer from "../../utils/ReactHlsPlayer";
 import HlsControlBar from "./HlsControlBar";

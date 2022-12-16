@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type { Mode, Client } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import type { Mode, Client } from "../../types/types";
 import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
@@ -42,7 +42,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
     if (privateChannel) {
       privateChannel.on("presenter_remove", () => setMode("hls"));
     }
-  }, [privateChannel]);
+  }, [privateChannel, setMode]);
 
   return (
     <div className="StreamArea">

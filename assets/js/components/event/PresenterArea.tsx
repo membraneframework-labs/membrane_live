@@ -5,9 +5,9 @@ import { useRerender } from "../../utils/reactUtils";
 import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
-import { User, Client, Mode, ClientStatus, PeersState, PresenterStream } from "../../types/types";
-import "../../../css/event/presenterarea.css";
 import { Channel } from "phoenix";
+import type { User, Client, Mode, ClientStatus, PeersState, PresenterStream } from "../../types/types";
+import "../../../css/event/presenterarea.css";
 
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
@@ -61,7 +61,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (client.email in presenters && clientStatus == "not_presenter") {
       setClientStatus("idle");
     }
-  }, [presenters]);
+  }, [client.email, clientStatus, presenters]);
 
   useEffect(() => {
     const tryToConnectPresenter = !webrtcConnecting && webrtc == null && clientStatus == "connected";
@@ -83,7 +83,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
     } else if (webrtc != null) {
       setIsControlPanelAvailable(true);
     }
-  }, [presenters, clientStatus, peersState]);
+  }, [presenters, clientStatus, peersState, eventChannel, client]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
@@ -91,7 +91,7 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
 
   useEffect(() => {
     if (clientStatus != "not_presenter") setMode("presenters");
-  }, [clientStatus]);
+  }, [clientStatus, setMode]);
 
   const getRtcPlayer = (presenterStream: PresenterStream) => {
     return (

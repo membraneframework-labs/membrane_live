@@ -1,8 +1,8 @@
 import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@membraneframework/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
-import { User, Client, SourceType, PeersState } from "../types/types";
 import { Channel } from "phoenix";
+import type { User, Client, SourceType, PeersState } from "../types/types";
 
 export type Sources = {
   audio: MediaDeviceInfo[];

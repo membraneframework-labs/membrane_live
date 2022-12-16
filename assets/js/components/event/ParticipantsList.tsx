@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import type { Participant, Client } from "../../types/types";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
 import { useChatMessages } from "../../utils/useChatMessages";
+import type { Participant, Client } from "../../types/types";
 import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
@@ -161,7 +161,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
     if (eventChannel) {
       syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
     }
-  }, [eventChannel]);
+  }, [client.email, eventChannel]);
 
   return (
     <div className="Participants">
