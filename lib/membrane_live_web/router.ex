@@ -56,6 +56,8 @@ defmodule MembraneLiveWeb.Router do
     )
 
     resources("/users", UserController, except: [:edit, :new, :create], param: "uuid")
+
+    get("/products", ProductController, :index)
   end
 
   scope "/auth", MembraneLiveWeb do
