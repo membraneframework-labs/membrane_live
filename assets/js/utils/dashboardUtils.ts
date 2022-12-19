@@ -1,8 +1,8 @@
 import axios from "../services";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types/types";
 import axiosWithInterceptor from "../services";
+import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types/types";
 
 export const checkEventForm = (eventForm: EventFormInput): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";

@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
 import { Channel } from "phoenix";
 import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
-import "../../../css/event/streamarea.css";
 import { StreamStartContext } from "../../utils/StreamStartContext";
+import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
+import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
   client: Client;
@@ -27,31 +27,34 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
   const screenType = useCheckScreenType();
   const { setStreamStart } = useContext(StreamStartContext);
 
-  const addHlsUrl = (message: PlaylistPlayableMessage): void => {
-    const link = window.location.href.split("event")[0] + "video/";
-    if (message.playlist_idl) {
-      setSrc(`${link}${message.playlist_idl}/index.m3u8`);
-      setPresenterName(message.name);
-      if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
-    } else {
-      setSrc("");
-      setPresenterName("");
-      if (setStreamStart) setStreamStart(null);
-    }
-  };
+  const addHlsUrl = useCallback(
+    (message: PlaylistPlayableMessage): void => {
+      const link = window.location.href.split("event")[0] + "video/";
+      if (message.playlist_idl) {
+        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
+        setPresenterName(message.name);
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      } else {
+        setSrc("");
+        setPresenterName("");
+        if (setStreamStart) setStreamStart(null);
+      }
+    },
+    [setSrc, setStreamStart]
+  );
 
   useEffect(() => {
     if (eventChannel) {
       eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
     }
-  }, [eventChannel]);
+  }, [addHlsUrl, eventChannel]);
 
   useEffect(() => {
     if (privateChannel) {
       privateChannel.on("presenter_remove", () => setMode("hls"));
     }
-  }, [privateChannel]);
+  }, [privateChannel, setMode]);
 
   return (
     <div className="StreamArea">

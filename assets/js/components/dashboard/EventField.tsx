@@ -1,4 +1,3 @@
-import React from "react";
 import { CalendarClock } from "react-swm-icon-pack";
 import { shortMonthNames } from "../../utils/const";
 import ModalForm from "./ModalForm";

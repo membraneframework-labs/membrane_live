@@ -1,8 +1,8 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
-import { AwaitingMessage, ChatMessage, RecievedMessage, MetasUser } from "../types/types";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
+import type { AwaitingMessage, ChatMessage, RecievedMessage, MetasUser } from "../types/types";
 
 export const useChatMessages = (
   eventChannel: Channel | undefined
@@ -17,37 +17,40 @@ export const useChatMessages = (
   const getTitle = (data: MetasUser | undefined) =>
     data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
 
-  const appendToChatMessages = ({ email, name, content, offset }: RecievedMessage, startTime: Date | null) => {
-    if (offset == 0 || (startTime && new Date(startTime.getTime() + offset) <= new Date())) {
-      setChatMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last && last.email == email) last.contents.push(content);
-        else {
-          const data = getByKey(presence.current, email);
-          const newChatMessage: ChatMessage = {
-            id: last ? last.id + 1 : 0,
-            email: email,
-            name: name,
-            title: getTitle(data),
-            moderatedNo: 0, // number of hiddend messages counting from the start
-            contents: [content],
-          };
-          prev.push(newChatMessage);
-        }
+  const appendToChatMessages = useCallback(
+    ({ email, name, content, offset }: RecievedMessage) => {
+      if (offset == 0 || (streamStart && new Date(streamStart.getTime() + offset) <= new Date())) {
+        setChatMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.email == email) last.contents.push(content);
+          else {
+            const data = getByKey(presence.current, email);
+            const newChatMessage: ChatMessage = {
+              id: last ? last.id + 1 : 0,
+              email: email,
+              name: name,
+              title: getTitle(data),
+              moderatedNo: 0, // number of hiddend messages counting from the start
+              contents: [content],
+            };
+            prev.push(newChatMessage);
+          }
 
-        return [...prev];
-      });
-    } else {
-      futureChatMessags.current.push({
-        email: email,
-        name: name,
-        content: content,
-        offset: offset,
-      });
-    }
-  };
+          return [...prev];
+        });
+      } else {
+        futureChatMessags.current.push({
+          email: email,
+          name: name,
+          content: content,
+          offset: offset,
+        });
+      }
+    },
+    [streamStart]
+  );
 
-  const updateMessages = () => {
+  const updateMessages = useCallback(() => {
     setChatMessages((prev) => {
       let changed = false;
       prev.forEach((chatMessage) => {
@@ -74,7 +77,7 @@ export const useChatMessages = (
       if (!data) return false;
       return !data.is_banned_from_chat;
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (eventChannel) {
@@ -83,12 +86,12 @@ export const useChatMessages = (
       if (!wasPrevChatRequested.current) {
         wasPrevChatRequested.current = true;
         eventChannel.push("sync_chat_messages", {}).receive("ok", (prevChatMessages: RecievedMessage[]) => {
-          prevChatMessages.forEach((message) => appendToChatMessages(message, streamStart));
+          prevChatMessages.forEach((message) => appendToChatMessages(message));
           setIsChatLoaded(true);
         });
       }
       eventChannel.on("chat_message", (data) => {
-        appendToChatMessages(data, streamStart);
+        appendToChatMessages(data);
       });
       presence.current.onSync(updateMessages);
     }
@@ -97,10 +100,7 @@ export const useChatMessages = (
       if (streamStart) {
         futureChatMessags.current = futureChatMessags.current.filter((message) => {
           if (new Date(streamStart.getTime() + message.offset) <= new Date()) {
-            appendToChatMessages(
-              { email: message.email, name: message.name, content: message.content, offset: 0 },
-              streamStart
-            );
+            appendToChatMessages({ email: message.email, name: message.name, content: message.content, offset: 0 });
             return false;
           }
           return true;
@@ -113,7 +113,7 @@ export const useChatMessages = (
       clearInterval(interval);
       presence.current = undefined;
     };
-  }, [eventChannel, streamStart]);
+  }, [appendToChatMessages, eventChannel, streamStart, updateMessages]);
 
   return { chatMessages, isChatLoaded };
 };

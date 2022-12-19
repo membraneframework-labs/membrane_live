@@ -164,6 +164,45 @@ defmodule MembraneLiveWeb.EventChannelTest do
     end
   end
 
+  describe "last person shuts the webinar" do
+    test "one viewer left in webinar", %{
+      uuid: uuid,
+      pub_socket: pub_socket,
+      moderator_socket: moderator_socket
+    } do
+      @endpoint.subscribe("event:#{uuid}")
+      ref = :global.whereis_name(uuid) |> Process.monitor()
+
+      Process.unlink(pub_socket.channel_pid)
+
+      leave(pub_socket)
+      assert_broadcast("last_viewer_active", %{})
+
+      push(moderator_socket, "last_viewer_answer", %{"answer" => "leave"})
+      assert_broadcast("finish_event", %{})
+      assert_receive({:DOWN, ^ref, :process, _object, _reason})
+    end
+
+    test "webinar closes when all users leave", %{
+      uuid: uuid,
+      pub_socket: pub_socket,
+      moderator_socket: moderator_socket
+    } do
+      @endpoint.subscribe("event:#{uuid}")
+      ref = :global.whereis_name(uuid) |> Process.monitor()
+
+      Process.unlink(pub_socket.channel_pid)
+      leave(pub_socket)
+
+      assert_broadcast("last_viewer_active", %{})
+
+      Process.unlink(moderator_socket.channel_pid)
+      leave(moderator_socket)
+
+      assert_receive({:DOWN, ^ref, :process, _object, _reason})
+    end
+  end
+
   defp create_channel_connection(uuid, token) do
     MembraneLiveWeb.EventSocket
     |> socket("event_id", %{})

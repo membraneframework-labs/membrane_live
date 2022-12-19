@@ -1,5 +1,5 @@
 import { FRAME_RATE, SCREEN_CONSTRAINTS, CANVAS_HEIGHT, CANVAS_WIDTH } from "./const";
-import type { MergedScreenRef } from "./rtcUtils";
+import { MergedScreenRef } from "../types/types";
 
 export const getMergedTracks = async (mergedScreenRef: MergedScreenRef, presenterStream: MediaStream) => {
   mergedScreenRef.refreshId && stopRefreshingAndRemovePreviousScreen(mergedScreenRef);
@@ -15,7 +15,7 @@ export const getMergedTracks = async (mergedScreenRef: MergedScreenRef, presente
   mergedScreenRef.screenTrack = screenStream.getVideoTracks()[0];
   mergedScreenRef.cameraTrack = cameraStream.getVideoTracks()[0];
 
-  if (!mergedScreenRef.cameraTrack.enabled) return screenStream;
+  if (!mergedScreenRef.cameraTrack?.enabled) return screenStream;
 
   const camera = await attachToDOM("justCamera", cameraStream);
   const screen = await attachToDOM("justScreenShare", screenStream);

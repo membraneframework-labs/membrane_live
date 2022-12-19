@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import AnimationComponent from "./HeartAnimation";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
@@ -17,7 +17,7 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
 
   useEffect(() => {
     attachVideo(playerRef.current);
-  }, [presenterName]);
+  }, [attachVideo, presenterName]);
 
   return (
     <div className="HlsStream">

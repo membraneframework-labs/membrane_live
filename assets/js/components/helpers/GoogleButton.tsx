@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useToast } from "@chakra-ui/react";
 import { pageTitlePrefix } from "../../utils/const";
 import { fetchTokenAndRedirect } from "../../utils/googleAuthUtils";
@@ -32,7 +32,7 @@ const GoogleButton = ({ eventChannel, options }: GoogleButtonProps) => {
 
     const buttonElement = document.getElementById(buttonId);
     if (buttonElement) google.accounts.id.renderButton(buttonElement, options);
-  }, []);
+  }, [buttonId, eventChannel, options, toast]);
 
   return <div id={buttonId} />;
 };

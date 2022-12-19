@@ -63,7 +63,7 @@ export const useHls = (
     return () => {
       if (hls) hls.current.destroy();
     };
-  }, [src]);
+  }, [autoPlay, hlsConfig, src]);
 
   return { attachVideo, setSrc };
 };

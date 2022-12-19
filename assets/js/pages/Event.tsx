@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ParticipantsList from "../components/event/ParticipantsList";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
@@ -14,13 +14,14 @@ import {
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { presenterPopup } from "../utils/toastUtils";
+import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, Toast, Mode } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import axiosWithInterceptor from "../services";
 import { StreamStartContext } from "../utils/StreamStartContext";
+import { redirectToHomePage } from "../utils/headerUtils";
+import type { Client, Toast, Mode } from "../types/types";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -38,8 +39,8 @@ const Event = () => {
   const [mode, setMode] = useState<Mode>("hls");
   const [streamStart, setStreamStart] = useState<Date | null>(null);
 
-  const socket = new Socket("/socket");
-  socket.connect();
+  const socket = useRef(new Socket("/socket"));
+  socket.current.connect();
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
@@ -55,17 +56,26 @@ const Event = () => {
         : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {
-        const channel = socket.channel(`event:${getChannelId()}`, msg);
-        createEventChannel(toast, client, channel, setEventChannel, setClient, navigate);
+        const channel = socket.current.channel(`event:${getChannelId()}`, msg);
+        createEventChannel(
+          toast,
+          client,
+          channel,
+          setEventChannel,
+          setClient,
+          navigate,
+          (toast: Toast, timeout: number) =>
+            lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
+        );
       });
     }
-  }, [eventChannel, client.name]);
+  }, [eventChannel, client.name, client, socket, toast, navigate]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (!privateAlreadyJoined && eventAlreadyJoined) {
-      const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
+      const channel = socket.current.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,
         channel,
@@ -75,7 +85,7 @@ const Event = () => {
         setPrivateChannel
       );
     }
-  }, [eventChannel, privateChannel]);
+  }, [client, eventChannel, privateChannel, socket, toast]);
 
   useEffect(() => {
     window.addEventListener("beforeunload", storageSetReloaded);

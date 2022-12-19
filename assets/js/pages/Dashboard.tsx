@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import WelcomePanel from "../components/dashboard/WelcomePanel";
 import SearchAndCreatePanel from "../components/dashboard/SearchAndCreatePanel";
 import SideDashboardPanel from "../components/dashboard/SideDashboardPanel";

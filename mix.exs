@@ -46,7 +46,7 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.17.5"},
-      {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
+      {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
@@ -79,8 +79,8 @@ defmodule Membrane.Live.Mixfile do
 
       # HLS_Endpoint deps
       {:membrane_http_adaptive_stream_plugin,
-       github: "membraneframework/membrane_http_adaptive_stream_plugin", optional: true},
-      {:membrane_mp4_plugin, github: "membraneframework/membrane_mp4_plugin", optional: true},
+       github: "membraneframework/membrane_http_adaptive_stream_plugin"},
+      {:membrane_mp4_plugin, github: "membraneframework/membrane_mp4_plugin"},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, github: "membraneframework/membrane_opus_plugin", override: true},

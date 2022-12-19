@@ -20,13 +20,25 @@ export interface Participant extends User {
   isRequestPresenting: boolean;
   isBannedFromChat: boolean;
 }
-export interface Presenter extends User {
-  rtcStatus: RtcStatus;
-  status: ClientStatus;
-  connectCallbacks: ((callback: (sourceType: SourceType) => void) => void)[];
+
+export interface PresenterStream extends User {
   isMicOn?: boolean;
   isCamOn?: boolean;
+  stream: MediaStream;
 }
+
+export type MergedScreenRef = {
+  screenTrack: MediaStreamTrack | undefined;
+  cameraTrack: MediaStreamTrack | undefined;
+  deviceName: string;
+  refreshId: number | undefined;
+};
+
+export type PeersState = {
+  mergedScreenRef: MergedScreenRef;
+  peers: { [key: string]: PresenterStream };
+  sourceIds: { audio: string; video: string };
+};
 
 export interface Client extends User {
   isModerator: boolean;

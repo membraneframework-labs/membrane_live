@@ -4,10 +4,10 @@ import GoogleButton from "../helpers/GoogleButton";
 import { roundedGoogleButton } from "../../utils/const";
 import { sessionStorageSetName } from "../../utils/storageUtils";
 import { useNavigate } from "react-router-dom";
-import { Client } from "../../types/types";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import { getErrorToast } from "../../utils/toastUtils";
 import { useToast } from "@chakra-ui/react";
+import type { Client } from "../../types/types";
 import "../../../css/event/namepopup.css";
 import "../../../css/dashboard/modalform.css";
 

@@ -1,9 +1,9 @@
 import React from "react";
-import type { Client, Mode, Toast } from "../types/types";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
+import type { Client, Mode, Toast } from "../types/types";
 import "../../css/toast.css";
 
 const closeToast = (toast: Toast, toastName: ToastId) => {
@@ -63,6 +63,54 @@ const sendAnswer = (
   eventChannel.push("presenter_answer", {
     email: email,
     moderatorTopic: moderatorTopic,
+    answer: answer,
+  });
+  if (toast) toast.close(toastName);
+};
+
+export const lastPersonPopup = (
+  toast: Toast,
+  eventChannel: Channel,
+  timeout: number,
+  redirectToHomePage: () => void
+) => {
+  let answer = "leave";
+
+  const thisToast = toast({
+    duration: timeout,
+    onCloseComplete: () => {
+      sendLastViewerAnswer(toast, thisToast, eventChannel, answer);
+    },
+    render: () => (
+      <div className="Popup">
+        <QuestionCircle className="PopupIcon" />
+        <div className="PopupText">Do you want to stay at this Webinar?</div>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "stay";
+            closeToast(toast, thisToast);
+          }}
+        >
+          STAY
+        </button>
+        <button
+          className="PresenterPopupButton"
+          onClick={() => {
+            answer = "leave";
+            redirectToHomePage();
+            closeToast(toast, thisToast);
+          }}
+        >
+          LEAVE
+        </button>
+      </div>
+    ),
+  });
+};
+
+const sendLastViewerAnswer = (toast: Toast, toastName: ToastId, eventChannel: Channel, answer: string) => {
+  eventChannel.push("last_viewer_answer", {
     answer: answer,
   });
   if (toast) toast.close(toastName);

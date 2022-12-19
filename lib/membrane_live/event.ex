@@ -15,7 +15,8 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
-  alias MembraneLive.StorageCleanup
+  alias MembraneLive.Event.Timer
+  alias MembraneLive.Webinars
 
   @mix_env Mix.env()
 
@@ -102,6 +103,7 @@ defmodule MembraneLive.Event do
        moderator_pid: nil,
        playlist_idl: nil,
        is_playlist_playable?: false,
+       timer: Timer.create(self()),
        target_segment_duration: Time.as_milliseconds(target_segment_duration),
        start_time: nil
      }}
@@ -185,7 +187,7 @@ defmodule MembraneLive.Event do
     Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
 
     {:ok, state} = handle_peer_left(state, peer.id)
-    terminate_engine_if_empty(state)
+    {:noreply, state}
   end
 
   @impl true
@@ -240,9 +242,8 @@ defmodule MembraneLive.Event do
       pid == state.moderator_pid ->
         state = %{state | moderator_pid: nil}
         {:ok, state} = handle_peer_left(state, pid)
-
         Engine.remove_peer(state.rtc_engine, pid)
-        terminate_engine_if_empty(state)
+        {:noreply, state}
 
       is_nil(result) ->
         {:noreply, state}
@@ -252,7 +253,7 @@ defmodule MembraneLive.Event do
         {:ok, state} = handle_peer_left(state, peer_id)
 
         Engine.remove_peer(state.rtc_engine, peer_id)
-        terminate_engine_if_empty(state)
+        {:noreply, state}
     end
   end
 
@@ -265,7 +266,7 @@ defmodule MembraneLive.Event do
   def handle_info({:playlist_playable, :video, playlist_idl}, state) do
     state = %{state | playlist_idl: Path.join(state.event_id, playlist_idl)}
 
-    :ets.insert(
+    :ets.insert_new(
       :client_start_timestamps,
       {state.event_id, System.monotonic_time(:millisecond) + state.target_segment_duration}
     )
@@ -281,25 +282,52 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:cleanup, _clean_function, playlist_idl}, state) do
-    StorageCleanup.remove_directory(Path.join(state.event_id, playlist_idl))
+  def handle_info({:cleanup, _clean_function, _playlist_idl}, state) do
     {:noreply, state}
+  end
+
+  def handle_info({:timer_action, action}, %{timer: timer} = state) do
+    case Timer.handle_action(timer, action,
+           timeout: MembraneLive.get_env!(:last_peer_timeout_long_ms)
+         ) do
+      {:ok, timer} ->
+        {:noreply, %{state | timer: timer}}
+
+      {:timeout, _timer} ->
+        close_webinar(state)
+    end
+  end
+
+  def handle_info({:timer_timeout, action}, %{timer: timer} = state) do
+    case action do
+      :notify ->
+        timeout = MembraneLive.get_env!(:last_peer_timeout_short_ms)
+
+        {:ok, timer} = Timer.handle_action(timer, :start_kill, timeout: timeout)
+
+        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "last_viewer_active", %{
+          timeout: timeout
+        })
+
+        {:noreply, %{state | timer: timer}}
+
+      :kill ->
+        close_webinar(state)
+    end
+  end
+
+  defp close_webinar(state) do
+    # no logic for reseting chat messages offset on stream end
+    # as it should not be necessary in the future
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
+    Webinars.mark_webinar_as_finished(state.event_id)
+
+    {:stop, :normal, state}
   end
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
     {:reply, stream_response_message(state), state}
-  end
-
-  defp terminate_engine_if_empty(state) do
-    if is_nil(state.moderator_pid) and state.peer_channels == %{} do
-      Engine.terminate(state.rtc_engine)
-      :ets.delete(:start_timestamps, state.event_id)
-
-      {:stop, :normal, state}
-    else
-      {:noreply, state}
-    end
   end
 
   defp tracing_metadata(),

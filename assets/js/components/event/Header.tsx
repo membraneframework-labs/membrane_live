@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getEventInfo, initEventInfo, redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy, Redo } from "react-swm-icon-pack";
 import { storageGetPicture } from "../../utils/storageUtils";
@@ -15,9 +15,9 @@ import {
 import { monthNames, pageTitlePrefix } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
-import type { Client, EventInfo } from "../../types/types";
 import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import type { Client, EventInfo } from "../../types/types";
 import "../../../css/event/header.css";
 
 type ArrowLeftPopoverProps = {
@@ -86,14 +86,14 @@ const Header = ({ client, eventChannel, isRecording }: HeaderProps) => {
   const navigate = useNavigate();
   const screenType = useCheckScreenType();
 
-  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), [isRecording, toast]);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
 
-  if (!isRecording) {
-    useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
-  }
+  useEffect(() => {
+    if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];
+  }, [eventChannel, isRecording]);
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   MediaControlBar,
   MediaTimeRange,
@@ -22,14 +21,11 @@ import {
   RotateRight,
   Fullscreen,
 } from "react-swm-icon-pack";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/hlscontrolbar.css";
 
 const HlsControlBar = () => {
-  const screenType = useCheckScreenType();
-
   return (
-    <MediaControlBar className={screenType.device == "mobile" ? "MediaControlBarMobile" : "MediaControlBar"}>
+    <MediaControlBar className="MediaControlBar">
       <div className="TopBar">
         <MediaTimeRange className="MediaTimeRange MediaBackground"></MediaTimeRange>
         <MediaTimeDisplay className="MediaTimeDisplay MediaBackground" showDuration></MediaTimeDisplay>
