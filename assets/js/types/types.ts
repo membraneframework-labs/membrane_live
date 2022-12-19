@@ -109,7 +109,7 @@ export type AwaitingMessage = {
   email: string;
   name: string;
   content: string;
-  time: Date;
+  offset: number;
 };
 
 export type RecievedMessage = {
@@ -117,4 +117,10 @@ export type RecievedMessage = {
   name: string;
   content: string;
   offset: number;
+};
+
+export type PlaylistPlayableMessage = {
+  name: string;
+  playlist_idl: string;
+  start_time: string;
 };

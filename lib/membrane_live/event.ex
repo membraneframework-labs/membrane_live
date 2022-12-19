@@ -6,12 +6,14 @@ defmodule MembraneLive.Event do
   require Membrane.Logger
   require Membrane.OpenTelemetry
 
+  alias Membrane.HTTPAdaptiveStream.Sink.SegmentDuration
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
   alias Membrane.RTC.Engine.Endpoint.HLS.{AudioMixerConfig, CompositorConfig}
   alias Membrane.RTC.Engine.MediaEvent
   alias Membrane.RTC.Engine.Message
+  alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.StorageCleanup
 
@@ -77,11 +79,14 @@ defmodule MembraneLive.Event do
     Engine.register(pid, self())
     Process.monitor(pid)
 
+    target_segment_duration = Time.seconds(5)
+
     endpoint = %HLS{
       rtc_engine: pid,
       owner: self(),
       output_directory: "output/#{event_id}",
       target_window_duration: :infinity,
+      segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
       mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}}
     }
 
@@ -97,7 +102,8 @@ defmodule MembraneLive.Event do
        moderator_pid: nil,
        playlist_idl: nil,
        is_playlist_playable?: false,
-       start_timestamp: nil
+       target_segment_duration: Time.as_milliseconds(target_segment_duration),
+       start_time: nil
      }}
   end
 
@@ -130,12 +136,7 @@ defmodule MembraneLive.Event do
     peer_channel_pid = Map.get(state.peer_channels, peer.id)
     peer_node = node(peer_channel_pid)
 
-    state =
-      if is_nil(state.start_timestamp),
-        do: %{state | start_timestamp: System.monotonic_time(:millisecond)},
-        else: state
-
-    send(peer_channel_pid, {:stream_start_timestamp, state.start_timestamp})
+    :ets.insert_new(:start_timestamps, {state.event_id, System.monotonic_time(:millisecond)})
 
     handshake_opts =
       if state.network_options[:dtls_pkey] &&
@@ -257,13 +258,24 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
-    # TODO: implement detecting when HLS starts
     {:noreply, state}
   end
 
   @impl true
   def handle_info({:playlist_playable, :video, playlist_idl}, state) do
     state = %{state | playlist_idl: Path.join(state.event_id, playlist_idl)}
+
+    :ets.insert(
+      :client_start_timestamps,
+      {state.event_id, System.monotonic_time(:millisecond) + state.target_segment_duration}
+    )
+
+    state = %{
+      state
+      | start_time:
+          DateTime.utc_now() |> DateTime.add(state.target_segment_duration, :millisecond)
+    }
+
     send_broadcast(state)
     {:noreply, state}
   end
@@ -282,6 +294,8 @@ defmodule MembraneLive.Event do
   defp terminate_engine_if_empty(state) do
     if is_nil(state.moderator_pid) and state.peer_channels == %{} do
       Engine.terminate(state.rtc_engine)
+      :ets.delete(:start_timestamps, state.event_id)
+
       {:stop, :normal, state}
     else
       {:noreply, state}
@@ -323,8 +337,13 @@ defmodule MembraneLive.Event do
   end
 
   defp stream_response_message(state) do
-    start_stream_message = %{playlist_idl: state.playlist_idl, name: "Live Stream 🎐"}
-    stop_stream_message = %{playlist_idl: "", name: ""}
+    start_stream_message = %{
+      playlist_idl: state.playlist_idl,
+      name: "Live Stream 🎐",
+      start_time: state.start_time
+    }
+
+    stop_stream_message = %{playlist_idl: "", name: "", start_time: nil}
 
     if is_nil(state.playlist_idl) or map_size(state.peer_channels) == 0,
       do: stop_stream_message,

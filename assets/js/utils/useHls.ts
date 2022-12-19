@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Hls, { HlsConfig } from "hls.js";
-import { StreamStartContext } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
@@ -10,10 +9,8 @@ export const useHls = (
   setSrc: React.Dispatch<React.SetStateAction<string>>;
 } => {
   const [src, setSrc] = useState<string>("");
-  const { setStreamStart } = useContext(StreamStartContext);
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
-  const totalDuration = useRef<number | null>(null);
 
   const attachVideo = (video_ref: HTMLVideoElement | null) => {
     if (hls && video_ref) {
@@ -57,17 +54,6 @@ export const useHls = (
               initHls();
               break;
           }
-        }
-      });
-
-      hls.current.once(Hls.Events.LEVEL_LOADED, (_event, data) => {
-        // this is very much approximated, almost guessed and eventually should be improved
-        totalDuration.current = data.details.totalduration - data.details.targetduration;
-      });
-
-      hls.current.once(Hls.Events.FRAG_LOADED, () => {
-        if (totalDuration.current != null && setStreamStart) {
-          setStreamStart(new Date(Date.now() - totalDuration.current * 1000));
         }
       });
     };

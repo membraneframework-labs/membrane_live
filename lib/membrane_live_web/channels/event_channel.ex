@@ -65,8 +65,7 @@ defmodule MembraneLiveWeb.EventChannel do
                Socket.assign(socket, %{
                  is_moderator: is_moderator,
                  event_id: id,
-                 user_email: email,
-                 start_time: nil
+                 user_email: email
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
@@ -139,10 +138,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_info({:stream_start_timestamp, timestamp}, socket) do
-    {:noreply, Socket.assign(socket, :start_time, timestamp)}
-  end
-
   def handle_in("finish_event", %{}, socket) do
     "event:" <> uuid = socket.topic
     Webinars.mark_webinar_as_finished(uuid)
@@ -167,8 +162,8 @@ defmodule MembraneLiveWeb.EventChannel do
       |> Enum.map(
         &%{
           content: &1.content,
-          email: (if is_nil(&1.anon_id), do: &1.auth_user_email, else: &1.anon_id),
-          name: (if is_nil(&1.user_name), do: &1.auth_user_name, else: &1.user_name),
+          email: if(is_nil(&1.anon_id), do: &1.auth_user_email, else: &1.anon_id),
+          name: if(is_nil(&1.user_name), do: &1.auth_user_name, else: &1.user_name),
           offset: &1.offset
         }
       )
@@ -176,7 +171,7 @@ defmodule MembraneLiveWeb.EventChannel do
     {:reply, {:ok, chat_messages}, socket}
   end
 
-  def handle_in("chat_message", %{"content" => content, "offset" => offset}, %{topic: "event:" <> id} = socket) do
+  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
     email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
 
@@ -187,18 +182,22 @@ defmodule MembraneLiveWeb.EventChannel do
 
       new_offset =
         if is_auth and is_presenter do
-          start_time = socket.assigns.start_time
+          case :ets.lookup(:start_timestamps, id) do
+            [{_key, start_timestamp}] ->
+              System.monotonic_time(:millisecond) - start_timestamp
 
-          if is_nil(start_time),
-            do:
-              raise(
-                "Recieved chat message from presenter when there is no presenters connected to RTC Engine process"
-              )
-
-          cur_time = System.monotonic_time(:millisecond)
-          cur_time - start_time
+            #  TODO handle messages when presenter is in the "start streaming" window
+            [] ->
+              raise "Recieved chat message from presenter when there is no presenters connected to RTC Engine process"
+          end
         else
-          offset
+          case :ets.lookup(:client_start_timestamps, id) do
+            [{_key, client_start_timestamp}] ->
+              System.monotonic_time(:millisecond) - client_start_timestamp
+
+            [] ->
+              0
+          end
         end
 
       Chats.add_chat_message(id, name, email, is_auth, content, new_offset)
@@ -409,9 +408,12 @@ defmodule MembraneLiveWeb.EventChannel do
   defp create_event(socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        if socket.assigns.is_moderator,
-          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
-          else: {:error, :non_moderator}
+        if socket.assigns.is_moderator do
+          Chats.clear_offsets(socket.assigns.event_id)
+          Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
+        else
+          {:error, :non_moderator}
+        end
 
       pid ->
         {:ok, pid}

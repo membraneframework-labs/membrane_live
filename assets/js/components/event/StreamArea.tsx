@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type { Mode, Client } from "../../types/types";
+import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
 import { Channel } from "phoenix";
 import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";
+import { StreamStartContext } from "../../utils/StreamStartContext";
 
 type StreamAreaProps = {
   client: Client;
@@ -24,15 +25,18 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
     backBufferLength: 30,
   });
   const screenType = useCheckScreenType();
+  const { setStreamStart } = useContext(StreamStartContext);
 
-  const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
+  const addHlsUrl = (message: PlaylistPlayableMessage): void => {
     const link = window.location.href.split("event")[0] + "video/";
     if (message.playlist_idl) {
       setSrc(`${link}${message.playlist_idl}/index.m3u8`);
       setPresenterName(message.name);
+      if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
     } else {
       setSrc("");
       setPresenterName("");
+      if (setStreamStart) setStreamStart(null);
     }
   };
 

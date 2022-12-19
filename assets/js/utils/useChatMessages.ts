@@ -9,6 +9,7 @@ export const useChatMessages = (
 ): { chatMessages: ChatMessage[]; isChatLoaded: boolean } => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoaded, setIsChatLoaded] = useState(false);
+  const wasPrevChatRequested = useRef(false);
   const { streamStart } = useContext(StreamStartContext);
   const presence = useRef<Presence>();
   const futureChatMessags = useRef<AwaitingMessage[]>([]);
@@ -17,8 +18,7 @@ export const useChatMessages = (
     data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
 
   const appendToChatMessages = ({ email, name, content, offset }: RecievedMessage, startTime: Date | null) => {
-    // TODO now every message can have some offset so code below can break
-    if (offset == 0 || !startTime) {
+    if (offset == 0 || (startTime && new Date(startTime.getTime() + offset) <= new Date())) {
       setChatMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last && last.email == email) last.contents.push(content);
@@ -42,7 +42,7 @@ export const useChatMessages = (
         email: email,
         name: name,
         content: content,
-        time: startTime ? new Date(startTime.getTime() + offset) : new Date(),
+        offset: offset,
       });
     }
   };
@@ -77,19 +77,26 @@ export const useChatMessages = (
   };
 
   useEffect(() => {
-    let interval: number;
     if (eventChannel) {
       presence.current = new Presence(eventChannel);
       eventChannel.push("sync_presence", {});
-      eventChannel.push("sync_chat_messages", {}).receive("ok", (prevChatMessages: RecievedMessage[]) => {
-        prevChatMessages.forEach((message) => appendToChatMessages(message, streamStart));
-        setIsChatLoaded(true);
-        eventChannel.on("chat_message", (data) => appendToChatMessages(data, streamStart));
+      if (!wasPrevChatRequested.current) {
+        wasPrevChatRequested.current = true;
+        eventChannel.push("sync_chat_messages", {}).receive("ok", (prevChatMessages: RecievedMessage[]) => {
+          prevChatMessages.forEach((message) => appendToChatMessages(message, streamStart));
+          setIsChatLoaded(true);
+        });
+      }
+      eventChannel.on("chat_message", (data) => {
+        appendToChatMessages(data, streamStart);
       });
       presence.current.onSync(updateMessages);
-      interval = setInterval(() => {
+    }
+
+    const interval = setInterval(() => {
+      if (streamStart) {
         futureChatMessags.current = futureChatMessags.current.filter((message) => {
-          if (message.time <= new Date()) {
+          if (new Date(streamStart.getTime() + message.offset) <= new Date()) {
             appendToChatMessages(
               { email: message.email, name: message.name, content: message.content, offset: 0 },
               streamStart
@@ -98,8 +105,8 @@ export const useChatMessages = (
           }
           return true;
         });
-      }, 1000);
-    }
+      }
+    }, 1000);
 
     return () => {
       if (eventChannel) eventChannel.off("chat_message");

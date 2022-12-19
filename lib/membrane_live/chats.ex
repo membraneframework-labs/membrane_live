@@ -34,6 +34,11 @@ defmodule MembraneLive.Chats do
     end
   end
 
+  def clear_offsets(event_id) do
+    from(chat in Chat, where: chat.event_id == ^event_id)
+    |> Repo.update_all(set: [time_offset: 0])
+  end
+
   defp add_anonnymous_chat_message(event_id, user_email, user_name, content, time_offset) do
     attrs = %{
       event_id: event_id,
