@@ -91,11 +91,6 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
   const navigate = useNavigate();
   const screenType = useCheckScreenType();
 
-  // useEffect(() => getEventInfo(toast, setEventInfo, isRecording), [isRecording, toast]);
-  // useEffect(() => {
-  //   if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
-  // }, [eventInfo]);
-
   useEffect(() => {
     if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];
   }, [eventChannel, isRecording]);
