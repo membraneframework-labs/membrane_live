@@ -27,19 +27,14 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    switch ((e.target as HTMLTextAreaElement).value) {
+    const clickedValue = (e.target as HTMLTextAreaElement).value;
+    switch (clickedValue) {
       case presenterText.setBasic:
-        eventChannel?.push("presenter_prop", {
-          moderatorTopic: link + moderatorClient.email,
-          presenterTopic: link + participant.email,
-          mainPresenter: false,
-        });
-        break;
       case presenterText.setMain:
         eventChannel?.push("presenter_prop", {
           moderatorTopic: link + moderatorClient.email,
           presenterTopic: link + participant.email,
-          mainPresenter: true,
+          mainPresenter: clickedValue == presenterText.setMain,
         });
         break;
       case presenterText.unset:
