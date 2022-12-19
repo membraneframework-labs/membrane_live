@@ -131,6 +131,11 @@ defmodule Membrane.Live.Mixfile do
       test: [
         "cmd ./scripts/key-gen.sh",
         "test --warnings-as-errors"
+      ],
+      "ecto.setup": [
+        "ecto.create",
+        "ecto.migrate",
+        "run priv/repo/seeds.exs"
       ]
     ]
   end
