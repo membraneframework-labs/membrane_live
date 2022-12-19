@@ -195,6 +195,7 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           messages={chatMessages}
           isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
+          isRecording={false}
         />
       )}
     </div>

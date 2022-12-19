@@ -3,6 +3,7 @@ import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 import type { AwaitingMessage, ChatMessage, RecievedMessage, MetasUser } from "../types/types";
+import axios from "axios";
 
 export const useChatMessages = (
   eventChannel: Channel | undefined
@@ -85,10 +86,14 @@ export const useChatMessages = (
       eventChannel.push("sync_presence", {});
       if (!wasPrevChatRequested.current) {
         wasPrevChatRequested.current = true;
-        eventChannel.push("sync_chat_messages", {}).receive("ok", (prevChatMessages: RecievedMessage[]) => {
-          prevChatMessages.forEach((message) => appendToChatMessages(message));
-          setIsChatLoaded(true);
-        });
+        const id = window.location.href.split("/").slice(-1)[0];
+        axios
+          .get(`${window.location.origin}/resources/chat/${id}`)
+          .then(({ data: { chats: prevChatMessages } }: { data: { chats: RecievedMessage[] } }) => {
+            prevChatMessages.forEach((message) => appendToChatMessages(message));
+            setIsChatLoaded(true);
+          })
+          .catch((error) => console.log("Fetching previous chat messages failed: ", error));
       }
       eventChannel.on("chat_message", (data) => {
         appendToChatMessages(data);

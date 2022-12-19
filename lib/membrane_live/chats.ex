@@ -14,7 +14,7 @@ defmodule MembraneLive.Chats do
       left_join: user in User,
       on: chat.user_id == user.uuid,
       where: chat.event_id == ^event_id,
-      order_by: chat.inserted_at,
+      order_by: [chat.time_offset, chat.inserted_at],
       select: %{
         user_name: chat.user_name,
         anon_id: chat.anon_id,

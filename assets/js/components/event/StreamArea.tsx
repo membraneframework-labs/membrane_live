@@ -7,6 +7,7 @@ import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import { StreamStartContext } from "../../utils/StreamStartContext";
 import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
+import { RotateLeft } from "react-swm-icon-pack";
 import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
@@ -68,9 +69,15 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
         />
       )}
       <div className="Stream">
-        {mode == "hls" && (
-          <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
-        )}
+        {mode == "hls" &&
+          (presenterName ? (
+            <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+          ) : (
+            <div className="WaitText">
+              <RotateLeft className="RotateIcon" />
+              Waiting for the live stream to start...
+            </div>
+          ))}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>

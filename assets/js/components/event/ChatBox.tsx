@@ -73,9 +73,10 @@ type ChatBoxProps = {
   messages: ChatMessage[];
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
+  isRecording: boolean;
 };
 
-const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromChat }: ChatBoxProps) => {
+const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromChat, isRecording }: ChatBoxProps) => {
   const [messageInput, setMessageInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -93,25 +94,27 @@ const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromCha
   // TODO some of the messages are not properly rendered
   return (
     <div className="ChatBox">
-      <div className="MessageInputContainer">
-        {isBannedFromChat ? (
-          <CrossCircle className="EmojiIcon" />
-        ) : (
-          <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
-        )}
-        <input
-          ref={inputRef}
-          className="MessageInput"
-          type="text"
-          value={isBannedFromChat ? "" : messageInput}
-          placeholder={isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."}
-          disabled={isBannedFromChat}
-          onChange={(e) => setMessageInput(e.target.value)}
-          onKeyDown={(e) => {
-            e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);
-          }}
-        />
-      </div>
+      {!isRecording && (
+        <div className="MessageInputContainer">
+          {isBannedFromChat ? (
+            <CrossCircle className="EmojiIcon" />
+          ) : (
+            <EmojiPopover setMessageInput={setMessageInput} inputRef={inputRef} />
+          )}
+          <input
+            ref={inputRef}
+            className="MessageInput"
+            type="text"
+            value={isBannedFromChat ? "" : messageInput}
+            placeholder={isBannedFromChat ? "You have been banned from the chat" : "Type your message here..."}
+            disabled={isBannedFromChat}
+            onChange={(e) => setMessageInput(e.target.value)}
+            onKeyDown={(e) => {
+              e.key == "Enter" && messageInput.length > 0 && sendChatMessage(messageInput);
+            }}
+          />
+        </div>
+      )}
       {isChatLoaded ? (
         <div className="Messages">
           {messages
