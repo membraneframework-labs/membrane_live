@@ -20,7 +20,7 @@ defmodule MembraneLive.Products.Product do
   @doc false
   def changeset(product, attrs) do
     product
-    |> cast(attrs, [:name, :price, :itemUrl, :imageUrl])
+    |> cast(attrs, [:name, :price, :item_url, :image_url])
     |> unique_constraint(:name)
   end
 end
