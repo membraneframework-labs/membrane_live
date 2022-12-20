@@ -2,7 +2,7 @@ import axios from "axios";
 import { Channel } from "phoenix";
 import axiosWithInterceptor from "../services/index";
 import { isUserAuthenticated } from "../services/jwtApi";
-import { storageSetJwt, storageSetName, storageSetEmail, storageSetPicture } from "../utils/storageUtils";
+import { storageSetJwt, storageSetName, storageSetEmail, sessionStorageSetPicture } from "../utils/storageUtils";
 import { CredentialResponse } from "google-one-tap";
 import { getErrorToast } from "../utils/toastUtils";
 import type { Toast } from "../types/types";
@@ -31,7 +31,7 @@ export const fetchTokenAndRedirect = async (
         if (!response.data.name || !response.data.email) throw "User information aren't correct";
         storageSetName(response.data.name);
         storageSetEmail(response.data.email);
-        storageSetPicture(response.data.picture);
+        sessionStorageSetPicture(response.data.picture);
         if (eventChannel) eventChannel.leave();
         window.location.reload();
       })

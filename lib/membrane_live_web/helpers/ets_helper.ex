@@ -5,14 +5,14 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
   def check_if_banned_from_chat(email, id),
     do: check_if_exist_in_ets(:banned_from_chat, email, true, id)
 
-  def check_if_presenter(email, reloaded, id),
-    do: check_if_exist_in_ets(:presenters, email, reloaded, id)
+  def check_if_presenter(email, should_be_presenter, id),
+    do: check_if_exist_in_ets(:presenters, email, should_be_presenter, id)
 
-  def check_if_main_presenter(email, reloaded, id),
-    do: check_if_exist_in_ets(:main_presenters, email, reloaded, id)
+  def check_if_main_presenter(email, should_be_presenter, id),
+    do: check_if_exist_in_ets(:main_presenters, email, should_be_presenter, id)
 
-  def check_if_request_presenting(email, reloaded, id),
-    do: check_if_exist_in_ets(:presenting_requests, email, reloaded, id)
+  def check_if_request_presenting(email, requests_presenting, id),
+    do: check_if_exist_in_ets(:presenting_requests, email, requests_presenting, id)
 
   def remove_from_banned_from_chat(email, id),
     do: remove_from_list_in_ets(:banned_from_chat, email, id)
@@ -37,11 +37,11 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
     if presenters == MapSet.new([]), do: true, else: false
   end
 
-  defp check_if_exist_in_ets(ets_key, email, reloaded, id) do
+  defp check_if_exist_in_ets(ets_key, email, client_bool, id) do
     [{_key, presenters}] = :ets.lookup(ets_key, id)
     in_ets = MapSet.member?(presenters, email)
 
-    case {reloaded, in_ets} do
+    case {client_bool, in_ets} do
       {true, _in_ets} ->
         {:ok, in_ets}
 

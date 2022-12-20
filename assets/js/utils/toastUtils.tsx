@@ -5,7 +5,7 @@ import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
 import type { Client, Mode, Toast, PresenterProposition } from "../types/types";
 import "../../css/toast.css";
-import { storageSetIsPresenter, storageSetPresentingRequest } from "./storageUtils";
+import { sessionStorageSetIsPresenter, sessionStorageSetPresentingRequest } from "./storageUtils";
 
 const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
@@ -33,8 +33,8 @@ export const presenterPopup = (
           className="PresenterPopupButton"
           onClick={() => {
             answer = "accept";
-            storageSetIsPresenter();
-            storageSetPresentingRequest(false);
+            sessionStorageSetIsPresenter();
+            sessionStorageSetPresentingRequest(false);
             closeToast(toast, thisToast);
             setMode("presenters");
           }}

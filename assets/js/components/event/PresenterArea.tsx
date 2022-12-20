@@ -16,7 +16,7 @@ import type {
   PresenterPropositionServer,
 } from "../../types/types";
 import "../../../css/event/presenterarea.css";
-import { storageGetReloaded } from "../../utils/storageUtils";
+import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
 
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
@@ -79,7 +79,7 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
           return { ...prev, isMainPresenter: message.main_presenter };
         })
       );
-      privateChannel.push("am_i_main_presenter", { reloaded: storageGetReloaded() });
+      privateChannel.push("am_i_main_presenter", { is_presenter: sessionStorageGetIsPresenter() });
     }
   }, [privateChannel]);
 

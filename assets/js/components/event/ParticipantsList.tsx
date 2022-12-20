@@ -7,7 +7,7 @@ import ChatBox from "./ChatBox";
 import { useChatMessages } from "../../utils/useChatMessages";
 import type { Participant, Client } from "../../types/types";
 import "../../../css/event/participants.css";
-import { storageSetPresentingRequest, storageUnsetIsPresenter } from "../../utils/storageUtils";
+import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -40,7 +40,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         break;
       case presenterText.unset:
         eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
-        storageUnsetIsPresenter();
+        sessionStorageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
         eventChannel?.push("ban_from_chat", { email: participant.email });
@@ -97,7 +97,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
     const shouldAskForBeingPresenter = (e.target as HTMLTextAreaElement).value === askText;
 
     switchAskingForBeingPresenter(eventChannel, participant.email, !shouldAskForBeingPresenter);
-    storageSetPresentingRequest(!shouldAskForBeingPresenter);
+    sessionStorageSetPresentingRequest(!shouldAskForBeingPresenter);
   };
 
   const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;

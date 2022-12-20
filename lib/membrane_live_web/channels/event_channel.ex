@@ -214,11 +214,11 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def handle_in(
         "am_i_main_presenter",
-        %{"reloaded" => reloaded},
+        %{"is_presenter" => is_presenter},
         %{topic: "private:" <> topic_id} = socket
       ) do
     [id, email] = topic_id |> String.split(":")
-    {:ok, is_main_presenter} = check_if_main_presenter(email, reloaded, id)
+    {:ok, is_main_presenter} = check_if_main_presenter(email, is_presenter, id)
     broadcast(socket, "am_i_main_presenter", %{"main_presenter" => is_main_presenter})
     {:noreply, socket}
   end
