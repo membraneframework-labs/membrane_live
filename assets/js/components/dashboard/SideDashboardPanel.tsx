@@ -39,7 +39,7 @@ const SideDashboardPanel = ({ currentEvents, setCurrentEvents }: SideDashboardPa
       </div>
       <div className="DashboardPanelItems PanelFooter">
         {getButton(QuestionCircle, "Help", () => {
-          // noop
+          // TODO
         })}
         {getButton(Logout, "Logout", () => logOut())}
       </div>
