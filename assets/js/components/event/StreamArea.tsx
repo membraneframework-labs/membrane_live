@@ -43,7 +43,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
       syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
-  }, [eventChannel]);
+  }, [eventChannel, client]);
 
   useEffect(() => {
     if (privateChannel) {

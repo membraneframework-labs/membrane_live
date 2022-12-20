@@ -44,7 +44,7 @@ const Event = () => {
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
 
-  useEffect(() => getEventInfo(toast, setEventInfo, false), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, false), [toast]);
   useEffect(() => {
     if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
   }, [eventInfo]);
@@ -55,12 +55,12 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
         ? axiosWithInterceptor.get("/me").then(() => {
-            return {
-              token: storageGetAuthToken(),
-              presenter: storageGetIsPresenter(),
-              requestPresenting: storageGetPresentingRequest(),
-            };
-          })
+          return {
+            token: storageGetAuthToken(),
+            presenter: storageGetIsPresenter(),
+            requestPresenting: storageGetPresentingRequest(),
+          };
+        })
         : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {

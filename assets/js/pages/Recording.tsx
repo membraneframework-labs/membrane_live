@@ -24,7 +24,7 @@ const Recording = () => {
 
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 
-  useEffect(() => getEventInfo(toast, setEventInfo, true), []);
+  useEffect(() => getEventInfo(toast, setEventInfo, true), [toast]);
 
   return (
     <div className="EventPage">

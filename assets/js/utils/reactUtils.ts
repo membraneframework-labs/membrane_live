@@ -5,7 +5,7 @@ export const useRerender = () => {
   return () => setValue(!value);
 };
 
-export const changeSizeDynamically = () => {
+export const useDynamicResizing = () => {
   useEffect(() => {
     const changeCssHeightVariable = () => {
       const fiftyMiliseconds = 50;
