@@ -3,11 +3,12 @@
 .Dashboard {
   background: var(--bg-light-color-1);
   width: 100vw;
-  height: 100vh;
+  height: calc(var(--window-inner-height) - 1px);
   overflow: hidden;
   padding: 2.5rem;
   display: flex;
   gap: 2.5rem;
+  box-sizing: border-box;
 }
 
 .MainDashboardArea {

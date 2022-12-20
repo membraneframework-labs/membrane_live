@@ -28,7 +28,8 @@ html {
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   html {
-    overflow: auto;
+    overflow: scroll;
+    height: calc(var(--window-inner-height) - 1px);
   }
 }
 

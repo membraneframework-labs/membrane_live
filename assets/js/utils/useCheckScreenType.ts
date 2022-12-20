@@ -10,7 +10,7 @@ const useCheckScreenType = () => {
 
   const setDevice = useCallback(
     (isMobile: boolean): "desktop" | "mobile" => {
-      if (localStorageDevice == "desktop" || localStorageDevice == "mobile") return localStorageDevice;
+      if (localStorageDevice === "desktop" || localStorageDevice === "mobile") return localStorageDevice;
       return isMobile ? "mobile" : "desktop";
     },
     [localStorageDevice]
@@ -67,14 +67,14 @@ const useCheckScreenType = () => {
   );
 
   useEffect(() => {
-    mqlLandscape.addEventListener("change", onLandscapeChange);
-    mqlMobilePortrait.addEventListener("change", onMobilePortraitChange);
-    mqlMobileLandscape.addEventListener("change", onMobileLandscapeChange);
+    mqlLandscape.onchange = onLandscapeChange;
+    mqlMobilePortrait.onchange = onMobilePortraitChange;
+    mqlMobileLandscape.onchange = onMobileLandscapeChange;
 
     return () => {
-      mqlLandscape.removeEventListener("change", onLandscapeChange);
-      mqlMobilePortrait.removeEventListener("change", onMobilePortraitChange);
-      mqlMobileLandscape.removeEventListener("change", onMobileLandscapeChange);
+      mqlLandscape.onchange = null;
+      mqlMobilePortrait.onchange = null;
+      mqlMobileLandscape.onchange = null;
     };
   }, [
     mqlLandscape,
