@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import Hls, { HlsConfig } from "hls.js";
+import { StreamStartContext } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
+  setStartTimeLocally: boolean,
   hlsConfig?: Partial<HlsConfig>
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
@@ -11,13 +13,14 @@ export const useHls = (
   const [src, setSrc] = useState<string>("");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
+  const { setStreamStart } = useContext(StreamStartContext);
 
-  const attachVideo = (video_ref: HTMLVideoElement | null) => {
+  const attachVideo = useCallback((video_ref: HTMLVideoElement | null) => {
     if (hls && video_ref) {
       playerRef.current = video_ref;
       hls.current.attachMedia(video_ref);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initHls = () => {
@@ -56,6 +59,10 @@ export const useHls = (
           }
         }
       });
+
+      hls.current.once(Hls.Events.LEVEL_LOADED, () => {
+        if (setStartTimeLocally && setStreamStart) setStreamStart(new Date());
+      });
     };
 
     if (Hls.isSupported()) initHls();
@@ -63,7 +70,7 @@ export const useHls = (
     return () => {
       if (hls) hls.current.destroy();
     };
-  }, [autoPlay, hlsConfig, src]);
+  }, [attachVideo, autoPlay, hlsConfig, setStartTimeLocally, setStreamStart, src]);
 
   return { attachVideo, setSrc };
 };

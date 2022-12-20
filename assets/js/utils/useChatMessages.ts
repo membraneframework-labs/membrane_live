@@ -81,20 +81,23 @@ export const useChatMessages = (
   }, []);
 
   useEffect(() => {
+    if (!wasPrevChatRequested.current) {
+      wasPrevChatRequested.current = true;
+      const id = window.location.href.split("/").slice(-1)[0];
+      axios
+        .get(`${window.location.origin}/resources/chat/${id}`)
+        .then(({ data: { chats: prevChatMessages } }: { data: { chats: RecievedMessage[] } }) => {
+          prevChatMessages.forEach((message) => appendToChatMessages(message));
+          setIsChatLoaded(true);
+        })
+        .catch((error) => console.log("Fetching previous chat messages failed: ", error));
+    }
+  }, [appendToChatMessages]);
+
+  useEffect(() => {
     if (eventChannel) {
       presence.current = new Presence(eventChannel);
       eventChannel.push("sync_presence", {});
-      if (!wasPrevChatRequested.current) {
-        wasPrevChatRequested.current = true;
-        const id = window.location.href.split("/").slice(-1)[0];
-        axios
-          .get(`${window.location.origin}/resources/chat/${id}`)
-          .then(({ data: { chats: prevChatMessages } }: { data: { chats: RecievedMessage[] } }) => {
-            prevChatMessages.forEach((message) => appendToChatMessages(message));
-            setIsChatLoaded(true);
-          })
-          .catch((error) => console.log("Fetching previous chat messages failed: ", error));
-      }
       eventChannel.on("chat_message", (data) => {
         appendToChatMessages(data);
       });

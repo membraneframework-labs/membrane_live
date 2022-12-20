@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -8,6 +8,7 @@ import useCheckScreenType from "../../utils/useCheckScreenType";
 import { StreamStartContext } from "../../utils/StreamStartContext";
 import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
 import { RotateLeft } from "react-swm-icon-pack";
+import { HlsConfig } from "hls.js";
 import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
@@ -20,11 +21,12 @@ type StreamAreaProps = {
 
 const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
   const [presenterName, setPresenterName] = useState<string>("");
-  const { attachVideo, setSrc } = useHls(true, {
+  const config = useRef<Partial<HlsConfig>>({
     liveSyncDurationCount: 2,
     initialLiveManifestSize: 2,
     backBufferLength: 30,
   });
+  const { attachVideo, setSrc } = useHls(true, false, config.current);
   const screenType = useCheckScreenType();
   const { setStreamStart } = useContext(StreamStartContext);
 
