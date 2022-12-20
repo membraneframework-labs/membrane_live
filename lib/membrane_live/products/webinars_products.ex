@@ -1,11 +1,12 @@
-defmodule MembraneLive.WebinarsProducts do
+defmodule MembraneLive.Products.WebinarsProducts do
   @moduledoc """
   Intermediate table between webinars and products
   """
   use Ecto.Schema
+  import Ecto.Changeset
 
-  alias MembraneLive.Webinars.Webinar
   alias MembraneLive.Products.Product
+  alias MembraneLive.Webinars.Webinar
 
   schema "webinars_products" do
     belongs_to(:webinar, Webinar, references: :uuid, type: :binary_id)
@@ -14,4 +15,9 @@ defmodule MembraneLive.WebinarsProducts do
     timestamps()
   end
 
+  def changeset(struct, params \\ %{}) do
+    struct
+    |> cast(params, [:webinar_id, :product_id])
+    |> validate_required([:webinar_id, :product_id])
+  end
 end

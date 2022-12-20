@@ -33,6 +33,14 @@ defmodule MembraneLive.Webinars do
   @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
 
+  @spec get_webinar_with_products(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
+  def get_webinar_with_products(uuid) do
+    with {:ok, webinar} <- get_webinar(uuid) do
+      webinar_with_products = Repo.preload(webinar, [:products])
+      {:ok, webinar_with_products}
+    end
+  end
+
   @spec create_webinar(map(), binary()) :: any
   def create_webinar(attrs, moderator_id) do
     %Webinar{}

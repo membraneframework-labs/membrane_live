@@ -2,7 +2,7 @@ defmodule MembraneLiveWeb.ProductsControllerTest do
   use MembraneLiveWeb.ConnCase
 
   import MembraneLive.Support.CustomTokenHelperFunctions
-  import MembraneLive.AccountsFixtures
+  # import MembraneLive.AccountsFixtures
 
   setup %{conn: conn} do
     {:ok, user, conn} =
@@ -19,15 +19,14 @@ defmodule MembraneLiveWeb.ProductsControllerTest do
       assert json_response(conn, 200)["products"] == []
     end
 
-    test "reject listing if user not authorized", %{conn: conn} do
-        # fake_user = fake_user_fixture()
-        # expected_msg = "User unauthorized to list products"
+    # test "reject listing if user not authorized", %{conn: conn} do
+    # fake_user = fake_user_fixture()
+    # expected_msg = "User unauthorized to list products"
 
-        # IO.inspect(fake_user)
-        # conn
-        # |> put_user_in_auth_header(fake_user)
-        # |> get(Routes.product_path(conn, :index))
-        # |> unauthorize_assert(expected_msg)
-    end
+    # conn
+    # |> put_user_in_auth_header(fake_user)
+    # |> get(Routes.product_path(conn, :index))
+    # |> unauthorize_assert(expected_msg)
+    # end
   end
 end

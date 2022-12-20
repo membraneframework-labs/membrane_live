@@ -35,6 +35,7 @@ defmodule MembraneLiveWeb.Router do
 
     get("/", WebinarController, :index)
     get("/:uuid", WebinarController, :show)
+    get("/:uuid/products", WebinarProductController, :index)
   end
 
   scope "/resources/recordings", MembraneLiveWeb do
@@ -49,6 +50,7 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:auth)
 
     resources("/webinars", WebinarController, except: [:edit, :new, :index, :show], param: "uuid")
+    get("/products", ProductController, :index)
 
     resources("/recordings", RecordingsController,
       except: [:edit, :new, :index, :create, :update, :show],
@@ -56,8 +58,6 @@ defmodule MembraneLiveWeb.Router do
     )
 
     resources("/users", UserController, except: [:edit, :new, :create], param: "uuid")
-
-    get("/products", ProductController, :index)
   end
 
   scope "/auth", MembraneLiveWeb do
