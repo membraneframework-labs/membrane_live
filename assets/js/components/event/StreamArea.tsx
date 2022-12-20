@@ -79,7 +79,13 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
             )}
           </div>
         )}
-        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
+        <PresenterArea
+          client={client}
+          privateChannel={privateChannel}
+          eventChannel={eventChannel}
+          mode={mode}
+          setMode={setMode}
+        />
       </div>
     </div>
   );

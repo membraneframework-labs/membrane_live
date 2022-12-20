@@ -6,20 +6,22 @@ import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
-import type { User, Client, Mode, ClientStatus, PeersState, PresenterStream } from "../../types/types";
+import type {
+  User,
+  Client,
+  Mode,
+  ClientStatus,
+  PeersState,
+  PresenterStream,
+  PresenterPropositionServer,
+} from "../../types/types";
 import "../../../css/event/presenterarea.css";
+import { storageGetReloaded } from "../../utils/storageUtils";
 
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
 
-type PresenterAreaProps = {
-  client: Client;
-  eventChannel: Channel | undefined;
-  mode: Mode;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
-};
-
-const initialPeersState = {
+const initialPeersState: PeersState = {
   mergedScreenRef: {
     screenTrack: undefined,
     cameraTrack: undefined,
@@ -28,9 +30,18 @@ const initialPeersState = {
   },
   peers: {},
   sourceIds: { audio: "", video: "" },
+  isMainPresenter: false,
 };
 
-const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaProps) => {
+type PresenterAreaProps = {
+  client: Client;
+  privateChannel: Channel | undefined;
+  eventChannel: Channel | undefined;
+  mode: Mode;
+  setMode: React.Dispatch<React.SetStateAction<Mode>>;
+};
+
+const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<{ [key: string]: User }>({});
   const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
@@ -54,6 +65,23 @@ const PresenterArea = ({ client, eventChannel, mode, setMode }: PresenterAreaPro
       email: client.email,
     });
   };
+
+  useEffect(() => {
+    if (privateChannel) {
+      privateChannel.on("am_i_main_presenter", (message: { main_presenter: boolean }) =>
+        setPeersState((prev) => {
+          console.log("reloading i am presenter: ", message);
+          return { ...prev, isMainPresenter: message.main_presenter };
+        })
+      );
+      privateChannel.on("presenter_prop", (message: PresenterPropositionServer) =>
+        setPeersState((prev) => {
+          return { ...prev, isMainPresenter: message.main_presenter };
+        })
+      );
+      privateChannel.push("am_i_main_presenter", { reloaded: storageGetReloaded() });
+    }
+  }, [privateChannel]);
 
   useEffect(() => {
     if (client.email in presenters === false) {
