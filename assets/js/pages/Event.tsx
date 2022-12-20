@@ -55,12 +55,12 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
         ? axiosWithInterceptor.get("/me").then(() => {
-          return {
-            token: storageGetAuthToken(),
-            presenter: storageGetIsPresenter(),
-            requestPresenting: storageGetPresentingRequest(),
-          };
-        })
+            return {
+              token: storageGetAuthToken(),
+              presenter: storageGetIsPresenter(),
+              requestPresenting: storageGetPresentingRequest(),
+            };
+          })
         : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {
