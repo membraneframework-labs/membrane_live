@@ -7,7 +7,7 @@ import {Channel} from "phoenix";
 import ChatBox from "./ChatBox";
 import {useChatMessages} from "../../utils/useChatMessages";
 import "../../../css/event/participants.css";
-import {ProductComponent} from "./ProductComponent";
+import {ProductsComponent} from "./ProductsComponent";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -156,97 +156,6 @@ type ParticipantsListProps = {
 
 type SidebarMode = "participants" | "products" | "chat"
 
-export type Product = {
-  id: string,
-  name: string,
-  price: string,
-  itemUrl: string,
-  imageUrl: string,
-}
-
-const imageSize: string = "200/150"
-
-const products: Product[] = [{
-  id: "1",
-  name: "Kawiarnia",
-  price: "999$",
-  itemUrl: "#",
-  imageUrl: `https://picsum.photos/id/42/${imageSize}`,
-}, {
-  id: "2",
-  name: "Most",
-  price: "15$",
-  itemUrl: "#",
-  imageUrl: `https://picsum.photos/id/43/${imageSize}`,
-}, {
-  id: "3",
-  name: "Laptop",
-  price: "79.99$",
-  itemUrl: "#",
-  imageUrl: `https://picsum.photos/id/48/${imageSize}`,
-}, {
-  id: "4",
-  name: "Kulki",
-  price: "999$",
-  itemUrl: "#",
-  imageUrl: `https://picsum.photos/id/56/${imageSize}`,
-}, {
-  id: "5",
-  name: "Natura rozwkita ponownie",
-  price: "1 $",
-  itemUrl: "#",
-  imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-},
-  {
-    id: "6",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "7",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "8",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "9",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "10",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "11",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-  {
-    id: "12",
-    name: "Natura rozwkita ponownie",
-    price: "1 $",
-    itemUrl: "#",
-    imageUrl: `https://picsum.photos/id/55/${imageSize}`,
-  },
-]
 
 const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -300,9 +209,7 @@ const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
           isBannedFromChat={isBannedFromChat}
         />
       )}
-      {listMode === "products" && <div className="ProductList">
-        {products.map((product) => <ProductComponent {...product} />)}
-      </div>}
+      {listMode === "products" && <ProductsComponent/>}
     </div>
   );
 };

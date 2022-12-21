@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import SidebarList from "../components/event/SidebarList";
-import { Channel, Socket } from "phoenix";
-import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
+import {Channel, Socket} from "phoenix";
+import {createPrivateChannel, createEventChannel, getChannelId} from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
   storageGetName,
@@ -13,15 +13,16 @@ import {
   getIsAuthenticated,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
-import { useToast } from "@chakra-ui/react";
-import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
-import { useNavigate } from "react-router-dom";
-import type { Client, Toast, Mode } from "../types/types";
+import {useToast} from "@chakra-ui/react";
+import {lastPersonPopup, presenterPopup} from "../utils/toastUtils";
+import {useNavigate} from "react-router-dom";
+import type {Client, Toast, Mode} from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import "../../css/event/event.css";
 import axiosWithInterceptor from "../services";
-import { redirectToHomePage } from "../utils/headerUtils";
+import {redirectToHomePage} from "../utils/headerUtils";
+import {MobileRightSidebar} from "../components/event/MobileRightSidebar";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -46,12 +47,12 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
         ? axiosWithInterceptor.get("/me").then(() => {
-            return {
-              token: storageGetAuthToken(),
-              reloaded: storageGetReloaded(),
-            };
-          })
-        : Promise.resolve({ username: client.name });
+          return {
+            token: storageGetAuthToken(),
+            reloaded: storageGetReloaded(),
+          };
+        })
+        : Promise.resolve({username: client.name});
 
       promise.then((msg) => {
         const channel = socket.channel(`event:${getChannelId()}`, msg);
@@ -95,21 +96,22 @@ const Event = () => {
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      {(screenType.device == "desktop" || screenType.orientation == "portrait") && (
-        <Header client={client} eventChannel={eventChannel} isRecording={false} />
+      {(screenType.device == "desktop") && (
+        <Header client={client} eventChannel={eventChannel} isRecording={false}/>
       )}
-      {(screenType.device == "desktop" || screenType.orientation == "landscape") && (
-        <div className="MainGrid">
-          <StreamArea
-            client={client}
-            eventChannel={eventChannel}
-            privateChannel={privateChannel}
-            mode={mode}
-            setMode={setMode}
-          />
-          {screenType.device == "desktop" && <SidebarList client={client} eventChannel={eventChannel} />}
-        </div>
-      )}
+
+      <div className="MainGrid">
+        <StreamArea
+          client={client}
+          eventChannel={eventChannel}
+          privateChannel={privateChannel}
+          mode={mode}
+          setMode={setMode}
+        />
+        {screenType.device === "desktop" &&
+          <SidebarList client={client} eventChannel={eventChannel}/>}
+      </div>
+
     </div>
   );
 };

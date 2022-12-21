@@ -14,12 +14,12 @@ defmodule MembraneLiveWeb.Endpoint do
 
   socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
 
-  plug(Plug.Static,
-    at: "/",
-    from: :membrane_live,
-    gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
-  )
+    plug(Plug.Static,
+      at: "/",
+      from: :membrane_live,
+      gzip: false,
+      only: ~w(assets fonts images icons favicon.ico robots.txt)
+    )
 
   if code_reloading? do
     socket("/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket)

@@ -2,10 +2,11 @@ import React from "react";
 import AnimationComponent from "./HeartAnimation";
 import ReactHlsPlayer from "../../utils/ReactHlsPlayer";
 import HlsControlBar from "./HlsControlBar";
-import { Channel } from "phoenix";
-import { MediaController } from "media-chrome/dist/react";
-import { RotateLeft } from "react-swm-icon-pack";
+import {Channel} from "phoenix";
+import {MediaController} from "media-chrome/dist/react";
+import {RotateLeft} from "react-swm-icon-pack";
 import "../../../css/event/hlsplayer.css";
+import {MobileRightSidebar} from "./MobileRightSidebar";
 
 type HlsPlayerProps = {
   hlsUrl: string;
@@ -13,7 +14,7 @@ type HlsPlayerProps = {
   eventChannel?: Channel | undefined;
 };
 
-const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({hlsUrl, presenterName, eventChannel}: HlsPlayerProps) => {
   return (
     <div className="HlsStream">
       {hlsUrl ? (
@@ -30,17 +31,21 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
               className="HlsPlayer"
               slot="media"
               src={hlsUrl}
-            ></ReactHlsPlayer>
-            <HlsControlBar></HlsControlBar>
+            />
+            <HlsControlBar/>
           </MediaController>
-          <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>
+          <div className="HlsTopBar">
+            {presenterName && <div className="HlsPresenterName">{presenterName}</div>}
+          </div>
           <div className="HlsBottomBar">
-            <AnimationComponent eventChannel={eventChannel} />
+            <AnimationComponent eventChannel={eventChannel}/>
+          </div>
+          <div className="HlsPlayerSidebar">
           </div>
         </div>
       ) : (
         <div className="WaitText">
-          <RotateLeft className="RotateIcon" />
+          <RotateLeft className="RotateIcon"/>
           Waiting for the live stream to start...
         </div>
       )}

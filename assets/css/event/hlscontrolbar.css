@@ -29,8 +29,13 @@
   justify-content: center;
 }
 
+.TopBar {
+  display: flex;
+}
+
 .MediaTimeRange {
-  width: 90%;
+  flex-grow: 1;
+  /*width: 90%;*/
   --media-range-track-height: 0.6rem;
   --media-range-thumb-height: 1.2rem;
   --media-range-thumb-width: 1.2rem;
@@ -40,7 +45,7 @@
 }
 
 .MediaTimeDisplay {
-  width: 10%;
+  /*width: max(10%, 100px);*/
 }
 
 .MediaVolumeRange {
@@ -55,3 +60,45 @@
   stroke: white;
   fill: transparent;
 }
+
+.LeftStreamIcons {
+  width: 50px;
+  height: 50px;
+  background-color: blue;
+  position: absolute;
+  z-index: 1000;
+  left: 0;
+}
+
+.RightStreamIcons {
+  width: 50px;
+  height: 50px;
+  background-color: yellow;
+  position: absolute;
+  z-index: 1000;
+  right: 0;
+}
+
+.MediaPlayerButtonSection {
+  /*width: 50px;*/
+  /*height: 50px;*/
+  /*background-color: red;*/
+  /*display: flex;*/
+  /*flex-direction: row;*/
+  /*align-items: flex-end;*/
+  /*justify-content: space-between;*/
+  /*position: absolute;*/
+  /*top: 0;*/
+
+  width: 50px;
+  height: 50px;
+  background-color: blue;
+  position: absolute;
+  z-index: 1000;
+  right: 0;
+}
+
+.PlayerSidebarLeft {
+
+}
+

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { ScreenType } from "../types/types";
+import {useEffect, useState} from "react";
+import type {ScreenType} from "../types/types";
 
-const useCheckScreenType = () => {
+const useCheckScreenType = (): ScreenType => {
   const breakPixelValue = 500;
   const mqlLandscape = window.matchMedia("(orientation: landscape)");
   const mqlMobilePortrait = window.matchMedia(`(max-width: ${breakPixelValue}px)`);

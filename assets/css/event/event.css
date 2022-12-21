@@ -16,11 +16,16 @@
   min-height: 0;
   display: flex;
   gap: 2.5rem;
+  position: relative;
 }
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   .EventPage {
-    padding: 1rem;
+    padding: 0;
     overflow: scroll;
   }
 }
+
+/*.MobileMediaPlayerLayer {*/
+/*  position: absolute;*/
+/*}*/

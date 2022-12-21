@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type { Mode, Client } from "../../types/types";
-import { Channel } from "phoenix";
+import type {Mode, Client} from "../../types/types";
+import {Channel} from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";
+import {MobileRightSidebar} from "./MobileRightSidebar";
+import {MobileBottomPanel} from "./MobileBottomPanel";
 
 type StreamAreaProps = {
   client: Client;
@@ -15,7 +17,7 @@ type StreamAreaProps = {
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: StreamAreaProps) => {
+const StreamArea = ({client, eventChannel, privateChannel, mode, setMode}: StreamAreaProps) => {
   const [hlsUrl, setHlsUrl] = useState<string>("");
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
@@ -44,6 +46,8 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
     }
   }, [privateChannel]);
 
+  const [card, setCard] = useState<string | undefined>("undefined")
+
   return (
     <div className="StreamArea">
       {screenType.device == "desktop" && (
@@ -56,8 +60,15 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode }: Str
         />
       )}
       <div className="Stream">
-        {mode == "hls" && <HlsPlayer hlsUrl="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" presenterName={presenterName} eventChannel={eventChannel} />}
-        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
+
+        <MobileRightSidebar setCard={setCard}/>
+        <MobileBottomPanel card={card} onBarClick={() => setCard(undefined)}/>
+
+        {mode == "hls" && <HlsPlayer
+          hlsUrl="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+          presenterName={presenterName}
+          eventChannel={eventChannel}/>}
+        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
       </div>
     </div>
   );

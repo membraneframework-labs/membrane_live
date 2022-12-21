@@ -1,0 +1,33 @@
+.MobileRightSidebar {
+  /*background-color: blue;*/
+  position: absolute;
+  z-index: 1000;
+  right: 0;
+  bottom: 100px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+
+  color: white;
+}
+
+.MobileRightSidebarButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.MobileRightSidebarButton > img {
+  width: 4em;
+  height: 4em;
+
+  /* Hack for changing svg color
+ * source: https://stackoverflow.com/a/68589357
+ */
+
+  /* White color */
+  filter: invert(92%) sepia(100%) saturate(2%) hue-rotate(241deg) brightness(102%) contrast(101%) drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4));
+}
