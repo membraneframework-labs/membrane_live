@@ -10,12 +10,12 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
       |> put_req_header("accept", "application/json")
       |> set_new_user_token()
 
-    {:ok, conn: conn, user: user}
+    webinar = webinar_fixture(user)
+
+    {:ok, conn: conn, moderator: user, webinar: webinar}
   end
 
   describe "index" do
-    setup [:create_webinar]
-
     test "lists all webinars for event", %{conn: conn, webinar: webinar} do
       conn = get(conn, Routes.webinar_product_path(conn, :index, webinar.uuid))
       assert json_response(conn, 200)["products"] == []
@@ -23,6 +23,22 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
   end
 
   describe "add product to the webinar" do
+    test "moderator adds a product to the webinar", %{
+      conn: conn,
+      moderator: moderator,
+      webinar: webinar
+    } do
+    end
+
+    test "webinar does not exist" do
+    end
+
+    test "product does not exist" do
+    end
+
+    test "user is not the moderator of the webinar" do
+    end
+
     # test "renders webinar when data is valid", %{conn: conn, user: user} do
     #   conn = post(conn, Routes.webinar_path(conn, :create), webinar: @create_attrs)
     #   assert %{"link" => link} = json_response(conn, 201)
@@ -52,7 +68,21 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
   end
 
   describe "remove product from the webinar" do
-    setup [:create_webinar]
+    test "moderator deletes a product from the webinar", %{
+      conn: conn,
+      moderator: moderator,
+      webinar: webinar
+    } do
+    end
+
+    test "webinar does not exist" do
+    end
+
+    test "product does not exist" do
+    end
+
+    test "user is not the moderator of the webinar" do
+    end
 
     # test "deletes chosen webinar", %{conn: conn, webinar: webinar} do
     #   conn = delete(conn, Routes.webinar_path(conn, :delete, webinar))
@@ -68,11 +98,6 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
     #   callback = &delete(&1, webinar_path, webinar: webinar)
     #   test_unauthorized_webinar_request(callback, context)
     # end
-  end
-
-  defp create_webinar(%{user: user}) do
-    webinar = webinar_fixture(user)
-    %{webinar: webinar}
   end
 
   # defp test_unauthorized_webinar_request(conn_callback, %{conn: conn, webinar: webinar}) do

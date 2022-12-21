@@ -70,6 +70,7 @@ defmodule Membrane.Live.Mixfile do
       {:bypass, "~> 2.1.0"},
       {:bimap, "~> 1.2", override: true},
       {:ex_libsrtp, "~> 0.5.1", override: true},
+      {:inflex, "~> 2.0.0"},
 
       # Otel
       {:opentelemetry, "~> 1.0"},
@@ -136,6 +137,11 @@ defmodule Membrane.Live.Mixfile do
         "ecto.create",
         "ecto.migrate",
         "run priv/repo/seeds.exs"
+      ],
+      "ecto.restart": [
+        "ecto.drop",
+        "ecto.create",
+        "ecto.migrate"
       ]
     ]
   end

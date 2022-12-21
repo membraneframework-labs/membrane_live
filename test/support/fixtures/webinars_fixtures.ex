@@ -12,7 +12,7 @@ defmodule MembraneLive.WebinarsFixtures do
     "title" => "some title"
   }
 
-  @spec webinar_fixture(any) :: any
+  @spec webinar_fixture(any, User.t()) :: Webinar.t()
   @doc """
   Generate a webinar.
   """

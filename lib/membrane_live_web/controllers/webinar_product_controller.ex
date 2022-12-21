@@ -5,16 +5,16 @@ defmodule MembraneLiveWeb.WebinarProductController do
 
   action_fallback(MembraneLiveWeb.FallbackController)
 
-  # @spec create(any, map) :: any
-  # def create(conn, %{"webinar" => webinar_params}) do
-  #   with {:ok, %Webinar{} = webinar} <-
-  #          Webinars.create_webinar(webinar_params, conn.assigns.user_id) do
-  #     conn
-  #     |> put_status(:created)
-  #     |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
-  #     |> render("show_link.json", link: Webinars.get_link(webinar))
-  #   end
-  # end
+  @spec create(any, map) :: any
+  def create(conn, %{"productId" => product_id}) do
+    # with {:ok, %Webinar{} = webinar} <-
+    #        Webinars.create_webinar(webinar_params, conn.assigns.user_id) do
+    #   conn
+    #   |> put_status(:created)
+    #   |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
+    #   |> render("show_link.json", link: Webinars.get_link(webinar))
+    # end
+  end
 
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(conn, params) do

@@ -8,6 +8,13 @@ defmodule MembraneLive.Products.Product do
   @derive {Phoenix.Param, key: :uuid}
   @primary_key {:uuid, :binary_id, autogenerate: true}
 
+  @type t :: %__MODULE__{
+          name: String.t(),
+          price: String.t(),
+          item_url: String.t(),
+          image_url: String.t()
+        }
+
   schema "products" do
     field(:name, :string)
     field(:price, :string)
