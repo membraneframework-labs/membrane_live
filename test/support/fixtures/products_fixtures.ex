@@ -23,4 +23,6 @@ defmodule MembraneLive.ProductFixtures do
     |> Enum.into(@default_product_attrs)
     |> Products.create_product!()
   end
+
+  def product_attrs(), do: @default_product_attrs
 end

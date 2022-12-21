@@ -3,17 +3,20 @@ defmodule MembraneLiveWeb.WebinarProductController do
 
   alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
 
+  alias MembraneLive.WebinarsProducts
+
   action_fallback(MembraneLiveWeb.FallbackController)
 
   @spec create(any, map) :: any
-  def create(conn, %{"productId" => product_id}) do
-    # with {:ok, %Webinar{} = webinar} <-
-    #        Webinars.create_webinar(webinar_params, conn.assigns.user_id) do
-    #   conn
-    #   |> put_status(:created)
-    #   |> put_resp_header("location", Routes.webinar_path(conn, :show, webinar))
-    #   |> render("show_link.json", link: Webinars.get_link(webinar))
-    # end
+  def create(conn, %{"webinar_uuid" => webinar_uuid, "productId" => product_uuid}) do
+    assoc_attrs = %{webinar_id: webinar_uuid, product_id: product_uuid}
+
+    with {:ok, product} <- WebinarsProducts.add_product_to_webinar(assoc_attrs) do
+      conn
+      |> put_view(MembraneLiveWeb.ProductView)
+      |> put_status(:created)
+      |> render("show.json", product: product)
+    end
   end
 
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()

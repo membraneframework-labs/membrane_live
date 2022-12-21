@@ -28,9 +28,9 @@ defmodule MembraneLive.Helpers do
     String.match?(uuid, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   end
 
-  def camelize_keys(attrs) do
+  def underscore_keys(attrs) do
     attrs
-    |> Enum.map(fn {k, v} -> {Inflex.camelize(k, :lower), v} end)
+    |> Enum.map(fn {k, v} -> {Inflex.underscore(k), v} end)
     |> Enum.into(%{})
   end
 end

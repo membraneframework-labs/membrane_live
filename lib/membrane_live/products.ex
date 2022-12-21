@@ -18,10 +18,17 @@ defmodule MembraneLive.Products do
           | %{optional(:__struct__) => none, optional(atom | binary) => any}
         ) :: Product.t()
   def create_product!(attrs \\ %{}) do
-    camelized_attrs = Helpers.camelize_keys(attrs)
+    snake_case_attrs = Helpers.underscore_keys(attrs)
 
     %Product{}
-    |> Product.changeset(camelized_attrs)
+    |> Product.changeset(snake_case_attrs)
     |> Repo.insert!()
+  end
+
+  def get_product(uuid) do
+    case Repo.get(Product, uuid) do
+      nil -> {:error, :no_product}
+      product -> {:ok, product}
+    end
   end
 end

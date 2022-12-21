@@ -13,8 +13,8 @@ defmodule MembraneLive.Repo.Migrations.AddProductsTableAndIntermidiateTable do
     end
 
     create table("webinars_products", primary_key: false) do
-      add(:webinar_id, references(:webinars, column: :uuid, type: :binary_id))
-      add(:product_id, references(:products, column: :uuid, type: :binary_id))
+      add(:webinar_id, references(:webinars, column: :uuid, type: :binary_id, primary_key: true))
+      add(:product_id, references(:products, column: :uuid, type: :binary_id, primary_key: true))
 
       timestamps()
     end

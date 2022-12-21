@@ -1,6 +1,8 @@
 defmodule MembraneLiveWeb.WebinarProductControllerTest do
   use MembraneLiveWeb.ConnCase
 
+  import MembraneLive.AccountsFixtures
+  import MembraneLive.ProductFixtures
   import MembraneLive.WebinarsFixtures
   import MembraneLive.Support.CustomTokenHelperFunctions
 
@@ -11,8 +13,9 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
       |> set_new_user_token()
 
     webinar = webinar_fixture(user)
+    product = product_fixture()
 
-    {:ok, conn: conn, moderator: user, webinar: webinar}
+    {:ok, conn: conn, moderator: user, webinar: webinar, product: product}
   end
 
   describe "index" do
@@ -26,45 +29,54 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
     test "moderator adds a product to the webinar", %{
       conn: conn,
       moderator: moderator,
-      webinar: webinar
+      webinar: webinar,
+      product: product
     } do
+      conn =
+        post(conn, Routes.webinar_product_path(conn, :create, webinar.uuid),
+          productId: product.uuid
+        )
+
+      # then
+      assert %{"product" => inserted_product} = json_response(conn, 201)
+
+      assert product.name == inserted_product["name"]
+      assert product.price == inserted_product["price"]
+      assert product.item_url == inserted_product["itemUrl"]
+      assert product.image_url == inserted_product["imageUrl"]
     end
 
-    test "webinar does not exist" do
+    test "webinar does not exist", %{conn: conn, product: product} do
+      fake_webinar_uuid = UUID.uuid4()
+
+      conn =
+        post(conn, Routes.webinar_product_path(conn, :create, fake_webinar_uuid), product.uuid)
+
+      assert json_response(conn, 404)["errors"] != %{}
     end
 
-    test "product does not exist" do
+    test "product does not exist", %{conn: conn, webinar: webinar} do
+      fake_product_uuid = UUID.uuid4()
+
+      conn =
+        post(conn, Routes.webinar_product_path(conn, :create, webinar.uuid), fake_product_uuid)
+
+      assert json_response(conn, 404)["errors"] != %{}
     end
 
-    test "user is not the moderator of the webinar" do
+    test "user is not the moderator of the webinar", %{
+      conn: conn,
+      webinar: webinar,
+      product: product
+    } do
+      fake_user = fake_user_fixture()
+
+      conn
+      |> put_user_in_auth_header(fake_user)
+      |> post(Routes.webinar_product_path(conn, :create, webinar.uuid), product.uuid)
+
+      assert json_response(conn, 403)["errors"] != %{}
     end
-
-    # test "renders webinar when data is valid", %{conn: conn, user: user} do
-    #   conn = post(conn, Routes.webinar_path(conn, :create), webinar: @create_attrs)
-    #   assert %{"link" => link} = json_response(conn, 201)
-
-    #   assert String.starts_with?(link, @link_prefix)
-
-    #   uuid = get_uuid_from_link(link)
-    #   {:ok, webinar} = Webinars.get_webinar(uuid)
-
-    #   conn = get(conn, Routes.webinar_path(conn, :show, webinar))
-
-    #   assert %{
-    #            "uuid" => ^uuid,
-    #            "description" => "some description",
-    #            "start_date" => "2022-07-17T10:20:00",
-    #            "title" => "some title"
-    #          } = json_response(conn, 200)["webinar"]
-
-    #   expected_moderator_id = user.uuid
-    #   assert expected_moderator_id == Webinars.get_webinar!(webinar.uuid).moderator_id
-    # end
-
-    # test "renders errors when data is invalid", %{conn: conn} do
-    #   conn = post(conn, Routes.webinar_path(conn, :create), webinar: @invalid_attrs)
-    #   assert json_response(conn, 422)["errors"] != %{}
-    # end
   end
 
   describe "remove product from the webinar" do
@@ -73,6 +85,11 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
       moderator: moderator,
       webinar: webinar
     } do
+      # given
+
+      # when
+
+      # then
     end
 
     test "webinar does not exist" do

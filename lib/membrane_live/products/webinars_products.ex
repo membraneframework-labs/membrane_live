@@ -8,9 +8,10 @@ defmodule MembraneLive.Products.WebinarsProducts do
   alias MembraneLive.Products.Product
   alias MembraneLive.Webinars.Webinar
 
+  @primary_key false
   schema "webinars_products" do
-    belongs_to(:webinar, Webinar, references: :uuid, type: :binary_id)
-    belongs_to(:products, Product, references: :uuid, type: :binary_id)
+    belongs_to(:webinar, Webinar, references: :uuid, type: :binary_id, primary_key: true)
+    belongs_to(:product, Product, references: :uuid, type: :binary_id, primary_key: true)
 
     timestamps()
   end
