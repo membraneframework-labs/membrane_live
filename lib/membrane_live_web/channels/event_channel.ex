@@ -220,33 +220,23 @@ defmodule MembraneLiveWeb.EventChannel do
 
       {:ok, is_presenter} = check_if_presenter(email, true, id)
 
-      new_offset =
-        if is_auth and is_presenter do
-          case :ets.lookup(:start_timestamps, id) do
-            [{_key, start_timestamp}] ->
-              System.monotonic_time(:millisecond) - start_timestamp
+      key = if is_auth and is_presenter, do: :start_timestamps, else: :client_start_timestamps
 
-            #  TODO handle messages when presenter is in the "start streaming" window
-            [] ->
-              raise "Recieved chat message from presenter when there is no presenters connected to RTC Engine process"
-          end
-        else
-          case :ets.lookup(:client_start_timestamps, id) do
-            [{_key, client_start_timestamp}] ->
-              System.monotonic_time(:millisecond) - client_start_timestamp
+      offset =
+        case :ets.lookup(key, id) do
+          [{_key, timestamp}] ->
+            System.monotonic_time(:millisecond) - timestamp
 
-            [] ->
-              0
-          end
+          [] -> 0
         end
 
-      Chats.add_chat_message(id, name, email, is_auth, content, new_offset)
+      Chats.add_chat_message(id, name, email, is_auth, content, offset)
 
       broadcast(socket, "chat_message", %{
         "email" => email,
         "name" => name,
         "content" => content,
-        "offset" => new_offset
+        "offset" => offset
       })
     end
 

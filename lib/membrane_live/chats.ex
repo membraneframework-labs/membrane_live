@@ -28,9 +28,10 @@ defmodule MembraneLive.Chats do
   end
 
   def add_chat_message(event_id, user_name, user_email, is_auth, content, time_offset) do
-    case is_auth do
-      true -> add_authenticated_chat_message(event_id, user_email, content, time_offset)
-      false -> add_anonnymous_chat_message(event_id, user_email, user_name, content, time_offset)
+    if is_auth do
+      add_authenticated_chat_message(event_id, user_email, content, time_offset)
+    else
+      add_anonnymous_chat_message(event_id, user_email, user_name, content, time_offset)
     end
   end
 
