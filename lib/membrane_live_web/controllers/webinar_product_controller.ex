@@ -1,21 +1,37 @@
 defmodule MembraneLiveWeb.WebinarProductController do
   use MembraneLiveWeb, :controller
 
-  alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
-
+  alias MembraneLive.Webinars
   alias MembraneLive.WebinarsProducts
+  alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
 
   action_fallback(MembraneLiveWeb.FallbackController)
 
   @spec create(any, map) :: any
-  def create(conn, %{"webinar_uuid" => webinar_uuid, "productId" => product_uuid}) do
+  def create(%{assigns: %{user_id: user_uuid}} = conn, %{
+        "webinar_uuid" => webinar_uuid,
+        "productId" => product_uuid
+      }) do
     assoc_attrs = %{webinar_id: webinar_uuid, product_id: product_uuid}
 
-    with {:ok, product} <- WebinarsProducts.add_product_to_webinar(assoc_attrs) do
+    with :ok <- Webinars.check_is_user_moderator(user_uuid, webinar_uuid),
+         {:ok, product} <- WebinarsProducts.add_product_to_webinar(assoc_attrs) do
       conn
       |> put_view(MembraneLiveWeb.ProductView)
       |> put_status(:created)
       |> render("show.json", product: product)
+    else
+      {:error, :no_webinar} ->
+        %{error: :not_found, message: "Webinar does not exist"}
+
+      {:error, :no_product} ->
+        %{error: :not_found, message: "Product does not exist"}
+
+      {:error, :not_a_moderator} ->
+        %{
+          error: :forbidden,
+          message: "User does not have permission to add products to this webinar"
+        }
     end
   end
 
