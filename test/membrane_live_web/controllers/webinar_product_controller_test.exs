@@ -6,6 +6,8 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
   import MembraneLive.WebinarsFixtures
   import MembraneLive.Support.CustomTokenHelperFunctions
 
+  alias MembraneLive.WebinarsProducts
+
   setup %{conn: conn} do
     {:ok, user, conn} =
       conn
@@ -15,7 +17,7 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
     webinar = webinar_fixture(user)
     product = product_fixture()
 
-    {:ok, conn: conn, moderator: user, webinar: webinar, product: product}
+    {:ok, conn: conn, webinar: webinar, product: product}
   end
 
   describe "index" do
@@ -28,7 +30,6 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
   describe "add product to the webinar" do
     test "moderator adds a product to the webinar", %{
       conn: conn,
-      moderator: moderator,
       webinar: webinar,
       product: product
     } do
@@ -38,6 +39,8 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
         )
 
       # then
+      assert WebinarsProducts.product_in_webinar?(product, webinar) == true
+
       assert %{"product" => inserted_product} = json_response(conn, 201)
 
       assert product.name == inserted_product["name"]
@@ -80,55 +83,65 @@ defmodule MembraneLiveWeb.WebinarProductControllerTest do
         |> put_user_in_auth_header(fake_user)
         |> post(Routes.webinar_product_path(conn, :create, webinar.uuid), productId: product.uuid)
 
-      unauthorize_assert(conn, "User does not have permission to add products to this webinar")
+      unauthorize_assert(conn, "User does not have permission to alter products in this webinar")
     end
   end
 
   describe "remove product from the webinar" do
+    setup [:add_product_to_webinar]
+
     test "moderator deletes a product from the webinar", %{
       conn: conn,
-      moderator: moderator,
-      webinar: webinar
+      webinar: webinar,
+      product: product
     } do
-      # given
+      conn = delete(conn, Routes.webinar_product_path(conn, :delete, webinar.uuid, product.uuid))
 
-      # when
-
-      # then
+      assert response(conn, 204)
+      assert WebinarsProducts.product_in_webinar?(product, webinar) == false
     end
 
-    test "webinar does not exist" do
+    test "webinar does not exist", %{conn: conn, product: product} do
+      fake_webinar_uuid = UUID.uuid4()
+
+      conn =
+        delete(conn, Routes.webinar_product_path(conn, :delete, fake_webinar_uuid, product.uuid))
+
+      assert %{"message" => "Webinar does not exist"} = json_response(conn, 404)
     end
 
-    test "product does not exist" do
+    test "product does not exist", %{conn: conn, webinar: webinar} do
+      fake_product_uuid = UUID.uuid4()
+
+      conn =
+        delete(conn, Routes.webinar_product_path(conn, :delete, webinar.uuid, fake_product_uuid))
+
+      assert %{"message" => "Product does not exist"} = json_response(conn, 404)
     end
 
-    test "user is not the moderator of the webinar" do
+    test "user is not the moderator of the webinar", %{
+      conn: conn,
+      webinar: webinar,
+      product: product
+    } do
+      fake_user = fake_user_fixture()
+
+      conn =
+        conn
+        |> put_user_in_auth_header(fake_user)
+        |> delete(Routes.webinar_product_path(conn, :delete, webinar.uuid, product.uuid))
+
+      unauthorize_assert(conn, "User does not have permission to alter products in this webinar")
     end
-
-    # test "deletes chosen webinar", %{conn: conn, webinar: webinar} do
-    #   conn = delete(conn, Routes.webinar_path(conn, :delete, webinar))
-    #   assert response(conn, 204)
-
-    #   conn = get(conn, Routes.webinar_path(conn, :show, webinar))
-    #   assert response(conn, 404)
-    # end
-
-    # test "rejects deleting when user in not authorized",
-    #      %{conn: conn, webinar: webinar} = context do
-    #   webinar_path = Routes.webinar_path(conn, :delete, webinar)
-    #   callback = &delete(&1, webinar_path, webinar: webinar)
-    #   test_unauthorized_webinar_request(callback, context)
-    # end
   end
 
-  # defp test_unauthorized_webinar_request(conn_callback, %{conn: conn, webinar: webinar}) do
-  #   fake_user = fake_user_fixture()
-  #   expected_msg = unauthorized_error_message(fake_user.uuid, webinar)
+  defp add_product_to_webinar(%{webinar: webinar, product: product}) do
+    {:ok, _product} =
+      WebinarsProducts.add_product_to_webinar(%{
+        :webinar_id => webinar.uuid,
+        :product_id => product.uuid
+      })
 
-  #   conn
-  #   |> put_user_in_auth_header(fake_user)
-  #   |> then(conn_callback)
-  #   |> unauthorize_assert(expected_msg)
-  # end
+    :ok
+  end
 end
