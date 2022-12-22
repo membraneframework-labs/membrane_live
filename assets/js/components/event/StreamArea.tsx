@@ -77,7 +77,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
         />
       )}
       <div className="Stream">
-        {mode == "hls" &&
+        {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
               <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
@@ -101,7 +101,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
               />
             )}
           </div>
-        }
+        )}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode} />
       </div>
     </div>

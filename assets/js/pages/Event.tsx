@@ -103,7 +103,7 @@ const Event = () => {
       {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
         <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
       )}
-      <StreamStartContext.Provider value={{streamStart, setStreamStart}}>
+      <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
         <div className="MainGrid">
           <StreamArea
             client={client}

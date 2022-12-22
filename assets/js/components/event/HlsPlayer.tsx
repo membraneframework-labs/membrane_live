@@ -23,21 +23,21 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
   return (
     <div className="HlsStream">
       <div className="HlsPlayerWrapper">
-          <MediaController className="HlsPlayerWrapper">
-            <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
-            <HlsControlBar></HlsControlBar>
-          </MediaController>
-          {screenType.device === "desktop" && presenterName && (
-            <div className="HlsTopBar">
-              <div className="HlsPresenterName">{presenterName}</div>
-            </div>
-          )}
-          {eventChannel && (
+        <MediaController className="HlsPlayerWrapper">
+          <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
+          <HlsControlBar></HlsControlBar>
+        </MediaController>
+        {screenType.device === "desktop" && presenterName && (
+          <div className="HlsTopBar">
+            <div className="HlsPresenterName">{presenterName}</div>
+          </div>
+        )}
+        {eventChannel && (
           <div className="HlsBottomBar">
             <AnimationComponent eventChannel={eventChannel} />
           </div>
-          )}
-        </div>
+        )}
+      </div>
     </div>
   );
 };

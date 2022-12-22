@@ -227,7 +227,8 @@ defmodule MembraneLiveWeb.EventChannel do
           [{_key, timestamp}] ->
             System.monotonic_time(:millisecond) - timestamp
 
-          [] -> 0
+          [] ->
+            0
         end
 
       Chats.add_chat_message(id, name, email, is_auth, content, offset)
