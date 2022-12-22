@@ -68,18 +68,20 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
 
   useEffect(() => {
     if (privateChannel) {
-      privateChannel.on("am_i_main_presenter", (message: { main_presenter: boolean }) =>
-        setPeersState((prev) => {
-          console.log("reloading i am presenter: ", message);
-          return { ...prev, isMainPresenter: message.main_presenter };
-        })
-      );
-      privateChannel.on("presenter_prop", (message: PresenterPropositionServer) =>
+      const ref = privateChannel.on("presenter_prop", (message: PresenterPropositionServer) =>
         setPeersState((prev) => {
           return { ...prev, isMainPresenter: message.main_presenter };
         })
       );
-      privateChannel.push("am_i_main_presenter", { is_presenter: sessionStorageGetIsPresenter() });
+      privateChannel
+        .push("am_i_main_presenter", { is_presenter: sessionStorageGetIsPresenter() })
+        .receive("ok", (message: { main_presenter: boolean }) =>
+          setPeersState((prev) => {
+            return { ...prev, isMainPresenter: message.main_presenter };
+          })
+        );
+
+      return () => privateChannel?.off("presenter_prop", ref);
     }
   }, [privateChannel]);
 

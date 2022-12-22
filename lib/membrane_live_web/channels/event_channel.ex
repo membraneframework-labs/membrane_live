@@ -217,10 +217,9 @@ defmodule MembraneLiveWeb.EventChannel do
         %{"is_presenter" => is_presenter},
         %{topic: "private:" <> topic_id} = socket
       ) do
-    [id, email] = topic_id |> String.split(":")
+    [id, email] = String.split(topic_id, ":")
     {:ok, is_main_presenter} = check_if_main_presenter(email, is_presenter, id)
-    broadcast(socket, "am_i_main_presenter", %{"main_presenter" => is_main_presenter})
-    {:noreply, socket}
+    {:reply, {:ok, %{"main_presenter" => is_main_presenter}}, socket}
   end
 
   def handle_in("chat_message", %{"message" => message}, %{topic: "event:" <> id} = socket) do
