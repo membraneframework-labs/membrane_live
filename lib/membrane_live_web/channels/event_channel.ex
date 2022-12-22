@@ -344,6 +344,7 @@ defmodule MembraneLiveWeb.EventChannel do
       )
 
       add_to_banned_from_chat(email, id)
+      Chats.remove_messages_from_user(id, email)
     end
 
     {:noreply, socket}

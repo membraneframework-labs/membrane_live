@@ -39,6 +39,18 @@ defmodule MembraneLive.Chats do
     |> Repo.update_all(set: [time_offset: 0])
   end
 
+  def remove_messages_from_user(event_id, email) do
+    query = case Ecto.Type.cast(EctoFields.Email, email) do
+      {:ok, email} ->
+        user = Accounts.get_user_by_email(email)
+        from(chat in Chat, where: chat.event_id == ^event_id and chat.user_id == ^user.uuid)
+      :error ->
+        from(chat in Chat, where: chat.event_id == ^event_id and chat.anon_id == ^email)
+    end
+
+    Repo.delete_all(query)
+  end
+
   defp add_anonnymous_chat_message(event_id, user_email, user_name, content, time_offset) do
     attrs = %{
       event_id: event_id,
