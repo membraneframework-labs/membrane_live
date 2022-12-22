@@ -30,6 +30,7 @@
   border: 2px solid var(--font-dark-color);
   background-color: var(--bg-light-color-1);
   border-radius: 3rem;
+  overflow-y: auto;
 }
 
 .ModalTitle {

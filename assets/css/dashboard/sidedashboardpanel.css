@@ -86,6 +86,7 @@
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   .LogoContainer {
+    width: 100%;
     color: var(--font-dark-color);
     padding-left: 0;
     padding-bottom: 1rem;

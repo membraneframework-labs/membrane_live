@@ -15,9 +15,10 @@ declare global {
 type GoogleButtonProps = {
   eventChannel?: Channel;
   options: GsiButtonConfiguration;
+  className?: string;
 };
 
-const GoogleButton = ({ eventChannel, options }: GoogleButtonProps) => {
+const GoogleButton = ({ eventChannel, options, className }: GoogleButtonProps) => {
   const toast = useToast();
   const buttonId = Math.random().toString();
 
@@ -34,7 +35,7 @@ const GoogleButton = ({ eventChannel, options }: GoogleButtonProps) => {
     if (buttonElement) google.accounts.id.renderButton(buttonElement, options);
   }, [buttonId, eventChannel, options, toast]);
 
-  return <div id={buttonId} />;
+  return <div id={buttonId} className={className} />;
 };
 
 export default GoogleButton;

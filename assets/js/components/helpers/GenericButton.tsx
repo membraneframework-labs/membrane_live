@@ -2,18 +2,20 @@ import { forwardRef } from "react";
 
 type GenericButtonProps = {
   icon: JSX.Element;
-  onClick: () => void;
+  onClick?: () => void;
+  className?: string;
   disabled?: boolean;
 };
 
-const GenericButton = forwardRef<HTMLButtonElement, GenericButtonProps>(({ icon, onClick, disabled = false }, ref) => {
-  return (
-    <button ref={ref} onClick={onClick} disabled={disabled}>
-      {icon}
-    </button>
-  );
-});
-
+const GenericButton = forwardRef<HTMLButtonElement, GenericButtonProps>(
+  ({ icon, onClick, className, disabled }, ref) => {
+    return (
+      <button ref={ref} onClick={onClick} className={className} disabled={disabled}>
+        {icon}
+      </button>
+    );
+  }
+);
 GenericButton.displayName = "GenericButton";
 
 export default GenericButton;

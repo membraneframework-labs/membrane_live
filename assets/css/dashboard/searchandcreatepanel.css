@@ -31,3 +31,10 @@
 .SearchIcon path {
   stroke: var(--font-dark-color);
 }
+
+@media screen and (max-width: 500px) {
+  .SearchAndCreatePanel {
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+}

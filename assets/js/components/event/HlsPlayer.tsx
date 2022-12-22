@@ -4,6 +4,7 @@ import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
 import "../../../css/event/hlsplayer.css";
+import useCheckScreenType from "../../utils/useCheckScreenType";
 
 type HlsPlayerProps = {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
@@ -12,6 +13,7 @@ type HlsPlayerProps = {
 };
 
 const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps) => {
+  const screenType = useCheckScreenType();
   const playerRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -21,13 +23,21 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
   return (
     <div className="HlsStream">
       <div className="HlsPlayerWrapper">
-        <MediaController className="HlsPlayerWrapper">
-          <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
-          <HlsControlBar></HlsControlBar>
-        </MediaController>
-        <div className="HlsTopBar">{presenterName && <div className="HlsPresenterName">{presenterName}</div>}</div>
-        <div className="HlsBottomBar">{eventChannel && <AnimationComponent eventChannel={eventChannel} />}</div>
-      </div>
+          <MediaController className="HlsPlayerWrapper">
+            <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
+            <HlsControlBar></HlsControlBar>
+          </MediaController>
+          {screenType.device === "desktop" && presenterName && (
+            <div className="HlsTopBar">
+              <div className="HlsPresenterName">{presenterName}</div>
+            </div>
+          )}
+          {eventChannel && (
+          <div className="HlsBottomBar">
+            <AnimationComponent eventChannel={eventChannel} />
+          </div>
+          )}
+        </div>
     </div>
   );
 };

@@ -1,0 +1,17 @@
+.RecordingHlsDiv {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media screen and (max-height: 500px) {
+}
+
+.RecordingHlsDiv {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: -webkit-fill-available;
+}
