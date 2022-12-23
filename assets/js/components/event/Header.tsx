@@ -3,10 +3,10 @@ import { redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUt
 import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import {
   storageGetPicture,
-  storageGetIsPresenter,
+  sessionStorageGetIsPresenter,
   storageGetPresentingRequest,
-  storageSetPresentingRequest,
-  storageUnsetIsPresenter,
+  sessionStorageSetPresentingRequest,
+  sessionStorageUnsetIsPresenter,
 } from "../../utils/storageUtils";
 import GenericButton from "../helpers/GenericButton";
 import {
@@ -63,7 +63,7 @@ const ArrowLeftPopover = ({ eventChannel, redirectHomeAndRemovePresenter, arrowB
               <button
                 className="ArrowLeftPopoverButton"
                 onClick={() => {
-                  storageUnsetIsPresenter();
+                  sessionStorageUnsetIsPresenter();
                   eventChannel?.push("finish_event", {});
                 }}
               >
@@ -104,16 +104,16 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
   };
 
   const unsetPresenter = () => {
-    if (storageGetIsPresenter()) {
+    if (sessionStorageGetIsPresenter()) {
       const link = getPrivateChannelLink();
       eventChannel?.push("presenter_remove", { presenterTopic: link + client.email });
-      storageUnsetIsPresenter();
+      sessionStorageUnsetIsPresenter();
     }
   };
 
   const unsetIsRequestPresenter = () => {
     if (storageGetPresentingRequest()) {
-      storageSetPresentingRequest(false);
+      sessionStorageSetPresentingRequest(false);
       cancelPresentingRequest(eventChannel, client.email);
     }
   };

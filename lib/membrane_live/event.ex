@@ -88,7 +88,8 @@ defmodule MembraneLive.Event do
       output_directory: "output/#{event_id}",
       target_window_duration: :infinity,
       segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
-      mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}}
+      mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
+      hls_mode: :muxed_av
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)

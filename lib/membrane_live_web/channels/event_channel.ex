@@ -5,6 +5,7 @@ defmodule MembraneLiveWeb.EventChannel do
   use Phoenix.Channel
 
   import Ecto.Query, only: [from: 2]
+  import MembraneLiveWeb.Helpers.EtsHelper
 
   require Logger
 
@@ -66,6 +67,7 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:presenters, {id, MapSet.new()})
         :ets.insert_new(:presenting_requests, {id, MapSet.new()})
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
+        :ets.insert_new(:main_presenters, {id, MapSet.new()})
 
         maybe_send_timer_action(socket, id, :join)
 
@@ -140,6 +142,17 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
+  defp get_number_of_basic_presenters(id, socket) do
+    main_presenter = get_main_presenter(id)
+
+    Presence.list(socket)
+    |> Enum.map(fn {email, %{metas: [meta | _rest]}} -> {email, meta} end)
+    |> Enum.filter(fn {email, %{is_presenter: is_presenter}} ->
+      is_presenter and email != main_presenter
+    end)
+    |> length()
+  end
+
   defp get_timer_action(socket, event_channel_action) do
     prev_users_no = Presence.list(socket) |> map_size
 
@@ -211,6 +224,16 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
+  def handle_in(
+        "am_i_main_presenter",
+        %{"is_presenter" => is_presenter},
+        %{topic: "private:" <> topic_id} = socket
+      ) do
+    [id, email] = String.split(topic_id, ":")
+    {:ok, is_main_presenter} = check_if_main_presenter(email, is_presenter, id)
+    {:reply, {:ok, %{"main_presenter" => is_main_presenter}}, socket}
+  end
+
   def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
     email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
@@ -254,6 +277,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
     "event:" <> id = socket.topic
     remove_from_presenters(email, id)
+    remove_from_main_presenters(email, id)
     {:noreply, socket}
   end
 
@@ -280,19 +304,63 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def handle_in(
         "presenter_prop",
-        %{"moderatorTopic" => moderator_topic, "presenterTopic" => presenter_topic},
+        %{
+          "moderatorTopic" => moderator_topic,
+          "presenterTopic" => presenter_topic,
+          "mainPresenter" => true
+        },
         socket
       ) do
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
-      moderator_topic: moderator_topic
-    })
+    "event:" <> id = socket.topic
+
+    if is_ets_empty?(:main_presenters, id) do
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
+        moderator_topic: moderator_topic,
+        main_presenter: true
+      })
+    else
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+        message: "There can be only one main presenter."
+      })
+    end
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_prop",
+        %{
+          "moderatorTopic" => moderator_topic,
+          "presenterTopic" => presenter_topic,
+          "mainPresenter" => false
+        },
+        socket
+      ) do
+    "event:" <> id = socket.topic
+    number_of_basic_presenters = get_number_of_basic_presenters(id, socket)
+
+    if number_of_basic_presenters < 2 do
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
+        moderator_topic: moderator_topic,
+        main_presenter: false
+      })
+    else
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+        message: "There can be only two main presenters."
+      })
+    end
 
     {:noreply, socket}
   end
 
   def handle_in(
         "presenter_answer",
-        %{"answer" => answer, "email" => email, "moderatorTopic" => moderator_topic},
+        %{
+          "answer" => answer,
+          "email" => email,
+          "moderatorTopic" => moderator_topic,
+          "mainPresenter" => main_presenter?
+        },
         socket
       ) do
     if answer == "accept" do
@@ -300,11 +368,16 @@ defmodule MembraneLiveWeb.EventChannel do
         Presence.update(
           socket,
           email,
-          &%{&1 | is_presenter: true, is_request_presenting: false}
+          &%{
+            &1
+            | is_presenter: true,
+              is_request_presenting: false
+          }
         )
 
       "event:" <> id = socket.topic
       add_to_presenters(email, id)
+      if main_presenter?, do: add_to_main_presenters(email, id)
       remove_from_presenting_requests(email, id)
     else
       {:ok, _ref} =
@@ -380,12 +453,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def handle_in(
         "presenter_ready",
-        %{"email" => email},
+        %{"email" => _email},
         socket
       ) do
-    "event:" <> id = socket.topic
-    add_to_presenters(email, id)
-    remove_from_presenting_requests(email, id)
     {:ok, socket} = join_event(socket)
 
     {:noreply, socket}
@@ -517,55 +587,5 @@ defmodule MembraneLiveWeb.EventChannel do
       _error ->
         {:error, "id is not binary_id"}
     end
-  end
-
-  defp check_if_banned_from_chat(email, id),
-    do: check_if_exist_in_ets(:banned_from_chat, email, true, id)
-
-  defp check_if_presenter(email, should_be_presenter, id),
-    do: check_if_exist_in_ets(:presenters, email, should_be_presenter, id)
-
-  defp check_if_request_presenting(email, requests_presenting, id),
-    do: check_if_exist_in_ets(:presenting_requests, email, requests_presenting, id)
-
-  defp check_if_exist_in_ets(ets_key, email, client_bool, id) do
-    [{_key, presenters}] = :ets.lookup(ets_key, id)
-    in_ets = MapSet.member?(presenters, email)
-
-    case {client_bool, in_ets} do
-      {true, _in_ets} ->
-        {:ok, in_ets}
-
-      {false, true} ->
-        remove_from_presenters(email, id)
-        {:ok, false}
-
-      {false, false} ->
-        {:ok, false}
-    end
-  end
-
-  defp remove_from_banned_from_chat(email, id),
-    do: remove_from_list_in_ets(:banned_from_chat, email, id)
-
-  defp add_to_banned_from_chat(email, id), do: add_to_list_in_ets(:banned_from_chat, email, id)
-
-  defp remove_from_presenters(email, id), do: remove_from_list_in_ets(:presenters, email, id)
-  defp add_to_presenters(email, id), do: add_to_list_in_ets(:presenters, email, id)
-
-  defp remove_from_presenting_requests(email, id),
-    do: remove_from_list_in_ets(:presenting_requests, email, id)
-
-  defp add_to_presenting_request(email, id),
-    do: add_to_list_in_ets(:presenting_requests, email, id)
-
-  defp remove_from_list_in_ets(ets_key, email, id) do
-    [{_key, presenters}] = :ets.lookup(ets_key, id)
-    :ets.insert(ets_key, {id, MapSet.delete(presenters, email)})
-  end
-
-  defp add_to_list_in_ets(ets_key, email, id) do
-    [{_key, presenters}] = :ets.lookup(ets_key, id)
-    :ets.insert(ets_key, {id, MapSet.put(presenters, email)})
   end
 end

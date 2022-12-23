@@ -16,6 +16,7 @@ defmodule MembraneLive.Application do
     :ets.new(:banned_from_chat, [:public, :set, :named_table])
     :ets.new(:start_timestamps, [:public, :set, :named_table])
     :ets.new(:client_start_timestamps, [:public, :set, :named_table])
+    :ets.new(:main_presenters, [:public, :set, :named_table])
     opts = [strategy: :one_for_one, name: MembraneLive.Supervisor]
     Supervisor.start_link(children, opts)
   end
