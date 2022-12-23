@@ -37,6 +37,20 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
     if presenters == MapSet.new([]), do: true, else: false
   end
 
+  def get_main_presenter(id), do: get_main_presenter(:main_presenters, id)
+
+  defp get_main_presenter(ets_key, id) do
+    [{_key, main_presenters}] = :ets.lookup(ets_key, id)
+    main_presenters = MapSet.to_list(main_presenters)
+
+    if main_presenters == [] do
+      nil
+    else
+      [main_presenter | _rest] = main_presenters
+      main_presenter
+    end
+  end
+
   defp check_if_exist_in_ets(ets_key, email, client_bool, id) do
     [{_key, presenters}] = :ets.lookup(ets_key, id)
     in_ets = MapSet.member?(presenters, email)

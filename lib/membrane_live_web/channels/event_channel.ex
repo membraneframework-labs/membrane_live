@@ -141,6 +141,17 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
+  defp get_number_of_basic_presenters(id, socket) do
+    main_presenter = get_main_presenter(id)
+
+    Presence.list(socket)
+    |> Enum.map(fn {email, %{metas: [meta | _rest]}} -> {email, meta} end)
+    |> Enum.filter(fn {email, %{is_presenter: is_presenter}} ->
+      is_presenter and email != main_presenter
+    end)
+    |> length()
+  end
+
   defp get_timer_action(socket, event_channel_action) do
     prev_users_no = Presence.list(socket) |> map_size
 
@@ -272,20 +283,46 @@ defmodule MembraneLiveWeb.EventChannel do
         %{
           "moderatorTopic" => moderator_topic,
           "presenterTopic" => presenter_topic,
-          "mainPresenter" => main_presenter
+          "mainPresenter" => true
         },
         socket
       ) do
     "event:" <> id = socket.topic
 
-    if is_ets_empty?(:main_presenters, id) or not main_presenter do
+    if is_ets_empty?(:main_presenters, id) do
       MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
         moderator_topic: moderator_topic,
-        main_presenter: main_presenter
+        main_presenter: true
       })
     else
       MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
         message: "There can be only one main presenter."
+      })
+    end
+
+    {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_prop",
+        %{
+          "moderatorTopic" => moderator_topic,
+          "presenterTopic" => presenter_topic,
+          "mainPresenter" => false
+        },
+        socket
+      ) do
+    "event:" <> id = socket.topic
+    number_of_basic_presenters = get_number_of_basic_presenters(id, socket)
+
+    if number_of_basic_presenters < 2 do
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
+        moderator_topic: moderator_topic,
+        main_presenter: false
+      })
+    else
+      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+        message: "There can be only two main presenters."
       })
     end
 
