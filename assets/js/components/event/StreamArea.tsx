@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -22,14 +22,15 @@ type StreamAreaProps = {
   eventTitle: string;
 };
 
-const StreamArea = ({
-                      client,
-                      eventChannel,
-                      privateChannel,
-                      mode,
-                      setMode,
-                      eventTitle
-                    }: StreamAreaProps) => {
+const StreamArea = (props: StreamAreaProps) => {
+  const {
+    client,
+    eventChannel,
+    privateChannel,
+    mode,
+    setMode,
+    eventTitle
+  } = props;
   const [hlsUrl, setHlsUrl] = useState<string>("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
@@ -48,8 +49,8 @@ const StreamArea = ({
 
   useEffect(() => {
     if (eventChannel) {
-      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
-      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      // eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
+      // eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
       syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
   }, [eventChannel, client]);
@@ -60,7 +61,21 @@ const StreamArea = ({
     }
   }, [privateChannel, setMode]);
 
-  const [card, setCard] = useState<string | undefined>("undefined")
+  const [card, setCard] = useState<string>("HIDDEN")
+
+  const switchAsking = useCallback((isAsking: boolean) => {
+    switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+  }, [eventChannel, client])
+
+  useEffect(() => {
+    let counter = 0
+    const id = setInterval(() => {
+      // setCard("elloo" + counter++)
+    }, 3000)
+    return () => {
+      clearInterval(id)
+    }
+  }, [])
 
   return (
     <div className="StreamArea">
@@ -83,9 +98,7 @@ const StreamArea = ({
                 eventTitle={eventTitle}
                 amIPresenter={amIPresenter}
                 setMode={setMode}
-                switchAsking={(isAsking) => {
-                  switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
-                }}
+                switchAsking={switchAsking}
               />
             )}
           </div>
@@ -93,7 +106,7 @@ const StreamArea = ({
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
 
         <MobileRightSidebar setCard={setCard}/>
-        <MobileBottomPanel card={card} onBarClick={() => setCard(undefined)}/>
+        <MobileBottomPanel card={card} onBarClick={() => setCard("HIDE")}/>
       </div>
     </div>
   );

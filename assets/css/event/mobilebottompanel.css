@@ -6,6 +6,11 @@
   background-color: white;
 
   border-radius: 16px;
+  bottom: -60vh;
+
+  -webkit-box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
+  -moz-box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
+  box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
 }
 
 .MobileBottomPanel--TopBar {
@@ -43,13 +48,11 @@
 
 @keyframes slideIn {
   from {
-    transform: translateY(-60vh);
+    transform: translateY(0);
   }
 
   to {
-    transform: translateY(0);
-
-    /*bottom: 0;*/
+    transform: translateY(-60vh);
   }
 }
 
@@ -62,11 +65,10 @@
 
 @keyframes slideOut {
   from {
-    transform: translateY(0);
+    transform: translateY(-60vh);
   }
 
   to {
-    transform: translateY(-60vh);
-    /*bottom: -60vh;*/
+    transform: translateY(0);
   }
 }

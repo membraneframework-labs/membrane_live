@@ -13,7 +13,14 @@ type HlsPlayerProps = {
   eventChannel?: Channel | undefined;
 };
 
-const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
+const hlsConfig = {
+  liveSyncDurationCount: 2,
+  initialLiveManifestSize: 2,
+  backBufferLength: 30,
+}
+
+const HlsPlayer = (props: HlsPlayerProps) => {
+  const {hlsUrl, presenterName, eventChannel} = props;
   const screenType = useCheckScreenType();
 
   return (
@@ -22,11 +29,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
         <div className="HlsPlayerWrapper">
           <MediaController className="HlsPlayerWrapper">
             <ReactHlsPlayer
-              hlsConfig={{
-                liveSyncDurationCount: 2,
-                initialLiveManifestSize: 2,
-                backBufferLength: 30,
-              }}
+              hlsConfig={hlsConfig}
               autoPlay={true}
               playsInline
               controls={false}
@@ -34,8 +37,8 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
               className="HlsPlayer"
               slot="media"
               src={hlsUrl}
-            ></ReactHlsPlayer>
-            <HlsControlBar></HlsControlBar>
+            />
+            <HlsControlBar/>
           </MediaController>
           {screenType.device === "desktop" && presenterName && (
             <div className="HlsTopBar">
@@ -43,7 +46,7 @@ const HlsPlayer = ({ hlsUrl, presenterName, eventChannel }: HlsPlayerProps) => {
             </div>
           )}
           <div className="HlsBottomBar">
-            <AnimationComponent eventChannel={eventChannel} />
+            <AnimationComponent eventChannel={eventChannel}/>
           </div>
         </div>
       ) : (

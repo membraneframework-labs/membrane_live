@@ -32,9 +32,7 @@ export const MobileRightSidebar = ({setCard}: Props) => {
 
   return <div className="MobileRightSidebar">
     {buttons.map(({id, icon, text, onClick}) =>
-      <div key={id}
-           className="MobileRightSidebarButton"
-           onClick={onClick}>
+      <div key={id} className="MobileRightSidebarButton" onClick={onClick}>
         <img
           className={`SocialMediaButtonLayerIcon`}
           src={icon}
