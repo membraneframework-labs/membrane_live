@@ -12,8 +12,8 @@ type Props = {
 export const MobileBottomPanel = ({onBarClick, card}: Props) => {
   const {device} = useCheckScreenType();
 
-  return (device === "mobile" &&
-    <div className={`MobileBottomPanel ${card ? "SlideInAnimation" : "SlideOutAnimation"}`}>
+  if (device !== "mobile") return null;
+  return (<div className={`MobileBottomPanel ${card ? "SlideInAnimation" : "SlideOutAnimation"}`}>
       <div className="MobileBottomPanel--TopBar">
         <div className="MobileBottomPanel--TopBar--Bar" onClick={onBarClick}/>
       </div>

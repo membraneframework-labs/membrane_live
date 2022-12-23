@@ -6,6 +6,7 @@
   align-items: center;
   height: 100%;
   width: 100%;
+  margin: 0;
 }
 
 .HlsPlayerWrapper {
@@ -60,4 +61,23 @@
   width: 100%;
   bottom: 3rem;
   z-index: 1;
+}
+
+@media screen and (max-width: 500px) {
+  .HlsDiv {
+    width: 100%;
+  }
+
+  .HlsStream {
+    height: auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media screen and (max-height: 500px) {
+  .HlsStream {
+    height: 80%;
+    aspect-ratio: 16 / 9;
+  }
 }

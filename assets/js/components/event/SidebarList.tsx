@@ -1,12 +1,13 @@
-import React, {useEffect, useState} from "react";
-import {Menu, MenuButton, MenuItem, MenuList, Tooltip} from "@chakra-ui/react";
-import {syncEventChannel} from "../../utils/channelUtils";
-import {Crown1, MenuVertical, QuestionCircle, Star1, User1} from "react-swm-icon-pack";
-import type {Client, Participant} from "../../types/types";
-import {Channel} from "phoenix";
+import React, { useEffect, useState } from "react";
+import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
+import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
+import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
+import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import {useChatMessages} from "../../utils/useChatMessages";
+import { useChatMessages } from "../../utils/useChatMessages";
+import type { Participant, Client } from "../../types/types";
 import "../../../css/event/participants.css";
+import { storageSetPresentingRequest, storageUnsetIsPresenter } from "../../utils/storageUtils";
 import {ProductsComponent} from "./ProductsComponent";
 
 type ModeratorMenuProps = {
@@ -15,8 +16,8 @@ type ModeratorMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
-  const link = "private:" + window.location.pathname.split("/")[2] + ":";
+const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
+  const link = getPrivateChannelLink();
   const presenterText = {
     set: "Set as a presenter",
     unset: "Set as a normal participant",
@@ -35,7 +36,8 @@ const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMe
         });
         break;
       case presenterText.unset:
-        eventChannel?.push("presenter_remove", {presenterTopic: link + participant.email});
+        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        storageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
         eventChannel?.push("ban_from_chat", {email: participant.email});
@@ -84,13 +86,10 @@ const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMen
   const askText = "Ask to become a presenter";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    if ((e.target as HTMLTextAreaElement).value === askText) {
-      eventChannel?.push("presenting_request", {
-        email: participant.email,
-      });
-    } else {
-      eventChannel?.push("cancel_presenting_request", {email: participant.email});
-    }
+    const shouldAskForBeingPresenter = (e.target as HTMLTextAreaElement).value === askText;
+
+    switchAskingForBeingPresenter(eventChannel, participant.email, !shouldAskForBeingPresenter);
+    storageSetPresentingRequest(!shouldAskForBeingPresenter);
   };
 
   const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;
@@ -167,7 +166,7 @@ const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
     if (eventChannel) {
       syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
     }
-  }, [eventChannel]);
+  }, [client.email, eventChannel]);
 
   return (
     <div className="Participants">

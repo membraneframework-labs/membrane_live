@@ -1,12 +1,14 @@
-import React, {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
+import { redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
+import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import {
-  getEventInfo,
-  initEventInfo,
-  redirectToHomePage,
-  syncParticipantsNumber
-} from "../../utils/headerUtils";
-import {ArrowLeft, Users, Copy, Redo} from "react-swm-icon-pack";
-import {storageGetPicture} from "../../utils/storageUtils";
+  storageGetPicture,
+  storageGetIsPresenter,
+  storageGetPresentingRequest,
+  storageSetPresentingRequest,
+  storageUnsetIsPresenter,
+} from "../../utils/storageUtils";
+import GenericButton from "../helpers/GenericButton";
 import {
   Popover,
   PopoverArrow,
@@ -15,31 +17,28 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Tooltip,
-  useToast,
 } from "@chakra-ui/react";
-import {monthNames, pageTitlePrefix} from "../../utils/const";
-import {useNavigate} from "react-router-dom";
+import { monthNames } from "../../utils/const";
+import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
-import type {Client, EventInfo} from "../../types/types";
-import {Channel} from "phoenix";
+import { Channel } from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import type { Client, EventInfo } from "../../types/types";
 import "../../../css/event/header.css";
+import { cancelPresentingRequest, getPrivateChannelLink } from "../../utils/channelUtils";
 
 type ArrowLeftPopoverProps = {
   eventChannel: Channel | undefined;
-  redirectHome: () => void;
+  redirectHomeAndRemovePresenter: () => void;
+  arrowButton: JSX.Element;
 };
 
-const ArrowLeftPopover = ({eventChannel, redirectHome}: ArrowLeftPopoverProps) => {
+const ArrowLeftPopover = ({ eventChannel, redirectHomeAndRemovePresenter, arrowButton }: ArrowLeftPopoverProps) => {
   return (
     <Popover placement="bottom-end" returnFocusOnClose={false}>
-      <PopoverTrigger>
-        <button>
-          <ArrowLeft className="Arrow"/>
-        </button>
-      </PopoverTrigger>
+      <PopoverTrigger>{arrowButton}</PopoverTrigger>
       <PopoverContent>
-        <PopoverArrow/>
+        <PopoverArrow />
         <PopoverHeader>
           <div>
             <p className="ArrowLeftPopoverHeader">Leaving the event</p>
@@ -52,7 +51,7 @@ const ArrowLeftPopover = ({eventChannel, redirectHome}: ArrowLeftPopoverProps) =
               placement="bottom-start"
               className="BackArrowInfoTooltip"
             >
-              <button className="ArrowLeftPopoverButton" onClick={redirectHome}>
+              <button className="ArrowLeftPopoverButton" onClick={redirectHomeAndRemovePresenter}>
                 Leave
               </button>
             </Tooltip>
@@ -64,6 +63,7 @@ const ArrowLeftPopover = ({eventChannel, redirectHome}: ArrowLeftPopoverProps) =
               <button
                 className="ArrowLeftPopoverButton"
                 onClick={() => {
+                  storageUnsetIsPresenter();
                   eventChannel?.push("finish_event", {});
                 }}
               >
@@ -81,24 +81,19 @@ type HeaderProps = {
   eventChannel: Channel | undefined;
   client: Client;
   isRecording: boolean;
+  eventInfo: EventInfo;
 };
 
-const Header = ({client, eventChannel, isRecording}: HeaderProps) => {
+const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) => {
   const picture: string = storageGetPicture();
-  const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
-  const toast = useToast();
   const navigate = useNavigate();
   const screenType = useCheckScreenType();
 
-  useEffect(() => getEventInfo(toast, setEventInfo, isRecording), []);
   useEffect(() => {
-    if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
-  }, [eventInfo]);
-
-  if (!isRecording) {
-    useEffect(() => syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel]);
-  }
+    if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];
+  }, [eventChannel, isRecording]);
 
   const handleCopyButton = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -108,52 +103,73 @@ const Header = ({client, eventChannel, isRecording}: HeaderProps) => {
     return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
+  const unsetPresenter = () => {
+    if (storageGetIsPresenter()) {
+      const link = getPrivateChannelLink();
+      eventChannel?.push("presenter_remove", { presenterTopic: link + client.email });
+      storageUnsetIsPresenter();
+    }
+  };
+
+  const unsetIsRequestPresenter = () => {
+    if (storageGetPresentingRequest()) {
+      storageSetPresentingRequest(false);
+      cancelPresentingRequest(eventChannel, client.email);
+    }
+  };
+
+  const redirectHomeAndClearStorage = () => {
+    unsetPresenter();
+    unsetIsRequestPresenter();
+    redirectToHomePage(navigate);
+  };
+
   return (
     <div className="Header">
       {client.isModerator ? (
-        <ArrowLeftPopover eventChannel={eventChannel}
-                          redirectHome={() => redirectToHomePage(navigate)}/>
+        <ArrowLeftPopover
+          eventChannel={eventChannel}
+          redirectHomeAndRemovePresenter={redirectHomeAndClearStorage}
+          arrowButton={<GenericButton className="ArrowButton" icon={<ArrowLeft className={"Arrow"} />} />}
+        />
       ) : (
-        <button onClick={() => redirectToHomePage(navigate)}>
-          <ArrowLeft className="Arrow"/>
-        </button>
+        <GenericButton
+          className={"ArrowButton"}
+          icon={<ArrowLeft className={"Arrow"} />}
+          onClick={redirectHomeAndClearStorage}
+        />
       )}
-
-      {/*{screenType.device == "mobile" && (*/}
-      {/*  <div className="TurnDeviceContainer">*/}
-      {/*    <Redo className="TurnIcon" />*/}
-      {/*    <p className="TurnDeviceText">Turn your device sideways to see the livestream!</p>*/}
-      {/*  </div>*/}
-      {/*)}*/}
       <div className="InfoWrapper">
         <div className="Title"> {eventInfo.title} </div>
         <div className="WebinarInfo">
           <div> {formatDate(eventInfo.startDate)}</div>
           {!isRecording && (
             <>
-              <div> |</div>
+              <div> | </div>
               <div className="ParticipantsNumber">
-                <Users className="UsersIcon"/>
+                <Users className="UsersIcon" />
                 {`${participantsNumber} participant${participantsNumber > 1 ? "s" : ""}`}
               </div>
             </>
           )}
         </div>
       </div>
-
-      <div className="CopyLink">
-        <p className="Link"> {window.location.href} </p>
-        <button className="CopyButton" onClick={handleCopyButton}>
-          <Copy className="CopyIcon"/>
-        </button>
-      </div>
-
-      <UserField
-        eventChannel={eventChannel}
-        isAuthenticated={client.isAuthenticated}
-        name={client.name}
-        picture={picture}
-      />
+      {screenType.device == "desktop" && (
+        <div className="CopyLink">
+          <p className="Link"> {window.location.href} </p>
+          <button className="CopyButton" onClick={handleCopyButton}>
+            <Copy className="CopyIcon" />
+          </button>
+        </div>
+      )}
+      {screenType.device == "desktop" && (
+        <UserField
+          eventChannel={eventChannel}
+          isAuthenticated={client.isAuthenticated}
+          name={client.name}
+          picture={picture}
+        />
+      )}
     </div>
   );
 };

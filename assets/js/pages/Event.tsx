@@ -1,28 +1,29 @@
-import React, {useEffect, useState} from "react";
-import SidebarList from "../components/event/SidebarList";
+import {useEffect, useRef, useState} from "react";
 import {Channel, Socket} from "phoenix";
 import {createPrivateChannel, createEventChannel, getChannelId} from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
   storageGetName,
   storageGetAuthToken,
-  storageGetReloaded,
-  storageSetReloaded,
+  storageGetIsPresenter,
   storageGetEmail,
   sessionStorageGetName,
   getIsAuthenticated,
+  storageGetPresentingRequest,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import {useToast} from "@chakra-ui/react";
 import {lastPersonPopup, presenterPopup} from "../utils/toastUtils";
 import {useNavigate} from "react-router-dom";
-import type {Client, Toast, Mode} from "../types/types";
+import type {Client, EventInfo, Mode, Toast} from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
-import "../../css/event/event.css";
+import {getEventInfo, initEventInfo} from "../utils/headerUtils";
+import {pageTitlePrefix} from "../utils/const";
 import axiosWithInterceptor from "../services";
 import {redirectToHomePage} from "../utils/headerUtils";
-import {MobileRightSidebar} from "../components/event/MobileRightSidebar";
+import "../../css/event/event.css";
+import SidebarList from "../components/event/SidebarList";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -35,11 +36,18 @@ const Event = () => {
   });
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
+  const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
 
-  const socket = new Socket("/socket");
-  socket.connect();
+  const socket = useRef(new Socket("/socket"));
+  socket.current.connect();
+
+  useEffect(() => getEventInfo(toast, setEventInfo, false), [toast]);
+  useEffect(() => {
+    if (eventInfo.title != "") document.title = `${pageTitlePrefix} | ${eventInfo.title}`;
+  }, [eventInfo]);
 
   useEffect(() => {
     const alreadyJoined = eventChannel?.state === "joined";
@@ -49,13 +57,14 @@ const Event = () => {
         ? axiosWithInterceptor.get("/me").then(() => {
           return {
             token: storageGetAuthToken(),
-            reloaded: storageGetReloaded(),
+            presenter: storageGetIsPresenter(),
+            requestPresenting: storageGetPresentingRequest(),
           };
         })
         : Promise.resolve({username: client.name});
 
       promise.then((msg) => {
-        const channel = socket.channel(`event:${getChannelId()}`, msg);
+        const channel = socket.current.channel(`event:${getChannelId()}`, msg);
         createEventChannel(
           toast,
           client,
@@ -68,13 +77,13 @@ const Event = () => {
         );
       });
     }
-  }, [eventChannel, client.name]);
+  }, [eventChannel, client.name, client, socket, toast, navigate]);
 
   useEffect(() => {
     const privateAlreadyJoined = privateChannel?.state === "joined";
     const eventAlreadyJoined = eventChannel?.state === "joined";
     if (!privateAlreadyJoined && eventAlreadyJoined) {
-      const channel = socket.channel(`private:${getChannelId()}:${client.email}`, {});
+      const channel = socket.current.channel(`private:${getChannelId()}:${client.email}`, {});
       createPrivateChannel(
         toast,
         channel,
@@ -84,22 +93,15 @@ const Event = () => {
         setPrivateChannel
       );
     }
-  }, [eventChannel, privateChannel]);
-
-  useEffect(() => {
-    window.addEventListener("beforeunload", storageSetReloaded);
-    return () => {
-      window.removeEventListener("beforeunload", storageSetReloaded);
-    };
-  }, []);
+  }, [client, eventChannel, privateChannel, socket, toast]);
 
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
-      {(screenType.device == "desktop") && (
-        <Header client={client} eventChannel={eventChannel} isRecording={false}/>
+      {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
+        <Header client={client} eventChannel={eventChannel} isRecording={false}
+                eventInfo={eventInfo}/>
       )}
-
       <div className="MainGrid">
         <StreamArea
           client={client}
@@ -107,11 +109,11 @@ const Event = () => {
           privateChannel={privateChannel}
           mode={mode}
           setMode={setMode}
+          eventTitle={eventInfo.title}
         />
-        {screenType.device === "desktop" &&
+        {screenType.device == "desktop" &&
           <SidebarList client={client} eventChannel={eventChannel}/>}
       </div>
-
     </div>
   );
 };

@@ -14,7 +14,6 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.Message
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.Event.Timer
-  alias MembraneLive.StorageCleanup
   alias MembraneLive.Webinars
 
   @mix_env Mix.env()
@@ -263,8 +262,7 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:cleanup, _clean_function, playlist_idl}, state) do
-    StorageCleanup.remove_directory(Path.join(state.event_id, playlist_idl))
+  def handle_info({:cleanup, _clean_function, _playlist_idl}, state) do
     {:noreply, state}
   end
 

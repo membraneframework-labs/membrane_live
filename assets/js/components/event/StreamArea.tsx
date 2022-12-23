@@ -2,10 +2,14 @@ import React, {useEffect, useState} from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
-import type {Mode, Client} from "../../types/types";
+import type {Client, Mode} from "../../types/types";
 import {Channel} from "phoenix";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/streamarea.css";
+import {syncAmIPresenter} from "../../utils/modePanelUtils";
+
+import {switchAskingForBeingPresenter} from "../../utils/channelUtils";
+import MobileHlsBar from "./MobileHlsBar";
 import {MobileRightSidebar} from "./MobileRightSidebar";
 import {MobileBottomPanel} from "./MobileBottomPanel";
 
@@ -15,10 +19,19 @@ type StreamAreaProps = {
   privateChannel: Channel | undefined;
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
+  eventTitle: string;
 };
 
-const StreamArea = ({client, eventChannel, privateChannel, mode, setMode}: StreamAreaProps) => {
-  const [hlsUrl, setHlsUrl] = useState<string>("");
+const StreamArea = ({
+                      client,
+                      eventChannel,
+                      privateChannel,
+                      mode,
+                      setMode,
+                      eventTitle
+                    }: StreamAreaProps) => {
+  const [hlsUrl, setHlsUrl] = useState<string>("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
+  const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
 
@@ -37,14 +50,15 @@ const StreamArea = ({client, eventChannel, privateChannel, mode, setMode}: Strea
     if (eventChannel) {
       eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
-  }, [eventChannel]);
+  }, [eventChannel, client]);
 
   useEffect(() => {
     if (privateChannel) {
       privateChannel.on("presenter_remove", () => setMode("hls"));
     }
-  }, [privateChannel]);
+  }, [privateChannel, setMode]);
 
   const [card, setCard] = useState<string | undefined>("undefined")
 
@@ -60,15 +74,26 @@ const StreamArea = ({client, eventChannel, privateChannel, mode, setMode}: Strea
         />
       )}
       <div className="Stream">
+        {mode === "hls" && (
+          <div className="HlsDiv">
+            <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel}/>
+            {screenType.device == "mobile" && (
+              <MobileHlsBar
+                client={client}
+                eventTitle={eventTitle}
+                amIPresenter={amIPresenter}
+                setMode={setMode}
+                switchAsking={(isAsking) => {
+                  switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+                }}
+              />
+            )}
+          </div>
+        )}
+        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
 
         <MobileRightSidebar setCard={setCard}/>
         <MobileBottomPanel card={card} onBarClick={() => setCard(undefined)}/>
-
-        {mode == "hls" && <HlsPlayer
-          hlsUrl="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-          presenterName={presenterName}
-          eventChannel={eventChannel}/>}
-        <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
       </div>
     </div>
   );

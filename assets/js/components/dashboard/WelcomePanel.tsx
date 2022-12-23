@@ -20,7 +20,11 @@ const WelcomePanel = ({ currentEvents, setCurrentEvents }: WelcomePanelProps) =>
   return (
     <div className="WelcomePanel">
       {screenType.device == "mobile" && (
-        <MobileHeader currentEvents={currentEvents} setCurrentEvents={setCurrentEvents} />
+        <MobileHeader
+          isAuthenticated={isAuthenticated}
+          currentEvents={currentEvents}
+          setCurrentEvents={setCurrentEvents}
+        />
       )}
       <div className="NamePanel">
         {currentEvents == "All events" && (

@@ -1,4 +1,3 @@
-import React from "react";
 import { User1 } from "react-swm-icon-pack";
 import GoogleButton from "../helpers/GoogleButton";
 import { rectangleGoogleButton } from "../../utils/const";
