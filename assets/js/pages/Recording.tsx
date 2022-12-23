@@ -13,7 +13,7 @@ import { useToast } from "@chakra-ui/react";
 import type { Client, EventInfo } from "../types/types";
 import "../../css/recording/recording.css";
 
-const RecordingDummy = () => {
+const RecordingComponent = () => {
   const toast = useToast();
 
   const client: Client = {
@@ -78,7 +78,7 @@ const Recording = () => {
 
   return (
     <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
-      <RecordingDummy />
+      <RecordingComponent />
     </StreamStartContext.Provider>
   );
 };
