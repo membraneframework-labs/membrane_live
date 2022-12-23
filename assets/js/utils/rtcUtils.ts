@@ -49,7 +49,10 @@ export const sendTrackStatusUpdate = (
 };
 
 const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack, peersState: PeersState) => {
-  webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], { enabled: track.enabled });
+  webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], {
+    mainPresenter: peersState.isMainPresenter,
+    enabled: track.enabled,
+  });
 };
 
 const findTrackOrScreenshare = (
@@ -119,7 +122,7 @@ export const connectWebrtc = async (
             prev.sourceIds[track.kind as SourceType] = webrtc.addTrack(
               track,
               presenterStream.stream,
-              {},
+              { mainPresenter: prev.isMainPresenter },
               undefined,
               1500
             );

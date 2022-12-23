@@ -6,7 +6,7 @@ import Header from "../components/event/Header";
 import {
   storageGetName,
   storageGetAuthToken,
-  storageGetIsPresenter,
+  sessionStorageGetIsPresenter,
   storageGetEmail,
   sessionStorageGetName,
   getIsAuthenticated,
@@ -16,7 +16,7 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, EventInfo, Mode, Toast } from "../types/types";
+import type { Client, EventInfo, Mode, Toast, PresenterProposition } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
@@ -57,7 +57,7 @@ const Event = () => {
         ? axiosWithInterceptor.get("/me").then(() => {
             return {
               token: storageGetAuthToken(),
-              presenter: storageGetIsPresenter(),
+              presenter: sessionStorageGetIsPresenter(),
               requestPresenting: storageGetPresentingRequest(),
             };
           })
@@ -89,7 +89,7 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, moderatorTopic: string) => presenterPopup(toast, client, eventChannel, moderatorTopic, setMode),
+        (toast, message: PresenterProposition) => presenterPopup(toast, client, eventChannel, message, setMode),
         setPrivateChannel
       );
     }
