@@ -5,6 +5,9 @@ defmodule MembraneLive.Webinars.Webinar do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias MembraneLive.Products.{Product, WebinarsProducts}
+  alias MembraneLive.Webinars.Webinar
+
   @derive {Phoenix.Param, key: :uuid}
   @primary_key {:uuid, :binary_id, autogenerate: true}
 
@@ -24,7 +27,12 @@ defmodule MembraneLive.Webinars.Webinar do
     field(:start_date, :naive_datetime)
     field(:title, :string)
     field(:is_finished, :boolean)
-    belongs_to(:moderator, MembraneLive.Webinars.Webinar, references: :uuid, type: :binary_id)
+    belongs_to(:moderator, Webinar, references: :uuid, type: :binary_id)
+
+    many_to_many(:products, Product,
+      join_through: WebinarsProducts,
+      join_keys: [webinar_id: :uuid, product_id: :uuid]
+    )
 
     timestamps()
   end

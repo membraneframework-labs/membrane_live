@@ -26,17 +26,35 @@ defmodule MembraneLiveWeb.WebinarController do
 
   @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, params) do
-    ControllerCallbackHelper.get_with_callback(conn, params, &show_callback/2, true)
+    ControllerCallbackHelper.get_webinar_and_fire_callback(
+      conn,
+      params,
+      &show_callback/2,
+      true,
+      true
+    )
   end
 
   @spec update(any, map) :: any
   def update(conn, params) do
-    ControllerCallbackHelper.get_with_callback(conn, params, &update_callback/2, false)
+    ControllerCallbackHelper.get_webinar_and_fire_callback(
+      conn,
+      params,
+      &update_callback/2,
+      false,
+      true
+    )
   end
 
   @spec delete(any, map) :: any
   def delete(conn, params) do
-    ControllerCallbackHelper.get_with_callback(conn, params, &delete_callback/2, false)
+    ControllerCallbackHelper.get_webinar_and_fire_callback(
+      conn,
+      params,
+      &delete_callback/2,
+      false,
+      true
+    )
   end
 
   defp show_callback(conn, %{"webinar_db" => webinar}) do

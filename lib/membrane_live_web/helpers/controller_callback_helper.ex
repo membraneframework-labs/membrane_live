@@ -4,14 +4,23 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
 
   alias MembraneLive.Webinars
 
-  def get_with_callback(
+  def get_webinar_and_fire_callback(
+        conn,
+        params,
+        callback,
+        show_callback? \\ false,
+        products? \\ false
+      )
+
+  def get_webinar_and_fire_callback(
         %{assigns: %{user_id: user_id}} = conn,
         %{"uuid" => uuid} = params,
         callback,
-        is_show_callback?
+        show_callback?,
+        products?
       ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid),
-         {:ok, webinar_db} <- is_user_authorized(webinar, user_id, is_show_callback?) do
+    with {:ok, webinar} <- Webinars.get_webinar(uuid, products?),
+         {:ok, webinar_db} <- is_user_authorized(webinar, user_id, show_callback?) do
       callback.(conn, Map.put(params, "webinar_db", webinar_db))
     else
       {:error, :no_webinar} ->
@@ -25,14 +34,15 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
     end
   end
 
-  def get_with_callback(
+  def get_webinar_and_fire_callback(
         conn,
         %{"uuid" => uuid} = params,
         callback,
-        is_show_callback?
+        show_callback?,
+        products?
       ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid),
-         true <- is_show_callback? do
+    with {:ok, webinar} <- Webinars.get_webinar(uuid, products?),
+         true <- show_callback? do
       callback.(conn, Map.put(params, "webinar_db", webinar))
     else
       {:error, :no_webinar} ->

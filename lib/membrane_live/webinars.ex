@@ -22,16 +22,21 @@ defmodule MembraneLive.Webinars do
   @spec list_recordings() :: list(Webinar.t())
   def list_recordings(), do: list_webinars(true)
 
-  @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
-  def get_webinar(uuid) do
+  @spec get_webinar(String.t(), boolean()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
+  def get_webinar(uuid, include_products? \\ false) do
     case Repo.get(Webinar, uuid) do
       nil -> {:error, :no_webinar}
-      webinar -> {:ok, webinar}
+      webinar -> {:ok, load_products_if_needed(webinar, include_products?)}
     end
   end
 
   @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
+
+  @spec load_products_if_needed(Webinar.t(), boolean()) :: Webinar.t()
+  defp load_products_if_needed(webinar, load_products?) do
+    if load_products?, do: Repo.preload(webinar, [:products]), else: webinar
+  end
 
   @spec create_webinar(map(), binary()) :: any
   def create_webinar(attrs, moderator_id) do
@@ -79,11 +84,18 @@ defmodule MembraneLive.Webinars do
     "/event/#{webinar.uuid}"
   end
 
-  @spec check_is_user_moderator(binary(), binary()) :: boolean()
+  @spec check_is_user_moderator(binary, binary) :: :ok | {:error, :no_webinar | :not_a_moderator}
   def check_is_user_moderator(user_uuid, webinar_uuid) do
-    case get_webinar(webinar_uuid) do
-      {:ok, webinar} -> user_uuid == webinar.moderator_id
-      {:error, :no_webinar} -> false
+    with {:ok, webinar} <- get_webinar(webinar_uuid) do
+      if user_uuid == webinar.moderator_id, do: :ok, else: {:error, :not_a_moderator}
+    end
+  end
+
+  @spec check_is_user_moderator!(binary(), binary()) :: boolean()
+  def check_is_user_moderator!(user_uuid, webinar_uuid) do
+    case check_is_user_moderator(user_uuid, webinar_uuid) do
+      :ok -> true
+      {:error, _reason} -> false
     end
   end
 
