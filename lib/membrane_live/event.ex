@@ -15,6 +15,7 @@ defmodule MembraneLive.Event do
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
+  alias MembraneLive.Chats
   alias MembraneLive.Event.Timer
   alias MembraneLive.Webinars
 
@@ -112,6 +113,12 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
+    if state.peer_channels == %{} do
+      :ets.delete(:start_timestamps, state.event_id)
+      :ets.delete(:client_start_timestamps, state.event_id)
+      Chats.clear_offsets(state.event_id)
+    end
+
     state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
     Process.monitor(peer_channel_pid)
     {:noreply, state}
@@ -318,8 +325,8 @@ defmodule MembraneLive.Event do
   end
 
   defp close_webinar(state) do
-    # no logic for reseting chat messages offset on stream end
-    # as it should not be necessary in the future
+    Engine.terminate(state.rtc_engine)
+
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
     Webinars.mark_webinar_as_finished(state.event_id)
 
@@ -372,7 +379,7 @@ defmodule MembraneLive.Event do
       start_time: state.start_time
     }
 
-    stop_stream_message = %{playlist_idl: "", name: "", start_time: nil}
+    stop_stream_message = %{playlist_idl: "", name: "", start_time: state.start_time}
 
     if is_nil(state.playlist_idl) or map_size(state.peer_channels) == 0,
       do: stop_stream_message,

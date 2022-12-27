@@ -45,7 +45,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
       } else {
         setSrc("");
         setPresenterName("");
-        if (setStreamStart) setStreamStart(null);
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
       }
     },
     [setSrc, setStreamStart]

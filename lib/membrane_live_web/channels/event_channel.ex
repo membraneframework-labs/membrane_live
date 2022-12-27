@@ -527,7 +527,6 @@ defmodule MembraneLiveWeb.EventChannel do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
         if socket.assigns.is_moderator do
-          Chats.clear_offsets(socket.assigns.event_id)
           Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
         else
           {:error, :non_moderator}
