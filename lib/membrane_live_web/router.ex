@@ -45,6 +45,12 @@ defmodule MembraneLiveWeb.Router do
     get("/:uuid", RecordingsController, :show)
   end
 
+  scope "/resources/chat", MembraneLiveWeb do
+    pipe_through(:browser)
+
+    get("/:uuid", ChatController, :index)
+  end
+
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
     pipe_through(:auth)

@@ -115,7 +115,27 @@ export type ChatMessage = {
   name: string;
   title: string;
   moderatedNo: number;
-  messages: string[];
+  contents: string[];
+};
+
+export type AwaitingMessage = {
+  email: string;
+  name: string;
+  content: string;
+  offset: number;
+};
+
+export type RecievedMessage = {
+  email: string;
+  name: string;
+  content: string;
+  offset: number;
+};
+
+export type PlaylistPlayableMessage = {
+  name: string;
+  playlist_idl: string;
+  start_time: string;
 };
 
 export type PresenterProposition = {

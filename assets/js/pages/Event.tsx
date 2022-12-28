@@ -22,6 +22,7 @@ import useCheckScreenType from "../utils/useCheckScreenType";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
 import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
+import { StreamStartContext } from "../utils/StreamStartContext";
 import { redirectToHomePage } from "../utils/headerUtils";
 import "../../css/event/event.css";
 
@@ -40,6 +41,7 @@ const Event = () => {
 
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
+  const [streamStart, setStreamStart] = useState<Date | null>(null);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -101,17 +103,19 @@ const Event = () => {
       {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
         <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
       )}
-      <div className="MainGrid">
-        <StreamArea
-          client={client}
-          eventChannel={eventChannel}
-          privateChannel={privateChannel}
-          mode={mode}
-          setMode={setMode}
-          eventTitle={eventInfo.title}
-        />
-        {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
-      </div>
+      <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
+        <div className="MainGrid">
+          <StreamArea
+            client={client}
+            eventChannel={eventChannel}
+            privateChannel={privateChannel}
+            mode={mode}
+            setMode={setMode}
+            eventTitle={eventInfo.title}
+          />
+          {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
+        </div>
+      </StreamStartContext.Provider>
     </div>
   );
 };

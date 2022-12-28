@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
+import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
-import type { Mode, Client } from "../../types/types";
-import "../../../css/event/streamarea.css";
+import { StreamStartContext } from "../../utils/StreamStartContext";
+import { RotateLeft } from "react-swm-icon-pack";
+import { HlsConfig } from "hls.js";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
-
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
+import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
+import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
   client: Client;
@@ -21,21 +24,32 @@ type StreamAreaProps = {
 };
 
 const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, eventTitle }: StreamAreaProps) => {
-  const [hlsUrl, setHlsUrl] = useState<string>("");
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
+  const config = useRef<Partial<HlsConfig>>({
+    liveSyncDurationCount: 2,
+    initialLiveManifestSize: 2,
+    backBufferLength: 30,
+  });
+  const { attachVideo, setSrc } = useHls(true, false, config.current);
   const screenType = useCheckScreenType();
+  const { setStreamStart } = useContext(StreamStartContext);
 
-  const addHlsUrl = (message: { name: string; playlist_idl: string }): void => {
-    const link = window.location.href.split("event")[0] + "video/";
-    if (message.playlist_idl) {
-      setHlsUrl(`${link}${message.playlist_idl}/index.m3u8`);
-      setPresenterName(message.name);
-    } else {
-      setHlsUrl("");
-      setPresenterName("");
-    }
-  };
+  const addHlsUrl = useCallback(
+    (message: PlaylistPlayableMessage): void => {
+      const link = window.location.href.split("event")[0] + "video/";
+      if (message.playlist_idl) {
+        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
+        setPresenterName(message.name);
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      } else {
+        setSrc("");
+        setPresenterName("");
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      }
+    },
+    [setSrc, setStreamStart]
+  );
 
   useEffect(() => {
     if (eventChannel) {
@@ -43,7 +57,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
       syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
-  }, [eventChannel, client]);
+  }, [addHlsUrl, client, eventChannel]);
 
   useEffect(() => {
     if (privateChannel) {
@@ -63,9 +77,18 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
         />
       )}
       <div className="Stream">
-        {mode === "hls" && (
+        {mode == "hls" && (
           <div className="HlsDiv">
-            <HlsPlayer hlsUrl={hlsUrl} presenterName={presenterName} eventChannel={eventChannel} />
+            {presenterName ? (
+              <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+            ) : (
+              <div className="HlsStream">
+                <div className="WaitText">
+                  <RotateLeft className="RotateIcon" />
+                  Waiting for the live stream to start...
+                </div>
+              </div>
+            )}
             {screenType.device == "mobile" && (
               <MobileHlsBar
                 client={client}

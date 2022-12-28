@@ -10,6 +10,7 @@ defmodule MembraneLiveWeb.EventChannel do
   require Logger
 
   alias MembraneLive.Accounts
+  alias MembraneLive.Chats
   alias MembraneLive.Event
   alias MembraneLive.Repo
   alias MembraneLive.Tokens
@@ -77,8 +78,8 @@ defmodule MembraneLiveWeb.EventChannel do
              socket <-
                Socket.assign(socket, %{
                  is_moderator: is_moderator,
-                 user_email: email,
-                 event_id: id
+                 event_id: id,
+                 user_email: email
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
@@ -233,12 +234,35 @@ defmodule MembraneLiveWeb.EventChannel do
     {:reply, {:ok, %{"main_presenter" => is_main_presenter}}, socket}
   end
 
-  def handle_in("chat_message", %{"message" => message}, %{topic: "event:" <> id} = socket) do
+  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
     email = socket.assigns.user_email
     {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
 
-    if not is_banned_from_chat,
-      do: broadcast(socket, "chat_message", %{"email" => email, "message" => message})
+    if not is_banned_from_chat do
+      %{metas: [%{name: name, is_auth: is_auth}]} = Presence.get_by_key(socket, email)
+
+      {:ok, is_presenter} = check_if_presenter(email, true, id)
+
+      key = if is_auth and is_presenter, do: :start_timestamps, else: :client_start_timestamps
+
+      offset =
+        case :ets.lookup(key, id) do
+          [{_key, timestamp}] ->
+            System.monotonic_time(:millisecond) - timestamp
+
+          [] ->
+            0
+        end
+
+      Chats.add_chat_message(id, name, email, is_auth, content, offset)
+
+      broadcast(socket, "chat_message", %{
+        "email" => email,
+        "name" => name,
+        "content" => content,
+        "offset" => offset
+      })
+    end
 
     {:noreply, socket}
   end
@@ -395,6 +419,7 @@ defmodule MembraneLiveWeb.EventChannel do
       )
 
       add_to_banned_from_chat(email, id)
+      Chats.remove_messages_from_user(id, email)
     end
 
     {:noreply, socket}
@@ -501,9 +526,11 @@ defmodule MembraneLiveWeb.EventChannel do
   defp create_event(socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        if socket.assigns.is_moderator,
-          do: Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id}),
-          else: {:error, :non_moderator}
+        if socket.assigns.is_moderator do
+          Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
+        else
+          {:error, :non_moderator}
+        end
 
       pid ->
         {:ok, pid}

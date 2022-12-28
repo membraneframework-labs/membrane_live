@@ -128,3 +128,21 @@
 .EmojiPickerIcon path {
   stroke: var(--font-medium-color-3);
 }
+
+.ChatLoadingMessage {
+  color: var(--font-medium-color-3);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  align-self: center;
+}
+
+.LoadingIcon {
+  height: 1.6rem;
+  width: auto;
+}
+
+.LoadingIcon path {
+  stroke: var(--font-medium-color-3);
+}
