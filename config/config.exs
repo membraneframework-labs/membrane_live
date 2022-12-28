@@ -52,4 +52,6 @@ config :membrane_live,
   last_peer_timeout_long_ms: 15 * 60 * 1000,
   last_peer_timeout_short_ms: 2 * 60 * 1000
 
+config :membrane_live, HLS.PubSub, pubsub: [name: HLS.PubSub, adapter: Phoenix.PubSub.PG2]
+
 import_config "#{config_env()}.exs"
