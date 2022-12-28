@@ -55,7 +55,8 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine", branch: "synchronize-streams-wallclock"},
+       github: "membraneframework/membrane_rtc_engine",
+       branch: "add-compositor-with-synchronization"},
       {:membrane_rtp_plugin, "~> 0.18.0"},
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
@@ -85,11 +86,11 @@ defmodule Membrane.Live.Mixfile do
        github: "membraneframework-labs/membrane_video_compositor_plugin",
        branch: "staging-live",
        override: true},
-      {:membrane_generator_plugin, "~> 0.7.0", override: true},
+      {:membrane_generator_plugin, "~> 0.7.1", override: true},
       {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
       {:membrane_framerate_converter_plugin, "~> 0.5.1"},
-      {:membrane_audio_mix_plugin, "~> 0.11.0"}
+      {:membrane_audio_mix_plugin, "~> 0.11.1"}
     ]
   end
 
