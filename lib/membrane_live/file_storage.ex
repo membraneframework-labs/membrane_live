@@ -1,7 +1,7 @@
 defmodule MembraneLive.HLS.FileStorage do
   @moduledoc """
-  `MembraneLive.HTTPAdaptiveStream.FileStorage` implementation that saves the stream to
-  files locally.
+  `MembraneLive.HTTPAdaptiveStream.FileStorage` implementation.
+  Supports LL-HLS and notifies that a partial segment has been saved via `Phoenix.PubSub`.
   """
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
@@ -35,16 +35,12 @@ defmodule MembraneLive.HLS.FileStorage do
       ) do
     result = File.write(Path.join(directory, segment_filename), contents, [:binary, :append])
 
-    with {segment_no, manifest_name} <- parse_filename(segment_filename),
-         manifest_path <- "#{manifest_name}.m3u8" |> then(&Path.join(directory, &1)),
-         binary <- read_manifest(manifest_path),
-         partial_no <- get_partial_number(binary, segment_filename, offset) do
-      length = byte_size(contents)
-
-      partial_ets_name = "muxed_segment_#{segment_no}_#{manifest_name}_#{offset}"
+    with {segment, manifest_name} <- parse_filename(segment_filename),
+         partial <- get_partial_number(contents, segment_filename, offset) do
+      partial_ets_name = "muxed_segment_#{segment}_#{manifest_name}_#{offset}"
       add_partial_to_ets(partial_ets_name, contents)
 
-      spawn(fn ->
+      Task.start(fn ->
         Process.sleep(@remove_partial_timeout_ms)
         remove_partial_from_ets(partial_ets_name)
       end)
@@ -52,7 +48,7 @@ defmodule MembraneLive.HLS.FileStorage do
       PubSub.broadcast(
         MembraneLive.PubSub,
         manifest_name,
-        {{segment_no, partial_no}, {offset, length}}
+        {{segment, partial}, {offset, byte_size(contents)}}
       )
     else
       err -> Membrane.Logger.error("Storing partial segment failed: #{inspect(err)}")
@@ -67,16 +63,9 @@ defmodule MembraneLive.HLS.FileStorage do
         contents,
         _metadata,
         %{mode: :binary},
-        %__MODULE__{
-          directory: directory
-        }
+        %__MODULE__{directory: directory}
       ) do
-    if String.contains?(segment_filename, "muxed_segment") do
-      # ignore storing
-      :ok
-    else
-      File.write(Path.join(directory, segment_filename), contents, [:binary])
-    end
+    File.write(Path.join(directory, segment_filename), contents, [:binary])
   end
 
   @impl true
@@ -105,28 +94,20 @@ defmodule MembraneLive.HLS.FileStorage do
   end
 
   defp parse_filename(segment_filename) do
-    ["muxed", "segment", num, manifest_name] =
+    ["muxed", "segment", segment, manifest_name] =
       segment_filename
       |> String.split(".")
       |> Enum.at(0)
       |> String.split("_")
 
-    {String.to_integer(num), manifest_name}
+    {String.to_integer(segment), manifest_name}
   end
 
-  defp read_manifest(manifest_path) do
-    if File.exists?(manifest_path) do
-      File.read!(manifest_path)
-    else
-      ""
-    end
-  end
-
-  defp get_partial_number(data, segment_filename, target_offset) do
+  defp get_partial_number(playlist, segment_filename, target_offset) do
     search_str = "URI=\"#{segment_filename}\""
 
     last_segment_no =
-      data
+      playlist
       |> String.split("\n")
       |> Enum.filter(&String.contains?(&1, search_str))
       |> Enum.with_index(1)
@@ -152,27 +133,31 @@ defmodule MembraneLive.HLS.FileStorage do
   end
 
   defp get_last_partial(binary) do
-    last_tags = binary |> String.split("\n") |> Enum.take(-12) |> Enum.reverse()
+    partial_tags =
+      binary
+      |> String.split("\n")
+      |> Enum.filter(&String.contains?(&1, "#EXT-X-PART:"))
+      |> Enum.reverse()
 
-    case last_tags |> Enum.find(&String.contains?(&1, "#EXT-X-PART:")) do
-      nil ->
-        {0, 0}
+    if Enum.empty?(partial_tags) do
+      {0, 0}
+    else
+      last_partial = hd(partial_tags)
 
-      partial ->
-        ["muxed", "segment", segment, _rest] =
-          partial
-          |> String.split(",")
-          |> Enum.find(&String.contains?(&1, "URI="))
-          |> String.replace("URI=", "")
-          |> String.replace("\"", "")
-          |> String.split("_")
+      ["muxed", "segment", segment, _rest] =
+        last_partial
+        |> String.split(",")
+        |> Enum.find(&String.contains?(&1, "URI="))
+        |> String.replace("URI=", "")
+        |> String.replace("\"", "")
+        |> String.split("_")
 
-        partial_count =
-          last_tags
-          |> Enum.filter(&String.contains?(&1, "muxed_segment_#{segment}"))
-          |> Enum.count()
+      partial_count =
+        partial_tags
+        |> Enum.filter(&String.contains?(&1, "muxed_segment_#{segment}"))
+        |> Enum.count()
 
-        {String.to_integer(segment), partial_count}
+      {String.to_integer(segment), partial_count}
     end
   end
 

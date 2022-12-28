@@ -6,7 +6,7 @@ defmodule MembraneLiveWeb.HLSController do
   alias Plug
 
   @ets_key :partial_segments
-  @partial_update_timeout_ms 2000
+  @partial_update_timeout_ms 1000
   @manifest_update_timeout_ms 1000
 
   def index(
@@ -46,11 +46,9 @@ defmodule MembraneLiveWeb.HLSController do
         %{"event_id" => event_id, "filename" => segment_filename} = params
       ) do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
-
     {offset, length} = parse_bytes_range(conn)
-    partial_segment = await_partial_segment(prefix, segment_filename, offset, length)
 
-    case partial_segment do
+    case await_partial_segment(prefix, segment_filename, offset, length) do
       {:file, path} ->
         conn |> Plug.Conn.send_file(200, path, offset, length)
 
