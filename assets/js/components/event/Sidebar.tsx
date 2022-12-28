@@ -1,17 +1,12 @@
-import React, {useEffect, useState} from "react";
-import {Menu, MenuButton, MenuList, MenuItem, Tooltip} from "@chakra-ui/react";
-import {
-  getPrivateChannelLink,
-  switchAskingForBeingPresenter,
-  syncEventChannel
-} from "../../utils/channelUtils";
-import {MenuVertical, User1, Crown1, Star1, QuestionCircle} from "react-swm-icon-pack";
-import {Channel} from "phoenix";
+import React, { useEffect, useState } from "react";
+import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
+import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
+import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
+import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import {useChatMessages} from "../../utils/useChatMessages";
-import type {Participant, Client} from "../../types/types";
+import type { Participant, Client, Product, ChatMessage } from "../../types/types";
 import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
-import { ProductsComponent } from "./ProductsComponent";
+import ProductsList from "./ProductsList";
 import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
@@ -20,7 +15,7 @@ type ModeratorMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
+const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
   const link = getPrivateChannelLink();
   const presenterText = {
     setBasic: "Set as a presenter",
@@ -48,10 +43,10 @@ const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMe
         sessionStorageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
-        eventChannel?.push("ban_from_chat", {email: participant.email});
+        eventChannel?.push("ban_from_chat", { email: participant.email });
         break;
       case banFromChatText.unban:
-        eventChannel?.push("unban_from_chat", {email: participant.email});
+        eventChannel?.push("unban_from_chat", { email: participant.email });
         break;
     }
   };
@@ -59,7 +54,7 @@ const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMe
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton"/>
+        <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
         {participant.isAuth && participant.isPresenter ? (
@@ -95,7 +90,7 @@ type ClientParticipantMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMenuProps) => {
+const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
   const askText = "Ask to become a presenter";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -110,7 +105,7 @@ const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMen
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton"/>
+        <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
         <MenuItem onClick={handleClick} value={text} className="MenuOptionText">
@@ -127,13 +122,13 @@ type ParticipantProps = {
   eventChannel: Channel | undefined;
 };
 
-const Participant = ({client, participant, eventChannel}: ParticipantProps) => {
+const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
   const icon = participant.isModerator ? (
-    <Crown1 className="ParticipantIcon"/>
+    <Crown1 className="ParticipantIcon" />
   ) : participant.isPresenter ? (
-    <Star1 className="ParticipantIcon"/>
+    <Star1 className="ParticipantIcon" />
   ) : (
-    <User1 className="ParticipantIcon"/>
+    <User1 className="ParticipantIcon" />
   );
   const role = participant.isModerator ? "Moderator" : participant.isPresenter ? "Presenter" : "Participant";
 
@@ -148,32 +143,30 @@ const Participant = ({client, participant, eventChannel}: ParticipantProps) => {
       <p className="ParticipantText">{participant.name}</p>
       {participant.isRequestPresenting && (client.isModerator || isMyself) && (
         <Tooltip label={"This user is asking to become a presenter"} className="InfoTooltip">
-          <QuestionCircle className="ParticipantIcon"/>
+          <QuestionCircle className="ParticipantIcon" />
         </Tooltip>
       )}
       {client.isModerator && (
-        <ModeratorMenu moderatorClient={client} eventChannel={eventChannel}
-                       participant={participant}/>
+        <ModeratorMenu moderatorClient={client} eventChannel={eventChannel} participant={participant} />
       )}
-      {isMyselfParticipant &&
-        <ClientParticipantMenu eventChannel={eventChannel} participant={participant}/>}
+      {isMyselfParticipant && <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />}
     </div>
   );
 };
 
+type SidebarMode = "participants" | "products" | "chat";
+
 type ParticipantsListProps = {
   client: Client;
   eventChannel: Channel | undefined;
-  webinarId: string;
+  isChatLoaded: boolean;
+  chatMessages: ChatMessage[];
+  products: Product[];
 };
 
-type SidebarMode = "participants" | "products" | "chat"
-
-
-const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) => {
+const Sidebar = ({ client, eventChannel, isChatLoaded, chatMessages, products }: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<SidebarMode>("products");
-  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   useEffect(() => {
@@ -192,13 +185,18 @@ const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) =
         >
           Group Chat
         </button>
-        <button className={`ParticipantsButton ${listMode == "participants" && "Clicked"}`}
-                name="list"
-                onClick={() => setListMode("participants")}>
+        <button
+          className={`ParticipantsButton ${listMode == "participants" && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode("participants")}
+        >
           Participants
         </button>
-        <button className={`ParticipantsButton ${listMode === "products" && "Clicked"}`} name="list"
-                onClick={() => setListMode("products")}>
+        <button
+          className={`ParticipantsButton ${listMode === "products" && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode("products")}
+        >
           Products
         </button>
       </div>
@@ -224,9 +222,9 @@ const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) =
           isRecording={false}
         />
       )}
-      {listMode === "products" && <ProductsComponent webinarId={webinarId}/>}
+      {listMode === "products" && <ProductsList products={products} />}
     </div>
   );
 };
 
-export default SidebarList;
+export default Sidebar;

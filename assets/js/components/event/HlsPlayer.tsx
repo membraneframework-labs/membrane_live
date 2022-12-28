@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import AnimationComponent from "./HeartAnimation";
 import HlsControlBar from "./HlsControlBar";
-import {Channel} from "phoenix";
-import {MediaController} from "media-chrome/dist/react";
+import { Channel } from "phoenix";
+import { MediaController } from "media-chrome/dist/react";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import "../../../css/event/hlsplayer.css";
 
@@ -34,7 +34,7 @@ const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps)
         )}
         {eventChannel && (
           <div className="HlsBottomBar">
-            <AnimationComponent eventChannel={eventChannel}/>
+            <AnimationComponent eventChannel={eventChannel} />
           </div>
         )}
       </div>

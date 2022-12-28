@@ -1,5 +1,5 @@
-import React, {useEffect} from "react";
-import Hls, {HlsConfig} from "hls.js";
+import React, { useEffect } from "react";
+import Hls, { HlsConfig } from "hls.js";
 
 // credit: https://github.com/devcshort/react-hls
 
@@ -8,7 +8,7 @@ export interface HlsPlayerProps extends React.VideoHTMLAttributes<HTMLVideoEleme
   src: string;
 }
 
-function ReactHlsPlayer({hlsConfig, src, autoPlay, ...props}: HlsPlayerProps) {
+function ReactHlsPlayer({ hlsConfig, src, autoPlay, ...props }: HlsPlayerProps) {
   const playerRef = React.createRef<HTMLVideoElement>();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ function ReactHlsPlayer({hlsConfig, src, autoPlay, ...props}: HlsPlayerProps) {
     }
 
     return () => {
-      console.log("Hello!")
+      console.log("Hello!");
       if (hls != null) {
         hls.destroy();
       }

@@ -29,5 +29,6 @@
  */
 
   /* White color */
-  filter: invert(92%) sepia(100%) saturate(2%) hue-rotate(241deg) brightness(102%) contrast(101%) drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4));
+  filter: invert(92%) sepia(100%) saturate(2%) hue-rotate(241deg) brightness(102%) contrast(101%)
+    drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4));
 }

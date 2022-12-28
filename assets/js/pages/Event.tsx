@@ -1,6 +1,6 @@
-import {useEffect, useRef, useState} from "react";
-import {Channel, Socket} from "phoenix";
-import {createPrivateChannel, createEventChannel, getChannelId} from "../utils/channelUtils";
+import { useEffect, useRef, useState } from "react";
+import { Channel, Socket } from "phoenix";
+import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
   storageGetName,
@@ -18,12 +18,14 @@ import { useNavigate } from "react-router-dom";
 import type { Client, EventInfo, Mode, Toast, PresenterProposition } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
-import {getEventInfo, initEventInfo} from "../utils/headerUtils";
-import {pageTitlePrefix} from "../utils/const";
+import { getEventInfo, initEventInfo } from "../utils/headerUtils";
+import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
 import { StreamStartContext } from "../utils/StreamStartContext";
 import { redirectToHomePage } from "../utils/headerUtils";
-import SidebarList from "../components/event/SidebarList";
+import Sidebar from "../components/event/Sidebar";
+import { useChatMessages } from "../utils/useChatMessages";
+import { useProducts } from "../utils/useProducts";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -38,6 +40,8 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
+  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
+  const products = useProducts(eventInfo.uuid);
 
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
@@ -101,8 +105,7 @@ const Event = () => {
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
       {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
-        <Header client={client} eventChannel={eventChannel} isRecording={false}
-                eventInfo={eventInfo}/>
+        <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
       )}
       <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
         <div className="MainGrid">
@@ -113,9 +116,18 @@ const Event = () => {
             mode={mode}
             setMode={setMode}
             eventTitle={eventInfo.title}
-            webinarId={eventInfo.uuid}
+            products={products}
+            chatMessages={chatMessages}
           />
-          {screenType.device == "desktop" && <SidebarList client={client} eventChannel={eventChannel} webinarId={eventInfo.uuid}/>}
+          {screenType.device == "desktop" && (
+            <Sidebar
+              client={client}
+              eventChannel={eventChannel}
+              isChatLoaded={isChatLoaded}
+              chatMessages={chatMessages}
+              products={products}
+            />
+          )}
         </div>
       </StreamStartContext.Provider>
     </div>

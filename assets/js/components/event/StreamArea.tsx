@@ -11,7 +11,7 @@ import { HlsConfig } from "hls.js";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
+import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage } from "../../types/types";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
@@ -23,19 +23,12 @@ type StreamAreaProps = {
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   eventTitle: string;
-  webinarId: string;
+  products: Product[];
+  chatMessages: ChatMessage[];
 };
 
 const StreamArea = (props: StreamAreaProps) => {
-  const {
-    client,
-    eventChannel,
-    privateChannel,
-    mode,
-    setMode,
-    eventTitle,
-    webinarId
-  } = props;
+  const { client, eventChannel, privateChannel, mode, setMode, eventTitle, products, chatMessages } = props;
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const config = useRef<Partial<HlsConfig>>({
@@ -76,11 +69,14 @@ const StreamArea = (props: StreamAreaProps) => {
     }
   }, [privateChannel, setMode]);
 
-  const [card, setCard] = useState<string>("HIDDEN")
+  const [card, setCard] = useState<string>("HIDDEN");
 
-  const switchAsking = useCallback((isAsking: boolean) => {
-    switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
-  }, [eventChannel, client])
+  const switchAsking = useCallback(
+    (isAsking: boolean) => {
+      switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+    },
+    [eventChannel, client]
+  );
 
   return (
     <div className="StreamArea">
@@ -117,11 +113,25 @@ const StreamArea = (props: StreamAreaProps) => {
             )}
           </div>
         )}
-        <PresenterArea client={client} privateChannel={privateChannel} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
+        <PresenterArea
+          client={client}
+          privateChannel={privateChannel}
+          eventChannel={eventChannel}
+          mode={mode}
+          setMode={setMode}
+        />
 
-        {screenType.device == "mobile" && <MobileRightSidebar setCard={setCard}/>}
-        {screenType.device == "mobile" &&
-          <MobileBottomPanel webinarId={webinarId} card={card} onBarClick={() => setCard("HIDE")}/>}
+        {screenType.device == "mobile" && <MobileRightSidebar setCard={setCard} />}
+        {screenType.device == "mobile" && (
+          <MobileBottomPanel
+            eventChannel={eventChannel}
+            client={client}
+            products={products}
+            chatMessages={chatMessages}
+            card={card}
+            onBarClick={() => setCard("HIDE")}
+          />
+        )}
       </div>
     </div>
   );

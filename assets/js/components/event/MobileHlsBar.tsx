@@ -1,8 +1,8 @@
-import {useToast} from "@chakra-ui/react";
-import React, {useState} from "react";
-import {Client, Mode} from "../../types/types";
-import {UserPlus} from "react-swm-icon-pack";
-import {getInfoToast} from "../../utils/toastUtils";
+import { useToast } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { Client, Mode } from "../../types/types";
+import { UserPlus } from "react-swm-icon-pack";
+import { getInfoToast } from "../../utils/toastUtils";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import GenericButton from "../helpers/GenericButton";
 import MenuPopover from "../helpers/MenuPopover";
@@ -17,7 +17,7 @@ type MobileHlsBarProps = {
 };
 
 const MobileHlsBar = (props: MobileHlsBarProps) => {
-  const {client, eventTitle, amIPresenter, setMode, switchAsking} = props
+  const { client, eventTitle, amIPresenter, setMode, switchAsking } = props;
   const toast = useToast();
   const screenType = useCheckScreenType();
 
@@ -31,10 +31,10 @@ const MobileHlsBar = (props: MobileHlsBarProps) => {
     };
 
     return amIPresenter ? (
-      <MenuPopover setMode={setMode} className={className}/>
+      <MenuPopover setMode={setMode} className={className} />
     ) : (
       <GenericButton
-        icon={<UserPlus className="PanelButton"/>}
+        icon={<UserPlus className="PanelButton" />}
         onClick={() => {
           switchAsking(isAskingForPresenter);
 
@@ -51,7 +51,7 @@ const MobileHlsBar = (props: MobileHlsBarProps) => {
   return (
     <div className="MobileHlsBar">
       {screenType.orientation === "landscape" && <div className="Title"> {eventTitle} </div>}
-      {client.isAuthenticated && <MobilePresenterButton/>}
+      {client.isAuthenticated && <MobilePresenterButton />}
     </div>
   );
 };
