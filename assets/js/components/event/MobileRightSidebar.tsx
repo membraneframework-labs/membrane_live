@@ -1,4 +1,3 @@
-import React from "react";
 import "../../../css/event/mobilesidebars.css";
 
 type Button = { id: string, icon: string, text: string, onClick?: () => void }

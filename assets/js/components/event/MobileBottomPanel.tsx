@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from "react";
-import "../../../css/event/mobilebottompanel.css";
 import {ProductsComponent} from "./ProductsComponent";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import "../../../css/event/mobilebottompanel.css";
 
 
 type Props = {
