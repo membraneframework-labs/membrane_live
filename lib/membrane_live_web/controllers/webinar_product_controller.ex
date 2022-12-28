@@ -1,6 +1,8 @@
 defmodule MembraneLiveWeb.WebinarProductController do
   use MembraneLiveWeb, :controller
 
+  require Logger
+
   alias MembraneLive.Webinars
   alias MembraneLive.WebinarsProducts
   alias MembraneLiveWeb.Helpers.ControllerCallbackHelper
@@ -9,7 +11,13 @@ defmodule MembraneLiveWeb.WebinarProductController do
 
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(conn, params) do
-    ControllerCallbackHelper.get_webinar_and_fire_callback(conn, params, &index_callback/2, true)
+    ControllerCallbackHelper.get_webinar_and_fire_callback(
+      conn,
+      params,
+      &index_callback/2,
+      true,
+      true
+    )
   end
 
   @spec create(any, map) :: any
@@ -66,9 +74,15 @@ defmodule MembraneLiveWeb.WebinarProductController do
       message: "User does not have permission to alter products in this webinar"
     }
 
-  defp handle_error(_unknown_reason),
-    do: %{
+  defp handle_error({:error, reason}) do
+    Logger.error("""
+    Failed to alter products in the webinar.
+    Reason: #{inspect(reason)}
+    """)
+
+    %{
       error: :internal_server_error,
-      message: "Altering product list in the webinar failed for unknown reason"
+      message: "Altering product list in the webinar failed."
     }
+  end
 end

@@ -5,25 +5,26 @@ import Header from "../components/event/Header";
 import {
   storageGetName,
   storageGetAuthToken,
-  storageGetIsPresenter,
+  sessionStorageGetIsPresenter,
   storageGetEmail,
   sessionStorageGetName,
   getIsAuthenticated,
   storageGetPresentingRequest,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
-import {useToast} from "@chakra-ui/react";
-import {lastPersonPopup, presenterPopup} from "../utils/toastUtils";
-import {useNavigate} from "react-router-dom";
-import type {Client, EventInfo, Mode, Toast} from "../types/types";
+import { useToast } from "@chakra-ui/react";
+import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
+import { useNavigate } from "react-router-dom";
+import type { Client, EventInfo, Mode, Toast, PresenterProposition } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import {getEventInfo, initEventInfo} from "../utils/headerUtils";
 import {pageTitlePrefix} from "../utils/const";
 import axiosWithInterceptor from "../services";
-import {redirectToHomePage} from "../utils/headerUtils";
-import "../../css/event/event.css";
+import { StreamStartContext } from "../utils/StreamStartContext";
+import { redirectToHomePage } from "../utils/headerUtils";
 import SidebarList from "../components/event/SidebarList";
+import "../../css/event/event.css";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -40,6 +41,7 @@ const Event = () => {
 
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
+  const [streamStart, setStreamStart] = useState<Date | null>(null);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -55,13 +57,13 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
         ? axiosWithInterceptor.get("/me").then(() => {
-          return {
-            token: storageGetAuthToken(),
-            presenter: storageGetIsPresenter(),
-            requestPresenting: storageGetPresentingRequest(),
-          };
-        })
-        : Promise.resolve({username: client.name});
+            return {
+              token: storageGetAuthToken(),
+              presenter: sessionStorageGetIsPresenter(),
+              requestPresenting: storageGetPresentingRequest(),
+            };
+          })
+        : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {
         const channel = socket.current.channel(`event:${getChannelId()}`, msg);
@@ -89,7 +91,7 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, moderatorTopic: string) => presenterPopup(toast, client, eventChannel, moderatorTopic, setMode),
+        (toast, message: PresenterProposition) => presenterPopup(toast, client, eventChannel, message, setMode),
         setPrivateChannel
       );
     }
@@ -102,19 +104,20 @@ const Event = () => {
         <Header client={client} eventChannel={eventChannel} isRecording={false}
                 eventInfo={eventInfo}/>
       )}
-      <div className="MainGrid">
-        <StreamArea
-          client={client}
-          eventChannel={eventChannel}
-          privateChannel={privateChannel}
-          mode={mode}
-          setMode={setMode}
-          eventTitle={eventInfo.title}
-          webinarId={eventInfo.uuid}
-        />
-        {screenType.device == "desktop" &&
-          <SidebarList client={client} eventChannel={eventChannel} webinarId={eventInfo.uuid}/>}
-      </div>
+      <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
+        <div className="MainGrid">
+          <StreamArea
+            client={client}
+            eventChannel={eventChannel}
+            privateChannel={privateChannel}
+            mode={mode}
+            setMode={setMode}
+            eventTitle={eventInfo.title}
+            webinarId={eventInfo.uuid}
+          />
+          {screenType.device == "desktop" && <SidebarList client={client} eventChannel={eventChannel} webinarId={eventInfo.uuid}/>}
+        </div>
+      </StreamStartContext.Provider>
     </div>
   );
 };

@@ -42,7 +42,7 @@ import "../../../css/event/controlpanel.css";
 import MenuPopover from "../helpers/MenuPopover";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import { ModeButton } from "./ModePanel";
-import { storageUnsetIsPresenter } from "../../utils/storageUtils";
+import { sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -115,7 +115,7 @@ const stopBeingPresenter = (
   setMode: React.Dispatch<React.SetStateAction<Mode>>
 ) => {
   eventChannel?.push("presenter_remove", { email: client.email });
-  storageUnsetIsPresenter();
+  sessionStorageUnsetIsPresenter();
   setMode("hls");
 };
 

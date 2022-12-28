@@ -22,23 +22,20 @@ defmodule MembraneLive.Webinars do
   @spec list_recordings() :: list(Webinar.t())
   def list_recordings(), do: list_webinars(true)
 
-  @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
-  def get_webinar(uuid) do
+  @spec get_webinar(String.t(), boolean()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
+  def get_webinar(uuid, include_products? \\ false) do
     case Repo.get(Webinar, uuid) do
       nil -> {:error, :no_webinar}
-      webinar -> {:ok, webinar}
+      webinar -> {:ok, load_products_if_needed(webinar, include_products?)}
     end
   end
 
   @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
 
-  @spec get_webinar_with_products(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
-  def get_webinar_with_products(uuid) do
-    with {:ok, webinar} <- get_webinar(uuid) do
-      webinar_with_products = Repo.preload(webinar, [:products])
-      {:ok, webinar_with_products}
-    end
+  @spec load_products_if_needed(Webinar.t(), boolean()) :: Webinar.t()
+  defp load_products_if_needed(webinar, load_products?) do
+    if load_products?, do: Repo.preload(webinar, [:products]), else: webinar
   end
 
   @spec create_webinar(map(), binary()) :: any

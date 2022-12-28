@@ -38,6 +38,7 @@ export type PeersState = {
   mergedScreenRef: MergedScreenRef;
   peers: { [key: string]: PresenterStream };
   sourceIds: { audio: string; video: string };
+  isMainPresenter: boolean;
 };
 
 export interface Client extends User {
@@ -114,5 +115,35 @@ export type ChatMessage = {
   name: string;
   title: string;
   moderatedNo: number;
-  messages: string[];
+  contents: string[];
+};
+
+export type AwaitingMessage = {
+  email: string;
+  name: string;
+  content: string;
+  offset: number;
+};
+
+export type RecievedMessage = {
+  email: string;
+  name: string;
+  content: string;
+  offset: number;
+};
+
+export type PlaylistPlayableMessage = {
+  name: string;
+  playlist_idl: string;
+  start_time: string;
+};
+
+export type PresenterProposition = {
+  moderatorTopic: string;
+  mainPresenter: boolean;
+};
+
+export type PresenterPropositionServer = {
+  moderator_topic: string;
+  main_presenter: boolean;
 };

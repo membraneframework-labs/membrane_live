@@ -10,9 +10,9 @@ import {Channel} from "phoenix";
 import ChatBox from "./ChatBox";
 import {useChatMessages} from "../../utils/useChatMessages";
 import type {Participant, Client} from "../../types/types";
+import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
+import { ProductsComponent } from "./ProductsComponent";
 import "../../../css/event/participants.css";
-import {storageSetPresentingRequest, storageUnsetIsPresenter} from "../../utils/storageUtils";
-import {ProductsComponent} from "./ProductsComponent";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -23,7 +23,8 @@ type ModeratorMenuProps = {
 const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
   const link = getPrivateChannelLink();
   const presenterText = {
-    set: "Set as a presenter",
+    setBasic: "Set as a presenter",
+    setMain: "Set as a main presenter",
     unset: "Set as a normal participant",
   };
   const banFromChatText = {
@@ -32,16 +33,19 @@ const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMe
   };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    switch ((e.target as HTMLTextAreaElement).value) {
-      case presenterText.set:
+    const clickedValue = (e.target as HTMLTextAreaElement).value;
+    switch (clickedValue) {
+      case presenterText.setBasic:
+      case presenterText.setMain:
         eventChannel?.push("presenter_prop", {
           moderatorTopic: link + moderatorClient.email,
           presenterTopic: link + participant.email,
+          mainPresenter: clickedValue == presenterText.setMain,
         });
         break;
       case presenterText.unset:
-        eventChannel?.push("presenter_remove", {presenterTopic: link + participant.email});
-        storageUnsetIsPresenter();
+        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        sessionStorageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
         eventChannel?.push("ban_from_chat", {email: participant.email});
@@ -58,14 +62,19 @@ const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMe
         <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
-        {participant.isAuth && (
-          <MenuItem
-            onClick={handleClick}
-            value={participant.isPresenter ? presenterText.unset : presenterText.set}
-            className="MenuOptionText"
-          >
-            {participant.isPresenter ? presenterText.unset : presenterText.set}
+        {participant.isAuth && participant.isPresenter ? (
+          <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
+            {presenterText.unset}
           </MenuItem>
+        ) : (
+          <>
+            <MenuItem onClick={handleClick} value={presenterText.setBasic} className="MenuOptionText">
+              {presenterText.setBasic}
+            </MenuItem>
+            <MenuItem onClick={handleClick} value={presenterText.setMain} className="MenuOptionText">
+              {presenterText.setMain}
+            </MenuItem>{" "}
+          </>
         )}
         {!participant.isModerator && (
           <MenuItem
@@ -93,7 +102,7 @@ const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMen
     const shouldAskForBeingPresenter = (e.target as HTMLTextAreaElement).value === askText;
 
     switchAskingForBeingPresenter(eventChannel, participant.email, !shouldAskForBeingPresenter);
-    storageSetPresentingRequest(!shouldAskForBeingPresenter);
+    sessionStorageSetPresentingRequest(!shouldAskForBeingPresenter);
   };
 
   const text = participant.isRequestPresenting ? "Stop asking to become a presenter" : askText;
@@ -164,7 +173,7 @@ type SidebarMode = "participants" | "products" | "chat"
 const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<SidebarMode>("products");
-  const chatMessages = useChatMessages(eventChannel);
+  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   useEffect(() => {
@@ -210,7 +219,9 @@ const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) =
           client={client}
           eventChannel={eventChannel}
           messages={chatMessages}
+          isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
+          isRecording={false}
         />
       )}
       {listMode === "products" && <ProductsComponent webinarId={webinarId}/>}

@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from "react";
+import {useCallback, useState} from "react";
 import axiosWithInterceptor from "../../services";
 
 export type Product = {
@@ -9,7 +9,7 @@ export type Product = {
   imageUrl: string,
 }
 
-const imageSize: string = "200/150"
+const imageSize = "200/150"
 
 const productsMock: Product[] = [{
   id: "1",

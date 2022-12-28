@@ -6,7 +6,7 @@ import {getInfoToast} from "../../utils/toastUtils";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import GenericButton from "../helpers/GenericButton";
 import MenuPopover from "../helpers/MenuPopover";
-import {storageGetPresentingRequest, storageSetPresentingRequest} from "../../utils/storageUtils";
+import { storageGetPresentingRequest, sessionStorageSetPresentingRequest } from "../../utils/storageUtils";
 
 type MobileHlsBarProps = {
   client: Client;
@@ -40,7 +40,7 @@ const MobileHlsBar = (props: MobileHlsBarProps) => {
 
           const newAskingState = !isAskingForPresenter;
           setIsAskingForPresenter(newAskingState);
-          storageSetPresentingRequest(newAskingState);
+          sessionStorageSetPresentingRequest(newAskingState);
           getInfoToast(toast, toastText(newAskingState), two_seconds);
         }}
         className={className}

@@ -48,23 +48,23 @@ export const storageSetEmail = (email: string): void => {
   localStorage.setItem(EMAIL, email);
 };
 
-export const storageSetPresentingRequest = (requestedPresenting: boolean): void => {
+export const sessionStorageSetPresentingRequest = (requestedPresenting: boolean): void => {
   sessionStorage.setItem(REQUEST_PRESENTING, requestedPresenting ? "true" : "false");
 };
 
-export const storageSetPicture = (picture: string): void => {
+export const sessionStorageSetPicture = (picture: string): void => {
   localStorage.setItem(PICTURE, picture);
 };
 
-export const storageSetIsPresenter = (): void => {
+export const sessionStorageSetIsPresenter = (): void => {
   sessionStorage.setItem(PRESENTER, "true");
 };
 
-export const storageUnsetIsPresenter = (): void => {
+export const sessionStorageUnsetIsPresenter = (): void => {
   sessionStorage.setItem(PRESENTER, "false");
 };
 
-export const storageGetIsPresenter = (): boolean => {
+export const sessionStorageGetIsPresenter = (): boolean => {
   return sessionStorage.getItem(PRESENTER) === "true";
 };
 
