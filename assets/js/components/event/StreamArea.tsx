@@ -20,6 +20,7 @@ type StreamAreaProps = {
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   eventTitle: string;
+  webinarId: string;
 };
 
 const StreamArea = (props: StreamAreaProps) => {
@@ -29,9 +30,10 @@ const StreamArea = (props: StreamAreaProps) => {
     privateChannel,
     mode,
     setMode,
-    eventTitle
+    eventTitle,
+    webinarId
   } = props;
-  const [hlsUrl, setHlsUrl] = useState<string>("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
+  const [hlsUrl, setHlsUrl] = useState<string>("");
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useCheckScreenType();
@@ -49,8 +51,8 @@ const StreamArea = (props: StreamAreaProps) => {
 
   useEffect(() => {
     if (eventChannel) {
-      // eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
-      // eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
+      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
       syncAmIPresenter(eventChannel, setAmIPresenter, client);
     }
   }, [eventChannel, client]);
@@ -66,16 +68,6 @@ const StreamArea = (props: StreamAreaProps) => {
   const switchAsking = useCallback((isAsking: boolean) => {
     switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
   }, [eventChannel, client])
-
-  useEffect(() => {
-    let counter = 0
-    const id = setInterval(() => {
-      // setCard("elloo" + counter++)
-    }, 3000)
-    return () => {
-      clearInterval(id)
-    }
-  }, [])
 
   return (
     <div className="StreamArea">
@@ -105,8 +97,9 @@ const StreamArea = (props: StreamAreaProps) => {
         )}
         <PresenterArea client={client} eventChannel={eventChannel} mode={mode} setMode={setMode}/>
 
-        <MobileRightSidebar setCard={setCard}/>
-        <MobileBottomPanel card={card} onBarClick={() => setCard("HIDE")}/>
+        {screenType.device == "mobile" && <MobileRightSidebar setCard={setCard}/>}
+        {screenType.device == "mobile" &&
+          <MobileBottomPanel webinarId={webinarId} card={card} onBarClick={() => setCard("HIDE")}/>}
       </div>
     </div>
   );

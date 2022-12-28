@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
-import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import { Channel } from "phoenix";
+import React, {useEffect, useState} from "react";
+import {Menu, MenuButton, MenuList, MenuItem, Tooltip} from "@chakra-ui/react";
+import {
+  getPrivateChannelLink,
+  switchAskingForBeingPresenter,
+  syncEventChannel
+} from "../../utils/channelUtils";
+import {MenuVertical, User1, Crown1, Star1, QuestionCircle} from "react-swm-icon-pack";
+import {Channel} from "phoenix";
 import ChatBox from "./ChatBox";
-import { useChatMessages } from "../../utils/useChatMessages";
-import type { Participant, Client } from "../../types/types";
+import {useChatMessages} from "../../utils/useChatMessages";
+import type {Participant, Client} from "../../types/types";
 import "../../../css/event/participants.css";
-import { storageSetPresentingRequest, storageUnsetIsPresenter } from "../../utils/storageUtils";
+import {storageSetPresentingRequest, storageUnsetIsPresenter} from "../../utils/storageUtils";
 import {ProductsComponent} from "./ProductsComponent";
 
 type ModeratorMenuProps = {
@@ -16,7 +20,7 @@ type ModeratorMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
   const link = getPrivateChannelLink();
   const presenterText = {
     set: "Set as a presenter",
@@ -36,7 +40,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         });
         break;
       case presenterText.unset:
-        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        eventChannel?.push("presenter_remove", {presenterTopic: link + participant.email});
         storageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
@@ -151,12 +155,13 @@ const Participant = ({client, participant, eventChannel}: ParticipantProps) => {
 type ParticipantsListProps = {
   client: Client;
   eventChannel: Channel | undefined;
+  webinarId: string;
 };
 
 type SidebarMode = "participants" | "products" | "chat"
 
 
-const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
+const SidebarList = ({client, eventChannel, webinarId}: ParticipantsListProps) => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [listMode, setListMode] = useState<SidebarMode>("products");
   const chatMessages = useChatMessages(eventChannel);
@@ -208,7 +213,7 @@ const SidebarList = ({client, eventChannel}: ParticipantsListProps) => {
           isBannedFromChat={isBannedFromChat}
         />
       )}
-      {listMode === "products" && <ProductsComponent/>}
+      {listMode === "products" && <ProductsComponent webinarId={webinarId}/>}
     </div>
   );
 };

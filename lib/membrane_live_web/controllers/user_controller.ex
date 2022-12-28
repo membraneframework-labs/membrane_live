@@ -12,18 +12,18 @@ defmodule MembraneLiveWeb.UserController do
   end
 
   def show(conn, params) do
-    get_with_callback(conn, params, &show_callback/2)
+    get_user_and_fire_callback(conn, params, &show_callback/2)
   end
 
   def update(conn, params) do
-    get_with_callback(conn, params, &update_callback/2)
+    get_user_and_fire_callback(conn, params, &update_callback/2)
   end
 
   def delete(conn, params) do
-    get_with_callback(conn, params, &delete_callback/2)
+    get_user_and_fire_callback(conn, params, &delete_callback/2)
   end
 
-  defp get_with_callback(
+  defp get_user_and_fire_callback(
          %{assigns: %{user_id: jwt_user_id}} = conn,
          %{"uuid" => uuid} = params,
          callback

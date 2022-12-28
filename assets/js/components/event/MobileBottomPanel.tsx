@@ -6,7 +6,8 @@ import useCheckScreenType from "../../utils/useCheckScreenType";
 
 type Props = {
   card: string;
-  onBarClick: () => void
+  onBarClick: () => void;
+  webinarId: string;
 }
 
 const selectAnimation = (card: string) => {
@@ -15,7 +16,7 @@ const selectAnimation = (card: string) => {
   return "SlideInAnimation"
 }
 
-export const MobileBottomPanel = ({onBarClick, card}: Props) => {
+export const MobileBottomPanel = ({onBarClick, card, webinarId}: Props) => {
   const {device} = useCheckScreenType();
 
   const animation = selectAnimation(card)
@@ -34,7 +35,7 @@ export const MobileBottomPanel = ({onBarClick, card}: Props) => {
 
 
       <div className="MobileBottomPanel--Content">
-        <ProductsComponent/>
+        <ProductsComponent webinarId={webinarId}/>
       </div>
     </div>
   )

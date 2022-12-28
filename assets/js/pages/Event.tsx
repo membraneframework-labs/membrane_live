@@ -110,9 +110,10 @@ const Event = () => {
           mode={mode}
           setMode={setMode}
           eventTitle={eventInfo.title}
+          webinarId={eventInfo.uuid}
         />
         {screenType.device == "desktop" &&
-          <SidebarList client={client} eventChannel={eventChannel}/>}
+          <SidebarList client={client} eventChannel={eventChannel} webinarId={eventInfo.uuid}/>}
       </div>
     </div>
   );
