@@ -9,6 +9,7 @@ defmodule MembraneLiveWeb.HLSController do
   @partial_update_timeout_ms 1000
   @manifest_update_timeout_ms 1000
 
+  @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(
         conn,
         %{
@@ -41,10 +42,10 @@ defmodule MembraneLiveWeb.HLSController do
     end
   end
 
-  def handle_partial_segment_request(
-        conn,
-        %{"event_id" => event_id, "filename" => segment_filename} = params
-      ) do
+  defp handle_partial_segment_request(
+         conn,
+         %{"event_id" => event_id, "filename" => segment_filename} = params
+       ) do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
     {offset, length} = parse_bytes_range(conn)
 
@@ -57,7 +58,7 @@ defmodule MembraneLiveWeb.HLSController do
     end
   end
 
-  def handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
+  defp handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
     path = Helpers.hls_output_path(prefix, filename)
 
@@ -142,7 +143,7 @@ defmodule MembraneLiveWeb.HLSController do
 
   defp await_segment_update(segment, offset, length) do
     receive do
-      {^segment, {^offset, ^length}} ->
+      {:segment_update, ^segment, {^offset, ^length}} ->
         :ok
     after
       @partial_update_timeout_ms ->
