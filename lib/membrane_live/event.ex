@@ -93,12 +93,9 @@ defmodule MembraneLive.Event do
       mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
       hls_mode: :muxed_av,
       broadcast_mode: :live,
-      # broadcast_mode: :vod
       manifest_module: Manifest,
       storage_function: fn directory ->
-        %FileStorage{
-          directory: directory
-        }
+        %FileStorage{directory: directory}
       end
     }
 
