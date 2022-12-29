@@ -17,6 +17,7 @@ defmodule MembraneLive.Event do
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.Chats
   alias MembraneLive.Event.Timer
+  alias MembraneLive.HLS.{FileStorage, Manifest}
   alias MembraneLive.Webinars
 
   @mix_env Mix.env()
@@ -90,7 +91,15 @@ defmodule MembraneLive.Event do
       target_window_duration: :infinity,
       segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
       mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
-      hls_mode: :muxed_av
+      hls_mode: :muxed_av,
+      broadcast_mode: :live,
+      # broadcast_mode: :vod
+      manifest_module: Manifest,
+      storage_function: fn directory ->
+        %FileStorage{
+          directory: directory
+        }
+      end
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)
