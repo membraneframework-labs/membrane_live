@@ -8,7 +8,7 @@ export const useProducts = (webinarId: string) => {
   useEffect(() => {
     let ignore = false;
     // const url = `http://localhost:4000/resources/webinars/${webinarId}/products`;
-    const url = `http://localhost:4000/resources/products`;
+    const url = `${window.location.origin}/resources/products`;
 
     axiosWithInterceptor
       .get(url)

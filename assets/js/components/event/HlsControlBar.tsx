@@ -22,7 +22,6 @@ import {
   Fullscreen,
 } from "react-swm-icon-pack";
 import "../../../css/event/hlscontrolbar.css";
-import { MobileRightSidebar } from "./MobileRightSidebar";
 
 const HlsControlBar = () => {
   return (
