@@ -12,15 +12,26 @@ type Props = {
   onBarClick: () => void;
   products: Product[];
   chatMessages: ChatMessage[];
+  isChatLoaded: boolean;
+  isBannedFromChat: boolean;
 };
 
 const selectAnimation = (card: string) => {
-  if (card === "HIDDEN") return "";
-  if (card === "HIDE") return "SlideOutAnimation";
+  if (card === "hidden") return "";
+  if (card === "hide") return "SlideOutAnimation";
   return "SlideInAnimation";
 };
 
-export const MobileBottomPanel = ({ onBarClick, card, client, products, chatMessages }: Props) => {
+export const MobileBottomPanel = ({
+  onBarClick,
+  card,
+  client,
+  products,
+  chatMessages,
+  eventChannel,
+  isChatLoaded,
+  isBannedFromChat,
+}: Props) => {
   const { device } = useCheckScreenType();
   const animation = selectAnimation(card);
 
@@ -36,14 +47,14 @@ export const MobileBottomPanel = ({ onBarClick, card, client, products, chatMess
       <div className="MobileBottomPanel--Header"></div>
 
       <div className="MobileBottomPanel--Content">
-        {card === "PRODUCTS" && <ProductsList products={products} />}
-        {card === "CHAT" && (
+        {card === "products" && <ProductsList products={products} />}
+        {card === "chat" && (
           <ChatBox
             client={client}
-            eventChannel={undefined}
+            eventChannel={eventChannel}
             messages={chatMessages}
-            isChatLoaded={true}
-            isBannedFromChat={false}
+            isChatLoaded={isChatLoaded}
+            isBannedFromChat={isBannedFromChat}
             isRecording={false}
           />
         )}

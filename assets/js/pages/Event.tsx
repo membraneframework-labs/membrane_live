@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Channel, Socket } from "phoenix";
-import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
+import { createPrivateChannel, createEventChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
   storageGetName,
@@ -15,7 +15,6 @@ import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, EventInfo, Mode, Toast, PresenterProposition } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
 import useCheckScreenType from "../utils/useCheckScreenType";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
@@ -26,6 +25,7 @@ import { redirectToHomePage } from "../utils/headerUtils";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { useProducts } from "../utils/useProducts";
+import type { Client, EventInfo, Mode, Toast, PresenterProposition, Participant } from "../types/types";
 import "../../css/event/event.css";
 
 const Event = () => {
@@ -42,6 +42,8 @@ const Event = () => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
   const products = useProducts(eventInfo.uuid);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
@@ -101,6 +103,12 @@ const Event = () => {
     }
   }, [client, eventChannel, privateChannel, socket, toast]);
 
+  useEffect(() => {
+    if (eventChannel) {
+      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
+    }
+  }, [client.email, eventChannel]);
+
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
@@ -118,6 +126,8 @@ const Event = () => {
             eventTitle={eventInfo.title}
             products={products}
             chatMessages={chatMessages}
+            isChatLoaded={isChatLoaded}
+            isBannedFromChat={isBannedFromChat}
           />
           {screenType.device == "desktop" && (
             <Sidebar
@@ -126,6 +136,8 @@ const Event = () => {
               isChatLoaded={isChatLoaded}
               chatMessages={chatMessages}
               products={products}
+              participants={participants}
+              isBannedFromChat={isBannedFromChat}
             />
           )}
         </div>

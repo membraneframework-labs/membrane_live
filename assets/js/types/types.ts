@@ -155,3 +155,5 @@ export type Product = {
   itemUrl: string;
   imageUrl: string;
 };
+
+export type Card = "hidden" | "hide" | "share" | "chat" | "products";

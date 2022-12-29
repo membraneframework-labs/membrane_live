@@ -1,9 +1,10 @@
+import type { Card } from "../../types/types";
 import "../../../css/event/mobilesidebars.css";
 
 type Button = { id: string; icon: string; text: string; onClick?: () => void };
 
 type Props = {
-  setCard: (name: string) => void;
+  setCard: (name: Card) => void;
 };
 
 export const MobileRightSidebar = ({ setCard }: Props) => {
@@ -12,19 +13,19 @@ export const MobileRightSidebar = ({ setCard }: Props) => {
       id: "share",
       icon: "/icons/share-nodes-regular.svg",
       text: "SHARE",
-      onClick: () => setCard("SHARE"),
+      onClick: () => setCard("share"),
     },
     {
       id: "chat",
       icon: "/icons/comments-regular.svg",
       text: "CHAT",
-      onClick: () => setCard("CHAT"),
+      onClick: () => setCard("chat"),
     },
     {
       id: "products",
       icon: "/icons/gifts-regular.svg",
       text: "PRODUCTS",
-      onClick: () => setCard("PRODUCTS"),
+      onClick: () => setCard("products"),
     },
   ];
 

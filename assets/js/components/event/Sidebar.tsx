@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
+import { getPrivateChannelLink, switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import type { Participant, Client, Product, ChatMessage } from "../../types/types";
 import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
 import ProductsList from "./ProductsList";
+import type { Participant, Client, Product, ChatMessage } from "../../types/types";
 import "../../../css/event/participants.css";
 
 type ModeratorMenuProps = {
@@ -162,18 +162,20 @@ type ParticipantsListProps = {
   isChatLoaded: boolean;
   chatMessages: ChatMessage[];
   products: Product[];
+  participants: Participant[];
+  isBannedFromChat: boolean;
 };
 
-const Sidebar = ({ client, eventChannel, isChatLoaded, chatMessages, products }: ParticipantsListProps) => {
-  const [participants, setParticipants] = useState<Participant[]>([]);
+const Sidebar = ({
+  client,
+  eventChannel,
+  isChatLoaded,
+  chatMessages,
+  products,
+  participants,
+  isBannedFromChat,
+}: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<SidebarMode>("products");
-  const [isBannedFromChat, setIsBannedFromChat] = useState(false);
-
-  useEffect(() => {
-    if (eventChannel) {
-      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
-    }
-  }, [client.email, eventChannel]);
 
   return (
     <div className="Participants">

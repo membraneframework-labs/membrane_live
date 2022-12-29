@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -7,14 +7,19 @@ import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import { StreamStartContext } from "../../utils/StreamStartContext";
 import { RotateLeft } from "react-swm-icon-pack";
-import { HlsConfig } from "hls.js";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage } from "../../types/types";
+import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, Card } from "../../types/types";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
+
+const config = {
+  liveSyncDurationCount: 2,
+  initialLiveManifestSize: 2,
+  backBufferLength: 30,
+};
 
 type StreamAreaProps = {
   client: Client;
@@ -25,20 +30,36 @@ type StreamAreaProps = {
   eventTitle: string;
   products: Product[];
   chatMessages: ChatMessage[];
+  isChatLoaded: boolean;
+  isBannedFromChat: boolean;
 };
 
 const StreamArea = (props: StreamAreaProps) => {
-  const { client, eventChannel, privateChannel, mode, setMode, eventTitle, products, chatMessages } = props;
+  const {
+    client,
+    eventChannel,
+    privateChannel,
+    mode,
+    setMode,
+    eventTitle,
+    products,
+    chatMessages,
+    isChatLoaded,
+    isBannedFromChat,
+  } = props;
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
-  const config = useRef<Partial<HlsConfig>>({
-    liveSyncDurationCount: 2,
-    initialLiveManifestSize: 2,
-    backBufferLength: 30,
-  });
-  const { attachVideo, setSrc } = useHls(true, false, config.current);
+  const { attachVideo, setSrc } = useHls(true, false, config);
   const screenType = useCheckScreenType();
   const { setStreamStart } = useContext(StreamStartContext);
+  const [card, setCard] = useState<Card>("hidden");
+
+  const switchAsking = useCallback(
+    (isAsking: boolean) => {
+      switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+    },
+    [eventChannel, client]
+  );
 
   const addHlsUrl = useCallback(
     (message: PlaylistPlayableMessage): void => {
@@ -69,15 +90,6 @@ const StreamArea = (props: StreamAreaProps) => {
     }
   }, [privateChannel, setMode]);
 
-  const [card, setCard] = useState<string>("HIDDEN");
-
-  const switchAsking = useCallback(
-    (isAsking: boolean) => {
-      switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
-    },
-    [eventChannel, client]
-  );
-
   return (
     <div className="StreamArea">
       {screenType.device == "desktop" && (
@@ -103,13 +115,16 @@ const StreamArea = (props: StreamAreaProps) => {
               </div>
             )}
             {screenType.device == "mobile" && (
-              <MobileHlsBar
-                client={client}
-                eventTitle={eventTitle}
-                amIPresenter={amIPresenter}
-                setMode={setMode}
-                switchAsking={switchAsking}
-              />
+              <>
+                <MobileRightSidebar setCard={setCard} />
+                <MobileHlsBar
+                  client={client}
+                  eventTitle={eventTitle}
+                  amIPresenter={amIPresenter}
+                  setMode={setMode}
+                  switchAsking={switchAsking}
+                />
+              </>
             )}
           </div>
         )}
@@ -121,15 +136,16 @@ const StreamArea = (props: StreamAreaProps) => {
           setMode={setMode}
         />
 
-        {screenType.device == "mobile" && <MobileRightSidebar setCard={setCard} />}
         {screenType.device == "mobile" && (
           <MobileBottomPanel
             eventChannel={eventChannel}
+            isChatLoaded={isChatLoaded}
+            isBannedFromChat={isBannedFromChat}
             client={client}
             products={products}
             chatMessages={chatMessages}
             card={card}
-            onBarClick={() => setCard("HIDE")}
+            onBarClick={() => setCard("hide")}
           />
         )}
       </div>
