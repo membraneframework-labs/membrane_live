@@ -1,7 +1,6 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
-import { StreamStartContext } from "./StreamStartContext";
 import axios from "axios";
 import type { AwaitingMessage, ChatMessage, RecievedMessage, MetasUser } from "../types/types";
 
@@ -9,12 +8,12 @@ const getTitle = (data: MetasUser | undefined) =>
   data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
 
 export const useChatMessages = (
-  eventChannel: Channel | undefined
+  eventChannel: Channel | undefined,
+  streamStart: Date | null
 ): { chatMessages: ChatMessage[]; isChatLoaded: boolean } => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoaded, setIsChatLoaded] = useState(false);
   const wasPrevChatRequested = useRef(false);
-  const { streamStart } = useContext(StreamStartContext);
   const presence = useRef<Presence>();
   const futureChatMessags = useRef<AwaitingMessage[]>([]);
 

@@ -40,7 +40,6 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
-  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
   const products = useProducts(eventInfo.uuid);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
@@ -48,6 +47,7 @@ const Event = () => {
   const screenType = useCheckScreenType();
   const [mode, setMode] = useState<Mode>("hls");
   const [streamStart, setStreamStart] = useState<Date | null>(null);
+  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel, streamStart);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();

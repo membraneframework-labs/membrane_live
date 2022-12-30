@@ -13,7 +13,7 @@ import { useToast } from "@chakra-ui/react";
 import type { Client, EventInfo } from "../types/types";
 import "../../css/recording/recording.css";
 
-const RecordingComponent = () => {
+const Recording = () => {
   const toast = useToast();
 
   const client: Client = {
@@ -29,7 +29,8 @@ const RecordingComponent = () => {
     backBufferLength: 30,
   });
   const { attachVideo, setSrc } = useHls(true, true, config.current);
-  const { chatMessages, isChatLoaded } = useChatMessages(undefined);
+  const [streamStart, setStreamStart] = useState<Date | null>(null);
+  const { chatMessages, isChatLoaded } = useChatMessages(undefined, streamStart);
 
   useEffect(() => {
     const splitUrl = window.location.pathname.split("/");
@@ -58,28 +59,20 @@ const RecordingComponent = () => {
         </div>
         {screenType.device == "desktop" && (
           <div className="Participants">
-            <ChatBox
-              client={client}
-              eventChannel={undefined}
-              messages={chatMessages}
-              isChatLoaded={isChatLoaded}
-              isBannedFromChat={false}
-              isRecording={true}
-            />
+            <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
+              <ChatBox
+                client={client}
+                eventChannel={undefined}
+                messages={chatMessages}
+                isChatLoaded={isChatLoaded}
+                isBannedFromChat={false}
+                isRecording={true}
+              />
+            </StreamStartContext.Provider>
           </div>
         )}
       </div>
     </div>
-  );
-};
-
-const Recording = () => {
-  const [streamStart, setStreamStart] = useState<Date | null>(null);
-
-  return (
-    <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
-      <RecordingComponent />
-    </StreamStartContext.Provider>
   );
 };
 
