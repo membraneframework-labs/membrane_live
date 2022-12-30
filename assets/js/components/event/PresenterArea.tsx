@@ -6,6 +6,7 @@ import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
+import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
 import type {
   User,
   Client,
@@ -16,7 +17,6 @@ import type {
   PresenterPropositionServer,
 } from "../../types/types";
 import "../../../css/event/presenterarea.css";
-import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
 
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;

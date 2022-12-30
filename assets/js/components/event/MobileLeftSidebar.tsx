@@ -1,5 +1,3 @@
-import React from "react";
-
 export const MobileLeftSidebar = () => {
   return (
     <div className="LeftStreamSidebar">

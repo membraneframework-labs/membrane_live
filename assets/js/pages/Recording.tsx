@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
 import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
@@ -7,9 +7,9 @@ import ChatBox from "../components/event/ChatBox";
 import { useChatMessages } from "../utils/useChatMessages";
 import { HlsConfig } from "hls.js";
 import { StreamStartContext } from "../utils/StreamStartContext";
-import useCheckScreenType from "../utils/useCheckScreenType";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
 import { useToast } from "@chakra-ui/react";
+import { ScreenTypeContext } from "../utils/ScreenTypeContext";
 import type { Client, EventInfo } from "../types/types";
 import "../../css/recording/recording.css";
 
@@ -22,7 +22,7 @@ const Recording = () => {
     isModerator: false,
     isAuthenticated: getIsAuthenticated(),
   };
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const config = useRef<Partial<HlsConfig>>({
     liveSyncDurationCount: 2,
     initialLiveManifestSize: 2,

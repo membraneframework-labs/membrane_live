@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger } from "@chakra-ui/react";
 import { MenuHorizontal } from "react-swm-icon-pack";
 import GenericButton from "./GenericButton";
 import { Mode } from "../../types/types";
 import { ModeButton } from "../event/ModePanel";
-import useCheckScreenType from "../../utils/useCheckScreenType";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 
 type MenuPopoverProps = {
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
@@ -13,7 +13,7 @@ type MenuPopoverProps = {
 };
 
 const MenuPopover = ({ setMode, className, children }: MenuPopoverProps) => {
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
 
   const switchMode = () => {
     setMode((mode) => (mode === "hls" ? "presenters" : "hls"));

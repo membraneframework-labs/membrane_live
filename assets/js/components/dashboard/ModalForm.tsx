@@ -1,16 +1,12 @@
 import { useState } from "react";
 import Modal from "react-modal";
-
 import { Cross } from "react-swm-icon-pack";
-
-import { EventFormInput, EventInfo, ModalForm } from "../../types/types";
 import EventForm, { initialEventFormInput } from "./EventForm";
 import GenericButton from "../helpers/GenericButton";
-
 import { useToast } from "@chakra-ui/react";
 import { getInfoToast, getErrorToast } from "../../utils/toastUtils";
 import { checkEventForm, sendEventForm } from "../../utils/dashboardUtils";
-
+import type { EventFormInput, EventInfo, ModalForm } from "../../types/types";
 import "../../../css/dashboard/modalform.css";
 
 const modalButtonTitle = { create: "Create new webinar", update: "Update" };

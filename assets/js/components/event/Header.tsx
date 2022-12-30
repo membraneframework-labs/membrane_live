@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
 import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
 import {
@@ -22,10 +22,10 @@ import { monthNames } from "../../utils/const";
 import { useNavigate } from "react-router-dom";
 import UserField from "../dashboard/UserField";
 import { Channel } from "phoenix";
-import useCheckScreenType from "../../utils/useCheckScreenType";
+import { cancelPresentingRequest, getPrivateChannelLink } from "../../utils/channelUtils";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import type { Client, EventInfo } from "../../types/types";
 import "../../../css/event/header.css";
-import { cancelPresentingRequest, getPrivateChannelLink } from "../../utils/channelUtils";
 
 type ArrowLeftPopoverProps = {
   eventChannel: Channel | undefined;
@@ -89,7 +89,7 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
 
   const [participantsNumber, setParticipantsNumber] = useState<number>(0);
   const navigate = useNavigate();
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
 
   useEffect(() => {
     if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];

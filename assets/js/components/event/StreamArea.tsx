@@ -4,15 +4,15 @@ import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
 import { useHls } from "../../utils/useHls";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 import { StreamStartContext } from "../../utils/StreamStartContext";
 import { RotateLeft } from "react-swm-icon-pack";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, Card } from "../../types/types";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
+import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, Card } from "../../types/types";
 import "../../../css/event/streamarea.css";
 
 const config = {
@@ -50,7 +50,7 @@ const StreamArea = (props: StreamAreaProps) => {
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const { attachVideo, setSrc } = useHls(true, false, config);
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const { setStreamStart } = useContext(StreamStartContext);
   const [card, setCard] = useState<Card>("hidden");
 

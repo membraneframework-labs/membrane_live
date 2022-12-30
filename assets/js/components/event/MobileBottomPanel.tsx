@@ -1,7 +1,8 @@
 import { Channel } from "phoenix";
 import ProductsList from "./ProductsList";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 import ChatBox from "./ChatBox";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import { useContext } from "react";
 import type { ChatMessage, Client, Product } from "../../types/types";
 import "../../../css/event/mobilebottompanel.css";
 
@@ -32,7 +33,7 @@ export const MobileBottomPanel = ({
   isChatLoaded,
   isBannedFromChat,
 }: Props) => {
-  const { device } = useCheckScreenType();
+  const { device } = useContext(ScreenTypeContext);
   const animation = selectAnimation(card);
 
   if (device !== "mobile") return null;

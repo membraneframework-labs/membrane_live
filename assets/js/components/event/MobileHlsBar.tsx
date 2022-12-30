@@ -1,12 +1,12 @@
 import { useToast } from "@chakra-ui/react";
-import React, { useState } from "react";
-import { Client, Mode } from "../../types/types";
+import React, { useContext, useState } from "react";
 import { UserPlus } from "react-swm-icon-pack";
 import { getInfoToast } from "../../utils/toastUtils";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 import GenericButton from "../helpers/GenericButton";
 import MenuPopover from "../helpers/MenuPopover";
 import { storageGetPresentingRequest, sessionStorageSetPresentingRequest } from "../../utils/storageUtils";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import type { Client, Mode } from "../../types/types";
 
 type MobileHlsBarProps = {
   client: Client;
@@ -19,7 +19,7 @@ type MobileHlsBarProps = {
 const MobileHlsBar = (props: MobileHlsBarProps) => {
   const { client, eventTitle, amIPresenter, setMode, switchAsking } = props;
   const toast = useToast();
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
 
   const [isAskingForPresenter, setIsAskingForPresenter] = useState<boolean>(storageGetPresentingRequest());
 

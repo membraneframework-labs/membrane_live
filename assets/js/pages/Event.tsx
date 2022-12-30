@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Channel, Socket } from "phoenix";
 import { createPrivateChannel, createEventChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
 import Header from "../components/event/Header";
@@ -16,7 +16,6 @@ import { useToast } from "@chakra-ui/react";
 import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
-import useCheckScreenType from "../utils/useCheckScreenType";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
 import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
@@ -25,6 +24,7 @@ import { redirectToHomePage } from "../utils/headerUtils";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { useProducts } from "../utils/useProducts";
+import { ScreenTypeContext } from "../utils/ScreenTypeContext";
 import type { Client, EventInfo, Mode, Toast, PresenterProposition, Participant } from "../types/types";
 import "../../css/event/event.css";
 
@@ -44,7 +44,7 @@ const Event = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const [mode, setMode] = useState<Mode>("hls");
   const [streamStart, setStreamStart] = useState<Date | null>(null);
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel, streamStart);

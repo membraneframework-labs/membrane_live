@@ -3,18 +3,23 @@ import Dashboard from "../pages/Dashboard";
 import Event from "../pages/Event";
 import Recording from "../pages/Recording";
 import { useDynamicResizing } from "../utils/reactUtils";
+import { ScreenTypeContext } from "../utils/ScreenTypeContext";
+import useCheckScreenType from "../utils/useCheckScreenType";
 
 const Router = () => {
   useDynamicResizing();
+  const screenType = useCheckScreenType();
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/event/*" element={<Event />} />
-        <Route path="/recordings/*" element={<Recording />} />
-      </Routes>
-    </BrowserRouter>
+    <ScreenTypeContext.Provider value={screenType}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/event/*" element={<Event />} />
+          <Route path="/recordings/*" element={<Recording />} />
+        </Routes>
+      </BrowserRouter>
+    </ScreenTypeContext.Provider>
   );
 };
 

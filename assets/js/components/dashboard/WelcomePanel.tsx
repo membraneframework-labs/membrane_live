@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { getIsAuthenticated, storageGetName, storageGetPicture } from "../../utils/storageUtils";
 import UserField from "./UserField";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 import MobileHeader from "./MobileHeader";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import type { CurrentEvents } from "../../types/types";
 import "../../../css/dashboard/welcomepanel.css";
 
@@ -15,7 +15,7 @@ const WelcomePanel = ({ currentEvents, setCurrentEvents }: WelcomePanelProps) =>
   const name = storageGetName();
   const picture = storageGetPicture();
   const isAuthenticated = getIsAuthenticated();
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
 
   return (
     <div className="WelcomePanel">

@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Plus, Minus, CalendarClock } from "react-swm-icon-pack";
-
-import { EventFormInput, EventInfo } from "../../types/types";
-
-import GenericButton from "../helpers/GenericButton";
-
-import "../../../css/dashboard/eventform.css";
 import { DESCRIPTION_CHAR_LIMIT, MILLISECONDS_IN_MINUTE } from "../../utils/const";
+import GenericButton from "../helpers/GenericButton";
+import type { EventFormInput, EventInfo } from "../../types/types";
+import "../../../css/dashboard/eventform.css";
 
 export const initialEventFormInput: EventFormInput = {
   title: "",

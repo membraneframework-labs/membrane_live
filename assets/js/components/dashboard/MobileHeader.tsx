@@ -1,10 +1,10 @@
 import React from "react";
 import MembraneLogo from "./MembraneLogo";
-import type { CurrentEvents } from "../../types/types";
 import GoogleButton from "../helpers/GoogleButton";
 import { roundedGoogleButton } from "../../utils/const";
 import { Logout } from "react-swm-icon-pack";
 import { logOut } from "../../utils/storageUtils";
+import type { CurrentEvents } from "../../types/types";
 import "../../../css/dashboard/welcomepanel.css";
 
 type MobileHeaderProps = {
