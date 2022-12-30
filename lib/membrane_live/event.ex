@@ -17,7 +17,7 @@ defmodule MembraneLive.Event do
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.Chats
   alias MembraneLive.Event.Timer
-  alias MembraneLive.HLS.{FileStorage, Manifest}
+  alias MembraneLive.HLS.FileStorage
   alias MembraneLive.Webinars
 
   @mix_env Mix.env()
@@ -93,7 +93,6 @@ defmodule MembraneLive.Event do
       mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
       hls_mode: :muxed_av,
       broadcast_mode: :live,
-      manifest_module: Manifest,
       storage_function: fn directory ->
         %FileStorage{directory: directory}
       end

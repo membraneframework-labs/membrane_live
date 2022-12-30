@@ -1,7 +1,7 @@
 defmodule MembraneLiveWeb.HLSController do
   use MembraneLiveWeb, :controller
 
-  alias MembraneLive.Helpers
+  alias MembraneLive.HLS.Helpers
   alias Phoenix.PubSub
   alias Plug
 
@@ -47,7 +47,7 @@ defmodule MembraneLiveWeb.HLSController do
          %{"event_id" => event_id, "filename" => segment_filename} = params
        ) do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
-    {offset, length} = parse_bytes_range(conn)
+    {offset, length} = conn |> get_req_header("range") |> Helpers.parse_bytes_range()
 
     case await_partial_segment(prefix, segment_filename, offset, length) do
       {:file, path} ->
@@ -104,18 +104,6 @@ defmodule MembraneLiveWeb.HLSController do
     end
   end
 
-  defp parse_bytes_range(%{req_headers: headers}) do
-    case Enum.find(headers, &match?({"range", _}, &1)) do
-      {"range", value} ->
-        "bytes=" <> range = value
-        [first, last] = range |> String.split("-") |> Enum.map(&String.to_integer(&1))
-        {first, last - first + 1}
-
-      nil ->
-        {0, :all}
-    end
-  end
-
   defp await_partial_segment(prefix, segment_filename, offset, length) do
     ["muxed", "segment", segment, rest] = segment_filename |> String.split("_")
     filename_without_extension = String.replace(rest, ".m4s", "")
@@ -128,7 +116,7 @@ defmodule MembraneLiveWeb.HLSController do
 
       [] ->
         segment_path = Helpers.hls_output_path(prefix, segment_filename)
-        segment_size = File.stat!(segment_path) |> Map.fetch!(:size)
+        segment_size = segment_path |> File.stat!() |> Map.fetch!(:size)
 
         if length != :all and segment_size < offset + length do
           PubSub.subscribe(MembraneLive.PubSub, filename_without_extension)
