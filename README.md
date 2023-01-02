@@ -13,7 +13,7 @@ To run the app locally it to have certain tools installed that is:
 - Docker
 - Rust
 
-Also you need to set environment variables. File `.env.sample` contains all required environment variables with example values.
+Also you need to set environment variables. File `.env.sample` contains all required environment variables with example values. Remember: having a valid google client id is also required.
 
 After setting all needed environment variables, you have to start a database. To do this you can use this command:
 
