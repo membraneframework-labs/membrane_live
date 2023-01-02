@@ -105,7 +105,21 @@ const StreamArea = (props: StreamAreaProps) => {
         {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
-              <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+              <>
+                <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+                {screenType.device == "mobile" && (
+                  <>
+                    <MobileRightSidebar setCard={setCard} />
+                    <MobileHlsBar
+                      client={client}
+                      eventTitle={eventTitle}
+                      amIPresenter={amIPresenter}
+                      setMode={setMode}
+                      switchAsking={switchAsking}
+                    />
+                  </>
+                )}
+              </>
             ) : (
               <div className="HlsStream">
                 <div className="WaitText">
@@ -113,18 +127,6 @@ const StreamArea = (props: StreamAreaProps) => {
                   Waiting for the live stream to start...
                 </div>
               </div>
-            )}
-            {screenType.device == "mobile" && (
-              <>
-                <MobileRightSidebar setCard={setCard} />
-                <MobileHlsBar
-                  client={client}
-                  eventTitle={eventTitle}
-                  amIPresenter={amIPresenter}
-                  setMode={setMode}
-                  switchAsking={switchAsking}
-                />
-              </>
             )}
           </div>
         )}

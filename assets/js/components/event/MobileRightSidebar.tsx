@@ -1,3 +1,7 @@
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import { useCallback, useContext } from "react";
+import { useToast } from "@chakra-ui/react";
+import { getInfoToast } from "../../utils/toastUtils";
 import type { Card } from "../../types/types";
 import "../../../css/event/mobilesidebars.css";
 
@@ -8,24 +12,38 @@ type Props = {
 };
 
 export const MobileRightSidebar = ({ setCard }: Props) => {
+  const { orientation } = useContext(ScreenTypeContext);
+  const toast = useToast();
+
+  const onButtonClick = useCallback(
+    (card: Card) => {
+      if (orientation === "portrait") {
+        setCard(card);
+      } else {
+        getInfoToast(toast, `Change your screen orientation to see ${card} panel`);
+      }
+    },
+    [orientation, setCard, toast]
+  );
+
   const buttons: Button[] = [
     {
       id: "share",
       icon: "/icons/share-nodes-regular.svg",
       text: "SHARE",
-      onClick: () => setCard("share"),
+      onClick: () => onButtonClick("share"),
     },
     {
       id: "chat",
       icon: "/icons/comments-regular.svg",
       text: "CHAT",
-      onClick: () => setCard("chat"),
+      onClick: () => onButtonClick("chat"),
     },
     {
       id: "products",
       icon: "/icons/gifts-regular.svg",
       text: "PRODUCTS",
-      onClick: () => setCard("products"),
+      onClick: () => onButtonClick("products"),
     },
   ];
 
