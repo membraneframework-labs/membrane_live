@@ -83,20 +83,19 @@ defmodule MembraneLiveWeb.HLSController do
     end
   end
 
-  defp partial_present_in_manifest?(prefix, filename, segment, partial) do
-    path = Helpers.hls_output_path(prefix, filename)
-    filename_without_extension = String.replace(filename, ".m3u8", "")
+  defp partial_present_in_manifest?(prefix, filename, target_segment, target_partial) do
+    {segment, partial} =
+      Helpers.hls_output_path(prefix, filename)
+      |> Helpers.read_manifest()
+      |> Helpers.get_last_partial()
 
-    segment_filename = "muxed_segment_#{segment}_#{filename_without_extension}.m4s"
-    partials = read_partials(path, segment_filename)
-
-    Enum.count(partials) >= partial
+    (segment == target_segment and partial >= target_partial) or segment > target_segment
   end
 
   defp await_manifest_update(target_segment, target_partial) do
     receive do
       {:manifest_update, segment, partial}
-      when segment >= target_segment and partial >= target_partial ->
+      when (segment == target_segment and partial >= target_partial) or segment > target_segment ->
         :ok
     after
       @manifest_update_timeout_ms ->
@@ -137,14 +136,6 @@ defmodule MembraneLiveWeb.HLSController do
       @partial_update_timeout_ms ->
         :error
     end
-  end
-
-  defp read_partials(path, segment_filename) do
-    search_str = "URI=\"#{segment_filename}\""
-
-    File.read!(path)
-    |> String.split("\n")
-    |> Enum.filter(&String.contains?(&1, search_str))
   end
 
   defp find_partial_in_ets(partial) do

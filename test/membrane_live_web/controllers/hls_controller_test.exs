@@ -20,7 +20,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
   describe "ll-hls partials" do
     test "playlist update", %{conn: conn} do
-      {segment, partial} = {0, 1}
+      {segment, partial} = {0, 0}
       get_task = Task.async(fn -> get_partial_playlist(conn, segment, partial) end)
 
       pubsub_subscribe()
@@ -37,7 +37,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
       {segment, partial} = {0, 5}
       {offset, length} = get_partial_offset_length(partial)
 
-      1..(partial - 1) |> Enum.each(&store_partial_segment(0, &1))
+      0..(partial - 1) |> Enum.each(&store_partial_segment(0, &1))
 
       get_task = Task.async(fn -> get_partial_segment(conn, segment, partial) end)
 
@@ -123,6 +123,6 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   end
 
   defp get_partial_offset_length(partial) do
-    {(partial - 1) * @mock_file_size, @mock_file_size}
+    {partial * @mock_file_size, @mock_file_size}
   end
 end

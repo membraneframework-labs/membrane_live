@@ -28,7 +28,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
   const [presenterName, setPresenterName] = useState<string>("");
   const config = useRef<Partial<HlsConfig>>({
     liveSyncDurationCount: 2,
-    initialLiveManifestSize: 2,
+    initialLiveManifestSize: 1,
     backBufferLength: 30,
   });
   const { attachVideo, setSrc } = useHls(true, false, config.current);

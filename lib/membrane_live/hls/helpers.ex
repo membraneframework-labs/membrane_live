@@ -37,17 +37,17 @@ defmodule MembraneLive.HLS.Helpers do
   def get_partial_number(playlist, segment_filename, target_offset) do
     search_str = "URI=\"#{segment_filename}\""
 
-    last_segment_no =
+    last_partial_no =
       playlist
       |> String.split("\n")
       |> Enum.filter(&String.contains?(&1, search_str))
-      |> Enum.with_index(1)
+      |> Enum.with_index()
       |> Enum.find_value(fn {partial, index} ->
         [length, offset] = get_partial_offset(partial)
         if target_offset == offset + length, do: index, else: nil
       end)
 
-    if last_segment_no, do: last_segment_no + 1, else: 1
+    if last_partial_no, do: last_partial_no + 1, else: 0
   end
 
   @spec get_last_partial(binary) :: {non_neg_integer, non_neg_integer}
@@ -59,7 +59,7 @@ defmodule MembraneLive.HLS.Helpers do
       |> Enum.reverse()
 
     if Enum.empty?(partial_tags) do
-      {0, 0}
+      {0, -1}
     else
       last_partial = hd(partial_tags)
 
@@ -73,7 +73,7 @@ defmodule MembraneLive.HLS.Helpers do
         |> Enum.filter(&String.contains?(&1, "muxed_segment_#{segment}"))
         |> Enum.count()
 
-      {segment, partial_count}
+      {segment, partial_count - 1}
     end
   end
 
