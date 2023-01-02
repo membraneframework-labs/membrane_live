@@ -133,6 +133,9 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
     );
   };
 
+  const isStartPresentingButtonVisible =
+    clientStatus === "idle" && peersState.peers[client.email]?.stream.getTracks().length > 0;
+
   return clientStatus != "not_presenter" ? (
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
       {clientStatus === "connected" ? (
@@ -158,7 +161,7 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
           rerender={rerender}
         />
       )}
-      {clientStatus === "idle" && (
+      {isStartPresentingButtonVisible && (
         <button className="StartPresentingButton" onClick={onPresenterReady}>
           Start presenting
         </button>
