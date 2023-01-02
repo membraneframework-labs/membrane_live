@@ -7,7 +7,13 @@ This repository contains a project created during the Summer Internship of 2022 
 
 ## Running app locally
 
-To run the app locally you need to set environment variables. File `.env.sample` contains all required environment variables with example values.
+To run the app locally it to have certain tools installed that is:
+
+- Elixir
+- Docker
+- Rust
+
+Also you need to set environment variables. File `.env.sample` contains all required environment variables with example values.
 
 After setting all needed environment variables, you have to start a database. To do this you can use this command:
 
