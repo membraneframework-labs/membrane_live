@@ -54,14 +54,14 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
   };
 
   return (
-    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.contents[0]}>
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.contents[0].offset}>
       {!isMyself ? (
         <p className="ChatterName">{`${message.name} ${message.title}`}</p>
       ) : (
         <p className="YourName">You</p>
       )}
       <div className="MessageCluster">
-        {message.contents.map((messageString, index) => getSingleMessage(messageString, index))}
+        {message.contents.map(({content: messageString}: {content: string}, index) => getSingleMessage(messageString, index))}
       </div>
     </div>
   );

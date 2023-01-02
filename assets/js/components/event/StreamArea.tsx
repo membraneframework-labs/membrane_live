@@ -31,7 +31,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
     initialLiveManifestSize: 2,
     backBufferLength: 30,
   });
-  const { attachVideo, setSrc } = useHls(true, false, config.current);
+  const { attachVideo, setSrc } = useHls(true, config.current);
   const screenType = useCheckScreenType();
   const { setStreamStart } = useContext(StreamStartContext);
 
@@ -80,7 +80,7 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
         {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
-              <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+              <HlsPlayer attachVideo={attachVideo} addMessage={undefined} presenterName={presenterName} eventChannel={eventChannel} />
             ) : (
               <div className="HlsStream">
                 <div className="WaitText">

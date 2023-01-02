@@ -3,10 +3,8 @@ import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 import axios from "axios";
-import type { AwaitingMessage, ChatMessage, RecievedMessage, MetasUser } from "../types/types";
-
-const getTitle = (data: MetasUser | undefined) =>
-  data ? (data.is_moderator ? "(moderator)" : data.is_presenter ? "(presenter)" : "") : "";
+import type { AwaitingMessage, ChatMessage } from "../types/types";
+import { appendToMessages, getTitle } from "./chatUtils";
 
 export const useChatMessages = (
   eventChannel: Channel | undefined
@@ -18,41 +16,15 @@ export const useChatMessages = (
   const presence = useRef<Presence>();
   const futureChatMessags = useRef<AwaitingMessage[]>([]);
 
-  const appentToChatMessages = useCallback((email: string, name: string, content: string) => {
-    setChatMessages((prev) => {
-      const last = prev[prev.length - 1];
-      if (last && last.email == email) last.contents.push(content);
-      else {
-        const data = getByKey(presence.current, email);
-        const newChatMessage: ChatMessage = {
-          id: last ? last.id + 1 : 0,
-          email: email,
-          name: name,
-          title: getTitle(data),
-          moderatedNo: 0, // number of hiddend messages counting from the start
-          contents: [content],
-        };
-        prev.push(newChatMessage);
-      }
-
-      return [...prev];
-    });
-  }, []);
-
   const addMessage = useCallback(
-    ({ email, name, content, offset }: RecievedMessage) => {
-      if (offset == 0 || (streamStart && new Date(streamStart.getTime() + offset) <= new Date())) {
-        appentToChatMessages(email, name, content);
+    (message: AwaitingMessage) => {
+      if (message.offset == 0 || (streamStart && new Date(streamStart.getTime() + message.offset) <= new Date())) {
+        setChatMessages((prev) => appendToMessages(prev, [message], presence.current));
       } else {
-        futureChatMessags.current.push({
-          email: email,
-          name: name,
-          content: content,
-          offset: offset,
-        });
+        futureChatMessags.current.push(message);
       }
     },
-    [appentToChatMessages, streamStart]
+    [streamStart]
   );
 
   const updateMessages = useCallback(() => {
@@ -89,7 +61,7 @@ export const useChatMessages = (
       const id = window.location.href.split("/").slice(-1)[0];
       axios
         .get(`${window.location.origin}/resources/chat/${id}`)
-        .then(({ data: { chats: prevChatMessages } }: { data: { chats: RecievedMessage[] } }) => {
+        .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
           prevChatMessages.forEach((message) => addMessage(message));
           setIsChatLoaded(true);
         })

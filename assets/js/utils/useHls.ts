@@ -4,7 +4,6 @@ import { StreamStartContext } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
-  setStartTimeLocally: boolean,
   hlsConfig?: Partial<HlsConfig>
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
@@ -59,10 +58,6 @@ export const useHls = (
           }
         }
       });
-
-      hls.current.once(Hls.Events.LEVEL_LOADED, () => {
-        if (setStartTimeLocally && setStreamStart) setStreamStart(new Date());
-      });
     };
 
     if (Hls.isSupported()) initHls();
@@ -70,7 +65,7 @@ export const useHls = (
     return () => {
       if (hls) hls.current.destroy();
     };
-  }, [attachVideo, autoPlay, hlsConfig, setStartTimeLocally, setStreamStart, src]);
+  }, [attachVideo, autoPlay, hlsConfig, setStreamStart, src]);
 
   return { attachVideo, setSrc };
 };
