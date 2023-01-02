@@ -3,13 +3,13 @@ defmodule MembraneLiveWeb.HLSController do
 
   alias MembraneLive.HLS.Helpers
   alias Phoenix.PubSub
-  alias Plug
+  alias Plug.Conn
 
   @ets_key :partial_segments
   @partial_update_timeout_ms 1000
   @manifest_update_timeout_ms 1000
 
-  @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
+  @spec index(Conn.t(), map) :: Conn.t()
   def index(
         conn,
         %{
@@ -23,22 +23,22 @@ defmodule MembraneLiveWeb.HLSController do
     segment = String.to_integer(segment)
     partial = String.to_integer(partial)
 
-    path = Helpers.hls_output_path(prefix, filename)
-
-    case wait_for_manifest(prefix, filename, segment, partial) do
-      :ok ->
-        conn |> Plug.Conn.send_file(200, path)
-
-      :error ->
-        conn |> Plug.Conn.send_resp(400, "File not found")
-    end
+    send_manifest(conn, prefix, filename, segment, partial)
   end
 
   def index(conn, %{"filename" => filename} = params) do
-    if String.match?(filename, ~r/\.m4s$/) do
-      handle_partial_segment_request(conn, params)
-    else
-      handle_other_file_request(conn, params)
+    cond do
+      filename == "index.m3u8" ->
+        handle_other_file_request(conn, params)
+
+      String.match?(filename, ~r/\.m3u8$/) ->
+        handle_playlist_request(conn, params)
+
+      String.match?(filename, ~r/\.m4s$/) ->
+        handle_partial_segment_request(conn, params)
+
+      true ->
+        handle_other_file_request(conn, params)
     end
   end
 
@@ -51,11 +51,18 @@ defmodule MembraneLiveWeb.HLSController do
 
     case await_partial_segment(prefix, segment_filename, offset, length) do
       {:file, path} ->
-        conn |> Plug.Conn.send_file(200, path, offset, length)
+        conn |> Conn.send_file(200, path, offset, length)
 
       {:ets, content} ->
-        conn |> Plug.Conn.send_resp(200, content)
+        conn |> Conn.send_resp(200, content)
     end
+  end
+
+  defp handle_playlist_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
+    prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
+
+    # Send manifest as soon as first segment is fully generated
+    send_manifest(conn, prefix, filename, 1, 0)
   end
 
   defp handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
@@ -63,23 +70,32 @@ defmodule MembraneLiveWeb.HLSController do
     path = Helpers.hls_output_path(prefix, filename)
 
     if File.exists?(path) do
-      conn |> Plug.Conn.send_file(200, path)
+      conn |> Conn.send_file(200, path)
     else
-      conn |> Plug.Conn.send_resp(404, "File not found")
+      conn |> Conn.send_resp(404, "File not found")
     end
   end
 
-  defp wait_for_manifest(prefix, filename, segment, partial) do
-    if partial_present_in_manifest?(prefix, filename, segment, partial) do
-      :ok
-    else
+  defp send_manifest(
+         conn,
+         prefix,
+         filename,
+         segment,
+         partial
+       ) do
+    unless partial_present_in_manifest?(prefix, filename, segment, partial) do
       filename_without_extension = String.replace(filename, ".m3u8", "")
       PubSub.subscribe(MembraneLive.PubSub, filename_without_extension)
 
       await_manifest_update(segment, partial)
       PubSub.unsubscribe(MembraneLive.PubSub, filename_without_extension)
+    end
 
-      if partial_present_in_manifest?(prefix, filename, segment, partial), do: :ok, else: :error
+    if partial_present_in_manifest?(prefix, filename, segment, partial) do
+      path = Helpers.hls_output_path(prefix, filename)
+      conn |> Conn.send_file(200, path)
+    else
+      conn |> Conn.send_resp(404, "File not found")
     end
   end
 
