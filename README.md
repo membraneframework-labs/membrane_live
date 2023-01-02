@@ -9,18 +9,28 @@ This repository contains a project created during the Summer Internship of 2022 
 
 To run the app locally you need to set environment variables. File `.env.sample` contains all required environment variables with example values.
 
-After setting all needed environment variables, you have to start a database. To do this you can use this command: 
+After setting all needed environment variables, you have to start a database. To do this you can use this command:
+
 ```sh
 docker-compose up membrane-live-db
 ```
 
 Next you have to initialize database with commands:
+
 ```sh
 mix ecto.create
 mix ecto.migrate
+mix run priv/repo/seeds.exs
+```
+
+or simply with
+
+```sh
+mix ecto.setup
 ```
 
 On the end you can start phoenix app:
+
 ```sh
 mix phx.server
 ```
