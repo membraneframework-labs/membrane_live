@@ -54,7 +54,7 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
   };
 
   return (
-    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.contents[0].offset}>
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`}>
       {!isMyself ? (
         <p className="ChatterName">{`${message.name} ${message.title}`}</p>
       ) : (
