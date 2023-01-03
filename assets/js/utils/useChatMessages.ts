@@ -3,25 +3,26 @@ import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 import axios from "axios";
-import type { AwaitingMessage, ChatMessage } from "../types/types";
 import { appendToMessages, getTitle } from "./chatUtils";
+import type { AwaitingMessage, ChatMessage } from "../types/types";
+
+const MESSAGE_INTERVAL = 1000;
 
 export const useChatMessages = (
   eventChannel: Channel | undefined
 ): { chatMessages: ChatMessage[]; isChatLoaded: boolean } => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoaded, setIsChatLoaded] = useState(false);
-  const wasPrevChatRequested = useRef(false);
   const { streamStart } = useContext(StreamStartContext);
   const presence = useRef<Presence>();
-  const futureChatMessags = useRef<AwaitingMessage[]>([]);
+  const futureChatMessages = useRef<AwaitingMessage[]>([]);
 
   const addMessage = useCallback(
     (message: AwaitingMessage) => {
       if (message.offset == 0 || (streamStart && new Date(streamStart.getTime() + message.offset) <= new Date())) {
         setChatMessages((prev) => appendToMessages(prev, [message], presence.current));
       } else {
-        futureChatMessags.current.push(message);
+        futureChatMessages.current.push(message);
       }
     },
     [streamStart]
@@ -49,24 +50,29 @@ export const useChatMessages = (
       return changed ? [...prev] : prev;
     });
 
-    futureChatMessags.current.filter((chatMessage) => {
+    futureChatMessages.current.filter((chatMessage) => {
       const data = getByKey(presence.current, chatMessage.email);
       return data && !data.is_banned_from_chat;
     });
   }, []);
 
   useEffect(() => {
-    if (!wasPrevChatRequested.current) {
-      wasPrevChatRequested.current = true;
-      const id = window.location.href.split("/").slice(-1)[0];
-      axios
-        .get(`${window.location.origin}/resources/chat/${id}`)
-        .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
+    let ignore = false;
+
+    const id = window.location.href.split("/").slice(-1)[0];
+    axios
+      .get(`${window.location.origin}/resources/chat/${id}`)
+      .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
+        if (!ignore) {
           prevChatMessages.forEach((message) => addMessage(message));
           setIsChatLoaded(true);
-        })
-        .catch((error) => console.log("Fetching previous chat messages failed: ", error));
-    }
+        }
+      })
+      .catch((error) => console.log("Fetching previous chat messages failed: ", error));
+
+    return () => {
+      ignore = true;
+    };
   }, [addMessage]);
 
   useEffect(() => {
@@ -82,7 +88,7 @@ export const useChatMessages = (
     const interval = setInterval(() => {
       if (streamStart) {
         const curDate = new Date();
-        futureChatMessags.current = futureChatMessags.current.filter((message) => {
+        futureChatMessages.current = futureChatMessages.current.filter((message) => {
           if (new Date(streamStart.getTime() + message.offset) <= curDate) {
             addMessage({ email: message.email, name: message.name, content: message.content, offset: 0 });
             return false;
@@ -90,7 +96,7 @@ export const useChatMessages = (
           return true;
         });
       }
-    }, 1000);
+    }, MESSAGE_INTERVAL);
 
     return () => {
       if (eventChannel) eventChannel.off("chat_message");

@@ -16,7 +16,7 @@ const config = {
   liveSyncDurationCount: 2,
   initialLiveManifestSize: 2,
   backBufferLength: 30,
-}
+};
 
 const RecordingComponent = () => {
   const toast = useToast();
@@ -28,7 +28,7 @@ const RecordingComponent = () => {
     isAuthenticated: getIsAuthenticated(),
   };
   const screenType = useCheckScreenType();
-  const { recordingChatMessages, addMessage } = useRecordingChatMessages();
+  const { chatMessages, isChatLoaded, addMessage } = useRecordingChatMessages();
   const { attachVideo, setSrc } = useHls(true, config);
 
   useEffect(() => {
@@ -61,8 +61,8 @@ const RecordingComponent = () => {
             <ChatBox
               client={client}
               eventChannel={undefined}
-              messages={recordingChatMessages}
-              isChatLoaded={true}
+              messages={chatMessages}
+              isChatLoaded={isChatLoaded}
               isBannedFromChat={false}
               isRecording={true}
             />

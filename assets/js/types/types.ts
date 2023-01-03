@@ -115,7 +115,7 @@ export type ChatMessage = {
   name: string;
   title: string;
   moderatedNo: number;
-  contents: {content: string, offset: number}[];
+  contents: { content: string; offset: number }[];
 };
 
 export type AwaitingMessage = {

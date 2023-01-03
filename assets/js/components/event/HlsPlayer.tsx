@@ -31,9 +31,9 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
     }
 
     return () => {
-      playerRefCopy.current?.removeEventListener("timeupdate", onTimeUpdate)
-    }
-  }, [addMessage])
+      playerRefCopy.current?.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  }, [addMessage]);
 
   return (
     <div className="HlsStream">
