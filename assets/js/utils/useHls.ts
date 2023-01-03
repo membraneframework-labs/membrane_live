@@ -10,7 +10,7 @@ export const useHls = (
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
 } => {
-  const [src, setSrc] = useState<string>("");
+  const [src, setSrc] = useState<string>("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
   const { setStreamStart } = useContext(StreamStartContext);

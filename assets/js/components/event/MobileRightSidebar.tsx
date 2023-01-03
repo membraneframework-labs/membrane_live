@@ -31,7 +31,7 @@ export const MobileRightSidebar = ({ setCard }: Props) => {
       id: "share",
       icon: "/icons/share-nodes-regular.svg",
       text: "SHARE",
-      onClick: () => onButtonClick("share"),
+      onClick: () => {},
     },
     {
       id: "chat",

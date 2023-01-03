@@ -1,23 +1,16 @@
-import { Product } from "../../types/types";
+import {Product} from "../../types/types";
+import ProductGenericComponent from "./ProductGenericComponent";
 
 type ProductsListProps = {
   products: Product[];
 };
 
-const ProductsList = ({ products }: ProductsListProps) => {
+const ProductsList = ({products}: ProductsListProps) => {
   return (
     <div className="ProductList">
       {products.map((product) => (
         <a key={product.id} href={product.itemUrl} target="_blank" rel="noreferrer">
-          <div className="Product">
-            <div className="ProductHeader">
-              <span className="ProductPrice">{product.price}</span>
-            </div>
-            <img src={product.imageUrl} alt={product.name} />
-            <div className="ProductFooter">
-              <span className="">{product.name}</span>
-            </div>
-          </div>
+          <ProductGenericComponent product={product}/>
         </a>
       ))}
     </div>

@@ -5,6 +5,7 @@ import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { useContext } from "react";
 import type { ChatMessage, Client, Product } from "../../types/types";
 import "../../../css/event/mobilebottompanel.css";
+import {useWebinarProducts} from "../../utils/useWebinarProducts";
 
 type Props = {
   card: string;
@@ -38,8 +39,6 @@ export const MobileBottomPanel = ({
 
   if (device !== "mobile") return null;
   return (
-    // <div className={`MobileBottomPanel ${card ? "SlideInAnimation" : "SlideOutAnimation"}`}>
-    // <div className={`MobileBottomPanel`}>
     <div className={`MobileBottomPanel ${animation}`}>
       <div className="MobileBottomPanel--TopBar">
         <div className="MobileBottomPanel--TopBar--Bar" onClick={onBarClick} />

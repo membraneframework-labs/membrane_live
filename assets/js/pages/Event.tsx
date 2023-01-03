@@ -1,32 +1,43 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Channel, Socket } from "phoenix";
-import { createPrivateChannel, createEventChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
+import {useContext, useEffect, useRef, useState} from "react";
+import {Channel, Socket} from "phoenix";
+import {
+  createEventChannel,
+  createPrivateChannel,
+  getChannelId,
+  syncEventChannel
+} from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
-  storageGetName,
-  storageGetAuthToken,
-  sessionStorageGetIsPresenter,
-  storageGetEmail,
-  sessionStorageGetName,
   getIsAuthenticated,
+  sessionStorageGetIsPresenter,
+  sessionStorageGetName,
+  storageGetAuthToken,
+  storageGetEmail,
+  storageGetName,
   storageGetPresentingRequest,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
-import { useToast } from "@chakra-ui/react";
-import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
-import { useNavigate } from "react-router-dom";
+import {useToast} from "@chakra-ui/react";
+import {lastPersonPopup, presenterPopup} from "../utils/toastUtils";
+import {useNavigate} from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
-import { getEventInfo, initEventInfo } from "../utils/headerUtils";
-import { pageTitlePrefix } from "../utils/const";
+import {getEventInfo, initEventInfo, redirectToHomePage} from "../utils/headerUtils";
+import {pageTitlePrefix} from "../utils/const";
 import axiosWithInterceptor from "../services";
-import { StreamStartContext } from "../utils/StreamStartContext";
-import { redirectToHomePage } from "../utils/headerUtils";
+import {StreamStartContext} from "../utils/StreamStartContext";
 import Sidebar from "../components/event/Sidebar";
-import { useChatMessages } from "../utils/useChatMessages";
-import { useProducts } from "../utils/useProducts";
-import { ScreenTypeContext } from "../utils/ScreenTypeContext";
-import type { Client, EventInfo, Mode, Toast, PresenterProposition, Participant } from "../types/types";
+import {useChatMessages} from "../utils/useChatMessages";
+import {ScreenTypeContext} from "../utils/ScreenTypeContext";
+import type {
+  Client,
+  EventInfo,
+  Mode,
+  Participant,
+  PresenterProposition,
+  Toast
+} from "../types/types";
 import "../../css/event/event.css";
+import {useWebinarProducts} from "../utils/useWebinarProducts";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -40,14 +51,16 @@ const Event = () => {
   const [eventChannel, setEventChannel] = useState<Channel>();
   const [privateChannel, setPrivateChannel] = useState<Channel>();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
-  const products = useProducts(eventInfo.uuid);
+
+  const {products, addProduct, removeProduct} = useWebinarProducts(eventInfo.uuid);
+
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   const screenType = useContext(ScreenTypeContext);
   const [mode, setMode] = useState<Mode>("hls");
   const [streamStart, setStreamStart] = useState<Date | null>(null);
-  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel, streamStart);
+  const {chatMessages, isChatLoaded} = useChatMessages(eventChannel, streamStart);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -63,13 +76,13 @@ const Event = () => {
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
         ? axiosWithInterceptor.get("/me").then(() => {
-            return {
-              token: storageGetAuthToken(),
-              presenter: sessionStorageGetIsPresenter(),
-              requestPresenting: storageGetPresentingRequest(),
-            };
-          })
-        : Promise.resolve({ username: client.name });
+          return {
+            token: storageGetAuthToken(),
+            presenter: sessionStorageGetIsPresenter(),
+            requestPresenting: storageGetPresentingRequest(),
+          };
+        })
+        : Promise.resolve({username: client.name});
 
       promise.then((msg) => {
         const channel = socket.current.channel(`event:${getChannelId()}`, msg);
@@ -113,9 +126,10 @@ const Event = () => {
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
       {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
-        <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
+        <Header client={client} eventChannel={eventChannel} isRecording={false}
+                eventInfo={eventInfo}/>
       )}
-      <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
+      <StreamStartContext.Provider value={{streamStart, setStreamStart}}>
         <div className="MainGrid">
           <StreamArea
             client={client}
@@ -131,11 +145,14 @@ const Event = () => {
           />
           {screenType.device == "desktop" && (
             <Sidebar
+              eventId={eventInfo.uuid}
               client={client}
               eventChannel={eventChannel}
               isChatLoaded={isChatLoaded}
               chatMessages={chatMessages}
               products={products}
+              addProduct={addProduct}
+              removeProduct={removeProduct}
               participants={participants}
               isBannedFromChat={isBannedFromChat}
             />

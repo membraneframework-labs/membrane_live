@@ -1,13 +1,19 @@
-import React, { useState } from "react";
-import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { getPrivateChannelLink, switchAskingForBeingPresenter } from "../../utils/channelUtils";
-import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
-import { Channel } from "phoenix";
+import React, {useState} from "react";
+import {Menu, MenuButton, MenuItem, MenuList, Tooltip} from "@chakra-ui/react";
+import {getPrivateChannelLink, switchAskingForBeingPresenter} from "../../utils/channelUtils";
+import {Crown1, MenuVertical, QuestionCircle, Star1, User1} from "react-swm-icon-pack";
+import {Channel} from "phoenix";
 import ChatBox from "./ChatBox";
-import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
+import {
+  sessionStorageSetPresentingRequest,
+  sessionStorageUnsetIsPresenter
+} from "../../utils/storageUtils";
 import ProductsList from "./ProductsList";
-import type { Participant, Client, Product, ChatMessage } from "../../types/types";
+import type {ChatMessage, Client, Participant, Product} from "../../types/types";
 import "../../../css/event/participants.css";
+import ProductComponent, {ProductWithStatus} from "./ProductComponent";
+import {groupBy} from "../../utils/collectionUtils";
+import {useAllProductsQuery, useIsProductMutating} from "../../utils/useWebinarProducts";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -15,7 +21,7 @@ type ModeratorMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: ModeratorMenuProps) => {
+const ModeratorMenu = ({moderatorClient, participant, eventChannel}: ModeratorMenuProps) => {
   const link = getPrivateChannelLink();
   const presenterText = {
     setBasic: "Set as a presenter",
@@ -39,14 +45,14 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         });
         break;
       case presenterText.unset:
-        eventChannel?.push("presenter_remove", { presenterTopic: link + participant.email });
+        eventChannel?.push("presenter_remove", {presenterTopic: link + participant.email});
         sessionStorageUnsetIsPresenter();
         break;
       case banFromChatText.ban:
-        eventChannel?.push("ban_from_chat", { email: participant.email });
+        eventChannel?.push("ban_from_chat", {email: participant.email});
         break;
       case banFromChatText.unban:
-        eventChannel?.push("unban_from_chat", { email: participant.email });
+        eventChannel?.push("unban_from_chat", {email: participant.email});
         break;
     }
   };
@@ -54,7 +60,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton" />
+        <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
         {participant.isAuth && participant.isPresenter ? (
@@ -90,7 +96,7 @@ type ClientParticipantMenuProps = {
   eventChannel: Channel | undefined;
 };
 
-const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantMenuProps) => {
+const ClientParticipantMenu = ({participant, eventChannel}: ClientParticipantMenuProps) => {
   const askText = "Ask to become a presenter";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -105,7 +111,7 @@ const ClientParticipantMenu = ({ participant, eventChannel }: ClientParticipantM
   return (
     <Menu>
       <MenuButton ml={"auto"} area-label="Options">
-        <MenuVertical className="OptionButton" />
+        <MenuVertical className="OptionButton"/>
       </MenuButton>
       <MenuList>
         <MenuItem onClick={handleClick} value={text} className="MenuOptionText">
@@ -122,13 +128,13 @@ type ParticipantProps = {
   eventChannel: Channel | undefined;
 };
 
-const Participant = ({ client, participant, eventChannel }: ParticipantProps) => {
+const Participant = ({client, participant, eventChannel}: ParticipantProps) => {
   const icon = participant.isModerator ? (
-    <Crown1 className="ParticipantIcon" />
+    <Crown1 className="ParticipantIcon"/>
   ) : participant.isPresenter ? (
-    <Star1 className="ParticipantIcon" />
+    <Star1 className="ParticipantIcon"/>
   ) : (
-    <User1 className="ParticipantIcon" />
+    <User1 className="ParticipantIcon"/>
   );
   const role = participant.isModerator ? "Moderator" : participant.isPresenter ? "Presenter" : "Participant";
 
@@ -143,39 +149,57 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
       <p className="ParticipantText">{participant.name}</p>
       {participant.isRequestPresenting && (client.isModerator || isMyself) && (
         <Tooltip label={"This user is asking to become a presenter"} className="InfoTooltip">
-          <QuestionCircle className="ParticipantIcon" />
+          <QuestionCircle className="ParticipantIcon"/>
         </Tooltip>
       )}
       {client.isModerator && (
         <ModeratorMenu moderatorClient={client} eventChannel={eventChannel} participant={participant} />
       )}
-      {isMyselfParticipant && <ClientParticipantMenu eventChannel={eventChannel} participant={participant} />}
+      {isMyselfParticipant && <ClientParticipantMenu eventChannel={eventChannel} participant={participant}/>}
     </div>
   );
 };
 
-type SidebarMode = "participants" | "products" | "chat";
+type SidebarMode = "participants" | "products" | "chat" | "select-products";
 
 type ParticipantsListProps = {
   client: Client;
   eventChannel: Channel | undefined;
   isChatLoaded: boolean;
   chatMessages: ChatMessage[];
+  addProduct: (id: string) => void;
+  removeProduct: (id: string) => void;
   products: Product[];
+  eventId: string,
   participants: Participant[];
   isBannedFromChat: boolean;
 };
 
+export const addStatus = (all: Product[], productsMap: Record<string, Product[]>): ProductWithStatus[] => all.map((product) => ({
+  ...product,
+  status: productsMap[product.id] ? "SELECTED" : "NOT-SELECTED"
+}));
+
 const Sidebar = ({
-  client,
-  eventChannel,
-  isChatLoaded,
-  chatMessages,
-  products,
-  participants,
-  isBannedFromChat,
-}: ParticipantsListProps) => {
+                   client,
+                   eventChannel,
+                   isChatLoaded,
+                   chatMessages,
+                   products,
+                   addProduct,
+                   removeProduct,
+                   participants,
+                   isBannedFromChat,
+                   eventId
+                 }: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<SidebarMode>("products");
+  const isMutating = useIsProductMutating()
+
+  const productsMap: Record<string, Product[]> = groupBy(products, (product) => product.id)
+
+  const allProductsQuery = useAllProductsQuery(client.isModerator)
+  const all: Product[] = (allProductsQuery?.data?.data?.products || [])
+  const productsWithStatus: ProductWithStatus[] = addStatus(all, productsMap)
 
   return (
     <div className="Participants">
@@ -201,6 +225,13 @@ const Sidebar = ({
         >
           Products
         </button>
+        {client.isModerator && <button
+          className={`ParticipantsButton ${listMode === "select-products" && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode("select-products")}
+        >
+          Select products
+        </button>}
       </div>
       {listMode === "participants" && (
         <div className="ParticipantsList">
@@ -224,7 +255,18 @@ const Sidebar = ({
           isRecording={false}
         />
       )}
-      {listMode === "products" && <ProductsList products={products} />}
+      {listMode === "products" && <ProductsList products={products}/>}
+      {listMode === "select-products" && client.isModerator &&
+        <div className="ProductList">
+          {productsWithStatus.map((product) => (
+            <ProductComponent
+              key={product.id}
+              product={product}
+              add={addProduct}
+              remove={removeProduct}
+              isLoading={isMutating}/>
+          ))}
+        </div>}
     </div>
   );
 };
