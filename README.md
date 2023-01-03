@@ -15,6 +15,8 @@ To run the app locally it to have certain tools installed that is:
 
 Also you need to set environment variables. File `.env.sample` contains all required environment variables with example values. Remember: having a valid google client id is also required.
 
+For valid WebRTC connection follow instructions given at [Membrane Videoroom GitHub repository](https://github.com/membraneframework/membrane_videoroom).
+
 After setting all needed environment variables, you have to start a database. To do this you can use this command:
 
 ```sh
