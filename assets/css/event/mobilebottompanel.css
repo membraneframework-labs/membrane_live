@@ -39,7 +39,6 @@
 .SlideInAnimation {
   animation-duration: 1s;
   animation-name: slideIn;
-  /*bottom: 0;*/
   animation-timing-function: ease;
   animation-fill-mode: forwards;
 }

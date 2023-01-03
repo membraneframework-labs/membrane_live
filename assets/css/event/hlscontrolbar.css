@@ -58,31 +58,3 @@
   stroke: white;
   fill: transparent;
 }
-
-.LeftStreamIcons {
-  width: 50px;
-  height: 50px;
-  background-color: blue;
-  position: absolute;
-  z-index: 1000;
-  left: 0;
-}
-
-.RightStreamIcons {
-  width: 50px;
-  height: 50px;
-  background-color: yellow;
-  position: absolute;
-  z-index: 1000;
-  right: 0;
-}
-
-.MediaPlayerButtonSection {
-  width: 50px;
-  height: 50px;
-  background-color: blue;
-  position: absolute;
-  z-index: 1000;
-  right: 0;
-}
-

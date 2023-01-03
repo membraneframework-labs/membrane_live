@@ -102,7 +102,7 @@ const StreamArea = (props: StreamAreaProps) => {
         />
       )}
       <div className="Stream">
-        {mode == "hls" && (
+        {mode == "hls" || true && (
           <div className="HlsDiv">
             {presenterName ? (
               <>
