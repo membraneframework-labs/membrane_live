@@ -2,7 +2,6 @@
   position: fixed;
   z-index: 1000;
   width: 100%;
-  /*height: 50vh;*/
   background-color: white;
 
   border-radius: 16px;
@@ -20,7 +19,6 @@
   justify-content: center;
   height: 16px;
   width: 100%;
-  /*background-color: #00a000;*/
 }
 
 .MobileBottomPanel--TopBar--Bar {
@@ -60,7 +58,6 @@
   animation-duration: 1s;
   animation-name: slideOut;
   animation-fill-mode: forwards;
-  /*bottom: -60vh;*/
 }
 
 @keyframes slideOut {

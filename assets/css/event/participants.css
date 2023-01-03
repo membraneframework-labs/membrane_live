@@ -88,33 +88,16 @@
   grid-gap: 1em;
   overflow: auto;
   width: 100%;
-  /*flex-grow: 1;*/
-
-  /*display: grid;*/
-  /*grid-template-columns: 150px 150px;*/
-  /*grid-gap: 1rem;*/
-  /*overflow: auto;*/
-
-  /*display: flex;*/
-  /*overflow: auto;*/
-  /*flex-wrap: wrap;*/
-  /*justify-content: space-evenly;*/
-  /*row-gap: 16px;*/
 }
 
 .Product {
   box-sizing: border-box;
-  /*width: 100%;*/
   width: 150px;
-  /*border-color: black;*/
-  /*border-width: 1px;*/
   background-color: white;
   aspect-ratio: 1/1;
   position: relative;
   border-radius: 8px;
   border: 1px solid var(--bg-light-color-3);
-  /*margin: 16px;*/
-  /*flex-grow: 1*/
 }
 
 .ProductHeader {
@@ -127,9 +110,6 @@
 }
 
 .ProductPrice {
-  /*position: absolute;*/
-  /*top: 0;*/
-  /*right: 0;*/
   color: white;
   background-color: black;
   padding: 4px;

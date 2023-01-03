@@ -35,7 +35,6 @@
 
 .MediaTimeRange {
   flex-grow: 1;
-  /*width: 90%;*/
   --media-range-track-height: 0.6rem;
   --media-range-thumb-height: 1.2rem;
   --media-range-thumb-width: 1.2rem;
@@ -45,7 +44,6 @@
 }
 
 .MediaTimeDisplay {
-  /*width: max(10%, 100px);*/
 }
 
 .MediaVolumeRange {
@@ -80,16 +78,6 @@
 }
 
 .MediaPlayerButtonSection {
-  /*width: 50px;*/
-  /*height: 50px;*/
-  /*background-color: red;*/
-  /*display: flex;*/
-  /*flex-direction: row;*/
-  /*align-items: flex-end;*/
-  /*justify-content: space-between;*/
-  /*position: absolute;*/
-  /*top: 0;*/
-
   width: 50px;
   height: 50px;
   background-color: blue;
@@ -98,5 +86,3 @@
   right: 0;
 }
 
-.PlayerSidebarLeft {
-}

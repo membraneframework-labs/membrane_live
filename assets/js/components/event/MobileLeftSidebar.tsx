@@ -1,7 +1,7 @@
 export const MobileLeftSidebar = () => {
   return (
     <div className="LeftStreamSidebar">
-      <div className="PlayerSidebarLeft">
+      <div>
         <img className={`SocialMediaButtonLayerIcon`} src={"/icons/heart-regular.svg"} alt={" button"} />
       </div>
     </div>

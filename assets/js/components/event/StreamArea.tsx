@@ -64,24 +64,24 @@ const StreamArea = (props: StreamAreaProps) => {
   const addHlsUrl = useCallback(
     (message: PlaylistPlayableMessage): void => {
       const link = window.location.href.split("event")[0] + "video/";
-      // if (message.playlist_idl) {
-      //   setSrc(`${link}${message.playlist_idl}/index.m3u8`);
-      //   setPresenterName(message.name);
-      // } else {
-      //   setSrc("");
-      //   setPresenterName("");
-      // }
+      if (message.playlist_idl) {
+        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
+        setPresenterName(message.name);
+      } else {
+        setSrc("");
+        setPresenterName("");
+      }
       if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
     },
     [setSrc, setStreamStart]
   );
 
   useEffect(() => {
-    // if (eventChannel) {
-    //   eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
-    //   eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
-    //   syncAmIPresenter(eventChannel, setAmIPresenter, client);
-    // }
+    if (eventChannel) {
+      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
+      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      syncAmIPresenter(eventChannel, setAmIPresenter, client);
+    }
   }, [addHlsUrl, client, eventChannel]);
 
   useEffect(() => {
@@ -102,9 +102,9 @@ const StreamArea = (props: StreamAreaProps) => {
         />
       )}
       <div className="Stream">
-        {true && (
+        {mode == "hls" && (
           <div className="HlsDiv">
-            {"presenterName" ? (
+            {presenterName ? (
               <>
                 <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
                 {screenType.device == "mobile" && (
