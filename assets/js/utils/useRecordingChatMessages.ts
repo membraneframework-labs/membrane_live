@@ -11,6 +11,7 @@ export const useRecordingChatMessages = (): {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoaded, setIsChatLoaded] = useState(false);
   const chatMessagesStack = useRef<AwaitingMessage[]>([]);
+  const requestedPreviousMessages = useRef(false);
 
   const removeFromMessages = useCallback((prev: ChatMessage[], offset: number) => {
     const messagesToRemove: AwaitingMessage[] = [];
@@ -48,22 +49,17 @@ export const useRecordingChatMessages = (): {
   );
 
   useEffect(() => {
-    let ignore = false;
-
-    const id = window.location.href.split("/").slice(-1)[0];
-    axios
-      .get(`${window.location.origin}/resources/chat/${id}`)
-      .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
-        if (!ignore) {
+    if (!requestedPreviousMessages.current) {
+      requestedPreviousMessages.current = true;
+      const id = window.location.href.split("/").slice(-1)[0];
+      axios
+        .get(`${window.location.origin}/resources/chat/${id}`)
+        .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
           chatMessagesStack.current = prevChatMessages.reverse();
           setIsChatLoaded(true);
-        }
-      })
-      .catch((error) => console.error("Fetching previous chat messages failed: ", error));
-
-    return () => {
-      ignore = true;
-    };
+        })
+        .catch((error) => console.error("Fetching previous chat messages failed: ", error));
+    }
   }, []);
 
   return { chatMessages, isChatLoaded, addMessage };

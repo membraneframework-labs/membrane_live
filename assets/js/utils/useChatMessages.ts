@@ -16,6 +16,7 @@ export const useChatMessages = (
   const { streamStart } = useContext(StreamStartContext);
   const presence = useRef<Presence>();
   const futureChatMessages = useRef<AwaitingMessage[]>([]);
+  const requestedPreviousMessages = useRef(false);
 
   const addMessage = useCallback(
     (message: AwaitingMessage) => {
@@ -57,22 +58,17 @@ export const useChatMessages = (
   }, []);
 
   useEffect(() => {
-    let ignore = false;
-
-    const id = window.location.href.split("/").slice(-1)[0];
-    axios
-      .get(`${window.location.origin}/resources/chat/${id}`)
-      .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
-        if (!ignore) {
+    if (!requestedPreviousMessages.current) {
+      requestedPreviousMessages.current = true;
+      const id = window.location.href.split("/").slice(-1)[0];
+      axios
+        .get(`${window.location.origin}/resources/chat/${id}`)
+        .then(({ data: { chats: prevChatMessages } }: { data: { chats: AwaitingMessage[] } }) => {
           prevChatMessages.forEach((message) => addMessage(message));
           setIsChatLoaded(true);
-        }
-      })
-      .catch((error) => console.error("Fetching previous chat messages failed: ", error));
-
-    return () => {
-      ignore = true;
-    };
+        })
+        .catch((error) => console.error("Fetching previous chat messages failed: ", error));
+    }
   }, [addMessage]);
 
   useEffect(() => {
