@@ -68,7 +68,7 @@ export const useChatMessages = (
           setIsChatLoaded(true);
         }
       })
-      .catch((error) => console.log("Fetching previous chat messages failed: ", error));
+      .catch((error) => console.error("Fetching previous chat messages failed: ", error));
 
     return () => {
       ignore = true;
