@@ -41,6 +41,7 @@ defmodule Membrane.Live.Mixfile do
     [
       {:phoenix, "~> 1.6.11"},
       {:phoenix_ecto, "~> 4.4"},
+      {:phoenix_pubsub, "~> 2.1"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
@@ -54,9 +55,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_core, "~> 0.10.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine,
-       github: "membraneframework/membrane_rtc_engine",
-       branch: "add-compositor-with-synchronization"},
+      {:membrane_rtc_engine, github: "membraneframework/membrane_rtc_engine", branch: "ll-hls"},
       {:membrane_rtp_plugin, "~> 0.18.0"},
       {:phoenix_inline_svg, "~> 1.4"},
       {:uuid, "~> 1.1"},
@@ -76,11 +75,11 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "1.0.0"},
 
       # HLS_Endpoint deps
-      {:membrane_http_adaptive_stream_plugin, "~> 0.9.0", optional: true},
-      {:membrane_mp4_plugin, "~> 0.17.0", override: true, optional: true},
+      {:membrane_http_adaptive_stream_plugin, "~> 0.9.0", override: true},
+      {:membrane_mp4_plugin, "~> 0.17.0", override: true},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
-      {:membrane_opus_plugin, "~> 0.15.0", override: true},
+      {:membrane_opus_plugin, "~> 0.15.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.24.0", override: true},
       {:membrane_video_compositor_plugin,
        github: "membraneframework-labs/membrane_video_compositor_plugin",
