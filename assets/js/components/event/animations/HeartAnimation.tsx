@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Channel } from "phoenix";
-import "../../../css/event/animation.css";
+import "../../../../css/event/animation.css";
 
 type HeartElement = {
   elem: JSX.Element;
@@ -13,7 +13,7 @@ type HeartElement = {
 };
 
 type HeartAnimationProps = {
-  eventChannel: Channel | undefined;
+  eventChannel?: Channel;
 };
 
 const duration = 5000;
@@ -22,7 +22,7 @@ const speed = (0.2 * 1000) / framerate;
 const cursorXOffset = 0;
 const cursorYOffset = -5;
 
-const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
+const HeartAnimation = ({ eventChannel }: HeartAnimationProps) => {
   const [hearts, setHearts] = useState<HeartElement[]>([]);
 
   const generateHeartElement = useCallback((left: number, top: number, scale: number) => {
@@ -80,15 +80,15 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
   const onEvent = useCallback(() => {
     const start = 1 - Math.round(Math.random()) * 2;
     const scale = Math.random() * Math.random() * 0.8 + 0.2;
-    const bound = 30 + Math.random() * 200;
-    const randomXFactor = Math.random() * 200;
+    const bound = Math.random() * 200;
+    const randomXFactor = Math.random() * 200 - 100;
     const randomYFactor = Math.random() * 20;
 
-    return generateHeart(200 + cursorXOffset + randomXFactor, 10 + cursorYOffset + randomYFactor, bound, start, scale);
+    return generateHeart(cursorXOffset + randomXFactor, 10 + cursorYOffset + randomYFactor, bound, start, scale);
   }, [generateHeart]);
 
   useEffect(() => {
-    const ref = eventChannel?.on("animation", () => {
+    const ref = eventChannel?.on("animation_heart", () => {
       const newHearts = Array(5)
         .fill(null)
         .map(() => onEvent());
@@ -96,7 +96,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
         return [...hearts, ...newHearts];
       });
     });
-    return () => eventChannel?.off("animation", ref);
+    return () => eventChannel?.off("animation_heart", ref);
   }, [eventChannel, onEvent]);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ const AnimationComponent = ({ eventChannel }: HeartAnimationProps) => {
     return () => clearInterval(interval);
   }, [frame, hearts]);
 
-  return <div className={"animatedContainer"}>{hearts.map((heart) => heart.elem)}</div>;
+  return <div className="heartContainer">{hearts.map((heart) => heart.elem)}</div>;
 };
 
-export default AnimationComponent;
+export default HeartAnimation;

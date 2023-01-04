@@ -56,13 +56,6 @@
   align-items: center;
 }
 
-.HlsBottomBar {
-  position: absolute;
-  width: 100%;
-  bottom: 3rem;
-  z-index: 1;
-}
-
 @media screen and (max-width: 500px) {
   .HlsDiv {
     width: 100%;

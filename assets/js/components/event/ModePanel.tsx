@@ -3,6 +3,7 @@ import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import { Channel } from "phoenix";
 import type { Client, Mode } from "../../types/types";
+
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 
@@ -31,7 +32,8 @@ type ModePanelProps = {
 const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
-  const [isClicked, setClicked] = useState(false);
+  const [isHeartClicked, setHeartClicked] = useState(false);
+  const [isConfettiClicked, setConfettiClicked] = useState(false);
 
   useEffect(
     () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
@@ -39,15 +41,27 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
   );
 
   useEffect(() => {
-    const ref = setTimeout(() => setClicked(false), 5_000);
+    const ref = setTimeout(() => setHeartClicked(false), 5_000);
     return () => {
       clearTimeout(ref);
     };
-  }, [isClicked]);
+  }, [isHeartClicked]);
 
-  const sendReaction = () => {
-    setClicked(true);
-    eventChannel?.push("reaction", {});
+  useEffect(() => {
+    const ref = setTimeout(() => setConfettiClicked(false), 2_500);
+    return () => {
+      clearTimeout(ref);
+    };
+  }, [isConfettiClicked]);
+
+  const sendHeartReaction = () => {
+    setHeartClicked(true);
+    eventChannel?.push("reaction_heart", {});
+  };
+
+  const sendConfetti = () => {
+    setConfettiClicked(true);
+    eventChannel?.push("reaction_confetti", {});
   };
 
   return (
@@ -58,7 +72,14 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       </div>
       <div className="ModeButtons">
         {presenterName && (
-          <div className={`heartButton ${isClicked ? "isActive" : ""}`} onClick={() => sendReaction()} />
+          <div>
+            <button className="heartButton" onClick={sendHeartReaction}>
+              💕
+            </button>
+            <button className="confettiButton" onClick={sendConfetti} disabled={isConfettiClicked}>
+              🎉
+            </button>
+          </div>
         )}
         {amIPresenter && (
           <>
