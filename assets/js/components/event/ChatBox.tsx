@@ -54,14 +54,16 @@ const MessageBox = ({ message, isMyself }: MessageBoxProps) => {
   };
 
   return (
-    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`} key={message.contents[0]}>
+    <div className={`MessageBox ${isMyself ? "Own" : "Other"}`}>
       {!isMyself ? (
         <p className="ChatterName">{`${message.name} ${message.title}`}</p>
       ) : (
         <p className="YourName">You</p>
       )}
       <div className="MessageCluster">
-        {message.contents.map((messageString, index) => getSingleMessage(messageString, index))}
+        {message.contents.map(({ content: messageString }: { content: string }, index) =>
+          getSingleMessage(messageString, index)
+        )}
       </div>
     </div>
   );
@@ -91,7 +93,6 @@ const ChatBox = ({ client, eventChannel, messages, isChatLoaded, isBannedFromCha
 
   // the messages array is reversed because of reversed flex-direction
   // thanks to that messages box is scrolled to the bottom by default
-  // TODO some of the messages are not properly rendered
   return (
     <div className="ChatBox">
       {!isRecording && (

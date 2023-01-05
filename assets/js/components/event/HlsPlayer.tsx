@@ -3,22 +3,37 @@ import AnimationComponent from "./HeartAnimation";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
-import "../../../css/event/hlsplayer.css";
 import useCheckScreenType from "../../utils/useCheckScreenType";
+import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
+  addMessage: ((offset: number) => void) | undefined;
   presenterName: string | undefined;
   eventChannel?: Channel | undefined;
 };
 
-const HlsPlayer = ({ attachVideo, presenterName, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: HlsPlayerProps) => {
   const screenType = useCheckScreenType();
   const playerRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     attachVideo(playerRef.current);
   }, [attachVideo, presenterName]);
+
+  useEffect(() => {
+    const playerRefCopy = playerRef;
+    let onTimeUpdate: () => void;
+
+    if (addMessage) {
+      onTimeUpdate = () => addMessage(playerRef.current ? playerRef.current.currentTime * 1000 : 0);
+      playerRefCopy.current?.addEventListener("timeupdate", onTimeUpdate);
+    }
+
+    return () => {
+      playerRefCopy.current?.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  }, [addMessage]);
 
   return (
     <div className="HlsStream">

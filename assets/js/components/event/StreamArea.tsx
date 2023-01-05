@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -7,12 +7,17 @@ import { useHls } from "../../utils/useHls";
 import useCheckScreenType from "../../utils/useCheckScreenType";
 import { StreamStartContext } from "../../utils/StreamStartContext";
 import { RotateLeft } from "react-swm-icon-pack";
-import { HlsConfig } from "hls.js";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
 import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
 import "../../../css/event/streamarea.css";
+
+const config = {
+  liveSyncDurationCount: 2,
+  initialLiveManifestSize: 2,
+  backBufferLength: 30,
+};
 
 type StreamAreaProps = {
   client: Client;
@@ -26,13 +31,7 @@ type StreamAreaProps = {
 const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, eventTitle }: StreamAreaProps) => {
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
-  const config = useRef<Partial<HlsConfig>>({
-    liveSyncDurationCount: 2,
-    initialLiveManifestSize: 1,
-    backBufferLength: 30,
-    manifestLoadingMaxRetry: 6,
-  });
-  const { attachVideo, setSrc } = useHls(true, false, config.current);
+  const { attachVideo, setSrc } = useHls(true, config);
   const screenType = useCheckScreenType();
   const { setStreamStart } = useContext(StreamStartContext);
 
@@ -81,7 +80,12 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
         {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
-              <HlsPlayer attachVideo={attachVideo} presenterName={presenterName} eventChannel={eventChannel} />
+              <HlsPlayer
+                attachVideo={attachVideo}
+                addMessage={undefined}
+                presenterName={presenterName}
+                eventChannel={eventChannel}
+              />
             ) : (
               <div className="HlsStream">
                 <div className="WaitText">

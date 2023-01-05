@@ -115,17 +115,10 @@ export type ChatMessage = {
   name: string;
   title: string;
   moderatedNo: number;
-  contents: string[];
+  contents: { content: string; offset: number }[];
 };
 
 export type AwaitingMessage = {
-  email: string;
-  name: string;
-  content: string;
-  offset: number;
-};
-
-export type RecievedMessage = {
   email: string;
   name: string;
   content: string;
