@@ -3,7 +3,7 @@ import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
 import { StreamStartContext } from "./StreamStartContext";
 import axios from "axios";
-import { appendToMessages, getTitle } from "./chatUtils";
+import { pushToShownMessages, getTitle } from "./chatUtils";
 import type { AwaitingMessage, ChatMessage } from "../types/types";
 
 const MESSAGE_INTERVAL = 1000;
@@ -21,7 +21,7 @@ export const useChatMessages = (
   const addMessage = useCallback(
     (message: AwaitingMessage) => {
       if (message.offset == 0 || (streamStart && new Date(streamStart.getTime() + message.offset) <= new Date())) {
-        setChatMessages((prev) => appendToMessages(prev, [message], presence.current));
+        setChatMessages((prev) => pushToShownMessages(prev, [message], presence.current));
       } else {
         futureChatMessages.current.push(message);
       }
