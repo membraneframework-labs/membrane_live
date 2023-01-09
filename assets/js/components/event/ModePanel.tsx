@@ -3,10 +3,10 @@ import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import { Channel } from "phoenix";
 import type { Client, Mode } from "../../types/types";
+import { useStateTimeout } from "../../utils/reactUtils";
 
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
-import { useStateTimeout } from "../../utils/reactUtils";
 
 export type ModeButtonProps = {
   onClick: () => void;
@@ -36,44 +36,19 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
 
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
-  // const [isHeartClicked, setHeartClicked] = useState(false);
-  // const [isConfettiClicked, setConfettiClicked] = useState(false);
 
   useEffect(
     () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
     [client, eventChannel]
   );
 
-  // useEffect(() => {
-  //   const ref = setTimeout(() => setHeartClicked(false), 5_000);
-  //   return () => {
-  //     clearTimeout(ref);
-  //   };
-  // }, [isHeartClicked]);
-
-  // useEffect(() => {
-  //   const ref = setTimeout(() => setConfettiClicked(false), 2_500);
-  //   return () => {
-  //     clearTimeout(ref);
-  //   };
-  // }, [isConfettiClicked]);
-  const [heart, toggleHeart] = useStateTimeout(false, 5_000, () => {
+  const [heart, toggleHeart] = useStateTimeout(() => {
     eventChannel?.push(heartReactionMessage, {});
-  });
+  }, false, 5_000);
 
-  const [confetti, toggleConfetti] = useStateTimeout(false, 5_000, () => {
+  const [confetti, toggleConfetti] = useStateTimeout(() => {
     eventChannel?.push(confettiReactionMessage, {});
-  });
-
-  // const sendHeartReaction = () => {
-  //   setHeartClicked(true);
-  //   eventChannel?.push(heartReactionMessage, {});
-  // };
-
-  // const sendConfetti = () => {
-  //   setConfettiClicked(true);
-  //   eventChannel?.push(confettiReactionMessage, {});
-  // };
+  }, false, 2_500);
 
   return (
     <div className="ModePanel">
@@ -84,7 +59,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       <div className="ModeButtons">
         {presenterName && (
           <div>
-            <button className="heartButton" onClick={() => toggleHeart()} disabled={heart}>
+            <button className="heartButton" onClick={toggleHeart} disabled={heart}>
               💕
             </button>
             <button className="confettiButton" onClick={toggleConfetti} disabled={confetti}>

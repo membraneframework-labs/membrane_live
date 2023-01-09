@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const useRerender = () => {
   const [value, setValue] = useState(false);
@@ -25,18 +25,11 @@ export const useDynamicResizing = () => {
 };
 
 export const useStateTimeout = (
-  defaultValue: boolean = false,
-  deactivationTime: number = 5_000,
-  callback: () => void
-): any => {
+  callback: () => void,
+  defaultValue = false,
+  deactivationTime = 5_000,
+): [boolean, () => void] => {
   const [status, setStatus] = useState(defaultValue);
-
-  // useEffect( () => {
-  //   const ref = setTimeout(() => setStatus((prevStatus) => !prevStatus), deactivationTime);
-  //   return () => {
-  //     clearTimeout(ref);
-  //   }
-  // }, [status]);
 
   const toggle = () => {
     setStatus(true);
