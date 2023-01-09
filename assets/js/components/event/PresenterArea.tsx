@@ -17,6 +17,8 @@ import type {
 } from "../../types/types";
 import "../../../css/event/presenterarea.css";
 import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
+import HeartAnimation from "./animations/HeartAnimation";
+import ConfettiAnimation from "./animations/ConfettiAnimation";
 
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
@@ -140,9 +142,11 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
     <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peersState.peers).length}`}>
+          {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
           {Object.values(peersState.peers).map((presenterStream) => {
             return getRtcPlayer(presenterStream);
           })}
+          {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
         </div>
       ) : client.email in peersState.peers ? (
         getRtcPlayer(getCurrentPresenterStream())

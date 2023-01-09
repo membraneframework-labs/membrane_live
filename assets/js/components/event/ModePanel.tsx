@@ -3,6 +3,8 @@ import { Screen } from "react-swm-icon-pack";
 import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import { Channel } from "phoenix";
 import type { Client, Mode } from "../../types/types";
+import { useStateTimeout } from "../../utils/reactUtils";
+
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
 
@@ -29,26 +31,32 @@ type ModePanelProps = {
 };
 
 const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
+  const heartReactionMessage = "reaction_heart";
+  const confettiReactionMessage = "reaction_confetti";
+
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
-  const [isClicked, setClicked] = useState(false);
 
   useEffect(
     () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
     [client, eventChannel]
   );
 
-  useEffect(() => {
-    const ref = setTimeout(() => setClicked(false), 5_000);
-    return () => {
-      clearTimeout(ref);
-    };
-  }, [isClicked]);
+  const [heart, toggleHeart] = useStateTimeout(
+    () => {
+      eventChannel?.push(heartReactionMessage, {});
+    },
+    false,
+    5_000
+  );
 
-  const sendReaction = () => {
-    setClicked(true);
-    eventChannel?.push("reaction", {});
-  };
+  const [confetti, toggleConfetti] = useStateTimeout(
+    () => {
+      eventChannel?.push(confettiReactionMessage, {});
+    },
+    false,
+    2_500
+  );
 
   return (
     <div className="ModePanel">
@@ -58,7 +66,14 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       </div>
       <div className="ModeButtons">
         {presenterName && (
-          <div className={`heartButton ${isClicked ? "isActive" : ""}`} onClick={() => sendReaction()} />
+          <div>
+            <button className="heartButton" onClick={toggleHeart} disabled={heart}>
+              💕
+            </button>
+            <button className="confettiButton" onClick={toggleConfetti} disabled={confetti}>
+              🎉
+            </button>
+          </div>
         )}
         {amIPresenter && (
           <>

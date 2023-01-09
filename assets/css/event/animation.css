@@ -35,17 +35,25 @@
   transform: rotate(135deg);
 }
 
-.heartButton {
-  width: 100px;
-  height: 100px;
-  background: url("https://cssanimation.rocks/images/posts/steps/heart.png") no-repeat;
-  background-position: 0 0;
-  cursor: pointer;
-  transition: background-position 1s steps(28);
-  transition-duration: 0s;
+.heartButton,
+.confettiButton {
+  padding: 0 1.5rem;
+  font-size: 24px;
 }
 
-.heartButton.isActive {
-  transition-duration: 1s;
-  background-position: -2800px 0;
+.heartContainer,
+.confettiContainer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  left: 50%;
+  z-index: 1;
+}
+
+.heartContainer {
+  bottom: 3rem;
+}
+
+.confettiContainer {
+  top: 8rem;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import AnimationComponent from "./HeartAnimation";
+import HeartAnimation from "./animations/HeartAnimation";
+import ConfettiAnimation from "./animations/ConfettiAnimation";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
@@ -38,20 +39,17 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
   return (
     <div className="HlsStream">
       <div className="HlsPlayerWrapper">
+        {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
         <MediaController className="HlsPlayerWrapper">
           <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
-          <HlsControlBar></HlsControlBar>
+          <HlsControlBar />
         </MediaController>
         {screenType.device === "desktop" && presenterName && (
           <div className="HlsTopBar">
             <div className="HlsPresenterName">{presenterName}</div>
           </div>
         )}
-        {eventChannel && (
-          <div className="HlsBottomBar">
-            <AnimationComponent eventChannel={eventChannel} />
-          </div>
-        )}
+        {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
       </div>
     </div>
   );

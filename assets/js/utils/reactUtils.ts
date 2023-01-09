@@ -23,3 +23,18 @@ export const useDynamicResizing = () => {
     };
   }, []);
 };
+
+export const useStateTimeout = (
+  callback: () => void,
+  defaultValue = false,
+  deactivationTime = 5_000
+): [boolean, () => void] => {
+  const [status, setStatus] = useState(defaultValue);
+
+  const toggle = () => {
+    setStatus(true);
+    callback();
+    setTimeout(() => setStatus((prevStatus) => !prevStatus), deactivationTime);
+  };
+  return [status, toggle];
+};

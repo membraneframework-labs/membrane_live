@@ -219,8 +219,9 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in("reaction", _data, socket) do
-    broadcast(socket, "animation", %{})
+  def handle_in("reaction_" <> animation_type, _data, socket)
+      when animation_type in ["confetti", "heart"] do
+    broadcast(socket, "animation_" <> animation_type, %{})
     {:noreply, socket}
   end
 
