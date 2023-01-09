@@ -6,6 +6,7 @@ import type { Client, Mode } from "../../types/types";
 
 import "../../../css/event/modepanel.css";
 import "../../../css/event/animation.css";
+import { useStateTimeout } from "../../utils/reactUtils";
 
 export type ModeButtonProps = {
   onClick: () => void;
@@ -30,39 +31,49 @@ type ModePanelProps = {
 };
 
 const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
+  const heartReactionMessage = "reaction_heart";
+  const confettiReactionMessage = "reaction_confetti";
+
   const [presentersNumber, setPresentersNumber] = useState(0);
   const [amIPresenter, setAmIPresenter] = useState(false);
-  const [isHeartClicked, setHeartClicked] = useState(false);
-  const [isConfettiClicked, setConfettiClicked] = useState(false);
+  // const [isHeartClicked, setHeartClicked] = useState(false);
+  // const [isConfettiClicked, setConfettiClicked] = useState(false);
 
   useEffect(
     () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
     [client, eventChannel]
   );
 
-  useEffect(() => {
-    const ref = setTimeout(() => setHeartClicked(false), 5_000);
-    return () => {
-      clearTimeout(ref);
-    };
-  }, [isHeartClicked]);
+  // useEffect(() => {
+  //   const ref = setTimeout(() => setHeartClicked(false), 5_000);
+  //   return () => {
+  //     clearTimeout(ref);
+  //   };
+  // }, [isHeartClicked]);
 
-  useEffect(() => {
-    const ref = setTimeout(() => setConfettiClicked(false), 2_500);
-    return () => {
-      clearTimeout(ref);
-    };
-  }, [isConfettiClicked]);
+  // useEffect(() => {
+  //   const ref = setTimeout(() => setConfettiClicked(false), 2_500);
+  //   return () => {
+  //     clearTimeout(ref);
+  //   };
+  // }, [isConfettiClicked]);
+  const [heart, toggleHeart] = useStateTimeout(false, 5_000, () => {
+    eventChannel?.push(heartReactionMessage, {});
+  });
 
-  const sendHeartReaction = () => {
-    setHeartClicked(true);
-    eventChannel?.push("reaction_heart", {});
-  };
+  const [confetti, toggleConfetti] = useStateTimeout(false, 5_000, () => {
+    eventChannel?.push(confettiReactionMessage, {});
+  });
 
-  const sendConfetti = () => {
-    setConfettiClicked(true);
-    eventChannel?.push("reaction_confetti", {});
-  };
+  // const sendHeartReaction = () => {
+  //   setHeartClicked(true);
+  //   eventChannel?.push(heartReactionMessage, {});
+  // };
+
+  // const sendConfetti = () => {
+  //   setConfettiClicked(true);
+  //   eventChannel?.push(confettiReactionMessage, {});
+  // };
 
   return (
     <div className="ModePanel">
@@ -73,10 +84,10 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
       <div className="ModeButtons">
         {presenterName && (
           <div>
-            <button className="heartButton" onClick={sendHeartReaction}>
+            <button className="heartButton" onClick={() => toggleHeart()} disabled={heart}>
               💕
             </button>
-            <button className="confettiButton" onClick={sendConfetti} disabled={isConfettiClicked}>
+            <button className="confettiButton" onClick={toggleConfetti} disabled={confetti}>
               🎉
             </button>
           </div>

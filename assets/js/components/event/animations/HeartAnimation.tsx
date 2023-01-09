@@ -25,6 +25,8 @@ const cursorYOffset = -5;
 const HeartAnimation = ({ eventChannel }: HeartAnimationProps) => {
   const [hearts, setHearts] = useState<HeartElement[]>([]);
 
+  const heartMessage = "animation_heart";
+
   const generateHeartElement = useCallback((left: number, top: number, scale: number) => {
     return (
       <div
@@ -88,7 +90,7 @@ const HeartAnimation = ({ eventChannel }: HeartAnimationProps) => {
   }, [generateHeart]);
 
   useEffect(() => {
-    const ref = eventChannel?.on("animation_heart", () => {
+    const ref = eventChannel?.on(heartMessage, () => {
       const newHearts = Array(5)
         .fill(null)
         .map(() => onEvent());
@@ -96,7 +98,7 @@ const HeartAnimation = ({ eventChannel }: HeartAnimationProps) => {
         return [...hearts, ...newHearts];
       });
     });
-    return () => eventChannel?.off("animation_heart", ref);
+    return () => eventChannel?.off(heartMessage, ref);
   }, [eventChannel, onEvent]);
 
   useEffect(() => {
