@@ -27,7 +27,7 @@ export const useDynamicResizing = () => {
 export const useStateTimeout = (
   callback: () => void,
   defaultValue = false,
-  deactivationTime = 5_000,
+  deactivationTime = 5_000
 ): [boolean, () => void] => {
   const [status, setStatus] = useState(defaultValue);
 

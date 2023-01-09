@@ -42,13 +42,21 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
     [client, eventChannel]
   );
 
-  const [heart, toggleHeart] = useStateTimeout(() => {
-    eventChannel?.push(heartReactionMessage, {});
-  }, false, 5_000);
+  const [heart, toggleHeart] = useStateTimeout(
+    () => {
+      eventChannel?.push(heartReactionMessage, {});
+    },
+    false,
+    5_000
+  );
 
-  const [confetti, toggleConfetti] = useStateTimeout(() => {
-    eventChannel?.push(confettiReactionMessage, {});
-  }, false, 2_500);
+  const [confetti, toggleConfetti] = useStateTimeout(
+    () => {
+      eventChannel?.push(confettiReactionMessage, {});
+    },
+    false,
+    2_500
+  );
 
   return (
     <div className="ModePanel">
