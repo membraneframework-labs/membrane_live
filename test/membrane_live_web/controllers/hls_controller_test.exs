@@ -27,6 +27,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
       pubsub_subscribe()
 
+      Process.sleep(@mock_storage_latency_ms)
       add_segment_to_playlist(segment, partial)
 
       assert_receive({:manifest_update_partial, ^segment, ^partial})
@@ -46,6 +47,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
       pubsub_subscribe()
 
+      Process.sleep(@mock_storage_latency_ms)
       store_partial_segment(segment, partial)
 
       assert_receive({:segment_update, {^segment, ^partial}, {^offset, ^length}}, 1000)
@@ -156,8 +158,6 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   end
 
   defp add_segment_to_playlist(segment, partial \\ nil) do
-    Process.sleep(@mock_storage_latency_ms)
-
     (File.read!(@playlist_path) <> segment_tag(segment, partial))
     |> then(
       &FileStorage.store(
@@ -195,18 +195,14 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     content = segment_content(segment, partial)
     {offset, _length} = get_partial_offset_length(partial)
 
-    Task.start_link(fn ->
-      Process.sleep(@mock_storage_latency_ms)
-
-      FileStorage.store(
-        nil,
-        filename,
-        content,
-        %{byte_offset: offset},
-        %{mode: :binary},
-        @storage
-      )
-    end)
+    FileStorage.store(
+      nil,
+      filename,
+      content,
+      %{byte_offset: offset},
+      %{mode: :binary},
+      @storage
+    )
 
     add_segment_to_playlist(segment, partial)
   end
