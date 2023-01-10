@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
 import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import { useChatMessages } from "../../utils/useChatMessages";
-import type { Participant, Client } from "../../types/types";
+import type { Participant, Client, Product, ChatMessage } from "../../types/types";
 import "../../../css/event/participants.css";
 import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
+import { useAllProductsQuery, useIsProductMutating } from "../../utils/useWebinarProducts";
+import { groupBy } from "../../utils/collectionUtils";
+import ProductComponent, { ProductWithStatus } from "./ProductComponent";
+import ProductsList from "./ProductsList";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -154,38 +157,81 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   );
 };
 
+type SidebarMode = "participants" | "products" | "chat" | "select-products";
+
 type ParticipantsListProps = {
   client: Client;
   eventChannel: Channel | undefined;
+  isChatLoaded: boolean;
+  chatMessages: ChatMessage[];
+  addProduct: (id: string) => void;
+  removeProduct: (id: string) => void;
+  products: Product[];
+  participants: Participant[];
+  isBannedFromChat: boolean;
 };
 
-const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
-  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [listMode, setListMode] = useState<boolean>(false);
-  const [isBannedFromChat, setIsBannedFromChat] = useState(false);
+export const addStatus = (all: Product[], productsMap: Record<string, Product[]>): ProductWithStatus[] =>
+  all.map((product) => ({
+    ...product,
+    status: productsMap[product.id] ? "SELECTED" : "NOT-SELECTED",
+  }));
 
-  useEffect(() => {
-    if (eventChannel) {
-      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
-    }
-  }, [client.email, eventChannel]);
+const Sidebar = ({
+  client,
+  eventChannel,
+  isChatLoaded,
+  chatMessages,
+  products,
+  addProduct,
+  removeProduct,
+  participants,
+  isBannedFromChat,
+}: ParticipantsListProps) => {
+  const [listMode, setListMode] = useState<SidebarMode>("chat");
+  const isMutating = useIsProductMutating();
+
+  const productsMap: Record<string, Product[]> = groupBy(products, (product) => product.id);
+
+  const allProductsQuery = useAllProductsQuery(client.isModerator);
+  const allProducts: Product[] = allProductsQuery?.data?.data?.products || [];
+  const productsWithStatus: ProductWithStatus[] = addStatus(allProducts, productsMap);
 
   return (
     <div className="Participants">
       <div className="ParticipantsButtons">
         <button
-          className={`ParticipantsButton ${!listMode && "Clicked"}`}
-          onClick={() => setListMode(false)}
+          className={`ParticipantsButton ${listMode === "chat" && "Clicked"}`}
+          onClick={() => setListMode("chat")}
           name="chat"
         >
           Group Chat
         </button>
-        <button className={`ParticipantsButton ${listMode && "Clicked"}`} name="list" onClick={() => setListMode(true)}>
+        <button
+          className={`ParticipantsButton ${listMode == "participants" && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode("participants")}
+        >
           Participants
         </button>
+        <button
+          className={`ParticipantsButton ${listMode === "products" && "Clicked"}`}
+          name="list"
+          onClick={() => setListMode("products")}
+        >
+          Products
+        </button>
+        {client.isModerator && (
+          <button
+            className={`ParticipantsButton ${listMode === "select-products" && "Clicked"}`}
+            name="list"
+            onClick={() => setListMode("select-products")}
+          >
+            Select products
+          </button>
+        )}
       </div>
-      {listMode ? (
+      {listMode === "participants" && (
         <div className="ParticipantsList">
           {participants.map((participant) => (
             <Participant
@@ -196,7 +242,8 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
             />
           ))}
         </div>
-      ) : (
+      )}
+      {listMode === "chat" && (
         <ChatBox
           client={client}
           eventChannel={eventChannel}
@@ -206,8 +253,22 @@ const ParticipantsList = ({ client, eventChannel }: ParticipantsListProps) => {
           isRecording={false}
         />
       )}
+      {listMode === "products" && <ProductsList products={products} />}
+      {listMode === "select-products" && client.isModerator && (
+        <div className="ProductList">
+          {productsWithStatus.map((product) => (
+            <ProductComponent
+              key={product.id}
+              product={product}
+              add={addProduct}
+              remove={removeProduct}
+              isLoading={isMutating}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default ParticipantsList;
+export default Sidebar;

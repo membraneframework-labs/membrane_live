@@ -18,7 +18,7 @@ defmodule MembraneLiveWeb.Endpoint do
     at: "/",
     from: :membrane_live,
     gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
+    only: ~w(assets fonts images icons favicon.ico robots.txt)
   )
 
   if code_reloading? do

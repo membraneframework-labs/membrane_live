@@ -1,7 +1,7 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel, Presence } from "phoenix";
 import { getByKey } from "./channelUtils";
-import { StreamStartContext } from "./StreamStartContext";
+import { useStartStream } from "./StreamStartContext";
 import axios from "axios";
 import { pushToShownMessages, getTitle } from "./chatUtils";
 import type { AwaitingMessage, ChatMessage } from "../types/types";
@@ -13,7 +13,7 @@ export const useChatMessages = (
 ): { chatMessages: ChatMessage[]; isChatLoaded: boolean } => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoaded, setIsChatLoaded] = useState(false);
-  const { streamStart } = useContext(StreamStartContext);
+  const { streamStart } = useStartStream();
   const presence = useRef<Presence>();
   const futureChatMessages = useRef<AwaitingMessage[]>([]);
   const requestedPreviousMessages = useRef(false);

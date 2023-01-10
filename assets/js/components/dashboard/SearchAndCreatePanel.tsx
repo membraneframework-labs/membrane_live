@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Search } from "react-swm-icon-pack";
 import ModalForm from "./ModalForm";
 import { getIsAuthenticated } from "../../utils/storageUtils";
-import useCheckScreenType from "../../utils/useCheckScreenType";
 
 import "../../../css/dashboard/searchandcreatepanel.css";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 
 type SearchAndCreatePanelProps = {
   currentEvents: string;
@@ -13,7 +13,7 @@ type SearchAndCreatePanelProps = {
 };
 
 const SearchAndCreatePanel = ({ currentEvents, searchText, setSearchText }: SearchAndCreatePanelProps) => {
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const isAuthenticated = getIsAuthenticated();
 
   return (

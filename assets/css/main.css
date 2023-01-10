@@ -28,7 +28,6 @@ html {
 
 @media screen and (max-width: 500px), screen and (max-height: 500px) {
   html {
-    overflow: scroll;
     height: calc(var(--window-inner-height) - 1px);
   }
 }
@@ -36,7 +35,8 @@ html {
 .FlexContainer {
   display: flex;
   justify-content: space-between;
-  direction: column;
+  /* todo check it*/
+  flex-direction: column;
 }
 
 * {

@@ -29,8 +29,12 @@
   justify-content: center;
 }
 
+.TopBar {
+  display: flex;
+}
+
 .MediaTimeRange {
-  width: 90%;
+  flex-grow: 1;
   --media-range-track-height: 0.6rem;
   --media-range-thumb-height: 1.2rem;
   --media-range-thumb-width: 1.2rem;
@@ -40,7 +44,6 @@
 }
 
 .MediaTimeDisplay {
-  width: 10%;
 }
 
 .MediaVolumeRange {

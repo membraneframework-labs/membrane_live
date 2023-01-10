@@ -1,4 +1,5 @@
 import { GsiButtonConfiguration } from "google-one-tap";
+import { HlsConfig } from "hls.js";
 
 export const FRAME_RATE = 24;
 export const CANVAS_WIDTH = 1920;
@@ -63,4 +64,10 @@ export const rectangleGoogleButton: GsiButtonConfiguration = {
   logo_alignment: "left",
   shape: "pill",
   text: "signin_with",
+};
+
+export const config: Partial<HlsConfig> = {
+  liveSyncDurationCount: 2,
+  initialLiveManifestSize: 2,
+  backBufferLength: 30,
 };
