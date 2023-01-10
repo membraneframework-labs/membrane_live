@@ -41,7 +41,7 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
       <div className="HlsPlayerWrapper">
         {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
         <MediaController className="HlsPlayerWrapper">
-          <video ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
+          <video id="hlsVideo" ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
           <HlsControlBar />
         </MediaController>
         {screenType.device === "desktop" && presenterName && (

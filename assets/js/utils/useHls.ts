@@ -67,5 +67,11 @@ export const useHls = (
     };
   }, [attachVideo, autoPlay, hlsConfig, setStreamStart, src]);
 
+  useEffect(() => {
+    const video: HTMLVideoElement | null = document.getElementById("hlsVideo") as HTMLVideoElement;
+    if (!Hls.isSupported() && video && video.canPlayType("application/vnd.apple.mpegurl")) video.src = src;
+  }),
+    [src];
+
   return { attachVideo, setSrc };
 };

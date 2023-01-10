@@ -19,6 +19,7 @@ defmodule MembraneLive.Event do
   alias MembraneLive.Event.Timer
   alias MembraneLive.HLS.FileStorage
   alias MembraneLive.Webinars
+  alias Phoenix.PubSub
 
   @mix_env Mix.env()
 
@@ -100,6 +101,8 @@ defmodule MembraneLive.Event do
 
     :ok = Engine.add_endpoint(pid, endpoint)
 
+    PubSub.subscribe(MembraneLive.PubSub, event_id)
+
     {:ok,
      %{
        event_id: event_id,
@@ -109,7 +112,7 @@ defmodule MembraneLive.Event do
        trace_ctx: trace_ctx,
        moderator_pid: nil,
        playlist_idl: nil,
-       is_playlist_playable?: false,
+       first_segment_ready?: false,
        timer: Timer.create(self()),
        target_segment_duration: Time.as_milliseconds(target_segment_duration),
        start_time: nil
@@ -271,26 +274,20 @@ defmodule MembraneLive.Event do
   end
 
   @impl true
-  def handle_info({:playlist_playable, :audio, _playlist_idl}, state) do
+  def handle_info({:playlist_playable, :audio, _playlist_idl}, state), do: {:noreply, state}
+
+  def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
+    state = %{state | playlist_idl: Path.join(state.event_id, "")}
+    if state.first_segment_ready?, do: handle_playlist_playable(state)
+
     {:noreply, state}
   end
 
-  @impl true
-  def handle_info({:playlist_playable, :video, playlist_idl}, state) do
-    state = %{state | playlist_idl: Path.join(state.event_id, playlist_idl)}
+  def handle_info(:first_segment_ready, state) do
+    PubSub.unsubscribe(MembraneLive.PubSub, state.event_id)
+    state = %{state | first_segment_ready?: true}
+    if state.playlist_idl, do: handle_playlist_playable(state)
 
-    :ets.insert_new(
-      :client_start_timestamps,
-      {state.event_id, System.monotonic_time(:millisecond) + state.target_segment_duration}
-    )
-
-    state = %{
-      state
-      | start_time:
-          DateTime.utc_now() |> DateTime.add(state.target_segment_duration, :millisecond)
-    }
-
-    send_broadcast(state)
     {:noreply, state}
   end
 
@@ -341,6 +338,21 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
     {:reply, stream_response_message(state), state}
+  end
+
+  defp handle_playlist_playable(state) do
+    :ets.insert_new(
+      :client_start_timestamps,
+      {state.event_id, System.monotonic_time(:millisecond) + state.target_segment_duration}
+    )
+
+    state = %{
+      state
+      | start_time:
+          DateTime.utc_now() |> DateTime.add(state.target_segment_duration, :millisecond)
+    }
+
+    send_broadcast(state)
   end
 
   defp tracing_metadata(),

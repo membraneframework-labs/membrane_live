@@ -78,14 +78,7 @@ defmodule MembraneLive.HLS.FileStorage do
     result = File.write(Path.join(directory, name), contents)
 
     if String.match?(name, ~r/\.m3u8$/) do
-      {segment, partial} = Helpers.get_last_partial(contents)
-      name_without_extension = String.replace(name, ".m3u8", "")
-
-      PubSub.broadcast(
-        MembraneLive.PubSub,
-        name_without_extension,
-        {:manifest_update, segment, partial}
-      )
+      notify_playlist_update(directory, name, contents)
     end
 
     result
@@ -94,6 +87,24 @@ defmodule MembraneLive.HLS.FileStorage do
   @impl true
   def remove(_parent_id, name, _ctx, %__MODULE__{directory: location}) do
     File.rm(Path.join(location, name))
+  end
+
+  defp notify_playlist_update(directory, name, contents) do
+    name_without_extension = String.replace(name, ".m3u8", "")
+
+    if !String.contains?(contents, "\nmuxed_segment_1") and
+         String.contains?(contents, "\nmuxed_segment_0") do
+      "output/" <> event_id = directory
+      PubSub.broadcast(MembraneLive.PubSub, event_id, :first_segment_ready)
+    end
+
+    {segment, partial} = Helpers.get_last_partial(contents)
+
+    PubSub.broadcast(
+      MembraneLive.PubSub,
+      name_without_extension,
+      {:manifest_update_partial, segment, partial}
+    )
   end
 
   defp remove_partial_from_ets(partial) do
