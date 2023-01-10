@@ -1,6 +1,6 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Hls, { HlsConfig } from "hls.js";
-import { StreamStartContext } from "./StreamStartContext";
+import { useStartStream } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
@@ -12,7 +12,7 @@ export const useHls = (
   const [src, setSrc] = useState<string>("");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
-  const { setStreamStart } = useContext(StreamStartContext);
+  const { setStreamStart } = useStartStream();
 
   const attachVideo = useCallback((video_ref: HTMLVideoElement | null) => {
     if (hls && video_ref) {

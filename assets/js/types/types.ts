@@ -140,3 +140,13 @@ export type PresenterPropositionServer = {
   moderator_topic: string;
   main_presenter: boolean;
 };
+
+export type Product = {
+  id: string;
+  name: string;
+  price: string;
+  itemUrl: string;
+  imageUrl: string;
+};
+
+export type Card = "hidden" | "hide" | "share" | "chat" | "products";

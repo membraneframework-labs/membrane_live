@@ -1,30 +1,31 @@
-import { useEffect, useRef, useState } from "react";
-import ParticipantsList from "../components/event/ParticipantsList";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Channel, Socket } from "phoenix";
-import { createPrivateChannel, createEventChannel, getChannelId } from "../utils/channelUtils";
+import { createEventChannel, createPrivateChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
 import Header from "../components/event/Header";
 import {
-  storageGetName,
-  storageGetAuthToken,
-  sessionStorageGetIsPresenter,
-  storageGetEmail,
-  sessionStorageGetName,
   getIsAuthenticated,
+  sessionStorageGetIsPresenter,
+  sessionStorageGetName,
+  storageGetAuthToken,
+  storageGetEmail,
+  storageGetName,
   storageGetPresentingRequest,
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
 import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
-import type { Client, EventInfo, Mode, Toast, PresenterProposition } from "../types/types";
 import NamePopup from "../components/event/NamePopup";
-import useCheckScreenType from "../utils/useCheckScreenType";
-import { getEventInfo, initEventInfo } from "../utils/headerUtils";
+import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
 import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
-import { StreamStartContext } from "../utils/StreamStartContext";
-import { redirectToHomePage } from "../utils/headerUtils";
+import { useStartStream } from "../utils/StreamStartContext";
+import Sidebar from "../components/event/Sidebar";
+import { useChatMessages } from "../utils/useChatMessages";
+import { ScreenTypeContext } from "../utils/ScreenTypeContext";
+import type { Client, EventInfo, Mode, Participant, PresenterProposition, Toast } from "../types/types";
 import "../../css/event/event.css";
+import { useWebinarProducts } from "../utils/useWebinarProducts";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -39,9 +40,14 @@ const Event = () => {
   const [privateChannel, setPrivateChannel] = useState<Channel>();
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const [mode, setMode] = useState<Mode>("hls");
-  const [streamStart, setStreamStart] = useState<Date | null>(null);
+  const { products, addProduct, removeProduct } = useWebinarProducts(eventInfo.uuid);
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isBannedFromChat, setIsBannedFromChat] = useState(false);
+
+  const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -97,25 +103,45 @@ const Event = () => {
     }
   }, [client, eventChannel, privateChannel, socket, toast]);
 
+  useEffect(() => {
+    if (eventChannel) {
+      syncEventChannel(eventChannel, setParticipants, setIsBannedFromChat, client.email);
+    }
+  }, [client.email, eventChannel]);
+
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
       {(screenType.device == "desktop" || screenType.orientation === "portrait") && (
         <Header client={client} eventChannel={eventChannel} isRecording={false} eventInfo={eventInfo} />
       )}
-      <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
-        <div className="MainGrid">
-          <StreamArea
+      <div className="MainGrid">
+        <StreamArea
+          client={client}
+          eventChannel={eventChannel}
+          privateChannel={privateChannel}
+          mode={mode}
+          setMode={setMode}
+          eventTitle={eventInfo.title}
+          products={products}
+          chatMessages={chatMessages}
+          isChatLoaded={isChatLoaded}
+          isBannedFromChat={isBannedFromChat}
+        />
+        {screenType.device == "desktop" && (
+          <Sidebar
             client={client}
             eventChannel={eventChannel}
-            privateChannel={privateChannel}
-            mode={mode}
-            setMode={setMode}
-            eventTitle={eventInfo.title}
+            isChatLoaded={isChatLoaded}
+            chatMessages={chatMessages}
+            products={products}
+            addProduct={addProduct}
+            removeProduct={removeProduct}
+            participants={participants}
+            isBannedFromChat={isBannedFromChat}
           />
-          {screenType.device == "desktop" && <ParticipantsList client={client} eventChannel={eventChannel} />}
-        </div>
-      </StreamStartContext.Provider>
+        )}
+      </div>
     </div>
   );
 };

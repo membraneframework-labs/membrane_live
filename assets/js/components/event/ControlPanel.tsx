@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import {
   Button,
   Menu,
@@ -40,7 +40,7 @@ import GenericButton from "../helpers/GenericButton";
 import type { Mode, Client, SourceType, PeersState } from "../../types/types";
 import "../../../css/event/controlpanel.css";
 import MenuPopover from "../helpers/MenuPopover";
-import useCheckScreenType from "../../utils/useCheckScreenType";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { ModeButton } from "./ModePanel";
 import { sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
 
@@ -142,7 +142,7 @@ const ControlPanel = ({
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
 
   const updateAvailableSources = useCallback(async () => {
     await askForPermissions();

@@ -1,5 +1,11 @@
 @import "../main.css";
 
+.HlsDiv {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 .HlsStream {
   display: flex;
   justify-content: center;
@@ -62,9 +68,8 @@
   }
 
   .HlsStream {
-    height: auto;
-    width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 90%;
+    width: auto;
   }
 }
 

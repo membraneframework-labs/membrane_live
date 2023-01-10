@@ -8,6 +8,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-items: center;
 }
 
 .ParticipantsButtons {
@@ -28,7 +29,7 @@
   white-space: nowrap;
 }
 
-.ParticiPantIcon path {
+.ParticipantIcon path {
   stroke: var(--font-dark-color);
 }
 
@@ -39,6 +40,7 @@
 
 .ParticipantsList {
   overflow-y: auto;
+  width: 100%;
 }
 
 .Participant {
@@ -77,4 +79,46 @@
   background: var(--font-dark-color) !important;
   border-radius: 16px !important;
   font-size: 1.3rem !important;
+}
+
+.ProductList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  justify-content: space-evenly;
+  grid-gap: 1em;
+  overflow: auto;
+  width: 100%;
+}
+
+.Product {
+  box-sizing: border-box;
+  width: 150px;
+  background-color: white;
+  aspect-ratio: 1/1;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid var(--bg-light-color-3);
+}
+
+.ProductHeader {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.Product > img {
+  max-width: 100%;
+}
+
+.ProductPrice {
+  color: white;
+  background-color: black;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.ProductFooter {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-size: 1.2rem;
 }

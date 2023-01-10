@@ -4,20 +4,17 @@ import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
 import { useHls } from "../../utils/useHls";
-import useCheckScreenType from "../../utils/useCheckScreenType";
-import { StreamStartContext } from "../../utils/StreamStartContext";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { RotateLeft } from "react-swm-icon-pack";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage } from "../../types/types";
+import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, Card } from "../../types/types";
+import { MobileRightSidebar } from "./MobileRightSidebar";
+import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
-
-const config = {
-  liveSyncDurationCount: 2,
-  initialLiveManifestSize: 2,
-  backBufferLength: 30,
-};
+import { useStartStream } from "../../utils/StreamStartContext";
+import { config } from "../../utils/const";
 
 type StreamAreaProps = {
   client: Client;
@@ -26,14 +23,37 @@ type StreamAreaProps = {
   mode: Mode;
   setMode: React.Dispatch<React.SetStateAction<Mode>>;
   eventTitle: string;
+  products: Product[];
+  chatMessages: ChatMessage[];
+  isChatLoaded: boolean;
+  isBannedFromChat: boolean;
 };
 
-const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, eventTitle }: StreamAreaProps) => {
+const StreamArea = ({
+  client,
+  eventChannel,
+  privateChannel,
+  mode,
+  setMode,
+  eventTitle,
+  products,
+  chatMessages,
+  isChatLoaded,
+  isBannedFromChat,
+}: StreamAreaProps) => {
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const { attachVideo, setSrc } = useHls(true, config);
-  const screenType = useCheckScreenType();
-  const { setStreamStart } = useContext(StreamStartContext);
+  const screenType = useContext(ScreenTypeContext);
+  const { setStreamStart } = useStartStream();
+  const [card, setCard] = useState<Card>("hidden");
+
+  const switchAsking = useCallback(
+    (isAsking: boolean) => {
+      switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
+    },
+    [eventChannel, client]
+  );
 
   const addHlsUrl = useCallback(
     (message: PlaylistPlayableMessage): void => {
@@ -80,12 +100,26 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
         {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
-              <HlsPlayer
-                attachVideo={attachVideo}
-                addMessage={undefined}
-                presenterName={presenterName}
-                eventChannel={eventChannel}
-              />
+              <>
+                <HlsPlayer
+                  attachVideo={attachVideo}
+                  presenterName={presenterName}
+                  eventChannel={eventChannel}
+                  addMessage={undefined}
+                />
+                {screenType.device == "mobile" && (
+                  <>
+                    <MobileRightSidebar setCard={setCard} />
+                    <MobileHlsBar
+                      client={client}
+                      eventTitle={eventTitle}
+                      amIPresenter={amIPresenter}
+                      setMode={setMode}
+                      switchAsking={switchAsking}
+                    />
+                  </>
+                )}
+              </>
             ) : (
               <div className="HlsStream">
                 <div className="WaitText">
@@ -93,17 +127,6 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
                   Waiting for the live stream to start...
                 </div>
               </div>
-            )}
-            {screenType.device == "mobile" && (
-              <MobileHlsBar
-                client={client}
-                eventTitle={eventTitle}
-                amIPresenter={amIPresenter}
-                setMode={setMode}
-                switchAsking={(isAsking) => {
-                  switchAskingForBeingPresenter(eventChannel, client.email, isAsking);
-                }}
-              />
             )}
           </div>
         )}
@@ -114,6 +137,19 @@ const StreamArea = ({ client, eventChannel, privateChannel, mode, setMode, event
           mode={mode}
           setMode={setMode}
         />
+
+        {screenType.device == "mobile" && (
+          <MobileBottomPanel
+            eventChannel={eventChannel}
+            isChatLoaded={isChatLoaded}
+            isBannedFromChat={isBannedFromChat}
+            client={client}
+            products={products}
+            chatMessages={chatMessages}
+            card={card}
+            onBarClick={() => setCard("hide")}
+          />
+        )}
       </div>
     </div>
   );

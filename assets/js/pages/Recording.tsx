@@ -1,24 +1,19 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import HlsPlayer from "../components/event/HlsPlayer";
 import Header from "../components/event/Header";
 import { storageGetName, storageGetEmail, getIsAuthenticated } from "../utils/storageUtils";
 import { useHls } from "../utils/useHls";
 import ChatBox from "../components/event/ChatBox";
-import { StreamStartContext } from "../utils/StreamStartContext";
-import useCheckScreenType from "../utils/useCheckScreenType";
+import { StreamStartProvider } from "../utils/StreamStartContext";
+import { ScreenTypeContext } from "../utils/ScreenTypeContext";
 import { getEventInfo, initEventInfo } from "../utils/headerUtils";
 import { useToast } from "@chakra-ui/react";
 import { useRecordingChatMessages } from "../utils/useRecordingChatMessages";
 import type { Client, EventInfo } from "../types/types";
 import "../../css/recording/recording.css";
+import { config } from "../utils/const";
 
-const config = {
-  liveSyncDurationCount: 2,
-  initialLiveManifestSize: 2,
-  backBufferLength: 30,
-};
-
-const RecordingComponent = () => {
+const Recording = () => {
   const toast = useToast();
 
   const client: Client = {
@@ -27,7 +22,7 @@ const RecordingComponent = () => {
     isModerator: false,
     isAuthenticated: getIsAuthenticated(),
   };
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const { chatMessages, isChatLoaded, addMessage } = useRecordingChatMessages();
   const { attachVideo, setSrc } = useHls(true, config);
 
@@ -58,28 +53,20 @@ const RecordingComponent = () => {
         </div>
         {screenType.device == "desktop" && (
           <div className="Participants">
-            <ChatBox
-              client={client}
-              eventChannel={undefined}
-              messages={chatMessages}
-              isChatLoaded={isChatLoaded}
-              isBannedFromChat={false}
-              isRecording={true}
-            />
+            <StreamStartProvider>
+              <ChatBox
+                client={client}
+                eventChannel={undefined}
+                messages={chatMessages}
+                isChatLoaded={isChatLoaded}
+                isBannedFromChat={false}
+                isRecording={true}
+              />
+            </StreamStartProvider>
           </div>
         )}
       </div>
     </div>
-  );
-};
-
-const Recording = () => {
-  const [streamStart, setStreamStart] = useState<Date | null>(null);
-
-  return (
-    <StreamStartContext.Provider value={{ streamStart, setStreamStart }}>
-      <RecordingComponent />
-    </StreamStartContext.Provider>
   );
 };
 

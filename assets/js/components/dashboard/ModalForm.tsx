@@ -3,7 +3,7 @@ import Modal from "react-modal";
 
 import { Cross } from "react-swm-icon-pack";
 
-import { EventFormInput, EventInfo, ModalForm } from "../../types/types";
+import type { EventFormInput, EventInfo, ModalForm } from "../../types/types";
 import EventForm, { initialEventFormInput } from "./EventForm";
 import GenericButton from "../helpers/GenericButton";
 

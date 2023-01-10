@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
 import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
-import useCheckScreenType from "../../utils/useCheckScreenType";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
@@ -15,7 +15,7 @@ type HlsPlayerProps = {
 };
 
 const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: HlsPlayerProps) => {
-  const screenType = useCheckScreenType();
+  const screenType = useContext(ScreenTypeContext);
   const playerRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
