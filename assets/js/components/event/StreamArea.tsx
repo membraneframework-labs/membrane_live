@@ -9,7 +9,7 @@ import { RotateLeft } from "react-swm-icon-pack";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, Card } from "../../types/types";
+import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, CardStatus } from "../../types/types";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
@@ -46,7 +46,7 @@ const StreamArea = ({
   const { attachVideo, setSrc } = useHls(true, config);
   const screenType = useContext(ScreenTypeContext);
   const { setStreamStart } = useStartStream();
-  const [card, setCard] = useState<Card>("hidden");
+  const [card, setCard] = useState<CardStatus>("hidden");
 
   const switchAsking = useCallback(
     (isAsking: boolean) => {
@@ -147,7 +147,7 @@ const StreamArea = ({
             products={products}
             chatMessages={chatMessages}
             card={card}
-            onBarClick={() => setCard("hide")}
+            onBarClick={() => setCard("hidden")}
           />
         )}
       </div>

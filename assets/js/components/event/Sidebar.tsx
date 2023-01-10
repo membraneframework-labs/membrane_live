@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Menu, MenuButton, MenuList, MenuItem, Tooltip } from "@chakra-ui/react";
-import { getPrivateChannelLink, switchAskingForBeingPresenter, syncEventChannel } from "../../utils/channelUtils";
+import { getPrivateChannelLink, switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";

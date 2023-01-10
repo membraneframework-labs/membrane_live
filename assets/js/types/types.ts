@@ -149,4 +149,4 @@ export type Product = {
   imageUrl: string;
 };
 
-export type Card = "hidden" | "hide" | "share" | "chat" | "products";
+export type CardStatus = "hidden" | "share" | "chat" | "products";
