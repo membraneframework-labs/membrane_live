@@ -92,8 +92,7 @@ defmodule MembraneLive.HLS.FileStorage do
   defp notify_playlist_update(directory, name, contents) do
     name_without_extension = String.replace(name, ".m3u8", "")
 
-    if !String.contains?(contents, "\nmuxed_segment_1") and
-         String.contains?(contents, "\nmuxed_segment_0") do
+    if send_first_segment_notification?(contents) do
       "output/" <> event_id = directory
       PubSub.broadcast(MembraneLive.PubSub, event_id, :first_segment_ready)
     end
@@ -105,6 +104,11 @@ defmodule MembraneLive.HLS.FileStorage do
       name_without_extension,
       {:manifest_update_partial, segment, partial}
     )
+  end
+
+  defp send_first_segment_notification?(contents) do
+    !String.contains?(contents, "\nmuxed_segment_1") and
+      String.contains?(contents, "\nmuxed_segment_0")
   end
 
   defp remove_partial_from_ets(partial) do

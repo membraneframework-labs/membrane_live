@@ -160,7 +160,8 @@ defmodule MembraneLiveWeb.HLSController do
 
   defp send_playlist(conn, path) do
     if conn |> get_req_header("user-agent") |> is_ios_user?() do
-      get_non_ll_hls_playlist(path)
+      path
+      |> get_non_ll_hls_playlist()
       |> then(&Conn.send_resp(conn, 200, &1))
     else
       conn |> Conn.send_file(200, path)

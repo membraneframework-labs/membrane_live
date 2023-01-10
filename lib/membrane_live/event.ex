@@ -343,13 +343,13 @@ defmodule MembraneLive.Event do
   defp handle_playlist_playable(state) do
     :ets.insert_new(
       :client_start_timestamps,
-      {state.event_id, System.monotonic_time(:millisecond) + state.target_segment_duration}
+      {state.event_id, System.monotonic_time(:millisecond) - state.target_segment_duration}
     )
 
     state = %{
       state
       | start_time:
-          DateTime.utc_now() |> DateTime.add(state.target_segment_duration, :millisecond)
+          DateTime.utc_now() |> DateTime.add(-state.target_segment_duration, :millisecond)
     }
 
     send_broadcast(state)
