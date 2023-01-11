@@ -11,6 +11,20 @@ defmodule MembraneLive.HLS.Helpers do
     [hls_output_mount_path(), prefix, filename] |> Path.join()
   end
 
+  @spec ll_hls_tags :: [binary]
+  def ll_hls_tags() do
+    """
+    #EXT-X-SERVER-CONTROL
+    #EXT-X-PART-INF
+    #EXT-X-PART
+    #EXT-X-PRELOAD-HINT
+    #EXT-X-RENDITION-REPORT
+    #EXT-X-SKIP
+    """
+    |> String.trim()
+    |> String.split("\n")
+  end
+
   @spec hls_output_mount_path() :: String.t()
   def hls_output_mount_path(),
     do: MembraneLive.get_env!(:hls_output_mount_path)

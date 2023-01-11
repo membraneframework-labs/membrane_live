@@ -23,7 +23,7 @@ defmodule MembraneLiveWeb.HLSController do
     segment = String.to_integer(segment)
     partial = String.to_integer(partial)
 
-    send_manifest(conn, prefix, filename, segment, partial)
+    handle_playlist_partial_request(conn, prefix, filename, segment, partial)
   end
 
   def index(conn, %{"filename" => filename} = params) do
@@ -60,23 +60,16 @@ defmodule MembraneLiveWeb.HLSController do
 
   defp handle_playlist_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
-
-    # Send manifest as soon as first segment is fully generated
-    send_manifest(conn, prefix, filename, 1, 0)
-  end
-
-  defp handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
-    prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
     path = Helpers.hls_output_path(prefix, filename)
 
     if File.exists?(path) do
-      conn |> Conn.send_file(200, path)
+      send_playlist(conn, path)
     else
       conn |> Conn.send_resp(404, "File not found")
     end
   end
 
-  defp send_manifest(
+  defp handle_playlist_partial_request(
          conn,
          prefix,
          filename,
@@ -93,6 +86,17 @@ defmodule MembraneLiveWeb.HLSController do
 
     if partial_present_in_manifest?(prefix, filename, segment, partial) do
       path = Helpers.hls_output_path(prefix, filename)
+      send_playlist(conn, path)
+    else
+      conn |> Conn.send_resp(404, "File not found")
+    end
+  end
+
+  defp handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
+    prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
+    path = Helpers.hls_output_path(prefix, filename)
+
+    if File.exists?(path) do
       conn |> Conn.send_file(200, path)
     else
       conn |> Conn.send_resp(404, "File not found")
@@ -110,7 +114,7 @@ defmodule MembraneLiveWeb.HLSController do
 
   defp await_manifest_update(target_segment, target_partial) do
     receive do
-      {:manifest_update, segment, partial}
+      {:manifest_update_partial, segment, partial}
       when (segment == target_segment and partial >= target_partial) or segment > target_segment ->
         :ok
     after
@@ -152,6 +156,30 @@ defmodule MembraneLiveWeb.HLSController do
       @partial_update_timeout_ms ->
         :error
     end
+  end
+
+  defp send_playlist(conn, path) do
+    if conn |> get_req_header("user-agent") |> is_ios_user?() do
+      path
+      |> get_non_ll_hls_playlist()
+      |> then(&Conn.send_resp(conn, 200, &1))
+    else
+      conn |> Conn.send_file(200, path)
+    end
+  end
+
+  defp is_ios_user?([]), do: false
+
+  defp is_ios_user?([user_agent]), do: String.contains?(user_agent, "iPhone OS")
+
+  defp get_non_ll_hls_playlist(path) do
+    path
+    |> File.read!()
+    |> String.split("\n")
+    |> Enum.filter(fn line ->
+      Enum.all?(Helpers.ll_hls_tags(), fn tag -> not String.contains?(line, tag) end)
+    end)
+    |> Enum.join("\n")
   end
 
   defp find_partial_in_ets(partial) do
