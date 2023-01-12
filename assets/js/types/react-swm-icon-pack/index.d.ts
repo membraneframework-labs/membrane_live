@@ -43,6 +43,7 @@ declare module "react-swm-icon-pack" {
   export const ScreenShare: Icon;
   export const Search: Icon;
   export const Settings: Icon;
+  export const Share1: Icon;
   export const Speaker0: Icon;
   export const Speaker1: Icon;
   export const Speaker2: Icon;
