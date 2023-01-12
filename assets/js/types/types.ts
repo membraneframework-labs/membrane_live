@@ -150,8 +150,3 @@ export type Product = {
   itemUrl: string;
   imageUrl: string;
 };
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 8642178 (Share list)
