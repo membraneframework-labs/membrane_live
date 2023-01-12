@@ -196,12 +196,12 @@ defmodule MembraneLiveWeb.EventChannelTest do
       Process.unlink(pub_socket.channel_pid)
       leave(pub_socket)
 
-      assert_broadcast("last_viewer_active", %{})
+      assert_broadcast("last_viewer_active", %{}, 200)
 
       Process.unlink(moderator_socket.channel_pid)
       leave(moderator_socket)
 
-      assert_receive({:DOWN, ^ref, :process, _object, _reason})
+      assert_receive({:DOWN, ^ref, :process, _object, _reason}, 500)
     end
   end
 

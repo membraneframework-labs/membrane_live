@@ -79,7 +79,10 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "1.0.0"},
 
       # HLS_Endpoint deps
-      {:membrane_http_adaptive_stream_plugin, "~> 0.9.0", override: true},
+      {:membrane_http_adaptive_stream_plugin,
+       github: "membraneframework/membrane_http_adaptive_stream_plugin",
+       branch: "no-bandwidth-computation",
+       override: true},
       {:membrane_mp4_plugin, "~> 0.17.0", override: true},
       {:membrane_aac_plugin, "~> 0.12.0"},
       {:membrane_aac_fdk_plugin, "~> 0.13.0"},
