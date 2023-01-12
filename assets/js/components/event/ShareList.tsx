@@ -35,8 +35,6 @@ const CopyLinkListElement = () => {
   return <ListElement name="Copy Link" icon={<Copy />} buttonHandler={handleCopy} />;
 };
 
-//TODO Make LinkElement and change the 3 components below
-
 type LinkElementType = {
   url: string;
   name: string;
@@ -45,7 +43,7 @@ type LinkElementType = {
 };
 
 const LinkElement = ({ url, name, icon, logoClass }: LinkElementType) => (
-  <a href={url} target="_blank">
+  <a href={url} target="_blank" rel="noreferrer">
     <ListElement name={name} icon={icon} logoClass={logoClass} />
   </a>
 );
