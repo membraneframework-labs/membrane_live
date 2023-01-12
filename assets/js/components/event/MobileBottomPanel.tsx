@@ -43,20 +43,21 @@ export const MobileBottomPanel = ({
         </div>
 
         <div className="MobileBottomPanelHeader"></div>
-      </div>
-      <div className="MobileBottomPanelContent">
-        {card === "share" && <ShareList eventTitle={eventTitle} />}
-        {card === "products" && <ProductsList products={products} />}
-        {card === "chat" && (
-          <ChatBox
-            client={client}
-            eventChannel={eventChannel}
-            messages={chatMessages}
-            isChatLoaded={isChatLoaded}
-            isBannedFromChat={isBannedFromChat}
-            isRecording={false}
-          />
-        )}
+
+        <div className="MobileBottomPanelContent">
+          {card === "share" && <ShareList eventTitle={eventTitle} />}
+          {card === "products" && <ProductsList products={products} />}
+          {card === "chat" && (
+            <ChatBox
+              client={client}
+              eventChannel={eventChannel}
+              messages={chatMessages}
+              isChatLoaded={isChatLoaded}
+              isBannedFromChat={isBannedFromChat}
+              isRecording={false}
+            />
+          )}
+        </div>
       </div>
     </Slide>
   );
