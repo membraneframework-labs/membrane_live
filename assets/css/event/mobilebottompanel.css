@@ -1,17 +1,15 @@
 .MobileBottomPanel {
-  position: fixed;
-  z-index: 1000;
+  z-index: 100;
   width: 100%;
   background-color: white;
+  border-radius: 16px 16px 0 0;
+  overscroll-behavior-y: contain;
+}
 
-  border-radius: 16px;
-  bottom: -60vh;
-
+.MobileBottomPanelShadow {
   -webkit-box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
   -moz-box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
   box-shadow: 0px -4px 25px 0px rgba(66, 68, 90, 0.45);
-
-  overscroll-behavior-y: contain;
 }
 
 .MobileBottomPanelTopBar {
@@ -36,37 +34,4 @@
   align-items: center;
   height: 50vh;
   width: 100%;
-}
-
-.SlideInAnimation {
-  animation-duration: 1s;
-  animation-name: slideIn;
-  animation-timing-function: ease;
-  animation-fill-mode: forwards;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-60vh);
-  }
-}
-
-.SlideOutAnimation {
-  animation-duration: 1s;
-  animation-name: slideOut;
-  animation-fill-mode: forwards;
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateY(-60vh);
-  }
-
-  to {
-    transform: translateY(0);
-  }
 }

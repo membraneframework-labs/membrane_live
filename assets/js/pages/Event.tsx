@@ -19,7 +19,6 @@ import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
 import { pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
-import { useStartStream } from "../utils/StreamStartContext";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { ScreenTypeContext } from "../utils/ScreenTypeContext";
