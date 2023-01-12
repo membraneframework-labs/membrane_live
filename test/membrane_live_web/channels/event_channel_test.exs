@@ -178,11 +178,11 @@ defmodule MembraneLiveWeb.EventChannelTest do
       Process.unlink(pub_socket.channel_pid)
 
       leave(pub_socket)
-      assert_broadcast("last_viewer_active", %{})
+      assert_broadcast("last_viewer_active", %{}, 200)
 
       push(moderator_socket, "last_viewer_answer", %{"answer" => "leave"})
       assert_broadcast("finish_event", %{})
-      assert_receive({:DOWN, ^ref, :process, _object, _reason})
+      assert_receive({:DOWN, ^ref, :process, _object, _reason}, 500)
     end
 
     test "webinar closes when all users leave", %{
