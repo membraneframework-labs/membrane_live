@@ -90,6 +90,8 @@ defmodule MembraneLive.Event do
       output_directory: "output/#{event_id}",
       target_window_duration: :infinity,
       segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
+      partial_segment_duration:
+        SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
       mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
       hls_mode: :muxed_av,
       broadcast_mode: :live,
