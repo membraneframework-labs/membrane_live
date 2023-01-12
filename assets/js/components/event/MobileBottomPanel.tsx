@@ -3,13 +3,13 @@ import ProductsList from "./ProductsList";
 import ChatBox from "./ChatBox";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { useContext } from "react";
-import type { ChatMessage, Client, Product } from "../../types/types";
+import type { CardStatus, ChatMessage, Client, Product } from "../../types/types";
 import "../../../css/event/mobilebottompanel.css";
 import { Slide } from "@chakra-ui/react";
 import ShareList from "./ShareList";
 
 type Props = {
-  card: Card;
+  card: CardStatus;
   client: Client;
   eventChannel: Channel | undefined;
   onBarClick: () => void;
