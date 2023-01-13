@@ -11,8 +11,11 @@ import MobileHlsBar from "./MobileHlsBar";
 import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, CardStatus } from "../../types/types";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
-import "../../../css/event/streamarea.css";
 import { useStartStream } from "../../utils/StreamStartContext";
+import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
+
+import "../../../css/event/streamarea.css";
+
 
 type StreamAreaProps = {
   client: Client;
@@ -48,8 +51,12 @@ const StreamArea = ({
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const screenType = useContext(ScreenTypeContext);
+  const { device, orientation } = useContext(ScreenTypeContext);
   const { setStreamStart } = useStartStream();
   const [card, setCard] = useState<CardStatus>("hidden");
+  const showMobileBottomBar = device === "mobile" || orientation === "portrait";
+
+  useAutoHideMobileBottomBar(setCard);
 
   const switchAsking = useCallback(
     (isAsking: boolean) => {
@@ -110,7 +117,7 @@ const StreamArea = ({
                   eventChannel={eventChannel}
                   addMessage={undefined}
                 />
-                {screenType.device == "mobile" && (
+                {device === "mobile" && (
                   <>
                     <MobileRightSidebar setCard={setCard} />
                     <MobileHlsBar
@@ -141,7 +148,7 @@ const StreamArea = ({
           setMode={setMode}
         />
 
-        {screenType.device == "mobile" && (
+        {showMobileBottomBar && (
           <MobileBottomPanel
             eventChannel={eventChannel}
             isChatLoaded={isChatLoaded}
