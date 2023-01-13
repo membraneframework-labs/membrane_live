@@ -16,7 +16,6 @@ import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomB
 
 import "../../../css/event/streamarea.css";
 
-
 type StreamAreaProps = {
   client: Client;
   eventChannel: Channel | undefined;
