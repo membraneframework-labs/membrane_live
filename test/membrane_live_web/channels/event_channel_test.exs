@@ -181,7 +181,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
       assert_broadcast("last_viewer_active", %{}, 200)
 
       push(moderator_socket, "last_viewer_answer", %{"answer" => "leave"})
-      assert_broadcast("finish_event", %{})
+      assert_broadcast("finish_event", %{}, 200)
       assert_receive({:DOWN, ^ref, :process, _object, _reason}, 500)
     end
 

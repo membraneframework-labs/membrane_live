@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { redirectToHomePage, syncParticipantsNumber } from "../../utils/headerUtils";
-import { ArrowLeft, Users, Copy } from "react-swm-icon-pack";
+import { ArrowLeft, Users } from "react-swm-icon-pack";
 import {
   storageGetPicture,
   sessionStorageGetIsPresenter,
@@ -26,6 +26,7 @@ import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import type { Client, EventInfo } from "../../types/types";
 import "../../../css/event/header.css";
 import { cancelPresentingRequest, getPrivateChannelLink } from "../../utils/channelUtils";
+import ShareButton from "./ShareButton";
 
 type ArrowLeftPopoverProps = {
   eventChannel: Channel | undefined;
@@ -95,10 +96,6 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
     if (!isRecording) syncParticipantsNumber(eventChannel, setParticipantsNumber), [eventChannel];
   }, [eventChannel, isRecording]);
 
-  const handleCopyButton = () => {
-    navigator.clipboard.writeText(window.location.href);
-  };
-
   const formatDate = (date: Date) => {
     return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
@@ -154,14 +151,7 @@ const Header = ({ client, eventChannel, isRecording, eventInfo }: HeaderProps) =
           )}
         </div>
       </div>
-      {screenType.device == "desktop" && (
-        <div className="CopyLink">
-          <p className="Link"> {window.location.href} </p>
-          <button className="CopyButton" onClick={handleCopyButton}>
-            <Copy className="CopyIcon" />
-          </button>
-        </div>
-      )}
+      {screenType.device == "desktop" && <ShareButton eventTitle={eventInfo.title} />}
       {screenType.device == "desktop" && (
         <UserField
           eventChannel={eventChannel}

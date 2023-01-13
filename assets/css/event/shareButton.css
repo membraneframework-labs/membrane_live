@@ -1,0 +1,68 @@
+.CloseShareModal {
+  color: var(--bg-light-color-1);
+  background-color: var(--font-dark-color);
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1.4rem;
+  padding: 1rem 1.5rem;
+  min-width: 6rem;
+}
+
+.ListShareElement {
+  display: flex;
+  flex-direction: row;
+  gap: 3rem;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.ShareElementLogo,
+.ShareElementText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ShareElementLogo {
+  box-sizing: content-box;
+  background: var(--bg-light-color-3);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  text-align: center;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.ShareElementText {
+  font-size: 1.6rem;
+  color: var(--font-dark-color);
+}
+
+.ShareListElementsWrapper {
+  padding: 0 1.5rem;
+}
+
+.ShareTitle {
+  font-size: 2rem;
+  color: var(--font-dark-color);
+  font-weight: 600;
+}
+
+.ShareTitleWrapper {
+  padding: 0.5rem 1.5rem 0 1.5rem;
+}
+
+/* Logos */
+.FacebookLogo {
+  background: #4267b2;
+}
+
+.TwitterLogo {
+  background: #00acee;
+}
+
+.MessengerLogo {
+  background: #006aff;
+}

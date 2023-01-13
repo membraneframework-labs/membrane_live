@@ -3,12 +3,13 @@ import ProductsList from "./ProductsList";
 import ChatBox from "./ChatBox";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { useContext } from "react";
-import type { ChatMessage, Client, Product } from "../../types/types";
+import type { CardStatus, ChatMessage, Client, Product } from "../../types/types";
 import "../../../css/event/mobilebottompanel.css";
 import { Slide } from "@chakra-ui/react";
+import ShareList from "./ShareList";
 
 type Props = {
-  card: string;
+  card: CardStatus;
   client: Client;
   eventChannel: Channel | undefined;
   onBarClick: () => void;
@@ -16,6 +17,7 @@ type Props = {
   chatMessages: ChatMessage[];
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
+  eventTitle: string;
 };
 
 export const MobileBottomPanel = ({
@@ -27,6 +29,7 @@ export const MobileBottomPanel = ({
   eventChannel,
   isChatLoaded,
   isBannedFromChat,
+  eventTitle,
 }: Props) => {
   const { device } = useContext(ScreenTypeContext);
   const isOpen = card !== "hidden";
@@ -42,6 +45,7 @@ export const MobileBottomPanel = ({
         <div className="MobileBottomPanelHeader"></div>
 
         <div className="MobileBottomPanelContent">
+          {card === "share" && <ShareList eventTitle={eventTitle} />}
           {card === "products" && <ProductsList products={products} />}
           {card === "chat" && (
             <ChatBox

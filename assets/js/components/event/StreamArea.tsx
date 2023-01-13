@@ -147,6 +147,7 @@ const StreamArea = ({
             products={products}
             chatMessages={chatMessages}
             card={card}
+            eventTitle={eventTitle}
             onBarClick={() => setCard("hidden")}
           />
         )}

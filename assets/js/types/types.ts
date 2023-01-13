@@ -8,6 +8,8 @@ export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
 
 export type ClientStatus = "not_presenter" | "idle" | "connected";
 
+export type CardStatus = "hidden" | "share" | "chat" | "products";
+
 export interface User {
   name: string;
   email: string;
@@ -148,5 +150,3 @@ export type Product = {
   itemUrl: string;
   imageUrl: string;
 };
-
-export type CardStatus = "hidden" | "share" | "chat" | "products";
