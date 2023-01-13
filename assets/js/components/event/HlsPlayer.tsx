@@ -14,13 +14,15 @@ type HlsPlayerProps = {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   addMessage: ((offset: number) => void) | undefined;
   presenterName: string | undefined;
-  setCard: React.Dispatch<React.SetStateAction<CardStatus>>;
   eventChannel?: Channel | undefined;
+  setCard?: React.Dispatch<React.SetStateAction<CardStatus>>;
 };
 
-const HlsPlayer = ({ attachVideo, addMessage, presenterName, setCard, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel, setCard }: HlsPlayerProps) => {
   const screenType = useContext(ScreenTypeContext);
   const playerRef = useRef<HTMLVideoElement>(null);
+
+  const showMobileSideBar = screenType.device === "mobile" && setCard;
 
   useEffect(() => {
     attachVideo(playerRef.current);
@@ -62,7 +64,7 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, setCard, eventChann
           </div>
         )}
         {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
-        {screenType.device === "mobile" && <MobileRightSidebar setCard={setCard} />}
+        {showMobileSideBar && <MobileRightSidebar setCard={setCard} />}
       </div>
     </div>
   );
