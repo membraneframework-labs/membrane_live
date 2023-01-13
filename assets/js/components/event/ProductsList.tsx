@@ -3,15 +3,21 @@ import ProductGenericComponent from "./ProductGenericComponent";
 
 type ProductsListProps = {
   products: Product[];
+  enablePictureInPicture: () => void;
 };
 
-const ProductsList = ({ products }: ProductsListProps) => {
+const ProductsList = ({ products, enablePictureInPicture }: ProductsListProps) => {
+  const openInNewTab = (link: string) => {
+    enablePictureInPicture();
+    window.open(link);
+  };
+
   return (
     <div className="ProductList">
       {products.map((product) => (
-        <a key={product.id} href={product.itemUrl} target="_blank" rel="noreferrer">
+        <button key={product.id} onClick={() => openInNewTab(product.itemUrl)}>
           <ProductGenericComponent product={product} />
-        </a>
+        </button>
       ))}
     </div>
   );

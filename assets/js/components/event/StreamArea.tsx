@@ -3,7 +3,6 @@ import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
-import { useHls } from "../../utils/useHls";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { RotateLeft } from "react-swm-icon-pack";
 import { syncAmIPresenter } from "../../utils/modePanelUtils";
@@ -14,8 +13,6 @@ import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
 import { useStartStream } from "../../utils/StreamStartContext";
-import { config } from "../../utils/const";
-import { useAutoHideMobileBottomBar } from "./useAutoHideMobileBottomBar";
 
 type StreamAreaProps = {
   client: Client;
@@ -28,6 +25,9 @@ type StreamAreaProps = {
   chatMessages: ChatMessage[];
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
+  attachVideo: (videoElem: HTMLVideoElement | null) => void;
+  setSrc: React.Dispatch<React.SetStateAction<string>>;
+  enablePictureInPicture: () => void;
 };
 
 const StreamArea = ({
@@ -41,16 +41,15 @@ const StreamArea = ({
   chatMessages,
   isChatLoaded,
   isBannedFromChat,
+  attachVideo,
+  setSrc,
+  enablePictureInPicture,
 }: StreamAreaProps) => {
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
-  const { attachVideo, setSrc } = useHls(true, config);
-  const { device, orientation } = useContext(ScreenTypeContext);
+  const screenType = useContext(ScreenTypeContext);
   const { setStreamStart } = useStartStream();
   const [card, setCard] = useState<CardStatus>("hidden");
-  const showMobileBottomBar = device === "mobile" || orientation === "portrait";
-
-  useAutoHideMobileBottomBar(setCard);
 
   const switchAsking = useCallback(
     (isAsking: boolean) => {
@@ -91,7 +90,7 @@ const StreamArea = ({
 
   return (
     <div className="StreamArea">
-      {device === "desktop" && (
+      {screenType.device == "desktop" && (
         <ModePanel
           mode={mode}
           setMode={setMode}
@@ -101,7 +100,7 @@ const StreamArea = ({
         />
       )}
       <div className="Stream">
-        {mode === "hls" && (
+        {mode == "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
               <>
@@ -111,7 +110,7 @@ const StreamArea = ({
                   eventChannel={eventChannel}
                   addMessage={undefined}
                 />
-                {device === "mobile" && (
+                {screenType.device == "mobile" && (
                   <>
                     <MobileRightSidebar setCard={setCard} />
                     <MobileHlsBar
@@ -142,7 +141,7 @@ const StreamArea = ({
           setMode={setMode}
         />
 
-        {showMobileBottomBar && (
+        {screenType.device == "mobile" && (
           <MobileBottomPanel
             eventChannel={eventChannel}
             isChatLoaded={isChatLoaded}
@@ -153,6 +152,7 @@ const StreamArea = ({
             card={card}
             eventTitle={eventTitle}
             onBarClick={() => setCard("hidden")}
+            enablePictureInPicture={enablePictureInPicture}
           />
         )}
       </div>

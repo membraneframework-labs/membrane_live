@@ -1,10 +1,13 @@
 import { Channel } from "phoenix";
 import ProductsList from "./ProductsList";
 import ChatBox from "./ChatBox";
+import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import { useContext } from "react";
 import type { CardStatus, ChatMessage, Client, Product } from "../../types/types";
-import "../../../css/event/mobilebottompanel.css";
 import { Slide } from "@chakra-ui/react";
 import ShareList from "./ShareList";
+
+import "../../../css/event/mobilebottompanel.css";
 
 type Props = {
   card: CardStatus;
@@ -16,6 +19,7 @@ type Props = {
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
   eventTitle: string;
+  enablePictureInPicture: () => void;
 };
 
 export const MobileBottomPanel = ({
@@ -28,9 +32,12 @@ export const MobileBottomPanel = ({
   isChatLoaded,
   isBannedFromChat,
   eventTitle,
+  enablePictureInPicture,
 }: Props) => {
+  const { device } = useContext(ScreenTypeContext);
   const isOpen = card !== "hidden";
 
+  if (device !== "mobile") return null;
   return (
     <Slide direction="bottom" in={isOpen}>
       <div className={`MobileBottomPanel ${isOpen ? "MobileBottomPanelShadow" : ""}`}>
@@ -39,10 +46,9 @@ export const MobileBottomPanel = ({
         </div>
 
         <div className="MobileBottomPanelHeader"></div>
-
         <div className="MobileBottomPanelContent">
           {card === "share" && <ShareList eventTitle={eventTitle} />}
-          {card === "products" && <ProductsList products={products} />}
+          {card === "products" && <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />}
           {card === "chat" && (
             <ChatBox
               client={client}

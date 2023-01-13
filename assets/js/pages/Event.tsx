@@ -17,7 +17,7 @@ import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
-import { pageTitlePrefix } from "../utils/const";
+import { config, pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
@@ -25,6 +25,7 @@ import { ScreenTypeContext } from "../utils/ScreenTypeContext";
 import type { Client, EventInfo, Mode, Participant, PresenterProposition, Toast } from "../types/types";
 import "../../css/event/event.css";
 import { useWebinarProducts } from "../utils/useWebinarProducts";
+import { useHls } from "../utils/useHls";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -47,6 +48,8 @@ const Event = () => {
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
+
+  const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, config);
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -126,6 +129,9 @@ const Event = () => {
           chatMessages={chatMessages}
           isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
+          attachVideo={attachVideo}
+          setSrc={setSrc}
+          enablePictureInPicture={enablePictureInPicture}
         />
         {screenType.device == "desktop" && (
           <Sidebar
@@ -138,6 +144,7 @@ const Event = () => {
             removeProduct={removeProduct}
             participants={participants}
             isBannedFromChat={isBannedFromChat}
+            enablePictureInPicture={enablePictureInPicture}
           />
         )}
       </div>
