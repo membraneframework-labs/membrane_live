@@ -5,16 +5,20 @@ import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import { MobileRightSidebar } from "./MobileRightSidebar";
+import { CardStatus } from "../../types/types";
+
 import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   addMessage: ((offset: number) => void) | undefined;
   presenterName: string | undefined;
+  setCard: React.Dispatch<React.SetStateAction<CardStatus>>;
   eventChannel?: Channel | undefined;
 };
 
-const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({ attachVideo, addMessage, presenterName, setCard, eventChannel }: HlsPlayerProps) => {
   const screenType = useContext(ScreenTypeContext);
   const playerRef = useRef<HTMLVideoElement>(null);
 
@@ -58,6 +62,7 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
           </div>
         )}
         {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
+        {screenType.device === "mobile" && <MobileRightSidebar setCard={setCard} />}
       </div>
     </div>
   );
