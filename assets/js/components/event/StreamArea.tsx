@@ -92,7 +92,7 @@ const StreamArea = ({
                   addMessage={undefined}
                   setCard={setCard}
                 />
-                {device == "mobile" && (
+                {device === "mobile" && (
                   <MobileHlsBar
                     client={client}
                     eventTitle={eventTitle}
