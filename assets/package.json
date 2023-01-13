@@ -3,7 +3,8 @@
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
     "typing:check": "tsc --noEmit --skipLibCheck",
-    "lint:check": "eslint . --ext .ts,.tsx"
+    "lint:check": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --fix --ext .ts,.tsx"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.2.4",
