@@ -13,7 +13,7 @@ import {
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
+import { getErrorToast, lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
@@ -61,13 +61,23 @@ const Event = () => {
 
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
-        ? axiosWithInterceptor.get("/me").then(() => {
-            return {
-              token: storageGetAuthToken(),
-              presenter: sessionStorageGetIsPresenter(),
-              requestPresenting: storageGetPresentingRequest(),
-            };
-          })
+        ? axiosWithInterceptor
+            .get("/me")
+            .then(() => {
+              return {
+                token: storageGetAuthToken(),
+                presenter: sessionStorageGetIsPresenter(),
+                requestPresenting: storageGetPresentingRequest(),
+              };
+            })
+            .catch((error) => {
+              console.log(error);
+              if (error.response.status === 401) {
+                getErrorToast(toast, "Invalid access token. Please log in again.");
+              } else {
+                console.log("Unknown problem with fetching the user info.");
+              }
+            })
         : Promise.resolve({ username: client.name });
 
       promise.then((msg) => {

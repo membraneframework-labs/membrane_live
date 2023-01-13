@@ -31,6 +31,9 @@ export const deleteEvent = (uuid: string, toast: Toast, isRecording: boolean): v
     })
     .catch((error) => {
       console.log(error);
+      if (error.response.status === 401) {
+        getErrorToast(toast, "Problem with access token. Please log in again.");
+      }
       if (error.response.status === 403) {
         getErrorToast(toast, "You are not permitted to delete this webinar");
       } else {
