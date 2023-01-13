@@ -15,6 +15,7 @@ import { MobileBottomPanel } from "./MobileBottomPanel";
 import "../../../css/event/streamarea.css";
 import { useStartStream } from "../../utils/StreamStartContext";
 import { config } from "../../utils/const";
+import { useAutoHideMobileBottomBar } from "./useAutoHideMobileBottomBar";
 
 type StreamAreaProps = {
   client: Client;
@@ -44,9 +45,12 @@ const StreamArea = ({
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
   const [presenterName, setPresenterName] = useState<string>("");
   const { attachVideo, setSrc } = useHls(true, config);
-  const screenType = useContext(ScreenTypeContext);
+  const { device, orientation } = useContext(ScreenTypeContext);
   const { setStreamStart } = useStartStream();
   const [card, setCard] = useState<CardStatus>("hidden");
+  const showMobileBottomBar = device === "mobile" || orientation === "portrait";
+
+  useAutoHideMobileBottomBar(setCard);
 
   const switchAsking = useCallback(
     (isAsking: boolean) => {
@@ -87,7 +91,7 @@ const StreamArea = ({
 
   return (
     <div className="StreamArea">
-      {screenType.device == "desktop" && (
+      {device === "desktop" && (
         <ModePanel
           mode={mode}
           setMode={setMode}
@@ -97,7 +101,7 @@ const StreamArea = ({
         />
       )}
       <div className="Stream">
-        {mode == "hls" && (
+        {mode === "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
               <>
@@ -107,7 +111,7 @@ const StreamArea = ({
                   eventChannel={eventChannel}
                   addMessage={undefined}
                 />
-                {screenType.device == "mobile" && (
+                {device === "mobile" && (
                   <>
                     <MobileRightSidebar setCard={setCard} />
                     <MobileHlsBar
@@ -138,7 +142,7 @@ const StreamArea = ({
           setMode={setMode}
         />
 
-        {screenType.device == "mobile" && (
+        {showMobileBottomBar && (
           <MobileBottomPanel
             eventChannel={eventChannel}
             isChatLoaded={isChatLoaded}

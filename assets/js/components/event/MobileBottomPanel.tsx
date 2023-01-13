@@ -1,8 +1,6 @@
 import { Channel } from "phoenix";
 import ProductsList from "./ProductsList";
 import ChatBox from "./ChatBox";
-import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
-import { useContext } from "react";
 import type { CardStatus, ChatMessage, Client, Product } from "../../types/types";
 import "../../../css/event/mobilebottompanel.css";
 import { Slide } from "@chakra-ui/react";
@@ -31,10 +29,8 @@ export const MobileBottomPanel = ({
   isBannedFromChat,
   eventTitle,
 }: Props) => {
-  const { device } = useContext(ScreenTypeContext);
   const isOpen = card !== "hidden";
 
-  if (device !== "mobile") return null;
   return (
     <Slide direction="bottom" in={isOpen}>
       <div className={`MobileBottomPanel ${isOpen ? "MobileBottomPanelShadow" : ""}`}>
