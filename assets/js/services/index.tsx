@@ -2,10 +2,6 @@ import * as JwtApi from "./jwtApi";
 import { storageGetRefreshToken, storageSetJwt } from "../utils/storageUtils";
 import axios from "axios";
 
-const redirect = (suffix: string) => {
-  window.location.href = `${window.location.origin}${suffix}`;
-};
-
 const axiosWithInterceptor = axios.create();
 
 axiosWithInterceptor.interceptors.request.use(
@@ -33,8 +29,6 @@ axiosWithInterceptor.interceptors.response.use(
       return axiosWithInterceptor(updatedConfig);
     } catch (err) {
       JwtApi.destroyTokens();
-      alert("Your refresh token has expired. Please log in again.");
-      redirect("/auth");
       return Promise.reject(err);
     }
   }

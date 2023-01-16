@@ -13,7 +13,7 @@ import {
 } from "../utils/storageUtils";
 import StreamArea from "../components/event/StreamArea";
 import { useToast } from "@chakra-ui/react";
-import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
+import { getErrorToast, lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
@@ -87,19 +87,28 @@ const Event = () => {
           })
         : Promise.resolve({ username: client.name });
 
-      promise.then((msg) => {
-        const channel = socket.current.channel(`event:${getChannelId()}`, msg);
-        createEventChannel(
-          toast,
-          client,
-          channel,
-          setEventChannel,
-          setClient,
-          navigate,
-          (toast: Toast, timeout: number) =>
-            lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
-        );
-      });
+      promise
+        .then((msg) => {
+          const channel = socket.current.channel(`event:${getChannelId()}`, msg);
+          createEventChannel(
+            toast,
+            client,
+            channel,
+            setEventChannel,
+            setClient,
+            navigate,
+            (toast: Toast, timeout: number) =>
+              lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
+          );
+        })
+        .catch((error) => {
+          console.error("User info could not be obtained");
+          if (error.response.status === 401) {
+            getErrorToast(toast, "Invalid access token. Please log in again.");
+          } else {
+            console.log("Unknown problem with fetching the user info.");
+          }
+        });
     }
   }, [eventChannel, client.name, client, socket, toast, navigate]);
 
