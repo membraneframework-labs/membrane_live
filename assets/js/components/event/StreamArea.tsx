@@ -5,19 +5,19 @@ import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { RotateLeft } from "react-swm-icon-pack";
-import { syncAmIPresenter } from "../../utils/modePanelUtils";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, PlaylistPlayableMessage, Product, ChatMessage, CardStatus } from "../../types/types";
+import type { Mode, Client, Product, ChatMessage, CardStatus } from "../../types/types";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
-import { useStartStream } from "../../utils/StreamStartContext";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
 
 import "../../../css/event/streamarea.css";
 
 type StreamAreaProps = {
   client: Client;
+  amIPresenter: boolean;
+  presenterName: string;
   eventChannel: Channel | undefined;
   privateChannel: Channel | undefined;
   mode: Mode;
@@ -28,12 +28,13 @@ type StreamAreaProps = {
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
-  setSrc: React.Dispatch<React.SetStateAction<string>>;
   enablePictureInPicture: () => void;
 };
 
 const StreamArea = ({
   client,
+  amIPresenter,
+  presenterName,
   eventChannel,
   privateChannel,
   mode,
@@ -44,14 +45,9 @@ const StreamArea = ({
   isChatLoaded,
   isBannedFromChat,
   attachVideo,
-  setSrc,
   enablePictureInPicture,
 }: StreamAreaProps) => {
-  const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
-  const [presenterName, setPresenterName] = useState<string>("");
-  const screenType = useContext(ScreenTypeContext);
   const { device, orientation } = useContext(ScreenTypeContext);
-  const { setStreamStart } = useStartStream();
   const [card, setCard] = useState<CardStatus>("hidden");
   const showMobileBottomBar = device === "mobile" || orientation === "portrait";
 
@@ -64,30 +60,6 @@ const StreamArea = ({
     [eventChannel, client]
   );
 
-  const addHlsUrl = useCallback(
-    (message: PlaylistPlayableMessage): void => {
-      const link = window.location.href.split("event")[0] + "video/";
-      if (message.playlist_idl) {
-        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
-        setPresenterName(message.name);
-        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
-      } else {
-        setSrc("");
-        setPresenterName("");
-        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
-      }
-    },
-    [setSrc, setStreamStart]
-  );
-
-  useEffect(() => {
-    if (eventChannel) {
-      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
-      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
-      syncAmIPresenter(eventChannel, setAmIPresenter, client);
-    }
-  }, [addHlsUrl, client, eventChannel]);
-
   useEffect(() => {
     if (privateChannel) {
       privateChannel.on("presenter_remove", () => setMode("hls"));
@@ -96,7 +68,7 @@ const StreamArea = ({
 
   return (
     <div className="StreamArea">
-      {screenType.device == "desktop" && (
+      {device === "desktop" && (
         <ModePanel
           mode={mode}
           setMode={setMode}
@@ -106,7 +78,7 @@ const StreamArea = ({
         />
       )}
       <div className="Stream">
-        {mode == "hls" && (
+        {mode === "hls" && (
           <div className="HlsDiv">
             {presenterName ? (
               <>

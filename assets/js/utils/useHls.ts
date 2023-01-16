@@ -15,12 +15,15 @@ export const useHls = (
   const playerRef = useRef<HTMLVideoElement>();
   const { setStreamStart } = useStartStream();
 
-  const attachVideo = useCallback((video_ref: HTMLVideoElement | null) => {
-    if (hls && video_ref) {
-      playerRef.current = video_ref;
-      hls.current.attachMedia(video_ref);
-    }
-  }, []);
+  const attachVideo = useCallback(
+    (video_ref: HTMLVideoElement | null) => {
+      if (hls && video_ref) {
+        playerRef.current = video_ref;
+        hls.current.attachMedia(video_ref);
+      }
+    },
+    [hls, playerRef]
+  );
 
   const enablePictureInPicture = useCallback(() => {
     const video = playerRef.current;

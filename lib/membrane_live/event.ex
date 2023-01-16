@@ -400,7 +400,7 @@ defmodule MembraneLive.Event do
 
     stop_stream_message = %{playlist_idl: "", name: "", start_time: state.start_time}
 
-    if is_nil(state.playlist_idl) or map_size(state.peer_channels) == 0,
+    if is_nil(state.playlist_idl),
       do: stop_stream_message,
       else: start_stream_message
   end
