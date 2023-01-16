@@ -7,7 +7,7 @@ defmodule MembraneLive.Tokens.AuthToken do
 
   import MembraneLive.Helpers
 
-  @one_day 1
+  @one_day 24 * 60 * 60
 
   def token_config do
     :token_issuer
@@ -26,7 +26,7 @@ defmodule MembraneLive.Tokens.RefreshToken do
 
   import MembraneLive.Helpers
 
-  @one_week 7
+  @one_week 7 * 24 * 60 * 60
 
   @impl true
   def token_config do

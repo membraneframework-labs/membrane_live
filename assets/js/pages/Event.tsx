@@ -61,38 +61,37 @@ const Event = () => {
 
     if (!alreadyJoined && client.name) {
       const promise = client.isAuthenticated
-        ? axiosWithInterceptor
-            .get("/me")
-            .then(() => {
-              return {
-                token: storageGetAuthToken(),
-                presenter: sessionStorageGetIsPresenter(),
-                requestPresenting: storageGetPresentingRequest(),
-              };
-            })
-            .catch((error) => {
-              console.log(error);
-              if (error.response.status === 401) {
-                getErrorToast(toast, "Invalid access token. Please log in again.");
-              } else {
-                console.log("Unknown problem with fetching the user info.");
-              }
-            })
+        ? axiosWithInterceptor.get("/me").then(() => {
+            return {
+              token: storageGetAuthToken(),
+              presenter: sessionStorageGetIsPresenter(),
+              requestPresenting: storageGetPresentingRequest(),
+            };
+          })
         : Promise.resolve({ username: client.name });
 
-      promise.then((msg) => {
-        const channel = socket.current.channel(`event:${getChannelId()}`, msg);
-        createEventChannel(
-          toast,
-          client,
-          channel,
-          setEventChannel,
-          setClient,
-          navigate,
-          (toast: Toast, timeout: number) =>
-            lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
-        );
-      });
+      promise
+        .then((msg) => {
+          const channel = socket.current.channel(`event:${getChannelId()}`, msg);
+          createEventChannel(
+            toast,
+            client,
+            channel,
+            setEventChannel,
+            setClient,
+            navigate,
+            (toast: Toast, timeout: number) =>
+              lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
+          );
+        })
+        .catch((error) => {
+          console.error("User info could not be obtained");
+          if (error.response.status === 401) {
+            getErrorToast(toast, "Invalid access token. Please log in again.");
+          } else {
+            console.log("Unknown problem with fetching the user info.");
+          }
+        });
     }
   }, [eventChannel, client.name, client, socket, toast, navigate]);
 
