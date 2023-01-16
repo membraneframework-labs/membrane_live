@@ -136,7 +136,6 @@ const Event = () => {
 
   const addHlsUrl = useCallback(
     (message: PlaylistPlayableMessage): void => {
-      console.log(message);
       const link = window.location.href.split("event")[0] + "video/";
       if (message.playlist_idl) {
         setSrc(`${link}${message.playlist_idl}/index.m3u8`);

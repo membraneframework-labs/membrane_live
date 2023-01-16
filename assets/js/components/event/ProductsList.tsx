@@ -9,7 +9,9 @@ type ProductsListProps = {
 const ProductsList = ({ products, enablePictureInPicture }: ProductsListProps) => {
   const openInNewTab = (link: string) => {
     enablePictureInPicture();
-    window.open(link);
+    const popup = window.open(link);
+    // TODO change this to a proper promise-based asynchronous call
+    if (popup === null) setTimeout(() => document.exitPictureInPicture().catch(error => console.error("Picture in picture could not close", error)), 200);
   };
 
   return (

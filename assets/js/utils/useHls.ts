@@ -25,10 +25,10 @@ export const useHls = (
     [hls, playerRef]
   );
 
-  const enablePictureInPicture = useCallback(() => {
+  const enablePictureInPicture = useCallback(async () => {
     const video = playerRef.current;
     if (video && document.pictureInPictureEnabled) {
-      video.requestPictureInPicture().catch((e) => {
+      await video.requestPictureInPicture().catch((e) => {
         console.log("Picture in picture could not be opened when clicking the product link. Reason: ", e);
       });
     }
