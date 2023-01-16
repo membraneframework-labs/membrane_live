@@ -60,7 +60,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        {participant.isAuth && participant.isPresenter ? (
+        {participant.isAuth ? (participant.isPresenter ? (
           <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
             {presenterText.unset}
           </MenuItem>
@@ -73,7 +73,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
               {presenterText.setMain}
             </MenuItem>{" "}
           </>
-        )}
+        )) : <></>}
         {!participant.isModerator && (
           <MenuItem
             onClick={handleClick}
