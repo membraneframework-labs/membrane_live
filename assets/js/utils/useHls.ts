@@ -8,18 +8,31 @@ export const useHls = (
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
+  enablePictureInPicture: () => void;
 } => {
   const [src, setSrc] = useState<string>("");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
   const { setStreamStart } = useStartStream();
 
-  const attachVideo = useCallback((video_ref: HTMLVideoElement | null) => {
-    if (hls && video_ref) {
-      playerRef.current = video_ref;
-      hls.current.attachMedia(video_ref);
+  const attachVideo = useCallback(
+    (video_ref: HTMLVideoElement | null) => {
+      if (hls && video_ref) {
+        playerRef.current = video_ref;
+        hls.current.attachMedia(video_ref);
+      }
+    },
+    [hls, playerRef]
+  );
+
+  const enablePictureInPicture = useCallback(() => {
+    const video = playerRef.current;
+    if (video && document.pictureInPictureEnabled) {
+      video.requestPictureInPicture().catch((e) => {
+        console.log("Picture in picture could not be opened when clicking the product link. Reason: ", e);
+      });
     }
-  }, []);
+  }, [playerRef]);
 
   useEffect(() => {
     const initHls = () => {
@@ -37,7 +50,7 @@ export const useHls = (
         if (autoPlay) {
           playerRef?.current
             ?.play()
-            .catch(() => console.log("Unable to autoplay, HTMLVideoElement propably does not exist"));
+            .catch(() => console.log("Unable to autoplay, HTMLVideoElement probably does not exist"));
         }
       });
 
@@ -73,5 +86,5 @@ export const useHls = (
   }),
     [src];
 
-  return { attachVideo, setSrc };
+  return { attachVideo, setSrc, enablePictureInPicture };
 };

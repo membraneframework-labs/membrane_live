@@ -169,6 +169,7 @@ type ParticipantsListProps = {
   products: Product[];
   participants: Participant[];
   isBannedFromChat: boolean;
+  enablePictureInPicture: () => void;
 };
 
 export const addStatus = (all: Product[], productsMap: Record<string, Product[]>): ProductWithStatus[] =>
@@ -187,6 +188,7 @@ const Sidebar = ({
   removeProduct,
   participants,
   isBannedFromChat,
+  enablePictureInPicture,
 }: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<SidebarMode>("chat");
   const isMutating = useIsProductMutating();
@@ -253,7 +255,7 @@ const Sidebar = ({
           isRecording={false}
         />
       )}
-      {listMode === "products" && <ProductsList products={products} />}
+      {listMode === "products" && <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />}
       {listMode === "select-products" && client.isModerator && (
         <div className="ProductList">
           {productsWithStatus.map((product) => (

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Channel, Socket } from "phoenix";
 import { createEventChannel, createPrivateChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
 import Header from "../components/event/Header";
@@ -17,14 +17,25 @@ import { lastPersonPopup, presenterPopup } from "../utils/toastUtils";
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
-import { pageTitlePrefix } from "../utils/const";
+import { config, pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { ScreenTypeContext } from "../utils/ScreenTypeContext";
-import type { Client, EventInfo, Mode, Participant, PresenterProposition, Toast } from "../types/types";
+import type {
+  Client,
+  EventInfo,
+  Mode,
+  Participant,
+  PlaylistPlayableMessage,
+  PresenterProposition,
+  Toast,
+} from "../types/types";
 import "../../css/event/event.css";
 import { useWebinarProducts } from "../utils/useWebinarProducts";
+import { useHls } from "../utils/useHls";
+import { useStartStream } from "../utils/StreamStartContext";
+import { syncAmIPresenter } from "../utils/modePanelUtils";
 
 const Event = () => {
   const toast: Toast = useToast();
@@ -46,7 +57,13 @@ const Event = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
+  const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
+  const [presenterName, setPresenterName] = useState<string>("");
+
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
+
+  const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, config);
+  const { setStreamStart } = useStartStream();
 
   const socket = useRef(new Socket("/socket"));
   socket.current.connect();
@@ -108,6 +125,31 @@ const Event = () => {
     }
   }, [client.email, eventChannel]);
 
+  const addHlsUrl = useCallback(
+    (message: PlaylistPlayableMessage): void => {
+      console.log(message);
+      const link = window.location.href.split("event")[0] + "video/";
+      if (message.playlist_idl) {
+        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
+        setPresenterName(message.name);
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      } else {
+        setSrc("");
+        setPresenterName("");
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      }
+    },
+    [setSrc, setStreamStart]
+  );
+
+  useEffect(() => {
+    if (eventChannel) {
+      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
+      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
+      syncAmIPresenter(eventChannel, setAmIPresenter, client);
+    }
+  }, [addHlsUrl, client, eventChannel]);
+
   return (
     <div className="EventPage">
       {!client.name && <NamePopup client={client} setClient={setClient}></NamePopup>}
@@ -117,6 +159,8 @@ const Event = () => {
       <div className="MainGrid">
         <StreamArea
           client={client}
+          amIPresenter={amIPresenter}
+          presenterName={presenterName}
           eventChannel={eventChannel}
           privateChannel={privateChannel}
           mode={mode}
@@ -126,6 +170,8 @@ const Event = () => {
           chatMessages={chatMessages}
           isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
+          attachVideo={attachVideo}
+          enablePictureInPicture={enablePictureInPicture}
         />
         {screenType.device == "desktop" && (
           <Sidebar
@@ -138,6 +184,7 @@ const Event = () => {
             removeProduct={removeProduct}
             participants={participants}
             isBannedFromChat={isBannedFromChat}
+            enablePictureInPicture={enablePictureInPicture}
           />
         )}
       </div>
