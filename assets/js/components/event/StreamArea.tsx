@@ -7,10 +7,9 @@ import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { RotateLeft } from "react-swm-icon-pack";
 import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
-import type { Mode, Client, Product, ChatMessage, CardStatus } from "../../types/types";
-import { MobileRightSidebar } from "./MobileRightSidebar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
+import type { Mode, Client, Product, ChatMessage, CardStatus } from "../../types/types";
 
 import "../../../css/event/streamarea.css";
 
@@ -87,18 +86,16 @@ const StreamArea = ({
                   presenterName={presenterName}
                   eventChannel={eventChannel}
                   addMessage={undefined}
+                  setCard={setCard}
                 />
                 {device === "mobile" && (
-                  <>
-                    <MobileRightSidebar setCard={setCard} />
-                    <MobileHlsBar
-                      client={client}
-                      eventTitle={eventTitle}
-                      amIPresenter={amIPresenter}
-                      setMode={setMode}
-                      switchAsking={switchAsking}
-                    />
-                  </>
+                  <MobileHlsBar
+                    client={client}
+                    eventTitle={eventTitle}
+                    amIPresenter={amIPresenter}
+                    setMode={setMode}
+                    switchAsking={switchAsking}
+                  />
                 )}
               </>
             ) : (
