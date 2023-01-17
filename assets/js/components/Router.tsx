@@ -24,14 +24,7 @@ const Router = () => {
               </StreamStartProvider>
             }
           />
-          <Route
-            path="/recordings/*"
-            element={
-              <StreamStartProvider>
-                <Recording />
-              </StreamStartProvider>
-            }
-          />
+          <Route path="/recordings/*" element={<Recording />} />
         </Routes>
       </BrowserRouter>
     </ScreenTypeContext.Provider>
