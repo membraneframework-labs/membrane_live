@@ -30,6 +30,9 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
     unban: "Unban from the chat",
   };
 
+  const showPresenterOptions = participant.isAuth && participant.isPresenter;
+  const showNonpresenterOptions = participant.isAuth && !participant.isPresenter;
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     const clickedValue = (e.target as HTMLTextAreaElement).value;
     switch (clickedValue) {
@@ -60,11 +63,12 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        {participant.isAuth ? (participant.isPresenter ? (
+        {showPresenterOptions && (
           <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
             {presenterText.unset}
           </MenuItem>
-        ) : (
+        )}
+        {showNonpresenterOptions && (
           <>
             <MenuItem onClick={handleClick} value={presenterText.setBasic} className="MenuOptionText">
               {presenterText.setBasic}
@@ -73,7 +77,7 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
               {presenterText.setMain}
             </MenuItem>{" "}
           </>
-        )) : <></>}
+        )}
         {!participant.isModerator && (
           <MenuItem
             onClick={handleClick}
