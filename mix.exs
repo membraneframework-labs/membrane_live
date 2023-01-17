@@ -56,7 +56,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "add-compositor-with-synchronization"},
+       github: "jellyfish-dev/membrane_rtc_engine", branch: "compositor-transformations"},
       {:membrane_rtp_plugin,
        github: "membraneframework/membrane_rtp_plugin",
        branch: "feature/outbound-retransmissions",
@@ -90,9 +90,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_opus_plugin, "~> 0.15.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.24.0", override: true},
       {:membrane_video_compositor_plugin,
-       github: "membraneframework-labs/membrane_video_compositor_plugin",
-       branch: "staging-live",
-       override: true},
+       github: "membraneframework-labs/membrane_video_compositor_plugin", override: true},
       {:membrane_generator_plugin, "~> 0.7.1", override: true},
       {:membrane_realtimer_plugin, "~> 0.5.0"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.10.0"},
@@ -100,7 +98,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_audio_mix_plugin,
        github: "membraneframework/membrane_audio_mix_plugin",
        branch: "auto-demands-mixer",
-       override: true}
+       override: true},
+      {:membrane_audio_filler_plugin, github: "membraneframework/membrane_audio_filler_plugin"}
     ]
   end
 
