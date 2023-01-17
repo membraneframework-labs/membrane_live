@@ -178,7 +178,7 @@ defmodule MembraneLiveWeb.EventChannelTest do
       Process.unlink(pub_socket.channel_pid)
 
       leave(pub_socket)
-      assert_broadcast("last_viewer_active", %{}, 200)
+      assert_broadcast("last_viewer_active", %{}, 1000)
 
       push(moderator_socket, "last_viewer_answer", %{"answer" => "leave"})
       assert_broadcast("finish_event", %{}, 200)

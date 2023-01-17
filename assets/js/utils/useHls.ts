@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Hls, { HlsConfig } from "hls.js";
-import { useStartStream } from "./StreamStartContext";
 
 export const useHls = (
   autoPlay: boolean,
@@ -13,7 +12,6 @@ export const useHls = (
   const [src, setSrc] = useState<string>("");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
   const playerRef = useRef<HTMLVideoElement>();
-  const { setStreamStart } = useStartStream();
 
   const attachVideo = useCallback(
     (video_ref: HTMLVideoElement | null) => {
@@ -78,7 +76,7 @@ export const useHls = (
     return () => {
       if (hls) hls.current.destroy();
     };
-  }, [attachVideo, autoPlay, hlsConfig, setStreamStart, src]);
+  }, [attachVideo, autoPlay, hlsConfig, src]);
 
   useEffect(() => {
     const video: HTMLVideoElement | null = document.getElementById("hlsVideo") as HTMLVideoElement;

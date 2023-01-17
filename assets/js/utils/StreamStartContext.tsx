@@ -20,6 +20,6 @@ export const StreamStartProvider = ({ children }: Props) => {
 
 export const useStartStream = (): StartStreamContextType => {
   const context = useContext(StreamStartContext);
-  if (!context) throw new Error("useUser must be used within a UserProvider");
+  if (!context) throw new Error("useStartStream must be used within a UserProvider");
   return context;
 };
