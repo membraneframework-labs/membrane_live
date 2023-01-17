@@ -143,8 +143,7 @@ defmodule Membrane.Live.Mixfile do
       ],
       "ecto.setup": [
         "ecto.create",
-        "ecto.migrate",
-        "run priv/repo/seeds.exs"
+        "ecto.migrate"
       ],
       "ecto.restart": [
         "ecto.drop",

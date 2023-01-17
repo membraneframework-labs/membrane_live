@@ -28,7 +28,6 @@ Next you have to initialize database with commands:
 ```sh
 mix ecto.create
 mix ecto.migrate
-mix run priv/repo/seeds.exs
 ```
 
 or simply with
