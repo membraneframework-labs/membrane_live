@@ -37,7 +37,11 @@ export const fetchTokenAndRedirect = async (
       })
       .catch((error) => {
         console.error(error);
-        getErrorToast(toast, "Couldn't get the user information. Please try again in a moment.");
+        if (error.response.status === 403) {
+          getErrorToast(toast, "Invalid access token. Please log in again.");
+        } else {
+          getErrorToast(toast, "Couldn't get the user information. Please try again in a moment.");
+        }
       });
   }
 };

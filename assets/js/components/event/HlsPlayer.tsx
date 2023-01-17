@@ -5,6 +5,9 @@ import HlsControlBar from "./HlsControlBar";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
+import { MobileRightSidebar } from "./MobileRightSidebar";
+import { CardStatus } from "../../types/types";
+
 import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {
@@ -12,11 +15,14 @@ type HlsPlayerProps = {
   addMessage: ((offset: number) => void) | undefined;
   presenterName: string | undefined;
   eventChannel?: Channel | undefined;
+  setCard?: React.Dispatch<React.SetStateAction<CardStatus>>;
 };
 
-const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: HlsPlayerProps) => {
+const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel, setCard }: HlsPlayerProps) => {
   const screenType = useContext(ScreenTypeContext);
   const playerRef = useRef<HTMLVideoElement>(null);
+
+  const showMobileSideBar = screenType.device === "mobile" && setCard;
 
   useEffect(() => {
     attachVideo(playerRef.current);
@@ -41,7 +47,15 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
       <div className="HlsPlayerWrapper">
         {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
         <MediaController className="HlsPlayerWrapper">
-          <video id="hlsVideo" ref={playerRef} slot="media" className="HlsPlayer" autoPlay={true} />
+          <video
+            id="hlsVideo"
+            ref={playerRef}
+            slot="media"
+            className="HlsPlayer"
+            autoPlay={true}
+            playsInline
+            controls={false}
+          />
           <HlsControlBar />
         </MediaController>
         {screenType.device === "desktop" && presenterName && (
@@ -50,6 +64,7 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel }: Hls
           </div>
         )}
         {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
+        {showMobileSideBar && <MobileRightSidebar setCard={setCard} />}
       </div>
     </div>
   );

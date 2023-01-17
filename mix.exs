@@ -71,6 +71,7 @@ defmodule Membrane.Live.Mixfile do
       {:bimap, "~> 1.2", override: true},
       {:ex_libsrtp, "~> 0.6.0", override: true},
       {:inflex, "~> 2.0.0"},
+      {:fake_turn, "0.2.4", override: true},
 
       # Otel
       {:opentelemetry, "1.0.5"},

@@ -30,6 +30,9 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
     unban: "Unban from the chat",
   };
 
+  const showPresenterOptions = participant.isAuth && participant.isPresenter;
+  const showNonpresenterOptions = participant.isAuth && !participant.isPresenter;
+
   const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     const clickedValue = (e.target as HTMLTextAreaElement).value;
     switch (clickedValue) {
@@ -60,11 +63,12 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
         <MenuVertical className="OptionButton" />
       </MenuButton>
       <MenuList>
-        {participant.isAuth && participant.isPresenter ? (
+        {showPresenterOptions && (
           <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
             {presenterText.unset}
           </MenuItem>
-        ) : (
+        )}
+        {showNonpresenterOptions && (
           <>
             <MenuItem onClick={handleClick} value={presenterText.setBasic} className="MenuOptionText">
               {presenterText.setBasic}
@@ -169,6 +173,7 @@ type ParticipantsListProps = {
   products: Product[];
   participants: Participant[];
   isBannedFromChat: boolean;
+  enablePictureInPicture: () => void;
 };
 
 export const addStatus = (all: Product[], productsMap: Record<string, Product[]>): ProductWithStatus[] =>
@@ -187,6 +192,7 @@ const Sidebar = ({
   removeProduct,
   participants,
   isBannedFromChat,
+  enablePictureInPicture,
 }: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<SidebarMode>("chat");
   const isMutating = useIsProductMutating();
@@ -253,7 +259,7 @@ const Sidebar = ({
           isRecording={false}
         />
       )}
-      {listMode === "products" && <ProductsList products={products} />}
+      {listMode === "products" && <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />}
       {listMode === "select-products" && client.isModerator && (
         <div className="ProductList">
           {productsWithStatus.map((product) => (
