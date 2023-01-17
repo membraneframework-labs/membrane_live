@@ -280,7 +280,7 @@ defmodule MembraneLive.Event do
 
   def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
     state = %{state | playlist_idl: Path.join(state.event_id, "")}
-    if state.first_segment_ready?, do: handle_playlist_playable(state)
+    state = if state.first_segment_ready?, do: handle_playlist_playable(state), else: state
 
     {:noreply, state}
   end
@@ -288,7 +288,7 @@ defmodule MembraneLive.Event do
   def handle_info(:first_segment_ready, state) do
     PubSub.unsubscribe(MembraneLive.PubSub, state.event_id)
     state = %{state | first_segment_ready?: true}
-    if state.playlist_idl, do: handle_playlist_playable(state)
+    state = if state.playlist_idl, do: handle_playlist_playable(state), else: state
 
     {:noreply, state}
   end
