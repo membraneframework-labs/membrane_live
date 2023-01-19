@@ -36,10 +36,7 @@ defmodule MembraneLive.HLS.FileStorage do
       ) do
     result = File.write(Path.join(directory, segment_filename), contents, [:binary, :append])
 
-    with {segment, manifest_name} <- Helpers.parse_filename(segment_filename),
-         manifest_path <- Path.join(directory, "#{manifest_name}.m3u8"),
-         manifest <- Helpers.read_manifest(manifest_path),
-         partial <- Helpers.get_partial_number(manifest, segment_filename, offset) do
+    with {segment, manifest_name} <- Helpers.parse_filename(segment_filename) do
       partial_ets_name = "muxed_segment_#{segment}_#{manifest_name}_#{offset}"
       add_partial_to_ets(partial_ets_name, contents)
 
@@ -47,14 +44,8 @@ defmodule MembraneLive.HLS.FileStorage do
         Process.sleep(@remove_partial_timeout_ms)
         remove_partial_from_ets(partial_ets_name)
       end)
-
-      PubSub.broadcast(
-        MembraneLive.PubSub,
-        manifest_name,
-        {:segment_update, {segment, partial}, {offset, byte_size(contents)}}
-      )
     else
-      err -> Membrane.Logger.error("Storing partial segment failed: #{inspect(err)}")
+      err -> Membrane.Logger.error("Adding partial to ETS failed: #{inspect(err)}")
     end
 
     result
