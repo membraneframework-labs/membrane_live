@@ -342,6 +342,12 @@ defmodule MembraneLive.Event do
     {:reply, stream_response_message(state), state}
   end
 
+  @impl true
+  def handle_cast(:finish_event, state) do
+    Engine.terminate(state.rtc_engine)
+    {:stop, :normal, state}
+  end
+
   defp handle_playlist_playable(state) do
     :ets.insert_new(
       :client_start_timestamps,
