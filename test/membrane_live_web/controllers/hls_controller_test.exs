@@ -39,8 +39,6 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
     test "new partial segment", %{conn: conn} do
       {segment, partial} = {0, 5}
-      {offset, length} = get_partial_offset_length(partial)
-
       0..(partial - 1) |> Enum.each(&store_partial_segment(0, &1))
 
       get_task = Task.async(fn -> get_partial_segment(conn, segment, partial) end)
@@ -50,7 +48,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
       Process.sleep(@mock_storage_latency_ms)
       store_partial_segment(segment, partial)
 
-      assert_receive({:segment_update, {^segment, ^partial}, {^offset, ^length}}, 1000)
+      assert_receive({:manifest_update_partial, ^segment, ^partial})
       pubsub_unsubscribe()
 
       conn = Task.await(get_task, @response_await_timeout_ms)

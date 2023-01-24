@@ -6,7 +6,6 @@ defmodule MembraneLiveWeb.HLSController do
   alias Plug.Conn
 
   @ets_key :partial_segments
-  @partial_update_timeout_ms 1000
   @manifest_update_timeout_ms 1000
 
   @spec index(Conn.t(), map) :: Conn.t()
@@ -49,7 +48,7 @@ defmodule MembraneLiveWeb.HLSController do
     prefix = Path.join(event_id, Map.get(params, "stream_id", ""))
     {offset, length} = conn |> get_req_header("range") |> Helpers.parse_bytes_range()
 
-    case await_partial_segment(prefix, segment_filename, offset, length) do
+    case await_partial_segment(prefix, segment_filename, offset) do
       {:file, path} ->
         conn |> Conn.send_file(200, path, offset, length)
 
@@ -123,7 +122,7 @@ defmodule MembraneLiveWeb.HLSController do
     end
   end
 
-  defp await_partial_segment(prefix, segment_filename, offset, length) do
+  defp await_partial_segment(prefix, segment_filename, offset) do
     ["muxed", "segment", segment, rest] = segment_filename |> String.split("_")
     filename_without_extension = String.replace(rest, ".m4s", "")
 
@@ -134,27 +133,7 @@ defmodule MembraneLiveWeb.HLSController do
         {:ets, content}
 
       [] ->
-        segment_path = Helpers.hls_output_path(prefix, segment_filename)
-        segment_size = segment_path |> File.stat!() |> Map.fetch!(:size)
-
-        if length != :all and segment_size < offset + length do
-          PubSub.subscribe(MembraneLive.PubSub, filename_without_extension)
-
-          await_segment_update(segment, offset, length)
-          PubSub.unsubscribe(MembraneLive.PubSub, filename_without_extension)
-        end
-
-        {:file, segment_path}
-    end
-  end
-
-  defp await_segment_update(segment, offset, length) do
-    receive do
-      {:segment_update, ^segment, {^offset, ^length}} ->
-        :ok
-    after
-      @partial_update_timeout_ms ->
-        :error
+        {:file, Helpers.hls_output_path(prefix, segment_filename)}
     end
   end
 
