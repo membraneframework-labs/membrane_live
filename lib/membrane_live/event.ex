@@ -328,6 +328,14 @@ defmodule MembraneLive.Event do
     end
   end
 
+  @impl true
+  def handle_call(:is_playlist_playable, _from, state) do
+    {:reply, stream_response_message(state), state}
+  end
+
+  @impl true
+  def handle_cast(:finish_event, state), do: close_webinar(state)
+
   defp close_webinar(state) do
     Engine.terminate(state.rtc_engine)
 
@@ -335,11 +343,6 @@ defmodule MembraneLive.Event do
     Webinars.mark_webinar_as_finished(state.event_id)
 
     {:stop, :normal, state}
-  end
-
-  @impl true
-  def handle_call(:is_playlist_playable, _from, state) do
-    {:reply, stream_response_message(state), state}
   end
 
   defp handle_playlist_playable(state) do

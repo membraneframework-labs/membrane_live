@@ -192,7 +192,12 @@ defmodule MembraneLiveWeb.EventChannel do
       # the Event and engine processes from the first join finish after second join has already happened
       # in this case the new moderator channel process will recieve :DOWN from the older Event process
       # it must restart the Event in that case
-      {:ok, socket} = create_event(socket)
+      socket =
+        case create_event(socket) do
+          {:ok, new_socket} -> new_socket
+          {:error, _reason} -> socket
+        end
+
       {:noreply, socket}
     else
       {:stop, :normal, socket}
@@ -209,6 +214,8 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in("finish_event", %{}, socket) do
     "event:" <> uuid = socket.topic
     Webinars.mark_webinar_as_finished(uuid)
+
+    GenServer.cast(socket.assigns.event_pid, :finish_event)
 
     broadcast!(socket, "finish_event", %{})
     {:noreply, socket}
@@ -527,11 +534,7 @@ defmodule MembraneLiveWeb.EventChannel do
   defp create_event(socket) do
     case :global.whereis_name(socket.assigns.event_id) do
       :undefined ->
-        if socket.assigns.is_moderator do
-          Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
-        else
-          {:error, :non_moderator}
-        end
+        maybe_start_event(socket)
 
       pid ->
         {:ok, pid}
@@ -555,7 +558,22 @@ defmodule MembraneLiveWeb.EventChannel do
         Reason: #{inspect(reason)}
         """)
 
-        {:error, %{reason: "failed to start event"}}
+        {:error, %{reason: "failed to start event: #{reason}"}}
+    end
+  end
+
+  defp maybe_start_event(socket) do
+    {:ok, webinar} = Webinars.get_webinar(socket.assigns.event_id)
+
+    cond do
+      webinar.is_finished ->
+        {:error, :webinar_finished}
+
+      socket.assigns.is_moderator ->
+        Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
+
+      true ->
+        {:error, :non_moderator}
     end
   end
 
