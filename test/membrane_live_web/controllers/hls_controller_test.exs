@@ -39,7 +39,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
     test "new partial segment", %{conn: conn} do
       {segment, partial} = {0, 5}
-      0..(partial - 1) |> Enum.each(&store_partial_segment(0, &1))
+      0..(partial - 1) |> Enum.each(&store_partial_segment(segment, &1))
 
       get_task = Task.async(fn -> get_partial_segment(conn, segment, partial) end)
 
@@ -120,6 +120,8 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     {offset, length} = get_partial_offset_length(partial)
 
     conn
+    |> get_partial_playlist(segment, partial)
+    |> recycle()
     |> put_req_header("range", "bytes=#{offset}-#{offset + length - 1}")
     |> get("/video/#{@event_id}/muxed_segment_#{segment}_#{@muxed_track_name}.m4s")
   end
