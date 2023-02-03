@@ -28,6 +28,9 @@ export const createEventChannel = (
       eventChannel.on("last_viewer_active", (message: { timeout: number }) => {
         lastViewerPopup(toast, message.timeout);
       });
+      eventChannel.on("error", (message: { message: string }) => {
+        getErrorToast(toast, message.message);
+      });
       setEventChannel(eventChannel);
       const isModerator = response?.is_moderator ? true : false;
       const email = response?.generated_key || client.email;
