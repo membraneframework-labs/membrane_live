@@ -94,7 +94,8 @@ defmodule MembraneLive.Event do
       sink_bin_config: %SinkBinConfig{
         hls_mode: :muxed_av,
         mode: :live,
-        target_window_duration: :infinity
+        target_window_duration: :infinity,
+        storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end
       }
     }
 
