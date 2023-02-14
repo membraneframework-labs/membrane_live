@@ -77,7 +77,7 @@ defmodule MembraneLive.Event do
       TURNManager.ensure_tls_turn_launched(integrated_turn_options, port: tls_turn_port)
     end
 
-    {:ok, _supervisor_pid, pid} = Membrane.RTC.Engine.start(rtc_engine_options, [])
+    {:ok, pid} = Membrane.RTC.Engine.start(rtc_engine_options, [])
     Engine.register(pid, self())
     Process.monitor(pid)
 
