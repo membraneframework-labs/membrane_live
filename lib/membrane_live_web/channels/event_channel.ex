@@ -211,6 +211,15 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_info(:endpoint_crashed, socket) do
+    push(socket, "error", %{
+      message: "WebRTC Endpoint has crashed. Please refresh the page to reconnect"
+    })
+
+    {:stop, :normal, socket}
+  end
+
   def handle_in("finish_event", %{}, socket) do
     "event:" <> uuid = socket.topic
     Webinars.mark_webinar_as_finished(uuid)
@@ -286,6 +295,7 @@ defmodule MembraneLiveWeb.EventChannel do
     "event:" <> id = socket.topic
     remove_from_presenters(email, id)
     remove_from_main_presenters(email, id)
+    send(socket.assigns.event_pid, {:remove_peer_channel, self(), socket.assigns.peer_id})
     {:noreply, socket}
   end
 

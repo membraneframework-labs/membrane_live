@@ -13,7 +13,7 @@ import {
   Modal,
   ModalBody,
 } from "@chakra-ui/react";
-import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
+import { MembraneWebRTC } from "@jellyfish-dev/membrane-webrtc-js";
 import {
   Cam,
   CamDisabled,

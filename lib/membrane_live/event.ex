@@ -10,14 +10,12 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{AudioMixerConfig, CompositorConfig}
-  alias Membrane.RTC.Engine.MediaEvent
+  alias Membrane.RTC.Engine.Endpoint.HLS.{MixerConfig, SinkBinConfig}
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias MembraneLive.Chats
   alias MembraneLive.Event.Timer
-  alias MembraneLive.HLS.FileStorage
   alias MembraneLive.Webinars
   alias Phoenix.PubSub
 
@@ -89,16 +87,16 @@ defmodule MembraneLive.Event do
       rtc_engine: pid,
       owner: self(),
       output_directory: "output/#{event_id}",
-      target_window_duration: :infinity,
       segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
       partial_segment_duration:
         SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
-      mixer_config: %{audio: %AudioMixerConfig{}, video: %CompositorConfig{}},
-      hls_mode: :muxed_av,
-      broadcast_mode: :live,
-      storage_function: fn directory ->
-        %FileStorage{directory: directory}
-      end
+      mixer_config: %MixerConfig{},
+      sink_bin_config: %SinkBinConfig{
+        hls_mode: :muxed_av,
+        mode: :live,
+        target_window_duration: :infinity,
+        storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end
+      }
     }
 
     :ok = Engine.add_endpoint(pid, endpoint)
@@ -131,29 +129,8 @@ defmodule MembraneLive.Event do
 
     state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
     Process.monitor(peer_channel_pid)
-    {:noreply, state}
-  end
 
-  @impl true
-  def handle_info(%Message.MediaEvent{to: :broadcast, data: data}, state) do
-    for {_peer_id, pid} <- state.peer_channels, do: send(pid, {:media_event, data})
-
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(%Message.MediaEvent{to: to, data: data}, state) do
-    if state.peer_channels[to] != nil do
-      send(state.peer_channels[to], {:media_event, data})
-    end
-
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(%Message.NewPeer{rtc_engine: rtc_engine, peer: peer}, state) do
-    Membrane.Logger.info("New peer: #{inspect(peer)}. Accepting.")
-    peer_channel_pid = Map.get(state.peer_channels, peer.id)
+    Membrane.Logger.info("New peer: #{inspect(peer_id)}. Accepting.")
     peer_node = node(peer_channel_pid)
 
     :ets.insert_new(:start_timestamps, {state.event_id, System.monotonic_time(:millisecond)})
@@ -175,16 +152,15 @@ defmodule MembraneLive.Event do
       end
 
     endpoint = %WebRTC{
-      rtc_engine: rtc_engine,
-      ice_name: peer.id,
+      rtc_engine: state.rtc_engine,
+      ice_name: peer_id,
       owner: self(),
       integrated_turn_options: state.network_options[:integrated_turn_options],
       integrated_turn_domain: state.network_options[:integrated_turn_domain],
       handshake_opts: handshake_opts,
-      log_metadata: [peer_id: peer.id],
+      log_metadata: [peer_id: peer_id],
       trace_context: state.trace_ctx,
       webrtc_extensions: [Mid, TWCC],
-      peer_metadata: peer.metadata,
       filter_codecs: fn {rtp, fmtp} ->
         case rtp.encoding do
           "opus" -> true
@@ -194,17 +170,32 @@ defmodule MembraneLive.Event do
       end
     }
 
-    Engine.accept_peer(rtc_engine, peer.id)
-    :ok = Engine.add_endpoint(rtc_engine, endpoint, peer_id: peer.id, node: peer_node)
+    :ok = Engine.add_endpoint(state.rtc_engine, endpoint, peer_id: peer_id, node: peer_node)
 
     {:noreply, state}
   end
 
   @impl true
-  def handle_info(%Message.PeerLeft{peer: peer}, state) do
-    Membrane.Logger.info("Peer #{inspect(peer.id)} left RTC Engine")
+  def handle_info({:remove_peer_channel, peer_channel_pid, peer_id}, state) do
+    if peer_channel_pid == state.moderator_pid do
+      state = %{state | moderator_pid: nil}
+      {:ok, state} = handle_peer_left(state, peer_channel_pid)
+      Engine.remove_endpoint(state.rtc_engine, peer_id)
+      {:noreply, state}
+    else
+      {:ok, state} = handle_peer_left(state, peer_id)
 
-    {:ok, state} = handle_peer_left(state, peer.id)
+      Engine.remove_endpoint(state.rtc_engine, peer_id)
+      {:noreply, state}
+    end
+  end
+
+  @impl true
+  def handle_info(%Message.EndpointMessage{endpoint_id: to, message: {:media_event, data}}, state) do
+    if state.peer_channels[to] != nil do
+      send(state.peer_channels[to], {:media_event, data})
+    end
+
     {:noreply, state}
   end
 
@@ -215,25 +206,17 @@ defmodule MembraneLive.Event do
     case state.peer_channels[endpoint_id] do
       nil ->
         Membrane.Logger.error("Endpoint crashed handling error: This peer doesn't exist already!")
-        {:noreply, state}
 
       peer_channel ->
-        error_message = "Endpoint has crashed."
-
-        data =
-          error_message
-          |> MediaEvent.create_error_event()
-          |> MediaEvent.encode()
-
-        send(peer_channel, {:media_event, data})
-        {:noreply, state}
+        send(peer_channel, :endpoint_crashed)
     end
+
+    {:noreply, state}
   end
 
-  # media_event coming from client
   @impl true
-  def handle_info({:media_event, _from, _event} = msg, state) do
-    Engine.receive_media_event(state.rtc_engine, msg)
+  def handle_info({:media_event, to, event}, state) do
+    Engine.message_endpoint(state.rtc_engine, to, {:media_event, event})
     {:noreply, state}
   end
 
@@ -260,7 +243,8 @@ defmodule MembraneLive.Event do
       pid == state.moderator_pid ->
         state = %{state | moderator_pid: nil}
         {:ok, state} = handle_peer_left(state, pid)
-        Engine.remove_peer(state.rtc_engine, pid)
+        {peer_id, _peer_channel_pid} = result
+        Engine.remove_endpoint(state.rtc_engine, peer_id)
         {:noreply, state}
 
       is_nil(result) ->
@@ -270,7 +254,7 @@ defmodule MembraneLive.Event do
         {peer_id, _peer_channel_id} = result
         {:ok, state} = handle_peer_left(state, peer_id)
 
-        Engine.remove_peer(state.rtc_engine, peer_id)
+        Engine.remove_endpoint(state.rtc_engine, peer_id)
         {:noreply, state}
     end
   end

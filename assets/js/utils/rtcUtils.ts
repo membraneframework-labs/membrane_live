@@ -1,4 +1,4 @@
-import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@membraneframework/membrane-webrtc-js";
+import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@jellyfish-dev/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS } from "./const";
 import { getMergedTracks } from "./canvasUtils";
 import { Channel } from "phoenix";

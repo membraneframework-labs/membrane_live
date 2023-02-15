@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { connectWebrtc, leaveWebrtc } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { useRerender } from "../../utils/reactUtils";
-import { MembraneWebRTC } from "@membraneframework/membrane-webrtc-js";
+import { MembraneWebRTC } from "@jellyfish-dev/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
