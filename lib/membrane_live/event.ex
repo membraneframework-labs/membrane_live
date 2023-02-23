@@ -10,7 +10,7 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{MixerConfig, HLSConfig}
+  alias Membrane.RTC.Engine.Endpoint.HLS.{HLSConfig, MixerConfig}
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -311,14 +311,6 @@ defmodule MembraneLive.Event do
         close_webinar(state)
     end
   end
-
-  @impl true
-  def handle_call(:is_playlist_playable, _from, state) do
-    {:reply, stream_response_message(state), state}
-  end
-
-  @impl true
-  def handle_cast(:finish_event, state), do: close_webinar(state)
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
