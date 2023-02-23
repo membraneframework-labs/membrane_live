@@ -10,7 +10,7 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{MixerConfig, SinkBinConfig}
+  alias Membrane.RTC.Engine.Endpoint.HLS.{MixerConfig, HLSConfig}
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -87,15 +87,15 @@ defmodule MembraneLive.Event do
       rtc_engine: pid,
       owner: self(),
       output_directory: "output/#{event_id}",
-      segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
-      partial_segment_duration:
-        SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
       mixer_config: %MixerConfig{},
-      sink_bin_config: %SinkBinConfig{
+      hls_config: %HLSConfig{
         hls_mode: :muxed_av,
         mode: :live,
         target_window_duration: :infinity,
-        storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end
+        storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end,
+        segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
+        partial_segment_duration:
+          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
       }
     }
 
@@ -320,23 +320,20 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_cast(:finish_event, state), do: close_webinar(state)
 
-  defp close_webinar(state) do
-    Engine.terminate(state.rtc_engine)
-
-    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
-    Webinars.mark_webinar_as_finished(state.event_id)
-
-    {:stop, :normal, state}
-  end
-
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
     {:reply, stream_response_message(state), state}
   end
 
   @impl true
-  def handle_cast(:finish_event, state) do
+  def handle_cast(:finish_event, state), do: close_webinar(state)
+
+  defp close_webinar(state) do
     Engine.terminate(state.rtc_engine)
+
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
+    Webinars.mark_webinar_as_finished(state.event_id)
+
     {:stop, :normal, state}
   end
 
