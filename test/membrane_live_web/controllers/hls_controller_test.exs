@@ -11,7 +11,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   @mock_file_size 1000
   @storage %FileStorage{directory: "output/#{@event_id}"}
   @mock_storage_latency_ms 50
-  @response_await_timeout_ms 1000
+  @response_await_timeout_ms 700
 
   setup do
     File.mkdir_p!(@hls_output_path)
@@ -51,6 +51,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
       assert_receive({:manifest_update_partial, ^segment, ^partial})
       pubsub_unsubscribe()
 
+      Process.sleep(50)
       conn = Task.await(get_task, @response_await_timeout_ms)
       assert response(conn, 200)
       assert conn.resp_body == segment_content(segment, partial)
