@@ -51,7 +51,6 @@ defmodule MembraneLiveWeb.HLSControllerTest do
       assert_receive({:manifest_update_partial, ^segment, ^partial})
       pubsub_unsubscribe()
 
-      Process.sleep(50)
       conn = Task.await(get_task, @response_await_timeout_ms)
       assert response(conn, 200)
       assert conn.resp_body == segment_content(segment, partial)

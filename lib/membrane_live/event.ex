@@ -243,8 +243,11 @@ defmodule MembraneLive.Event do
       pid == state.moderator_pid ->
         state = %{state | moderator_pid: nil}
         {:ok, state} = handle_peer_left(state, pid)
-        {peer_id, _peer_channel_pid} = result
-        Engine.remove_endpoint(state.rtc_engine, peer_id)
+
+        with {peer_id, _peer_channel_pid} <- result do
+          Engine.remove_endpoint(state.rtc_engine, peer_id)
+        end
+
         {:noreply, state}
 
       is_nil(result) ->
