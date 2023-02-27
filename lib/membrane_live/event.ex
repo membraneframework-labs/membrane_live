@@ -10,10 +10,11 @@ defmodule MembraneLive.Event do
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{MixerConfig, SinkBinConfig}
+  alias Membrane.RTC.Engine.Endpoint.HLS.{HLSConfig, MixerConfig}
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
+  alias Membrane.WebRTC.Track
   alias MembraneLive.Chats
   alias MembraneLive.Event.Timer
   alias MembraneLive.Webinars
@@ -87,14 +88,14 @@ defmodule MembraneLive.Event do
       rtc_engine: pid,
       owner: self(),
       output_directory: "output/#{event_id}",
-      segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
-      partial_segment_duration:
-        SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
       mixer_config: %MixerConfig{},
-      sink_bin_config: %SinkBinConfig{
+      hls_config: %HLSConfig{
         hls_mode: :muxed_av,
         mode: :live,
         target_window_duration: :infinity,
+        segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
+        partial_segment_duration:
+          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
         storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end
       }
     }
@@ -161,10 +162,10 @@ defmodule MembraneLive.Event do
       log_metadata: [peer_id: peer_id],
       trace_context: state.trace_ctx,
       webrtc_extensions: [Mid, TWCC],
-      filter_codecs: fn {rtp, fmtp} ->
-        case rtp.encoding do
-          "opus" -> true
-          "H264" -> fmtp.profile_level_id === 0x42E01F
+      filter_codecs: fn %Track.Encoding{} = encoding ->
+        case encoding do
+          %{name: "opus"} -> true
+          %{name: "H264", format_params: fmtp} -> fmtp.profile_level_id === 0x42E01F
           _unsupported_codec -> false
         end
       end
