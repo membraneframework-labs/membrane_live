@@ -81,7 +81,8 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_audio_filler_plugin, "~> 0.1.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.25.2"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.11.0"},
-      {:membrane_video_compositor_plugin, "~> 0.1.0"},
+      {:membrane_video_compositor_plugin,
+       github: "membraneframework/membrane_video_compositor_plugin", override: true},
       {:membrane_framerate_converter_plugin, "~> 0.6.0"},
       {:membrane_http_adaptive_stream_plugin, "~> 0.11.0"}
     ]
