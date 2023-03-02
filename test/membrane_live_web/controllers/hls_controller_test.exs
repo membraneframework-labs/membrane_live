@@ -11,7 +11,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   @mock_file_size 1000
   @storage %FileStorage{directory: "output/#{@event_id}"}
   @mock_storage_latency_ms 50
-  @response_await_timeout_ms 1000
+  @response_await_timeout_ms 700
 
   setup do
     File.mkdir_p!(@hls_output_path)
