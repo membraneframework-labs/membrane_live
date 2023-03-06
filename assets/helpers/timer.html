@@ -1,0 +1,30 @@
+<!-- This file is a timer overlay for testing delay with OBS -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>A simple clock</title>
+  </head>
+
+  <body translate="no">
+    <div
+      id="output"
+      style="
+        display: inline-block;
+        font-family: monospace;
+        font-size: 30px;
+        text-align: right;
+        color: lightgray;
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 1);
+      "
+    ></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script>
+      setInterval(function () {
+        output.innerText = moment().format("DD/MM/YYYY HH:mm:ss:SS");
+      }, 10);
+    </script>
+  </body>
+</html>
