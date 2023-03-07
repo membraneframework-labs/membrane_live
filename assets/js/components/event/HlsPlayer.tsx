@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
 import HlsControlBar from "./HlsControlBar";
@@ -43,11 +43,14 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel, setCa
     };
   }, [addMessage]);
 
+  const [measureHlsLatency, setMeasureHlsLatency] = useState<boolean>(false);
+  (window as any).toggleHlsLatency = () => setMeasureHlsLatency((prev) => !prev);
+
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !measureHlsLatency) return;
     const interval = setInterval(() => doOCR(playerRef), 1000);
     return () => clearInterval(interval);
-  }, [presenterName, attachVideo]);
+  }, [presenterName, attachVideo, measureHlsLatency]);
 
   return (
     <div className="HlsStream">
