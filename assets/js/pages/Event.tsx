@@ -25,7 +25,6 @@ import { ScreenTypeContext } from "../utils/ScreenTypeContext";
 import type {
   Client,
   EventInfo,
-  Mode,
   Participant,
   PlaylistPlayableMessage,
   PresenterProposition,
@@ -51,7 +50,6 @@ const Event = () => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 
   const screenType = useContext(ScreenTypeContext);
-  const [mode, setMode] = useState<Mode>("hls");
   const { products, addProduct, removeProduct } = useWebinarProducts(eventInfo.uuid);
 
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -122,7 +120,7 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, message: PresenterProposition) => presenterPopup(toast, client, eventChannel, message, setMode),
+        (toast, message: PresenterProposition) => presenterPopup(toast, client, eventChannel, message),
         setPrivateChannel
       );
     }
@@ -171,8 +169,6 @@ const Event = () => {
           presenterName={presenterName}
           eventChannel={eventChannel}
           privateChannel={privateChannel}
-          mode={mode}
-          setMode={setMode}
           eventTitle={eventInfo.title}
           products={products}
           chatMessages={chatMessages}

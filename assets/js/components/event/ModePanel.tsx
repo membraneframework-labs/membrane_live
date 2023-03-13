@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
 import { Screen } from "react-swm-icon-pack";
-import { syncPresentersNumber } from "../../utils/modePanelUtils";
 import { Channel } from "phoenix";
-import type { Client, Mode } from "../../types/types";
 import { useStateTimeout } from "../../utils/reactUtils";
 
 import "../../../css/event/modepanel.css";
@@ -23,24 +20,14 @@ export const ModeButton = ({ onClick, name, active = true }: ModeButtonProps) =>
 };
 
 type ModePanelProps = {
-  mode: Mode;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
   presenterName: string;
   eventChannel: Channel | undefined;
-  client: Client;
+  amIPresenter: boolean;
 };
 
-const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModePanelProps) => {
+const ModePanel = ({ presenterName, eventChannel, amIPresenter }: ModePanelProps) => {
   const heartReactionMessage = "reaction_heart";
   const confettiReactionMessage = "reaction_confetti";
-
-  const [presentersNumber, setPresentersNumber] = useState(0);
-  const [amIPresenter, setAmIPresenter] = useState(false);
-
-  useEffect(
-    () => syncPresentersNumber(eventChannel, setPresentersNumber, setAmIPresenter, client),
-    [client, eventChannel]
-  );
 
   const [heart, toggleHeart] = useStateTimeout(
     () => {
@@ -65,7 +52,7 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
         {presenterName ? `Presenting now...` : "Waiting for the presenter to be chosen..."}
       </div>
       <div className="ModeButtons">
-        {presenterName && (
+        {presenterName && !amIPresenter && (
           <div>
             <button className="heartButton" onClick={toggleHeart} disabled={heart}>
               💕
@@ -74,16 +61,6 @@ const ModePanel = ({ mode, setMode, presenterName, eventChannel, client }: ModeP
               🎉
             </button>
           </div>
-        )}
-        {amIPresenter && (
-          <>
-            <ModeButton name="Main Stream" active={mode == "hls"} onClick={() => setMode("hls")} />
-            <ModeButton
-              name={`All presenters (${presentersNumber})`}
-              active={mode == "presenters"}
-              onClick={() => setMode("presenters")}
-            />
-          </>
         )}
       </div>
     </div>

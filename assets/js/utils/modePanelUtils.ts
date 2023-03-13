@@ -4,9 +4,7 @@ import type { Client, Metas } from "../types/types";
 
 export const syncPresentersNumber = (
   eventChannel: Channel | undefined,
-  setPresentersNumber: React.Dispatch<React.SetStateAction<number>>,
-  setAmIPresenter: React.Dispatch<React.SetStateAction<boolean>>,
-  client: Client
+  setPresentersNumber: React.Dispatch<React.SetStateAction<number>>
 ): void => {
   if (eventChannel) {
     const presence = new Presence(eventChannel);
@@ -17,7 +15,6 @@ export const syncPresentersNumber = (
 
     presence.onSync(() => {
       updateParticipantsNumber();
-      updateAmIPresenter(presence, setAmIPresenter, client);
     });
 
     eventChannel.push("sync_presence", {});

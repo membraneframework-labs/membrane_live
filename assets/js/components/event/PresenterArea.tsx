@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { connectWebrtc, leaveWebrtc } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { useRerender } from "../../utils/reactUtils";
@@ -9,7 +9,6 @@ import { Channel } from "phoenix";
 import type {
   User,
   Client,
-  Mode,
   ClientStatus,
   PeersState,
   PresenterStream,
@@ -23,29 +22,16 @@ import ConfettiAnimation from "./animations/ConfettiAnimation";
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
 
-const initialPeersState: PeersState = {
-  mergedScreenRef: {
-    screenTrack: undefined,
-    cameraTrack: undefined,
-    deviceName: "",
-    refreshId: undefined,
-  },
-  peers: {},
-  sourceIds: { audio: "", video: "" },
-  isMainPresenter: false,
-};
-
 type PresenterAreaProps = {
   client: Client;
+  peersState: PeersState;
+  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
   privateChannel: Channel | undefined;
   eventChannel: Channel | undefined;
-  mode: Mode;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
 };
 
-const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: PresenterAreaProps) => {
+const PresenterArea = ({ client, peersState, setPeersState, privateChannel, eventChannel }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<{ [key: string]: User }>({});
-  const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
   const rerender = useRerender();
@@ -85,7 +71,7 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
 
       return () => privateChannel?.off("presenter_prop", ref);
     }
-  }, [privateChannel]);
+  }, [privateChannel, setPeersState]);
 
   useEffect(() => {
     if (client.email in presenters === false) {
@@ -115,15 +101,11 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
     } else if (webrtc != null) {
       setIsControlPanelAvailable(true);
     }
-  }, [presenters, clientStatus, peersState, eventChannel, client]);
+  }, [presenters, clientStatus, peersState, eventChannel, client, setPeersState]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
   }, [eventChannel]);
-
-  useEffect(() => {
-    if (clientStatus != "not_presenter") setMode("presenters");
-  }, [clientStatus, setMode]);
 
   const getRtcPlayer = (presenterStream: PresenterStream) => {
     return (
@@ -139,7 +121,7 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
     clientStatus === "idle" && peersState.peers[client.email]?.stream.getTracks().length > 0;
 
   return clientStatus != "not_presenter" ? (
-    <div className={`PresenterArea ${mode == "hls" ? "Hidden" : ""}`}>
+    <div className={`PresenterArea`}>
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peersState.peers).length}`}>
           {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
@@ -158,7 +140,6 @@ const PresenterArea = ({ client, privateChannel, eventChannel, mode, setMode }: 
           client={client}
           webrtc={webrtc}
           eventChannel={eventChannel}
-          setMode={setMode}
           peersState={peersState}
           setPeersState={setPeersState}
           canShareScreen={clientStatus === "connected"}
