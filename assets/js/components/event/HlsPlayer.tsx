@@ -1,7 +1,8 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
 import HlsControlBar from "./HlsControlBar";
+import { doOCR } from "../../utils/hlsLatancy";
 import { Channel } from "phoenix";
 import { MediaController } from "media-chrome/dist/react";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
@@ -41,6 +42,15 @@ const HlsPlayer = ({ attachVideo, addMessage, presenterName, eventChannel, setCa
       playerRefCopy.current?.removeEventListener("timeupdate", onTimeUpdate);
     };
   }, [addMessage]);
+
+  const [measureHlsLatency, setMeasureHlsLatency] = useState<boolean>(false);
+  (window as any).toggleHlsLatency = () => setMeasureHlsLatency((prev) => !prev);
+
+  useEffect(() => {
+    if (!playerRef.current || !measureHlsLatency) return;
+    const interval = setInterval(() => doOCR(playerRef), 1000);
+    return () => clearInterval(interval);
+  }, [presenterName, attachVideo, measureHlsLatency]);
 
   return (
     <div className="HlsStream">
