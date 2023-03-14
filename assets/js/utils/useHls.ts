@@ -47,7 +47,7 @@ export const useHls = (
       hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
         if (autoPlay) {
           if (playerRef.current) playerRef.current.muted = true;
-          playerRef?.current?.play().catch((error) => console.log(error));
+          playerRef?.current?.play().catch((error) => console.error(error));
         }
       });
 

@@ -74,7 +74,15 @@ const StreamArea = ({
         <ModePanel presenterName={presenterName} eventChannel={eventChannel} amIPresenter={amIPresenter} />
       )}
       <div className="Stream">
-        {!amIPresenter && (
+        {amIPresenter ? (
+          <PresenterArea
+            client={client}
+            peersState={peersState}
+            setPeersState={setPeersState}
+            privateChannel={privateChannel}
+            eventChannel={eventChannel}
+          />
+        ) : (
           <div className="HlsDiv">
             {presenterName ? (
               <>
@@ -103,15 +111,6 @@ const StreamArea = ({
               </div>
             )}
           </div>
-        )}
-        {amIPresenter && (
-          <PresenterArea
-            client={client}
-            peersState={peersState}
-            setPeersState={setPeersState}
-            privateChannel={privateChannel}
-            eventChannel={eventChannel}
-          />
         )}
 
         {showMobileBottomBar && (
