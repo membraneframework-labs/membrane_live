@@ -19,21 +19,33 @@ import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
 
+const initialPeersState: PeersState = {
+  mergedScreenRef: {
+    screenTrack: undefined,
+    cameraTrack: undefined,
+    deviceName: "",
+    refreshId: undefined,
+  },
+  peers: {},
+  sourceIds: { audio: "", video: "" },
+  isMainPresenter: false,
+};
+
 let webrtc: MembraneWebRTC | null = null;
 let webrtcConnecting = false;
 
 type PresenterAreaProps = {
   client: Client;
-  peersState: PeersState;
-  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
   privateChannel: Channel | undefined;
   eventChannel: Channel | undefined;
 };
 
-const PresenterArea = ({ client, peersState, setPeersState, privateChannel, eventChannel }: PresenterAreaProps) => {
+const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<{ [key: string]: User }>({});
   const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
   const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
+  const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
+
   const rerender = useRerender();
 
   const disconnectedPresenterStream: PresenterStream = { ...client, stream: new MediaStream() };
@@ -71,7 +83,7 @@ const PresenterArea = ({ client, peersState, setPeersState, privateChannel, even
 
       return () => privateChannel?.off("presenter_prop", ref);
     }
-  }, [privateChannel, setPeersState]);
+  }, [privateChannel]);
 
   useEffect(() => {
     if (client.email in presenters === false) {
@@ -121,7 +133,7 @@ const PresenterArea = ({ client, peersState, setPeersState, privateChannel, even
     clientStatus === "idle" && peersState.peers[client.email]?.stream.getTracks().length > 0;
 
   return clientStatus != "not_presenter" ? (
-    <div className={`PresenterArea`}>
+    <div className="PresenterArea">
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peersState.peers).length}`}>
           {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}

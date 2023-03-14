@@ -9,21 +9,9 @@ import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
-import type { Client, Product, ChatMessage, CardStatus, PeersState } from "../../types/types";
+import type { Client, Product, ChatMessage, CardStatus } from "../../types/types";
 
 import "../../../css/event/streamarea.css";
-
-const initialPeersState: PeersState = {
-  mergedScreenRef: {
-    screenTrack: undefined,
-    cameraTrack: undefined,
-    deviceName: "",
-    refreshId: undefined,
-  },
-  peers: {},
-  sourceIds: { audio: "", video: "" },
-  isMainPresenter: false,
-};
 
 type StreamAreaProps = {
   client: Client;
@@ -57,7 +45,6 @@ const StreamArea = ({
   const { device, orientation } = useContext(ScreenTypeContext);
   const [card, setCard] = useState<CardStatus>("hidden");
   const showMobileBottomBar = device === "mobile" || orientation === "portrait";
-  const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
 
   useAutoHideMobileBottomBar(setCard);
 
@@ -75,13 +62,7 @@ const StreamArea = ({
       )}
       <div className="Stream">
         {amIPresenter ? (
-          <PresenterArea
-            client={client}
-            peersState={peersState}
-            setPeersState={setPeersState}
-            privateChannel={privateChannel}
-            eventChannel={eventChannel}
-          />
+          <PresenterArea client={client} privateChannel={privateChannel} eventChannel={eventChannel} />
         ) : (
           <div className="HlsDiv">
             {presenterName ? (
