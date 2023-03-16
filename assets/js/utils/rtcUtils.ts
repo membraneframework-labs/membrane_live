@@ -229,7 +229,7 @@ const getLocalStream = async (sourceType: SourceType, deviceId: string): Promise
 };
 
 export const leaveWebrtc = (
-  webrtc: MembraneWebRTC,
+  webrtc: MembraneWebRTC | null,
   client: Client,
   webrtcChannel: Channel | undefined,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
@@ -237,12 +237,12 @@ export const leaveWebrtc = (
   webrtcChannel?.off("mediaEvent");
 
   setPeersState((prev) => {
-    prev.peers[client.email].stream.getTracks().forEach((track) => track.stop());
+    prev.peers[client.email]?.stream.getTracks().forEach((track) => track.stop());
     prev = removeMergedStream(prev);
     return removeStream(client, prev);
   });
 
-  webrtc.leave();
+  webrtc?.leave();
 };
 
 export const shareScreen = async (
@@ -346,7 +346,7 @@ export const addOrReplaceTrack = (user: User, track: MediaStreamTrack, peersStat
   return { ...peersState, peers: { ...peersState.peers, [user.email]: presenterStream } };
 };
 
-const removeMergedStream = (peersState: PeersState) => {
+export const removeMergedStream = (peersState: PeersState) => {
   const mergedScreenRef = peersState.mergedScreenRef;
   mergedScreenRef.screenTrack?.stop();
   mergedScreenRef.cameraTrack?.stop();
@@ -361,7 +361,7 @@ const removeMergedStream = (peersState: PeersState) => {
   return { ...peersState, mergedScreenRef: mergedScreenRef };
 };
 
-const removeStream = (user: User, peersState: PeersState) => {
+export const removeStream = (user: User, peersState: PeersState) => {
   const updatedPeers = peersState.peers;
   delete updatedPeers[user.email];
   return { ...peersState, peers: updatedPeers };

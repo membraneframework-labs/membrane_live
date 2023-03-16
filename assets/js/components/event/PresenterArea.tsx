@@ -42,8 +42,7 @@ type PresenterAreaProps = {
 
 const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaProps) => {
   const [presenters, setPresenters] = useState<{ [key: string]: User }>({});
-  const [isControlPanelAvailable, setIsControlPanelAvailable] = useState(false);
-  const [clientStatus, setClientStatus] = useState<ClientStatus>("not_presenter");
+  const [clientStatus, setClientStatus] = useState<ClientStatus>("idle");
   const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
 
   const rerender = useRerender();
@@ -86,34 +85,21 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
   }, [privateChannel]);
 
   useEffect(() => {
-    if (client.email in presenters === false) {
-      setClientStatus("not_presenter");
-    } else if (client.email in presenters && clientStatus == "not_presenter") {
-      setClientStatus("idle");
-    }
-  }, [client.email, clientStatus, presenters]);
-
-  useEffect(() => {
     const tryToConnectPresenter = !webrtcConnecting && webrtc == null && clientStatus == "connected";
-    const clientShouldDisconnect = webrtc != null && ["idle", "not_presenter"].includes(clientStatus);
+    const clientShouldDisconnect = (clientStatus == "idle" && webrtc != null) || clientStatus == "disconnected";
 
-    if (clientStatus === "idle") {
-      setIsControlPanelAvailable(true);
-    } else if (tryToConnectPresenter) {
-      setIsControlPanelAvailable(true);
+    if (tryToConnectPresenter) {
       webrtcConnecting = true;
       connectWebrtc(eventChannel, client, setPeersState).then((value) => {
         webrtc = value;
         webrtcConnecting = false;
       });
-    } else if (webrtc != null && clientShouldDisconnect) {
-      setIsControlPanelAvailable(false);
+    } else if (clientShouldDisconnect) {
+      console.log(clientStatus);
       leaveWebrtc(webrtc, client, eventChannel, setPeersState);
       webrtc = null;
-    } else if (webrtc != null) {
-      setIsControlPanelAvailable(true);
     }
-  }, [presenters, clientStatus, peersState, eventChannel, client, setPeersState]);
+  }, [presenters, clientStatus, eventChannel, client, setPeersState]);
 
   useEffect(() => {
     syncPresenters(eventChannel, setPresenters);
@@ -129,10 +115,7 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
     );
   };
 
-  const isStartPresentingButtonVisible =
-    clientStatus === "idle" && peersState.peers[client.email]?.stream.getTracks().length > 0;
-
-  return clientStatus != "not_presenter" ? (
+  return (
     <div className="PresenterArea">
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peersState.peers).length}`}>
@@ -141,31 +124,38 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
             return getRtcPlayer(presenterStream);
           })}
           {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
+          <ControlPanel
+            client={client}
+            webrtc={webrtc}
+            eventChannel={eventChannel}
+            peersState={peersState}
+            setPeersState={setPeersState}
+            setClientStatus={setClientStatus}
+            canShareScreen={clientStatus === "connected"}
+            rerender={rerender}
+          />
         </div>
-      ) : client.email in peersState.peers ? (
-        getRtcPlayer(getCurrentPresenterStream())
+      ) : clientStatus === "idle" ? (
+        <>
+          {getRtcPlayer(getCurrentPresenterStream())}
+          <ControlPanel
+            client={client}
+            webrtc={webrtc}
+            eventChannel={eventChannel}
+            peersState={peersState}
+            setPeersState={setPeersState}
+            setClientStatus={setClientStatus}
+            canShareScreen={false}
+            rerender={rerender}
+          />
+          <button className="StartPresentingButton" onClick={onPresenterReady}>
+            Start presenting
+          </button>
+        </>
       ) : (
         <></>
       )}
-      {isControlPanelAvailable && (
-        <ControlPanel
-          client={client}
-          webrtc={webrtc}
-          eventChannel={eventChannel}
-          peersState={peersState}
-          setPeersState={setPeersState}
-          canShareScreen={clientStatus === "connected"}
-          rerender={rerender}
-        />
-      )}
-      {isStartPresentingButtonVisible && (
-        <button className="StartPresentingButton" onClick={onPresenterReady}>
-          Start presenting
-        </button>
-      )}
     </div>
-  ) : (
-    <></>
   );
 };
 
