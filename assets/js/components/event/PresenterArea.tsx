@@ -95,7 +95,6 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
         webrtcConnecting = false;
       });
     } else if (clientShouldDisconnect) {
-      console.log(clientStatus);
       leaveWebrtc(webrtc, client, eventChannel, setPeersState);
       webrtc = null;
     }
@@ -124,36 +123,28 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
             return getRtcPlayer(presenterStream);
           })}
           {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
-          <ControlPanel
-            client={client}
-            webrtc={webrtc}
-            eventChannel={eventChannel}
-            peersState={peersState}
-            setPeersState={setPeersState}
-            setClientStatus={setClientStatus}
-            canShareScreen={clientStatus === "connected"}
-            rerender={rerender}
-          />
         </div>
       ) : clientStatus === "idle" ? (
-        <>
-          {getRtcPlayer(getCurrentPresenterStream())}
-          <ControlPanel
-            client={client}
-            webrtc={webrtc}
-            eventChannel={eventChannel}
-            peersState={peersState}
-            setPeersState={setPeersState}
-            setClientStatus={setClientStatus}
-            canShareScreen={false}
-            rerender={rerender}
-          />
-          <button className="StartPresentingButton" onClick={onPresenterReady}>
-            Start presenting
-          </button>
-        </>
+        getRtcPlayer(getCurrentPresenterStream())
       ) : (
         <></>
+      )}
+      {clientStatus !== "disconnected" && (
+        <ControlPanel
+          client={client}
+          webrtc={webrtc}
+          eventChannel={eventChannel}
+          peersState={peersState}
+          setPeersState={setPeersState}
+          setClientStatus={setClientStatus}
+          canShareScreen={clientStatus === "connected"}
+          rerender={rerender}
+        />
+      )}
+      {clientStatus === "idle" && (
+        <button className="StartPresentingButton" onClick={onPresenterReady}>
+          Start presenting
+        </button>
       )}
     </div>
   );
