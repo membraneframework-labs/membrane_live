@@ -88,7 +88,7 @@ defmodule MembraneLive.Event do
       rtc_engine: pid,
       owner: self(),
       output_directory: "output/#{event_id}",
-      mixer_config: %MixerConfig{},
+      mixer_config: %MixerConfig{persist?: true},
       hls_config: %HLSConfig{
         hls_mode: :muxed_av,
         mode: :live,
@@ -362,10 +362,7 @@ defmodule MembraneLive.Event do
        do: {:ok, state}
 
   defp handle_peer_left(state, peer_id) do
-    state =
-      state
-      |> Map.update!(:peer_channels, &Map.delete(&1, peer_id))
-      |> send_broadcast()
+    state = Map.update!(state, :peer_channels, &Map.delete(&1, peer_id))
 
     {:ok, state}
   end

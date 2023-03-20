@@ -6,7 +6,7 @@ export type SourceType = "audio" | "video";
 
 export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
 
-export type ClientStatus = "not_presenter" | "idle" | "connected";
+export type ClientStatus = "idle" | "connected" | "disconnected";
 
 export type CardStatus = "hidden" | "share" | "chat" | "products";
 

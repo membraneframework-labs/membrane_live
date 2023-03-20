@@ -1,9 +1,8 @@
-import React from "react";
 import { QuestionCircle, CrossSmall, WarningCircle, InfoCircle } from "react-swm-icon-pack";
 import { deleteEvent } from "./dashboardUtils";
 import { Channel } from "phoenix";
 import { ToastId } from "@chakra-ui/react";
-import type { Client, Mode, Toast, PresenterProposition } from "../types/types";
+import type { Client, Toast, PresenterProposition } from "../types/types";
 import "../../css/toast.css";
 import { sessionStorageSetIsPresenter, sessionStorageSetPresentingRequest } from "./storageUtils";
 
@@ -11,13 +10,7 @@ const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
 };
 
-export const presenterPopup = (
-  toast: Toast,
-  client: Client,
-  eventChannel: Channel,
-  message: PresenterProposition,
-  setMode: React.Dispatch<React.SetStateAction<Mode>>
-) => {
+export const presenterPopup = (toast: Toast, client: Client, eventChannel: Channel, message: PresenterProposition) => {
   let answer = "reject";
 
   const thisToast = toast({
@@ -36,7 +29,6 @@ export const presenterPopup = (
             sessionStorageSetIsPresenter();
             sessionStorageSetPresentingRequest(false);
             closeToast(toast, thisToast);
-            setMode("presenters");
           }}
         >
           YES

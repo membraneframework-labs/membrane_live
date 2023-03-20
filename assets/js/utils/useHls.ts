@@ -46,9 +46,16 @@ export const useHls = (
 
       hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
         if (autoPlay) {
-          playerRef?.current
-            ?.play()
-            .catch(() => console.log("Unable to autoplay, HTMLVideoElement probably does not exist"));
+          if (playerRef.current) playerRef.current.muted = true;
+          playerRef?.current?.play().catch((error) => console.error(error));
+        }
+      });
+
+      hls.current.once(Hls.Events.LEVEL_LOADED, () => {
+        if (playerRef.current && hls.current.liveSyncPosition) {
+          playerRef.current.currentTime = hls.current.liveSyncPosition;
+        } else {
+          console.log("Couldn't start player on live edge.");
         }
       });
 

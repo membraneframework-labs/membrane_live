@@ -1,6 +1,6 @@
 import { useToast } from "@chakra-ui/react";
-import React, { useContext, useState } from "react";
-import type { Client, Mode } from "../../types/types";
+import { useContext, useState } from "react";
+import type { Client } from "../../types/types";
 import { UserPlus } from "react-swm-icon-pack";
 import { getInfoToast } from "../../utils/toastUtils";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
@@ -12,11 +12,10 @@ type MobileHlsBarProps = {
   client: Client;
   eventTitle: string;
   amIPresenter: boolean;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
   switchAsking: (isAsking: boolean) => void;
 };
 
-const MobileHlsBar = ({ client, eventTitle, amIPresenter, setMode, switchAsking }: MobileHlsBarProps) => {
+const MobileHlsBar = ({ client, eventTitle, amIPresenter, switchAsking }: MobileHlsBarProps) => {
   const toast = useToast();
   const screenType = useContext(ScreenTypeContext);
 
@@ -30,7 +29,7 @@ const MobileHlsBar = ({ client, eventTitle, amIPresenter, setMode, switchAsking 
     };
 
     return amIPresenter ? (
-      <MenuPopover setMode={setMode} className={className} />
+      <MenuPopover className={className} />
     ) : (
       <GenericButton
         icon={<UserPlus className="PanelButton" />}

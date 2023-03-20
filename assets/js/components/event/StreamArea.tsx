@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import ModePanel from "./ModePanel";
 import PresenterArea from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
@@ -9,7 +9,7 @@ import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
-import type { Mode, Client, Product, ChatMessage, CardStatus } from "../../types/types";
+import type { Client, Product, ChatMessage, CardStatus } from "../../types/types";
 
 import "../../../css/event/streamarea.css";
 
@@ -19,8 +19,6 @@ type StreamAreaProps = {
   presenterName: string;
   eventChannel: Channel | undefined;
   privateChannel: Channel | undefined;
-  mode: Mode;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
   eventTitle: string;
   products: Product[];
   chatMessages: ChatMessage[];
@@ -36,8 +34,6 @@ const StreamArea = ({
   presenterName,
   eventChannel,
   privateChannel,
-  mode,
-  setMode,
   eventTitle,
   products,
   chatMessages,
@@ -59,25 +55,15 @@ const StreamArea = ({
     [eventChannel, client]
   );
 
-  useEffect(() => {
-    if (privateChannel) {
-      privateChannel.on("presenter_remove", () => setMode("hls"));
-    }
-  }, [privateChannel, setMode]);
-
   return (
     <div className="StreamArea">
       {device === "desktop" && (
-        <ModePanel
-          mode={mode}
-          setMode={setMode}
-          presenterName={presenterName}
-          eventChannel={eventChannel}
-          client={client}
-        />
+        <ModePanel presenterName={presenterName} eventChannel={eventChannel} amIPresenter={amIPresenter} />
       )}
       <div className="Stream">
-        {mode === "hls" && (
+        {amIPresenter ? (
+          <PresenterArea client={client} privateChannel={privateChannel} eventChannel={eventChannel} />
+        ) : (
           <div className="HlsDiv">
             {presenterName ? (
               <>
@@ -93,7 +79,6 @@ const StreamArea = ({
                     client={client}
                     eventTitle={eventTitle}
                     amIPresenter={amIPresenter}
-                    setMode={setMode}
                     switchAsking={switchAsking}
                   />
                 )}
@@ -108,13 +93,6 @@ const StreamArea = ({
             )}
           </div>
         )}
-        <PresenterArea
-          client={client}
-          privateChannel={privateChannel}
-          eventChannel={eventChannel}
-          mode={mode}
-          setMode={setMode}
-        />
 
         {showMobileBottomBar && (
           <MobileBottomPanel

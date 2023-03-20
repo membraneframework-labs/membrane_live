@@ -67,7 +67,5 @@ export const rectangleGoogleButton: GsiButtonConfiguration = {
 };
 
 export const config: Partial<HlsConfig> = {
-  liveSyncDurationCount: 2,
-  initialLiveManifestSize: 2,
-  backBufferLength: 30,
+  lowLatencyMode: true,
 };

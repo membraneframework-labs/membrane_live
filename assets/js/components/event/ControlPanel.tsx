@@ -37,7 +37,7 @@ import {
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Mode, Client, SourceType, PeersState } from "../../types/types";
+import type { Client, SourceType, PeersState, ClientStatus } from "../../types/types";
 import "../../../css/event/controlpanel.css";
 import MenuPopover from "../helpers/MenuPopover";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
@@ -112,21 +112,21 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
 const stopBeingPresenter = (
   eventChannel: Channel | undefined,
   client: Client,
-  setMode: React.Dispatch<React.SetStateAction<Mode>>
+  setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>
 ) => {
+  setClientStatus("disconnected");
   eventChannel?.push("presenter_remove", { email: client.email });
   sessionStorageUnsetIsPresenter();
-  setMode("hls");
 };
 
 type ControlPanelProps = {
   client: Client;
   webrtc: MembraneWebRTC | null;
   eventChannel: Channel | undefined;
-  setMode: React.Dispatch<React.SetStateAction<Mode>>;
   rerender: () => void;
   peersState: PeersState;
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
+  setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>;
   canShareScreen: boolean;
 };
 
@@ -134,11 +134,11 @@ const ControlPanel = ({
   client,
   webrtc,
   eventChannel,
-  setMode,
+  rerender,
   peersState,
   setPeersState,
+  setClientStatus,
   canShareScreen,
-  rerender,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -218,7 +218,7 @@ const ControlPanel = ({
           {getMuteButton("audio", Microphone, MicrophoneDisabled)}
           <GenericButton
             icon={<PhoneDown className="DisconnectButton" />}
-            onClick={() => stopBeingPresenter(eventChannel, client, setMode)}
+            onClick={() => stopBeingPresenter(eventChannel, client, setClientStatus)}
           />
           <GenericButton
             icon={
@@ -234,7 +234,7 @@ const ControlPanel = ({
             }}
             disabled={!canShareScreen || screenType.device === "mobile"}
           />
-          <MenuPopover setMode={setMode}>
+          <MenuPopover>
             <ModeButton name="Options" onClick={onOpen} />
             <SettingsModal
               isOpen={isOpen}

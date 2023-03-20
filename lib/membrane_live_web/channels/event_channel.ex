@@ -295,7 +295,10 @@ defmodule MembraneLiveWeb.EventChannel do
     "event:" <> id = socket.topic
     remove_from_presenters(email, id)
     remove_from_main_presenters(email, id)
-    send(socket.assigns.event_pid, {:remove_peer_channel, self(), socket.assigns.peer_id})
+
+    if Map.has_key?(socket.assigns, :peer_id),
+      do: send(socket.assigns.event_pid, {:remove_peer_channel, self(), socket.assigns.peer_id})
+
     {:noreply, socket}
   end
 
