@@ -66,6 +66,10 @@ export const rectangleGoogleButton: GsiButtonConfiguration = {
   text: "signin_with",
 };
 
-export const config: Partial<HlsConfig> = {
+export const liveConfig: Partial<HlsConfig> = {
   lowLatencyMode: true,
+};
+
+export const recordingConfig: Partial<HlsConfig> = {
+  lowLatencyMode: false,
 };
