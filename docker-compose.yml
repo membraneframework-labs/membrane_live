@@ -4,6 +4,7 @@ services:
   membrane-live-db:
     container_name: membrane_live_db
     image: postgres:14.5-alpine
+    restart: on-failure
     environment:
       POSTGRES_USER: "${POSTGRES_USER:-membrane}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -32,6 +33,7 @@ services:
   membrane-live:
     image: membraneframeworklabs/membrane_live:${TAG:-latest}
     container_name: membrane_live
+    restart: on-failure
     network_mode: "host"
     # build: .
     depends_on:
