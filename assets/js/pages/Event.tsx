@@ -17,7 +17,7 @@ import { getErrorToast, lastPersonPopup, presenterPopup } from "../utils/toastUt
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
-import { config, pageTitlePrefix } from "../utils/const";
+import { liveConfig, pageTitlePrefix } from "../utils/const";
 import axiosWithInterceptor from "../services";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
@@ -60,7 +60,7 @@ const Event = () => {
 
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
 
-  const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, config);
+  const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, liveConfig);
   const { setStreamStart } = useStartStream();
 
   const socket = useRef(new Socket("/socket"));

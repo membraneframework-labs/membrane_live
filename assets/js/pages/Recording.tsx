@@ -11,7 +11,7 @@ import { useToast } from "@chakra-ui/react";
 import { useRecordingChatMessages } from "../utils/useRecordingChatMessages";
 import type { Client, EventInfo } from "../types/types";
 import "../../css/recording/recording.css";
-import { config } from "../utils/const";
+import { recordingConfig } from "../utils/const";
 
 const Recording = () => {
   const toast = useToast();
@@ -24,7 +24,7 @@ const Recording = () => {
   };
   const screenType = useContext(ScreenTypeContext);
   const { chatMessages, isChatLoaded, addMessage } = useRecordingChatMessages();
-  const { attachVideo, setSrc } = useHls(true, config);
+  const { attachVideo, setSrc } = useHls(true, recordingConfig);
 
   useEffect(() => {
     const splitUrl = window.location.pathname.split("/");
