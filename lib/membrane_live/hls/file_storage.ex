@@ -89,7 +89,7 @@ defmodule MembraneLive.HLS.FileStorage do
     result = File.write(Path.join(directory, name), contents)
 
     state =
-      if String.match?(name, ~r/\.m3u8$/) and not state.first_segment_ready? do
+      if String.match?(name, ~r/\.m3u8$/) do
         notify_playlist_update(name, contents, state)
       else
         state
@@ -106,14 +106,16 @@ defmodule MembraneLive.HLS.FileStorage do
   defp notify_playlist_update(name, contents, state) do
     state = maybe_send_first_segment_notification(state, contents)
 
-    {segment, partial} = Helpers.get_last_partial(contents)
-    name_without_extension = String.replace(name, ".m3u8", "")
+    if state.first_segment_ready? do
+      {segment, partial} = Helpers.get_last_partial(contents)
+      name_without_extension = String.replace(name, ".m3u8", "")
 
-    PubSub.broadcast(
-      MembraneLive.PubSub,
-      name_without_extension,
-      {:manifest_update_partial, segment, partial}
-    )
+      PubSub.broadcast(
+        MembraneLive.PubSub,
+        name_without_extension,
+        {:manifest_update_partial, segment, partial}
+      )
+    end
 
     state
   end
