@@ -9,7 +9,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   @hls_output_path "output/#{@event_id}" |> Path.expand()
   @playlist_path Path.join(@hls_output_path, "#{@muxed_track_name}.m3u8")
   @mock_file_size 1000
-  @storage %FileStorage{directory: "output/#{@event_id}"}
+  @hls_config %FileStorage.Config{directory: "output/#{@event_id}"}
   @mock_storage_latency_ms 50
   @response_await_timeout_ms 700
 
@@ -18,17 +18,20 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     create_playlist()
 
     on_exit(fn -> File.rm_rf!(@hls_output_path) end)
+
+    storage = @hls_config |> FileStorage.init()
+    %{storage: storage}
   end
 
   describe "ll-hls partials" do
-    test "playlist update", %{conn: conn} do
+    test "playlist update", %{conn: conn, storage: storage} do
       {segment, partial} = {0, 0}
       get_task = Task.async(fn -> get_partial_playlist(conn, segment, partial) end)
 
       pubsub_subscribe()
 
       Process.sleep(@mock_storage_latency_ms)
-      add_segment_to_playlist(segment, partial)
+      add_segment_to_playlist(storage, segment, partial)
 
       assert_receive({:manifest_update_partial, ^segment, ^partial})
       pubsub_unsubscribe()
@@ -37,16 +40,18 @@ defmodule MembraneLiveWeb.HLSControllerTest do
       assert response(conn, 200)
     end
 
-    test "new partial segment", %{conn: conn} do
+    test "new partial segment", %{conn: conn, storage: storage} do
       {segment, partial} = {0, 5}
-      0..(partial - 1) |> Enum.each(&store_partial_segment(segment, &1))
+
+      0..(partial - 1)
+      |> store_partial_segments(segment, storage)
 
       get_task = Task.async(fn -> get_partial_segment(conn, segment, partial) end)
 
       pubsub_subscribe()
 
       Process.sleep(@mock_storage_latency_ms)
-      store_partial_segment(segment, partial)
+      store_partial_segment(storage, segment, partial)
 
       assert_receive({:manifest_update_partial, ^segment, ^partial})
       pubsub_unsubscribe()
@@ -58,24 +63,27 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   end
 
   describe "serve different playlist depending on the User-Agent" do
-    test "safari desktop", %{conn: conn} do
+    test "safari desktop", %{conn: conn, storage: storage} do
       test_user_agent(
+        storage,
         conn,
         :ll_hls,
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15"
       )
     end
 
-    test "chrome desktop", %{conn: conn} do
+    test "chrome desktop", %{conn: conn, storage: storage} do
       test_user_agent(
+        storage,
         conn,
         :ll_hls,
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
       )
     end
 
-    test "iOS", %{conn: conn} do
+    test "iOS", %{conn: conn, storage: storage} do
       test_user_agent(
+        storage,
         conn,
         :hls,
         "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1"
@@ -83,17 +91,19 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     end
   end
 
-  defp test_user_agent(conn, expected_playlist, user_agent) do
+  defp test_user_agent(storage, conn, expected_playlist, user_agent) do
     segment_no = 2
     partials_per_segment = 9
 
-    0..(segment_no - 1)
-    |> Enum.each(fn segment ->
-      0..(partials_per_segment - 1)
-      |> Enum.each(fn partial -> store_partial_segment(segment, partial) end)
+    {:ok, _storage} =
+      0..(segment_no - 1)
+      |> Enum.reduce({:ok, storage}, fn segment, {:ok, storage} ->
+        {:ok, storage} =
+          0..(partials_per_segment - 1)
+          |> store_partial_segments(segment, storage)
 
-      add_segment_to_playlist(segment)
-    end)
+        add_segment_to_playlist(storage, segment)
+      end)
 
     conn =
       conn
@@ -157,7 +167,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     """ <> segments
   end
 
-  defp add_segment_to_playlist(segment, partial \\ nil) do
+  defp add_segment_to_playlist(storage, segment, partial \\ nil) do
     (File.read!(@playlist_path) <> segment_tag(segment, partial))
     |> then(
       &FileStorage.store(
@@ -166,7 +176,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
         &1,
         %{},
         %{mode: :text},
-        @storage
+        storage
       )
     )
   end
@@ -190,21 +200,29 @@ defmodule MembraneLiveWeb.HLSControllerTest do
     """
   end
 
-  defp store_partial_segment(segment, partial) do
+  defp store_partial_segments(partials, segment, storage) do
+    partials
+    |> Enum.reduce({:ok, storage}, fn partial, {:ok, storage} ->
+      store_partial_segment(storage, segment, partial)
+    end)
+  end
+
+  defp store_partial_segment(storage, segment, partial) do
     filename = "muxed_segment_#{segment}_#{@muxed_track_name}.m4s"
     content = segment_content(segment, partial)
     {offset, _length} = get_partial_offset_length(partial)
 
-    FileStorage.store(
-      nil,
-      filename,
-      content,
-      %{byte_offset: offset},
-      %{mode: :binary},
-      @storage
-    )
+    {:ok, storage} =
+      FileStorage.store(
+        nil,
+        filename,
+        content,
+        %{byte_offset: offset},
+        %{mode: :binary},
+        storage
+      )
 
-    add_segment_to_playlist(segment, partial)
+    add_segment_to_playlist(storage, segment, partial)
   end
 
   defp segment_content(segment, partial) do
