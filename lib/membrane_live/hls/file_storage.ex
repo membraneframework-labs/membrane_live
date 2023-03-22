@@ -19,6 +19,7 @@ defmodule MembraneLive.HLS.FileStorage do
         }
 
   defmodule Config do
+    @moduledoc false
     @enforce_keys [:directory]
 
     defstruct @enforce_keys
@@ -33,8 +34,6 @@ defmodule MembraneLive.HLS.FileStorage do
 
   @impl true
   def init(config) do
-    IO.inspect(config, label: :config)
-
     config
     |> Map.merge(%{first_segment_ready?: false})
     |> Map.from_struct()
