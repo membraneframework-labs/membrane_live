@@ -15,9 +15,9 @@ defmodule MembraneLive.Event do
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias Membrane.WebRTC.Track
-  alias MembraneLive.Chats
+  alias MembraneLive.{Chats, Webinars}
   alias MembraneLive.Event.Timer
-  alias MembraneLive.Webinars
+  alias MembraneLive.HLS.FileStorage
   alias Phoenix.PubSub
 
   @mix_env Mix.env()
@@ -93,10 +93,12 @@ defmodule MembraneLive.Event do
         hls_mode: :muxed_av,
         mode: :live,
         target_window_duration: :infinity,
+        storage: fn directory ->
+          %FileStorage.Config{directory: directory} |> FileStorage.init()
+        end,
         segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
         partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550)),
-        storage: fn directory -> %MembraneLive.HLS.FileStorage{directory: directory} end
+          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
       }
     }
 

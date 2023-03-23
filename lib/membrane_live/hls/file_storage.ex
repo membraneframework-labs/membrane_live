@@ -10,18 +10,35 @@ defmodule MembraneLive.HLS.FileStorage do
   alias MembraneLive.HLS.Helpers
   alias Phoenix.PubSub
 
-  @enforce_keys [:directory]
+  @enforce_keys [:directory, :first_segment_ready?]
   defstruct @enforce_keys
 
   @type t :: %__MODULE__{
-          directory: Path.t()
+          directory: Path.t(),
+          first_segment_ready?: boolean()
         }
+
+  defmodule Config do
+    @moduledoc false
+    @enforce_keys [:directory]
+
+    defstruct @enforce_keys
+
+    @type t :: %__MODULE__{
+            directory: Path.t()
+          }
+  end
 
   @ets_key :partial_segments
   @remove_partial_timeout_ms 5000
 
   @impl true
-  def init(%__MODULE__{} = config), do: config
+  def init(config) do
+    config
+    |> Map.merge(%{first_segment_ready?: false})
+    |> Map.from_struct()
+    |> then(&struct!(__MODULE__, &1))
+  end
 
   @impl true
   def store(
@@ -30,9 +47,7 @@ defmodule MembraneLive.HLS.FileStorage do
         contents,
         %{byte_offset: offset},
         %{mode: :binary},
-        %__MODULE__{
-          directory: directory
-        }
+        %__MODULE__{directory: directory} = state
       ) do
     result = File.write(Path.join(directory, segment_filename), contents, [:binary, :append])
 
@@ -48,7 +63,7 @@ defmodule MembraneLive.HLS.FileStorage do
       err -> Membrane.Logger.error("Adding partial to ETS failed: #{inspect(err)}")
     end
 
-    result
+    {result, state}
   end
 
   def store(
@@ -57,49 +72,68 @@ defmodule MembraneLive.HLS.FileStorage do
         contents,
         _metadata,
         %{mode: :binary},
-        %__MODULE__{directory: directory}
+        %__MODULE__{directory: directory} = state
       ) do
-    File.write(Path.join(directory, segment_filename), contents, [:binary])
+    {File.write(Path.join(directory, segment_filename), contents, [:binary]), state}
   end
 
   @impl true
-  def store(_parent_id, name, contents, _metadata, %{mode: :text}, %__MODULE__{
-        directory: directory
-      }) do
+  def store(
+        _parent_id,
+        name,
+        contents,
+        _metadata,
+        %{mode: :text},
+        %__MODULE__{directory: directory} = state
+      ) do
     result = File.write(Path.join(directory, name), contents)
 
-    if String.match?(name, ~r/\.m3u8$/) do
-      notify_playlist_update(directory, name, contents)
-    end
+    state =
+      if String.match?(name, ~r/\.m3u8$/) do
+        notify_playlist_update(name, contents, state)
+      else
+        state
+      end
 
-    result
+    {result, state}
   end
 
   @impl true
-  def remove(_parent_id, name, _ctx, %__MODULE__{directory: location}) do
-    File.rm(Path.join(location, name))
+  def remove(_parent_id, name, _ctx, %__MODULE__{directory: location} = state) do
+    {File.rm(Path.join(location, name)), state}
   end
 
-  defp notify_playlist_update(directory, name, contents) do
-    name_without_extension = String.replace(name, ".m3u8", "")
+  defp notify_playlist_update(name, contents, state) do
+    state = maybe_send_first_segment_notification(state, contents)
 
-    if send_first_segment_notification?(contents) do
-      "output/" <> event_id = directory
-      PubSub.broadcast(MembraneLive.PubSub, event_id, :first_segment_ready)
+    if state.first_segment_ready? do
+      {segment, partial} = Helpers.get_last_partial(contents)
+      name_without_extension = String.replace(name, ".m3u8", "")
+
+      PubSub.broadcast(
+        MembraneLive.PubSub,
+        name_without_extension,
+        {:manifest_update_partial, segment, partial}
+      )
     end
 
-    {segment, partial} = Helpers.get_last_partial(contents)
-
-    PubSub.broadcast(
-      MembraneLive.PubSub,
-      name_without_extension,
-      {:manifest_update_partial, segment, partial}
-    )
+    state
   end
 
-  defp send_first_segment_notification?(contents) do
-    !String.contains?(contents, "\nmuxed_segment_1") and
-      String.contains?(contents, "\nmuxed_segment_0")
+  defp maybe_send_first_segment_notification(
+         %__MODULE__{first_segment_ready?: true} = state,
+         _contents
+       ),
+       do: state
+
+  defp maybe_send_first_segment_notification(%__MODULE__{} = state, contents) do
+    if String.contains?(contents, "\nmuxed_segment_0") do
+      "output/" <> event_id = state.directory
+      PubSub.broadcast(MembraneLive.PubSub, event_id, :first_segment_ready)
+      %{state | first_segment_ready?: true}
+    else
+      state
+    end
   end
 
   defp remove_partial_from_ets(partial) do
