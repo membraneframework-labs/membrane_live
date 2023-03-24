@@ -9,7 +9,8 @@ defmodule MembraneLive.WebinarsFixtures do
     "description" => "some description",
     "presenters" => [],
     "start_date" => ~N[2022-07-17 10:20:00],
-    "title" => "some title"
+    "title" => "some title",
+    "is_private" => false
   }
 
   @spec webinar_fixture(any, User.t()) :: Webinar.t()

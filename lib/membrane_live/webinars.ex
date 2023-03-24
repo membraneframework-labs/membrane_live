@@ -9,18 +9,30 @@ defmodule MembraneLive.Webinars do
 
   alias MembraneLive.Webinars.Webinar
 
-  @spec list_webinars(boolean()) :: list(Webinar.t())
-  def list_webinars(is_finished? \\ false) do
+  @spec list_webinars(any, boolean()) :: list(Webinar.t())
+  def list_webinars(_user_id, is_finished? \\ false)
+
+  def list_webinars(:unauthorized, is_finished?) do
     from(u in Webinar,
-      where: ^is_finished? == u.is_finished,
+      where: ^is_finished? == u.is_finished and u.is_private == false,
       select: u
     )
     |> Repo.all()
     |> Enum.map(&add_moderator_email(&1))
   end
 
-  @spec list_recordings() :: list(Webinar.t())
-  def list_recordings(), do: list_webinars(true)
+  def list_webinars(user_id, is_finished?) do
+    from(u in Webinar,
+      where:
+        ^is_finished? == u.is_finished and (^user_id == u.moderator_id or u.is_private == false),
+      select: u
+    )
+    |> Repo.all()
+    |> Enum.map(&add_moderator_email(&1))
+  end
+
+  @spec list_recordings(any) :: list(Webinar.t())
+  def list_recordings(user_id), do: list_webinars(user_id, true)
 
   @spec get_webinar(String.t(), boolean()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
   def get_webinar(uuid, include_products? \\ false) do

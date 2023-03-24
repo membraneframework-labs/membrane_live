@@ -10,8 +10,12 @@ defmodule MembraneLiveWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  pipeline :auth do
-    plug(MembraneLiveWeb.Plugs.Auth)
+  pipeline :auth_unrestricted do
+    plug(MembraneLiveWeb.Plugs.Auth, :unrestricted)
+  end
+
+  pipeline :auth_restricted do
+    plug(MembraneLiveWeb.Plugs.Auth, :restricted)
   end
 
   scope "/", MembraneLiveWeb do
@@ -26,23 +30,35 @@ defmodule MembraneLiveWeb.Router do
 
   scope "/", MembraneLiveWeb do
     pipe_through(:browser)
-    pipe_through(:auth)
+    pipe_through(:auth_restricted)
     get("/me", UserInfoController, :index)
   end
 
   scope "/resources/webinars", MembraneLiveWeb do
     pipe_through(:browser)
 
-    get("/", WebinarController, :index)
     get("/:uuid", WebinarController, :show)
     get("/:uuid/products", WebinarProductController, :index)
+  end
+
+  scope "/resources/webinars", MembraneLiveWeb do
+    pipe_through(:browser)
+    pipe_through(:auth_unrestricted)
+
+    get("/", WebinarController, :index)
   end
 
   scope "/resources/recordings", MembraneLiveWeb do
     pipe_through(:browser)
 
-    get("/", RecordingsController, :index)
     get("/:uuid", RecordingsController, :show)
+  end
+
+  scope "/resources/recordings", MembraneLiveWeb do
+    pipe_through(:browser)
+    pipe_through(:auth_unrestricted)
+
+    get("/", RecordingsController, :index)
   end
 
   scope "/resources/chat", MembraneLiveWeb do
@@ -53,7 +69,7 @@ defmodule MembraneLiveWeb.Router do
 
   scope "/resources", MembraneLiveWeb do
     pipe_through(:browser)
-    pipe_through(:auth)
+    pipe_through(:auth_restricted)
 
     get("/products", ProductController, :index)
 

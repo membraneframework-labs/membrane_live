@@ -12,7 +12,8 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
     "description" => "some description",
     "presenters" => [],
     "start_date" => ~N[2022-07-17 10:20:00],
-    "title" => "some title"
+    "title" => "some title",
+    "is_private" => false
   }
   @update_attrs %{
     "description" => "some updated description",
@@ -161,11 +162,7 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
              } = json_response(conn, 200)["webinar"]
     end
 
-    test "lists all webinars", %{webinar: %{uuid: webinar_uuid} = _webinar} do
-      conn =
-        build_conn()
-        |> put_req_header("accept", "application/json")
-
+    test "lists all webinars", %{conn: conn, webinar: %{uuid: webinar_uuid} = _webinar} do
       conn = get(conn, Routes.webinar_path(conn, :index))
 
       assert [
@@ -174,9 +171,50 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
                  "description" => "some description",
                  "presenters" => [],
                  "start_date" => "2022-07-17T10:20:00",
-                 "title" => "some title"
+                 "title" => "some title",
+                 "is_private" => false
                }
              ] = json_response(conn, 200)["webinars"]
+    end
+  end
+
+  describe "private webinars" do
+    setup [:create_private_webinar]
+
+    test "list private webinar for owner", %{webinar: %{uuid: webinar_uuid}, conn: conn} do
+      conn = get(conn, Routes.webinar_path(conn, :index))
+
+      assert [
+               %{
+                 "uuid" => ^webinar_uuid,
+                 "description" => "some description",
+                 "presenters" => [],
+                 "start_date" => "2022-07-17T10:20:00",
+                 "title" => "some title",
+                 "is_private" => true
+               }
+             ] = json_response(conn, 200)["webinars"]
+    end
+
+    test "don't list private webinar for unauthenticated user" do
+      conn =
+        build_conn()
+        |> put_req_header("accept", "application/json")
+
+      conn = get(conn, Routes.webinar_path(conn, :index))
+      assert json_response(conn, 200)["webinars"] == []
+    end
+
+    test "don't list private webinar for authenticated user who isn't the owner", %{
+      conn: conn
+    } do
+      {:ok, _user, conn} =
+        conn
+        |> put_req_header("accept", "application/json")
+        |> set_new_user_token("1")
+
+      conn = get(conn, Routes.webinar_path(conn, :index))
+      assert json_response(conn, 200)["webinars"] == []
     end
   end
 
@@ -201,6 +239,11 @@ defmodule MembraneLiveWeb.WebinarControllerTest do
 
   defp create_webinar(%{user: user}) do
     webinar = webinar_fixture(user)
+    %{webinar: webinar}
+  end
+
+  defp create_private_webinar(%{user: user}) do
+    webinar = webinar_fixture(%{"is_private" => true}, user)
     %{webinar: webinar}
   end
 

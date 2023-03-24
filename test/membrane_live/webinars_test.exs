@@ -17,12 +17,13 @@ defmodule MembraneLive.WebinarsTest do
       "description" => nil,
       "presenters" => nil,
       "start_date" => nil,
-      "title" => nil
+      "title" => nil,
+      "is_private" => nil
     }
 
     test "list_webinars/0 returns all webinars", %{user: user} do
       webinar = webinar_fixture(user) |> Map.put(:moderator_email, user.email)
-      assert Webinars.list_webinars() == [webinar]
+      assert Webinars.list_webinars(user.uuid) == [webinar]
     end
 
     test "get_webinar!/1 returns the webinar with given id", %{user: user} do
@@ -35,7 +36,8 @@ defmodule MembraneLive.WebinarsTest do
         "description" => "some description",
         "presenters" => [],
         "start_date" => ~N[2022-07-17 10:20:00],
-        "title" => "some title"
+        "title" => "some title",
+        "is_private" => false
       }
 
       assert {:ok, %Webinar{} = webinar} = Webinars.create_webinar(valid_attrs, user.uuid)

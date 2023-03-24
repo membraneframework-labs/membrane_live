@@ -13,6 +13,7 @@ export const initialEventFormInput: EventFormInput = {
   description: "",
   start_date: "",
   presenters: [],
+  is_private: true,
 };
 
 type FieldProps = {
@@ -153,6 +154,23 @@ const ModeratorField = () => {
   );
 };
 
+type CheckboxProps = { value: boolean; inputSetter: (value: boolean) => void };
+
+const PrivateCheckBox = ({ value, inputSetter }: CheckboxProps) => {
+  return (
+    <div className="EventFormFieldDiv">
+      <label className="EventFormFieldLabel">Is private</label>
+      <input
+        className="EventFormFieldInput"
+        type="checkbox"
+        checked={value}
+        onChange={(e) => inputSetter(e.target.checked)}
+        required
+      />
+    </div>
+  );
+};
+
 type EventFormProps = {
   setParentInput: (input: EventFormInput) => void;
   defaultInput?: EventInfo;
@@ -169,7 +187,8 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
     };
 
     const start_date = convertDateToString(defaultInput.startDate);
-    return { ...defaultInput, start_date };
+    const isPrivate = true;
+    return { ...defaultInput, start_date, is_private: isPrivate };
   };
 
   const initialInput = defaultInput ? infoToEventForm(defaultInput) : initialEventFormInput;
@@ -178,6 +197,7 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
   const [inputDescription, setInputDescription] = useState<string>(initialInput.description);
   const [inputDate, setDate] = useState<string>(initialInput.start_date);
   const [inputPresenters, setInputParticipants] = useState<string[]>(initialInput.presenters);
+  const [inputIsPrivate, setInputIsPrivate] = useState<boolean>(initialInput.is_private);
 
   useEffect(() => {
     setParentInput({
@@ -185,8 +205,9 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       description: inputDescription,
       start_date: inputDate,
       presenters: inputPresenters,
+      is_private: inputIsPrivate,
     });
-  }, [inputTitle, inputDescription, inputDate, inputPresenters, setParentInput]);
+  }, [inputIsPrivate, inputTitle, inputDescription, inputDate, inputPresenters, setParentInput]);
 
   return (
     <div className="EventFormDiv">
@@ -194,6 +215,7 @@ const EventForm = ({ setParentInput, defaultInput }: EventFormProps) => {
       <DescriptionField value={inputDescription} inputSetter={setInputDescription} />
       <DateField value={inputDate} inputSetter={setDate} />
       <PresenterField inputList={inputPresenters} inputSetter={setInputParticipants} />
+      <PrivateCheckBox value={inputIsPrivate} inputSetter={setInputIsPrivate}></PrivateCheckBox>
       <ModeratorField />
     </div>
   );

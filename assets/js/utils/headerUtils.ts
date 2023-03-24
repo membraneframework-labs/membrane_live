@@ -14,6 +14,7 @@ export const initEventInfo = (): EventInfo => {
     startDate: new Date(),
     presenters: [],
     moderatorEmail: "",
+    isPrivate: true,
   };
 };
 
@@ -21,12 +22,14 @@ export const mapToEventInfo = (originalEventInfo: OriginalEventInfo) => {
   const newDate = new Date();
   if (originalEventInfo.start_date) newDate.setTime(Date.parse(originalEventInfo.start_date));
   const email = originalEventInfo.moderator_email;
-  delete originalEventInfo.start_date;
-  delete originalEventInfo.moderator_email;
   const newEventInfo: EventInfo = {
-    ...originalEventInfo,
+    title: originalEventInfo.title,
+    description: originalEventInfo.description,
+    presenters: originalEventInfo.presenters,
+    uuid: originalEventInfo.uuid,
     startDate: newDate,
     moderatorEmail: email || "",
+    isPrivate: originalEventInfo.is_private,
   };
   return newEventInfo;
 };
