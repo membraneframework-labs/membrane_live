@@ -22,10 +22,8 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
           do: create_and_format_webinar(user)
 
     private_webinars =
-      for(
-        _index <- 1..@num_of_private_recordings,
-        do: create_and_format_webinar(%{"is_private" => true}, user)
-      )
+      for _index <- 1..@num_of_private_recordings,
+          do: create_and_format_webinar(%{"is_private" => true}, user)
 
     webinars = public_webinars ++ private_webinars
 
@@ -70,7 +68,7 @@ defmodule MembraneLiveWeb.RecordingsControllerTest do
       assert response(conn, 403)
     end
 
-    test "delete chose recording as a moderator", %{
+    test "delete chosen recording as a moderator", %{
       user: user,
       moderator_conn: conn,
       webinars: webinars
