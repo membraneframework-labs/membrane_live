@@ -9,7 +9,7 @@ defmodule MembraneLive.Webinars do
 
   alias MembraneLive.Webinars.Webinar
 
-  @spec list_webinars(any, boolean()) :: list(Webinar.t())
+  @spec list_webinars(binary() | :unauthorized, boolean()) :: list(Webinar.t())
   def list_webinars(_user_id, is_finished? \\ false)
 
   def list_webinars(:unauthorized, is_finished?) do
