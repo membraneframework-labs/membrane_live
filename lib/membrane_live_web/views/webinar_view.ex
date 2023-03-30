@@ -23,7 +23,8 @@ defmodule MembraneLiveWeb.WebinarView do
       start_date: webinar.start_date,
       description: webinar.description,
       presenters: webinar.presenters,
-      moderator_email: email
+      moderator_email: email,
+      is_private: webinar.is_private
     }
   end
 
@@ -33,7 +34,8 @@ defmodule MembraneLiveWeb.WebinarView do
       title: webinar.title,
       start_date: webinar.start_date,
       description: webinar.description,
-      presenters: webinar.presenters
+      presenters: webinar.presenters,
+      is_private: webinar.is_private
     }
   end
 end

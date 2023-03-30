@@ -57,6 +57,7 @@ export type EventFormInput = {
   description: string;
   start_date: string;
   presenters: string[];
+  is_private: boolean;
 };
 
 export type OriginalEventInfo = {
@@ -64,6 +65,7 @@ export type OriginalEventInfo = {
   description: string;
   presenters: string[];
   start_date?: string;
+  is_private: boolean;
   uuid: string;
   moderator_email?: string;
 };
@@ -75,6 +77,7 @@ export type EventInfo = {
   startDate: Date;
   uuid: string;
   moderatorEmail: string;
+  isPrivate: boolean;
 };
 
 export type ModalForm = "create" | "update";

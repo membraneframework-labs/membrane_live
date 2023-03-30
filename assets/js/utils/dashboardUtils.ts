@@ -1,8 +1,9 @@
-import axios from "../services";
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
 import axiosWithInterceptor from "../services";
 import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types/types";
+import { getIsAuthenticated } from "./storageUtils";
+import axios from "axios";
 
 export const checkEventForm = (eventForm: EventFormInput): boolean => {
   return eventForm.start_date != "" && eventForm.title != "";
@@ -49,7 +50,7 @@ export const getWebinarsInfo = async (
 ) => {
   const eventResourcesType = getEventResourcesType(isRecording);
 
-  axios
+  (getIsAuthenticated() ? axiosWithInterceptor : axios)
     .get(`resources/${eventResourcesType}/`)
     .then((response: { data: { webinars: OriginalEventInfo[] } }) => {
       setWebinars(response.data.webinars.map((elem) => mapToEventInfo(elem)));

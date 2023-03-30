@@ -44,10 +44,6 @@ config :logger, :console,
   metadata: [:request_id]
 
 config :membrane_live,
-  ecto_repos: [MembraneLive.Repo],
-  migration_primary_key: [name: :uuid, type: :binary_id]
-
-config :membrane_live,
   hls_output_mount_path: "output",
   last_peer_timeout_long_ms: 15 * 60 * 1000,
   last_peer_timeout_short_ms: 2 * 60 * 1000

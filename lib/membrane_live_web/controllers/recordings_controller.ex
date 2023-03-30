@@ -9,7 +9,7 @@ defmodule MembraneLiveWeb.RecordingsController do
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
-    webinars = Webinars.list_recordings()
+    webinars = Webinars.list_recordings(conn.assigns.user_id)
     render(conn, "index.json", webinars: webinars)
   end
 

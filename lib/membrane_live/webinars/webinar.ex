@@ -16,7 +16,8 @@ defmodule MembraneLive.Webinars.Webinar do
           presenters: list,
           start_date: NaiveDateTime.t(),
           title: String.t(),
-          is_finished: boolean()
+          is_finished: boolean(),
+          is_private: boolean()
         }
 
   @desc_limit 255
@@ -27,6 +28,7 @@ defmodule MembraneLive.Webinars.Webinar do
     field(:start_date, :naive_datetime)
     field(:title, :string)
     field(:is_finished, :boolean)
+    field(:is_private, :boolean)
     belongs_to(:moderator, Webinar, references: :uuid, type: :binary_id)
 
     many_to_many(:products, Product,
@@ -40,9 +42,9 @@ defmodule MembraneLive.Webinars.Webinar do
   @doc false
   def changeset(webinar, attrs) do
     webinar
-    |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id])
+    |> cast(attrs, [:title, :start_date, :description, :presenters, :moderator_id, :is_private])
     |> Ecto.Changeset.put_change(:is_finished, false)
-    |> validate_required([:title, :start_date, :moderator_id])
+    |> validate_required([:title, :start_date, :moderator_id, :is_private])
     |> validate_length(:description, max: @desc_limit)
   end
 end
