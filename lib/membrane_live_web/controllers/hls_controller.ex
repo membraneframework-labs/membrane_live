@@ -6,7 +6,6 @@ defmodule MembraneLiveWeb.HLSController do
   alias Plug.Conn
 
   @ets_key :partial_segments
-  @manifest_update_timeout_ms 1000
 
   @spec index(Conn.t(), map) :: Conn.t()
   def index(
@@ -79,16 +78,12 @@ defmodule MembraneLiveWeb.HLSController do
       filename_without_extension = String.replace(filename, ".m3u8", "")
       PubSub.subscribe(MembraneLive.PubSub, filename_without_extension)
 
-      await_manifest_update(segment, partial)
+      :ok = await_manifest_update(prefix, filename, segment, partial)
       PubSub.unsubscribe(MembraneLive.PubSub, filename_without_extension)
     end
 
-    if partial_present_in_manifest?(prefix, filename, segment, partial) do
-      path = Helpers.hls_output_path(prefix, filename)
-      send_playlist(conn, path)
-    else
-      conn |> Conn.send_resp(404, "File not found")
-    end
+    path = Helpers.hls_output_path(prefix, filename)
+    send_playlist(conn, path)
   end
 
   defp handle_other_file_request(conn, %{"event_id" => event_id, "filename" => filename} = params) do
@@ -111,14 +106,15 @@ defmodule MembraneLiveWeb.HLSController do
     (segment == target_segment and partial >= target_partial) or segment > target_segment
   end
 
-  defp await_manifest_update(target_segment, target_partial) do
-    receive do
-      {:manifest_update_partial, segment, partial}
-      when (segment == target_segment and partial >= target_partial) or segment > target_segment ->
-        :ok
-    after
-      @manifest_update_timeout_ms ->
-        :error
+  defp await_manifest_update(prefix, filename, target_segment, target_partial) do
+    if partial_present_in_manifest?(prefix, filename, target_segment, target_partial) do
+      :ok
+    else
+      receive do
+        {:manifest_update_partial, segment, partial}
+        when (segment == target_segment and partial >= target_partial) or segment > target_segment ->
+          :ok
+      end
     end
   end
 

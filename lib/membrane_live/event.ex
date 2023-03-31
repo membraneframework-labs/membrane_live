@@ -98,7 +98,7 @@ defmodule MembraneLive.Event do
         end,
         segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
         partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
+          SegmentDuration.new(Time.milliseconds(150), Time.milliseconds(550))
       }
     }
 
