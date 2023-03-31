@@ -78,7 +78,7 @@ defmodule MembraneLiveWeb.HLSController do
       filename_without_extension = String.replace(filename, ".m3u8", "")
       PubSub.subscribe(MembraneLive.PubSub, filename_without_extension)
 
-      :ok = await_manifest_update(prefix, filename, segment, partial)
+      await_manifest_update(prefix, filename, segment, partial)
       PubSub.unsubscribe(MembraneLive.PubSub, filename_without_extension)
     end
 
