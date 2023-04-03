@@ -83,7 +83,12 @@ defmodule MembraneLive.Event do
     Process.monitor(pid)
 
     target_segment_duration = Time.seconds(5)
-    :ok = create_hls_endpoint(pid, event_id: event_id, target_segment_duration: target_segment_duration)
+
+    :ok =
+      create_hls_endpoint(pid,
+        event_id: event_id,
+        target_segment_duration: target_segment_duration
+      )
 
     {:ok,
      %{
@@ -190,10 +195,23 @@ defmodule MembraneLive.Event do
     {:noreply, new_state}
   end
 
-  def handle_info(:recreate_hls, %{event_id: event_id, rtc_engine: rtc_engine, target_segment_duration: target_segment_duration} = state) do
+  def handle_info(
+        :recreate_hls,
+        %{
+          event_id: event_id,
+          rtc_engine: rtc_engine,
+          target_segment_duration: target_segment_duration
+        } = state
+      ) do
     Membrane.Logger.error("Restarting HLS Endpoint!")
     PubSub.subscribe(MembraneLive.PubSub, event_id)
-    :ok = create_hls_endpoint(rtc_engine, event_id: event_id, target_segment_duration: Time.milliseconds(target_segment_duration))
+
+    :ok =
+      create_hls_endpoint(rtc_engine,
+        event_id: event_id,
+        target_segment_duration: Time.milliseconds(target_segment_duration)
+      )
+
     {:noreply, state}
   end
 
@@ -321,7 +339,10 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_cast(:finish_event, state), do: close_webinar(state)
 
-  defp create_hls_endpoint(rtc_engine, [event_id: event_id, target_segment_duration: target_segment_duration]) do
+  defp create_hls_endpoint(rtc_engine,
+         event_id: event_id,
+         target_segment_duration: target_segment_duration
+       ) do
     endpoint = %HLS{
       rtc_engine: rtc_engine,
       owner: self(),
@@ -340,7 +361,7 @@ defmodule MembraneLive.Event do
       }
     }
 
-    Engine.add_endpoint(rtc_engine, endpoint, [endpoint_id: "hls_output"])
+    Engine.add_endpoint(rtc_engine, endpoint, endpoint_id: "hls_output")
   end
 
   defp close_webinar(state) do
