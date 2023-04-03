@@ -83,28 +83,7 @@ defmodule MembraneLive.Event do
     Process.monitor(pid)
 
     target_segment_duration = Time.seconds(5)
-
-    endpoint = %HLS{
-      rtc_engine: pid,
-      owner: self(),
-      output_directory: "output/#{event_id}",
-      mixer_config: %MixerConfig{persist?: true},
-      hls_config: %HLSConfig{
-        hls_mode: :muxed_av,
-        mode: :live,
-        target_window_duration: :infinity,
-        storage: fn directory ->
-          %FileStorage.Config{directory: directory} |> FileStorage.init()
-        end,
-        segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
-        partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
-      }
-    }
-
-    :ok = Engine.add_endpoint(pid, endpoint)
-
-    PubSub.subscribe(MembraneLive.PubSub, event_id)
+    :ok = create_hls_endpoint(pid, event_id: event_id, target_segment_duration: target_segment_duration)
 
     {:ok,
      %{
@@ -199,6 +178,22 @@ defmodule MembraneLive.Event do
       send(state.peer_channels[to], {:media_event, data})
     end
 
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(%Message.EndpointCrashed{endpoint_id: "hls_output"}, state) do
+    Membrane.Logger.error("HLS endpoint has crashed!")
+    new_state = %{state | playlist_idl: nil, first_segment_ready?: false}
+    send_broadcast(new_state)
+    Process.send_after(self(), :recreate_hls, 3000)
+    {:noreply, new_state}
+  end
+
+  def handle_info(:recreate_hls, %{event_id: event_id, rtc_engine: rtc_engine, target_segment_duration: target_segment_duration} = state) do
+    Membrane.Logger.error("Restarting HLS Endpoint!")
+    PubSub.subscribe(MembraneLive.PubSub, event_id)
+    :ok = create_hls_endpoint(rtc_engine, event_id: event_id, target_segment_duration: Time.milliseconds(target_segment_duration))
     {:noreply, state}
   end
 
@@ -325,6 +320,28 @@ defmodule MembraneLive.Event do
 
   @impl true
   def handle_cast(:finish_event, state), do: close_webinar(state)
+
+  defp create_hls_endpoint(rtc_engine, [event_id: event_id, target_segment_duration: target_segment_duration]) do
+    endpoint = %HLS{
+      rtc_engine: rtc_engine,
+      owner: self(),
+      output_directory: "output/#{event_id}",
+      mixer_config: %MixerConfig{persist?: true},
+      hls_config: %HLSConfig{
+        hls_mode: :muxed_av,
+        mode: :live,
+        target_window_duration: :infinity,
+        storage: fn directory ->
+          %FileStorage.Config{directory: directory} |> FileStorage.init()
+        end,
+        segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
+        partial_segment_duration:
+          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
+      }
+    }
+
+    Engine.add_endpoint(rtc_engine, endpoint, [endpoint_id: "hls_output"])
+  end
 
   defp close_webinar(state) do
     Engine.terminate(state.rtc_engine)
