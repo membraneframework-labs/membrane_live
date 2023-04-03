@@ -204,7 +204,6 @@ defmodule MembraneLive.Event do
         } = state
       ) do
     Membrane.Logger.error("Restarting HLS Endpoint!")
-    PubSub.subscribe(MembraneLive.PubSub, event_id)
 
     :ok =
       create_hls_endpoint(rtc_engine,
@@ -357,11 +356,12 @@ defmodule MembraneLive.Event do
         end,
         segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
         partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(500), Time.milliseconds(550))
+          SegmentDuration.new(Time.milliseconds(150), Time.milliseconds(550))
       }
     }
 
     Engine.add_endpoint(rtc_engine, endpoint, endpoint_id: "hls_output")
+    PubSub.subscribe(MembraneLive.PubSub, event_id)
   end
 
   defp close_webinar(state) do
