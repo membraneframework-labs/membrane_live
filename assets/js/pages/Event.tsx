@@ -63,7 +63,7 @@ const Event = () => {
   const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, liveConfig);
   const { setStreamStart } = useStartStream();
 
-  const socket = useRef(new Socket("/socket", {heartbeatIntervalMs: 5000}));
+  const socket = useRef(new Socket("/socket", { heartbeatIntervalMs: 5000 }));
   socket.current.connect();
 
   useEffect(() => getEventInfo(toast, setEventInfo, false), [toast]);
