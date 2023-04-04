@@ -2,7 +2,7 @@ defmodule MembraneLiveWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :membrane_live
 
   socket("/socket", MembraneLiveWeb.EventSocket,
-    websocket: true,
+    websocket: [timeout: 10_000],
     longpoll: false
   )
 
