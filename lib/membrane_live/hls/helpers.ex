@@ -84,8 +84,7 @@ defmodule MembraneLive.HLS.Helpers do
 
       partial_count =
         partial_tags
-        |> Enum.filter(&String.contains?(&1, "muxed_segment_#{segment}"))
-        |> Enum.count()
+        |> Enum.count(&String.contains?(&1, "muxed_segment_#{segment}"))
 
       {segment, partial_count - 1}
     end
