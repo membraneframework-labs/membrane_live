@@ -205,6 +205,10 @@ defmodule MembraneLive.Event do
       ) do
     Membrane.Logger.error("Restarting HLS Endpoint!")
 
+    Chats.clear_offsets(state.event_id)
+    :ets.delete(:client_start_timestamps, state.event_id)
+    :ets.insert(:start_timestamps, {state.event_id, System.monotonic_time(:millisecond)})
+
     :ok =
       create_hls_endpoint(rtc_engine,
         event_id: event_id,
