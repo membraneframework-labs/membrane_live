@@ -1,13 +1,14 @@
 import { Product } from "../types/types";
 import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
 import axiosWithInterceptor from "../services";
+import axios from "axios";
 
 const REFETCH_PRODUCTS_INTERVAL_MILLIS = 15 * 1000;
 
 export const useWebinarProductsQuery = (productId: string) =>
   useQuery({
     queryKey: ["get-webinar-products", productId],
-    queryFn: async () => await axiosWithInterceptor.get(`/resources/webinars/${productId}/products`),
+    queryFn: async () => await axios.get(`/resources/webinars/${productId}/products`),
     enabled: productId !== "",
     refetchOnWindowFocus: false,
     refetchInterval: REFETCH_PRODUCTS_INTERVAL_MILLIS,
