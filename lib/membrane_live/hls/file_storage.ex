@@ -10,12 +10,12 @@ defmodule MembraneLive.HLS.FileStorage do
   alias MembraneLive.HLS.Helpers
   alias Phoenix.PubSub
 
-  @enforce_keys [:directory, :first_segment_ready?]
+  @enforce_keys [:directory, :second_segment_ready?]
   defstruct @enforce_keys
 
   @type t :: %__MODULE__{
           directory: Path.t(),
-          first_segment_ready?: boolean()
+          second_segment_ready?: boolean()
         }
 
   defmodule Config do
@@ -35,7 +35,7 @@ defmodule MembraneLive.HLS.FileStorage do
   @impl true
   def init(config) do
     config
-    |> Map.merge(%{first_segment_ready?: false})
+    |> Map.merge(%{second_segment_ready?: false})
     |> Map.from_struct()
     |> then(&struct!(__MODULE__, &1))
   end
@@ -106,7 +106,7 @@ defmodule MembraneLive.HLS.FileStorage do
   defp notify_playlist_update(name, contents, state) do
     state = maybe_send_first_segment_notification(state, contents)
 
-    if state.first_segment_ready? do
+    if state.second_segment_ready? do
       {segment, partial} = Helpers.get_last_partial(contents)
       name_without_extension = String.replace(name, ".m3u8", "")
 
@@ -121,16 +121,16 @@ defmodule MembraneLive.HLS.FileStorage do
   end
 
   defp maybe_send_first_segment_notification(
-         %__MODULE__{first_segment_ready?: true} = state,
+         %__MODULE__{second_segment_ready?: true} = state,
          _contents
        ),
        do: state
 
   defp maybe_send_first_segment_notification(%__MODULE__{} = state, contents) do
-    if String.contains?(contents, "\nmuxed_segment_0") do
+    if String.contains?(contents, "\nmuxed_segment_1") do
       "output/" <> event_id = state.directory
-      PubSub.broadcast(MembraneLive.PubSub, event_id, :first_segment_ready)
-      %{state | first_segment_ready?: true}
+      PubSub.broadcast(MembraneLive.PubSub, event_id, :second_segment_ready)
+      %{state | second_segment_ready?: true}
     else
       state
     end
