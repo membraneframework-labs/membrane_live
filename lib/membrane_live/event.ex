@@ -82,7 +82,7 @@ defmodule MembraneLive.Event do
     Engine.register(pid, self())
     Process.monitor(pid)
 
-    target_segment_duration = Time.seconds(5)
+    target_segment_duration = Time.seconds(3)
 
     :ok =
       create_hls_endpoint(pid,
@@ -99,7 +99,7 @@ defmodule MembraneLive.Event do
        trace_ctx: trace_ctx,
        moderator_pid: nil,
        playlist_idl: nil,
-       first_segment_ready?: false,
+       second_segment_ready?: false,
        timer: Timer.create(self()),
        target_segment_duration: Time.as_milliseconds(target_segment_duration),
        start_time: nil
@@ -189,7 +189,7 @@ defmodule MembraneLive.Event do
   @impl true
   def handle_info(%Message.EndpointCrashed{endpoint_id: "hls_output"}, state) do
     Membrane.Logger.error("HLS endpoint has crashed!")
-    new_state = %{state | playlist_idl: nil, first_segment_ready?: false}
+    new_state = %{state | playlist_idl: nil, second_segment_ready?: false}
     send_broadcast(new_state)
     Process.send_after(self(), :recreate_hls, 3000)
     {:noreply, new_state}
@@ -286,14 +286,14 @@ defmodule MembraneLive.Event do
 
   def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
     state = %{state | playlist_idl: Path.join(state.event_id, "")}
-    state = if state.first_segment_ready?, do: handle_playlist_playable(state), else: state
+    state = if state.second_segment_ready?, do: handle_playlist_playable(state), else: state
 
     {:noreply, state}
   end
 
-  def handle_info(:first_segment_ready, state) do
+  def handle_info(:second_segment_ready, state) do
     PubSub.unsubscribe(MembraneLive.PubSub, state.event_id)
-    state = %{state | first_segment_ready?: true}
+    state = %{state | second_segment_ready?: true}
     state = if state.playlist_idl, do: handle_playlist_playable(state), else: state
 
     {:noreply, state}
@@ -358,9 +358,9 @@ defmodule MembraneLive.Event do
         storage: fn directory ->
           %FileStorage.Config{directory: directory} |> FileStorage.init()
         end,
-        segment_duration: SegmentDuration.new(Time.seconds(4), target_segment_duration),
+        segment_duration: SegmentDuration.new(Time.seconds(2), target_segment_duration),
         partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(150), Time.milliseconds(550))
+          SegmentDuration.new(Time.milliseconds(150), Time.milliseconds(400))
       }
     }
 

@@ -51,15 +51,6 @@ export const useHls = (
         }
       });
 
-      hls.current.lowLatencyMode &&
-        hls.current.once(Hls.Events.LEVEL_LOADED, () => {
-          if (playerRef.current && hls.current.liveSyncPosition) {
-            playerRef.current.currentTime = hls.current.liveSyncPosition;
-          } else {
-            console.log("Couldn't start player on live edge.");
-          }
-        });
-
       if (playerRef.current) attachVideo(playerRef.current);
 
       hls.current.on(Hls.Events.ERROR, function (event, data) {
