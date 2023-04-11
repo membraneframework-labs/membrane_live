@@ -26,7 +26,9 @@ defmodule MembraneLiveWeb.HLSControllerTest do
   describe "ll-hls partials" do
     test "playlist update", %{conn: conn, storage: storage} do
       {:ok, storage} = storage |> add_segment_to_playlist(0)
-      {segment, partial} = {1, 0}
+      {:ok, storage} = storage |> add_segment_to_playlist(1)
+
+      {segment, partial} = {2, 0}
       get_task = Task.async(fn -> get_partial_playlist(conn, segment, partial) end)
 
       pubsub_subscribe()
@@ -43,7 +45,8 @@ defmodule MembraneLiveWeb.HLSControllerTest do
 
     test "new partial segment", %{conn: conn, storage: storage} do
       {:ok, storage} = storage |> add_segment_to_playlist(0)
-      {segment, partial} = {1, 5}
+      {:ok, storage} = storage |> add_segment_to_playlist(1)
+      {segment, partial} = {2, 5}
 
       {:ok, storage} =
         0..(partial - 1)
