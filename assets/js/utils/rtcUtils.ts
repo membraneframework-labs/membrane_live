@@ -184,7 +184,7 @@ export const shareScreen = async (
     if (!newTrack) return peersState;
     if (peersState.sourceIds["video"]) webrtc.replaceTrack(peersState.sourceIds["video"], newTrack);
     else peersState.sourceIds["video"] = webrtc.addTrack(newTrack, peersState.peers[client.email].stream);
-    
+
     if (peersState.cameraTrack) peersState.cameraTrack.enabled = false;
 
     return peersState;
@@ -200,12 +200,11 @@ export const stopShareScreen = async (
     let peersState: PeersState = { ...prev };
     peersState.isScreenSharing = false;
 
-    if(!peersState.cameraTrack) 
-    {
+    if (!peersState.cameraTrack) {
       console.log("nie ma cameraTracka");
       return peersState;
     }
-    
+
     peersState.cameraTrack.enabled = true;
     peersState = addOrReplaceTrack(client, peersState.cameraTrack, peersState);
 
@@ -300,7 +299,7 @@ export const addOrReplaceTrack = (user: User, track: MediaStreamTrack, peersStat
   if (curTrack && peersState.isScreenSharing) {
     peersState.cameraTrack = curTrack;
   }
-  
+
   curTrack && presenterStream.stream.removeTrack(curTrack);
 
   presenterStream.stream.addTrack(track);

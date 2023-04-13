@@ -63,7 +63,7 @@ const NamePopup = ({ client, setClient }: NamePopupProps) => {
           </div>
         </div>
         <div className="ModalFormFooter">
-          <GoogleButton options={roundedGoogleButton} />
+          <GoogleButton buttonId="NamePopupButton" options={roundedGoogleButton} />
           <button onClick={saveNameAndClosePopup} className="SaveButton">
             Save
           </button>

@@ -24,7 +24,7 @@ const MobileHeader = ({ isAuthenticated, currentEvents, setCurrentEvents }: Mobi
             <Logout />
           </button>
         ) : (
-          <GoogleButton className="MobileLoggingButton" options={roundedGoogleButton} />
+          <GoogleButton buttonId="MobileHeaderButton" className="MobileLoggingButton" options={roundedGoogleButton} />
         )}
       </div>
       <div className="ModeButtonsMobile">
