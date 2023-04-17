@@ -6,7 +6,7 @@ defmodule MembraneLive.Event do
   require Membrane.Logger
   require Membrane.OpenTelemetry
 
-  alias Membrane.HTTPAdaptiveStream.Sink.SegmentDuration
+  alias Membrane.HTTPAdaptiveStream.Manifest.SegmentDuration
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}

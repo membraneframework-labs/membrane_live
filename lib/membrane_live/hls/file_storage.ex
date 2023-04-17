@@ -46,7 +46,7 @@ defmodule MembraneLive.HLS.FileStorage do
         segment_filename,
         contents,
         %{byte_offset: offset},
-        %{mode: :binary},
+        %{mode: :binary, type: :partial_segment},
         %__MODULE__{directory: directory} = state
       ) do
     result = File.write(Path.join(directory, segment_filename), contents, [:binary, :append])
