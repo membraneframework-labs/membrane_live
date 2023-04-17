@@ -1,5 +1,5 @@
 import * as JwtApi from "./jwtApi";
-import { storageGetRefreshToken, storageSetJwt } from "../utils/storageUtils";
+import { logOut, storageGetRefreshToken, storageSetJwt } from "../utils/storageUtils";
 import axios from "axios";
 
 const axiosWithInterceptor = axios.create();
@@ -28,8 +28,7 @@ axiosWithInterceptor.interceptors.response.use(
       const updatedConfig = JwtApi.addJwtToHeader(error.response.config);
       return axiosWithInterceptor(updatedConfig);
     } catch (err) {
-      JwtApi.destroyTokens();
-      return Promise.reject(err);
+      logOut();
     }
   }
 );
