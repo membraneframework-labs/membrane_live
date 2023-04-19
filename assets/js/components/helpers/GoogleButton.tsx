@@ -15,12 +15,12 @@ declare global {
 type GoogleButtonProps = {
   eventChannel?: Channel;
   options: GsiButtonConfiguration;
+  buttonId: string;
   className?: string;
 };
 
-const GoogleButton = ({ eventChannel, options, className }: GoogleButtonProps) => {
+const GoogleButton = ({ eventChannel, buttonId, options, className }: GoogleButtonProps) => {
   const toast = useToast();
-  const buttonId = Math.random().toString();
 
   useEffect(() => {
     document.title = `${pageTitlePrefix} | Login`;

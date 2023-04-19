@@ -65,13 +65,14 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "hls-zerolatency-mode"},
+       github: "jellyfish-dev/membrane_rtc_engine", branch: "ML-286-output-quality"},
 
       # Otel
       {:opentelemetry, "1.0.5"},
       {:opentelemetry_api, "1.0.3"},
       {:opentelemetry_zipkin, "1.0.0"},
       {:opentelemetry_exporter, "1.0.4"},
+      {:membrane_h264_plugin, "~> 0.2.0"},
       {:membrane_mp4_plugin, "~> 0.19.0"},
       {:membrane_aac_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, "~> 0.16.0"},

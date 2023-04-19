@@ -30,10 +30,10 @@ import {
   changeTrackIsEnabled,
   getSources,
   Sources,
-  stopShareScreen,
   checkTrackIsEnabled,
   getCurrentDeviceName,
   askForPermissions,
+  stopShareScreen,
 } from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
@@ -201,14 +201,14 @@ const ControlPanel = ({
           )
         }
         onClick={() => {
-          changeTrackIsEnabled(webrtc, client, sourceType, peersState, setPeersState);
+          changeTrackIsEnabled(webrtc, client, sourceType, peersState);
           rerender();
         }}
       />
     );
   };
 
-  const isSharingScreen: boolean = peersState.mergedScreenRef.screenTrack != undefined;
+  const isSharingScreen: boolean = peersState.isScreenSharing;
 
   return (
     <>
@@ -229,7 +229,7 @@ const ControlPanel = ({
               )
             }
             onClick={() => {
-              if (!isSharingScreen) shareScreen(webrtc, client, peersState, setPeersState);
+              if (!isSharingScreen) shareScreen(webrtc, client, setPeersState);
               else stopShareScreen(webrtc, client, setPeersState);
             }}
             disabled={!canShareScreen || screenType.device === "mobile"}
