@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Channel } from "phoenix";
-import axiosWithInterceptor from "../services/index";
+import { axiosWithInterceptor } from "../services";
 import { isUserAuthenticated } from "../services/jwtApi";
 import { storageSetJwt, storageSetName, storageSetEmail, sessionStorageSetPicture } from "../utils/storageUtils";
 import { CredentialResponse } from "google-one-tap";
