@@ -201,7 +201,6 @@ export const stopShareScreen = async (
     peersState.isScreenSharing = false;
 
     if (!peersState.cameraTrack) {
-      console.log("nie ma cameraTracka");
       return peersState;
     }
 
