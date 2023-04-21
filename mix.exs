@@ -64,8 +64,7 @@ defmodule Membrane.Live.Mixfile do
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "ML-286-output-quality"},
+      {:membrane_rtc_engine, github: "jellyfish-dev/membrane_rtc_engine"},
 
       # Otel
       {:opentelemetry, "1.0.5"},
@@ -83,9 +82,9 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_audio_filler_plugin, "~> 0.1.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.26.2"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.11.1"},
-      {:membrane_video_compositor_plugin, "~> 0.2.2"},
+      {:membrane_video_compositor_plugin, "~> 0.3.1"},
       {:membrane_framerate_converter_plugin, "~> 0.6.0"},
-      {:membrane_http_adaptive_stream_plugin, "~> 0.12.1"}
+      {:membrane_http_adaptive_stream_plugin, "~> 0.13.0"}
     ]
   end
 
