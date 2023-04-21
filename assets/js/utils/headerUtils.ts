@@ -1,5 +1,5 @@
 import { Channel, Presence } from "phoenix";
-import axios from "../services/index";
+import { axiosWithoutInterceptor } from "../services";
 import { getChannelId } from "../utils/channelUtils";
 import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
@@ -41,7 +41,7 @@ export const getEventInfo = (
 ) => {
   const eventResourcesType = getEventResourcesType(isRecording);
 
-  axios
+  axiosWithoutInterceptor
     .get(`/resources/${eventResourcesType}/` + getChannelId())
     .then((response: { data: { webinar: OriginalEventInfo } }) => {
       setEventInfo(mapToEventInfo(response.data.webinar));

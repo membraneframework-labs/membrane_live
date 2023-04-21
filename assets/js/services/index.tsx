@@ -2,7 +2,8 @@ import * as JwtApi from "./jwtApi";
 import { logOut, storageGetRefreshToken, storageSetJwt } from "../utils/storageUtils";
 import axios from "axios";
 
-const axiosWithInterceptor = axios.create();
+export const axiosWithInterceptor = axios.create();
+export const axiosWithoutInterceptor = axios.create();
 
 axiosWithInterceptor.interceptors.request.use(
   (config) => {
@@ -32,5 +33,3 @@ axiosWithInterceptor.interceptors.response.use(
     }
   }
 );
-
-export default axiosWithInterceptor;
