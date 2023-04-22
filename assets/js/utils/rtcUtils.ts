@@ -27,7 +27,7 @@ export const changeTrackIsEnabled = (
 
   if (track) {
     track.enabled = !track.enabled;
-    webrtc && sendTrackEnabledMetadata(webrtc, track, peersState);
+    webrtc && updateTrackMetadata(webrtc, track, peersState);
   }
 };
 
@@ -38,14 +38,7 @@ export const sendTrackStatusUpdate = (
   peersState: PeersState
 ): void => {
   const track = findTrackByType(user, sourceType, peersState);
-  track && sendTrackEnabledMetadata(webrtc, track, peersState);
-};
-
-const sendTrackEnabledMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack, peersState: PeersState) => {
-  webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], {
-    mainPresenter: peersState.isMainPresenter,
-    enabled: track.enabled,
-  });
+  track && updateTrackMetadata(webrtc, track, peersState);
 };
 
 export const checkTrackIsEnabled = (user: User, sourceType: SourceType, peersState: PeersState) => {
@@ -100,7 +93,7 @@ export const connectWebrtc = async (
             prev.sourceIds[track.kind as SourceType] = webrtc.addTrack(
               track,
               presenterStream.stream,
-              { mainPresenter: prev.isMainPresenter },
+              { mainPresenter: prev.isMainPresenter, isScreenSharing: prev.isScreenSharing },
               undefined,
               1500
             );
@@ -182,8 +175,8 @@ export const shareScreen = async (
 
     const newTrack = findTrackByType(client, "video", peersState);
     if (!newTrack) return peersState;
-    if (peersState.sourceIds["video"]) webrtc.replaceTrack(peersState.sourceIds["video"], newTrack);
-    else peersState.sourceIds["video"] = webrtc.addTrack(newTrack, peersState.peers[client.email].stream);
+    if (peersState.sourceIds["video"]) webrtcReplaceTrack(webrtc, newTrack, peersState, "video");
+    else peersState.sourceIds["video"] = webrtcAddTrack(webrtc, newTrack, peersState, client);
 
     if (peersState.cameraTrack) peersState.cameraTrack.enabled = false;
 
@@ -212,8 +205,8 @@ export const stopShareScreen = async (
     const newTrack = findTrackByType(client, "video", peersState);
 
     if (!newTrack) return peersState;
-    if (peersState.sourceIds["video"]) webrtc.replaceTrack(peersState.sourceIds["video"], newTrack);
-    else peersState.sourceIds["video"] = webrtc.addTrack(newTrack, peersState.peers[client.email].stream);
+    if (peersState.sourceIds["video"]) webrtcReplaceTrack(webrtc, newTrack, peersState, "video");
+    else peersState.sourceIds["video"] = webrtcAddTrack(webrtc, newTrack, peersState, client);
 
     return peersState;
   });
@@ -240,21 +233,11 @@ export const changeSource = async (
 
     const newTrack = findTrackByType(client, sourceType, peersState);
     if (!newTrack) return peersState;
-    if (peersState.sourceIds[sourceType]) webrtc.replaceTrack(peersState.sourceIds[sourceType], newTrack);
-    else peersState.sourceIds[sourceType] = webrtc.addTrack(newTrack, peersState.peers[client.email].stream);
+    if (peersState.sourceIds[sourceType]) webrtcReplaceTrack(webrtc, newTrack, peersState, sourceType);
+    else peersState.sourceIds[sourceType] = webrtcAddTrack(webrtc, newTrack, peersState, client);
 
     return peersState;
   });
-};
-
-const getLocalStream = async (sourceType: SourceType, deviceId: string): Promise<MediaStream | undefined> => {
-  try {
-    const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
-    return await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
-  } catch (error) {
-    console.error("Couldn't get microphone permission:", error);
-    return undefined;
-  }
 };
 
 export const leaveWebrtc = (
@@ -271,20 +254,6 @@ export const leaveWebrtc = (
   });
 
   webrtc?.leave();
-};
-
-const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
-  const newConstraint: MediaStreamConstraints = { audio: false, video: false };
-  const type: SourceType = !constraint.audio ? "video" : "audio";
-  newConstraint[type] = {
-    ...(constraint[type] as MediaTrackConstraints),
-    deviceId: { exact: deviceId },
-  };
-  return newConstraint;
-};
-
-const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
-  return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
 };
 
 export const addOrReplaceTrack = (user: User, track: MediaStreamTrack, peersState: PeersState): PeersState => {
@@ -326,4 +295,61 @@ export const askForPermissions = async (): Promise<void> => {
   // in other case, next call to getUserMedia may fail
   // or won't respect media constraints
   tmpVideoStream.getTracks().forEach((track) => track.stop());
+};
+
+const updateTrackMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack, peersState: PeersState) => {
+  const metadata = getTrackMetadata(track, peersState);
+  webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], metadata);
+};
+
+const getTrackMetadata = (track: MediaStreamTrack, peersState: PeersState) => {
+  return {
+    mainPresenter: peersState.isMainPresenter,
+    isScreenSharing: peersState.isScreenSharing,
+    enabled: track.enabled,
+  };
+};
+
+const webrtcAddTrack = (
+  webrtc: MembraneWebRTC,
+  track: MediaStreamTrack,
+  peersState: PeersState,
+  client: Client
+): string => {
+  const metadata = getTrackMetadata(track, peersState);
+  return webrtc.addTrack(track, peersState.peers[client.email].stream, metadata);
+};
+
+const webrtcReplaceTrack = (
+  webrtc: MembraneWebRTC,
+  track: MediaStreamTrack,
+  peersState: PeersState,
+  sourceType: SourceType
+): Promise<boolean> => {
+  const metadata = getTrackMetadata(track, peersState);
+  return webrtc.replaceTrack(peersState.sourceIds[sourceType], track, metadata);
+};
+
+const getConstraint = (constraint: MediaStreamConstraints, deviceId: string) => {
+  const newConstraint: MediaStreamConstraints = { audio: false, video: false };
+  const type: SourceType = !constraint.audio ? "video" : "audio";
+  newConstraint[type] = {
+    ...(constraint[type] as MediaTrackConstraints),
+    deviceId: { exact: deviceId },
+  };
+  return newConstraint;
+};
+
+const filterDevices = (allDevices: MediaDeviceInfo[], type: string) => {
+  return allDevices.filter((device) => device.deviceId != "default" && device.kind == type);
+};
+
+const getLocalStream = async (sourceType: SourceType, deviceId: string): Promise<MediaStream | undefined> => {
+  try {
+    const constraint = sourceType == "audio" ? AUDIO_CONSTRAINTS : VIDEO_CONSTRAINTS;
+    return await navigator.mediaDevices.getUserMedia(getConstraint(constraint, deviceId));
+  } catch (error) {
+    console.error("Couldn't get microphone permission:", error);
+    return undefined;
+  }
 };
