@@ -29,17 +29,11 @@ export interface PresenterStream extends User {
   stream: MediaStream;
 }
 
-export type MergedScreenRef = {
-  screenTrack: MediaStreamTrack | undefined;
-  cameraTrack: MediaStreamTrack | undefined;
-  deviceName: string;
-  refreshId: number | undefined;
-};
-
 export type PeersState = {
-  mergedScreenRef: MergedScreenRef;
   peers: { [key: string]: PresenterStream };
+  cameraTrack: MediaStreamTrack | undefined;
   sourceIds: { audio: string; video: string };
+  isScreenSharing: boolean;
   isMainPresenter: boolean;
 };
 

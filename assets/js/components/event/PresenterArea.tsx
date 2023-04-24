@@ -20,14 +20,10 @@ import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
 
 const initialPeersState: PeersState = {
-  mergedScreenRef: {
-    screenTrack: undefined,
-    cameraTrack: undefined,
-    deviceName: "",
-    refreshId: undefined,
-  },
   peers: {},
+  cameraTrack: undefined,
   sourceIds: { audio: "", video: "" },
+  isScreenSharing: false,
   isMainPresenter: false,
 };
 

@@ -1,6 +1,6 @@
 import { Product } from "../types/types";
 import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
-import axiosWithInterceptor from "../services";
+import { axiosWithInterceptor } from "../services";
 import axios from "axios";
 
 const REFETCH_PRODUCTS_INTERVAL_MILLIS = 15 * 1000;

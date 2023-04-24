@@ -16,8 +16,8 @@ export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
 export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
   video: {
-    width: 1280,
-    height: 720,
+    width: 1920,
+    height: 1080,
     frameRate: FRAME_RATE,
   },
 };

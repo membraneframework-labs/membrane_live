@@ -18,7 +18,7 @@ const UserField = ({ isAuthenticated, picture, name, eventChannel }: UserFieldPr
       <div className="UserName">{name}</div>
     </div>
   ) : (
-    <GoogleButton eventChannel={eventChannel} options={rectangleGoogleButton} />
+    <GoogleButton buttonId="UserFieldButton" eventChannel={eventChannel} options={rectangleGoogleButton} />
   );
 };
 

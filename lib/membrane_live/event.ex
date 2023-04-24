@@ -6,11 +6,11 @@ defmodule MembraneLive.Event do
   require Membrane.Logger
   require Membrane.OpenTelemetry
 
-  alias Membrane.HTTPAdaptiveStream.Sink.SegmentDuration
+  alias Membrane.HTTPAdaptiveStream.Manifest.SegmentDuration
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{HLSConfig, MixerConfig}
+  alias Membrane.RTC.Engine.Endpoint.HLS.{CompositorConfig, HLSConfig, MixerConfig}
   alias Membrane.RTC.Engine.Message
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
@@ -350,7 +350,18 @@ defmodule MembraneLive.Event do
       rtc_engine: rtc_engine,
       owner: self(),
       output_directory: "output/#{event_id}",
-      mixer_config: %MixerConfig{persist?: true},
+      mixer_config: %MixerConfig{
+        persist?: true,
+        video: %CompositorConfig{
+          stream_format: %Membrane.RawVideo{
+            width: 1920,
+            height: 1080,
+            pixel_format: :I420,
+            framerate: {24, 1},
+            aligned: true
+          }
+        }
+      },
       hls_config: %HLSConfig{
         hls_mode: :muxed_av,
         mode: :live,

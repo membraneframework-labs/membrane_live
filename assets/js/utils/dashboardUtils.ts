@@ -1,6 +1,6 @@
 import { getErrorToast, getInfoToast } from "./toastUtils";
 import { mapToEventInfo } from "./headerUtils";
-import axiosWithInterceptor from "../services";
+import { axiosWithInterceptor } from "../services";
 import type { EventFormInput, EventInfo, ModalForm, OriginalEventInfo, Toast } from "../types/types";
 import { getIsAuthenticated } from "./storageUtils";
 import axios from "axios";

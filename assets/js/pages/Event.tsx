@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
 import { liveConfig, pageTitlePrefix } from "../utils/const";
-import axiosWithInterceptor from "../services";
+import { axiosWithInterceptor } from "../services";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { ScreenTypeContext } from "../utils/ScreenTypeContext";
