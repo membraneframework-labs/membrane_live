@@ -336,10 +336,11 @@ defmodule MembraneLiveWeb.EventChannel do
 
     main_presenter = get_main_presenter(id)
 
-    main_presenter = if Presence.absent?(socket, main_presenter) do
-      remove_from_main_presenters(main_presenter, id)
-      nil
-    end
+    main_presenter =
+      if Presence.absent?(socket, main_presenter) do
+        remove_from_main_presenters(main_presenter, id)
+        nil
+      end
 
     if is_nil(main_presenter) do
       MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{

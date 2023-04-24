@@ -9,5 +9,4 @@ defmodule MembraneLiveWeb.Presence do
   def absent?(topic, key) do
     get_by_key(topic, key) |> Enum.empty?()
   end
-
 end
