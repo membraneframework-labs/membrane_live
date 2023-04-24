@@ -65,7 +65,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "hls-zerolatency-mode"},
+       github: "jellyfish-dev/membrane_rtc_engine"},
 
       # Otel
       {:opentelemetry, "1.0.5"},

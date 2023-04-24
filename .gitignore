@@ -206,3 +206,9 @@ test/files
 # Files created with release
 priv/static/*
 rel/*
+
+# direnv
+.envrc
+
+# asdf
+.tool-versions

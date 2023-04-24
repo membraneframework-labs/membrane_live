@@ -334,15 +334,33 @@ defmodule MembraneLiveWeb.EventChannel do
       ) do
     "event:" <> id = socket.topic
 
-    if is_ets_empty?(:main_presenters, id) do
+    main_presenter = get_main_presenter(id)
+
+    if main_presenter && Presence.absent?(socket, main_presenter) do
+      remove_from_main_presenters(main_presenter, id)
+      main_presenter = nil
+    end
+
+    if is_nil(main_presenter) do
       MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
         moderator_topic: moderator_topic,
         main_presenter: true
       })
     else
-      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
-        message: "There can be only one main presenter."
-      })
+      proposed_presenter = presenter_topic
+        |> String.split(":")
+        |> List.last()
+
+      case proposed_presenter do
+        ^main_presenter ->
+          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+            message: "This participant is already a main presenter."
+          })
+        _ ->
+          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+            message: "There can be only one main presenter."
+          })
+      end
     end
 
     {:noreply, socket}
