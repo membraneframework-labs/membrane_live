@@ -347,7 +347,8 @@ defmodule MembraneLiveWeb.EventChannel do
         main_presenter: true
       })
     else
-      proposed_presenter = presenter_topic
+      proposed_presenter =
+        presenter_topic
         |> String.split(":")
         |> List.last()
 
@@ -356,7 +357,8 @@ defmodule MembraneLiveWeb.EventChannel do
           MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
             message: "This participant is already a main presenter."
           })
-        _ ->
+
+        _new_main_presenter ->
           MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
             message: "There can be only one main presenter."
           })
