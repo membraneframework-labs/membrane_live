@@ -336,9 +336,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
     main_presenter = get_main_presenter(id)
 
-    if main_presenter && Presence.absent?(socket, main_presenter) do
+    main_presenter = if Presence.absent?(socket, main_presenter) do
       remove_from_main_presenters(main_presenter, id)
-      main_presenter = nil
+      nil
     end
 
     if is_nil(main_presenter) do
