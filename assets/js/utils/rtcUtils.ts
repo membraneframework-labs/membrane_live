@@ -175,8 +175,8 @@ export const shareScreen = async (
 
     const newTrack = findTrackByType(client, "video", peersState);
     if (!newTrack) return peersState;
-    if (peersState.sourceIds["video"]) webrtcReplaceTrack(webrtc, newTrack, peersState, "video");
-    else peersState.sourceIds["video"] = webrtcAddTrack(webrtc, newTrack, peersState, client);
+
+    peersState = addOrReplaceWebrtcTrack(webrtc, client, newTrack, peersState, "video");
 
     if (peersState.cameraTrack) peersState.cameraTrack.enabled = false;
 
@@ -203,10 +203,9 @@ export const stopShareScreen = async (
     if (!webrtc) return peersState; // If webrtc is null, we only add media source locally
 
     const newTrack = findTrackByType(client, "video", peersState);
-
     if (!newTrack) return peersState;
-    if (peersState.sourceIds["video"]) webrtcReplaceTrack(webrtc, newTrack, peersState, "video");
-    else peersState.sourceIds["video"] = webrtcAddTrack(webrtc, newTrack, peersState, client);
+
+    peersState = addOrReplaceWebrtcTrack(webrtc, client, newTrack, peersState, "video");
 
     return peersState;
   });
@@ -233,8 +232,8 @@ export const changeSource = async (
 
     const newTrack = findTrackByType(client, sourceType, peersState);
     if (!newTrack) return peersState;
-    if (peersState.sourceIds[sourceType]) webrtcReplaceTrack(webrtc, newTrack, peersState, sourceType);
-    else peersState.sourceIds[sourceType] = webrtcAddTrack(webrtc, newTrack, peersState, client);
+
+    peersState = addOrReplaceWebrtcTrack(webrtc, client, newTrack, peersState, sourceType);
 
     return peersState;
   });
@@ -308,6 +307,19 @@ const getTrackMetadata = (track: MediaStreamTrack, peersState: PeersState) => {
     isScreenSharing: peersState.isScreenSharing,
     enabled: track.enabled,
   };
+};
+
+const addOrReplaceWebrtcTrack = (
+  webrtc: MembraneWebRTC,
+  client: Client,
+  track: MediaStreamTrack,
+  peersState: PeersState,
+  sourceType: SourceType
+): PeersState => {
+  if (peersState.sourceIds[sourceType]) webrtcReplaceTrack(webrtc, track, peersState, sourceType);
+  else peersState.sourceIds[sourceType] = webrtcAddTrack(webrtc, track, peersState, client);
+
+  return peersState;
 };
 
 const webrtcAddTrack = (
