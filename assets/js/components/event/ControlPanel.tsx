@@ -127,7 +127,6 @@ type ControlPanelProps = {
   peersState: PeersState;
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
   setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>;
-  canShareScreen: boolean;
 };
 
 const ControlPanel = ({
@@ -138,7 +137,6 @@ const ControlPanel = ({
   peersState,
   setPeersState,
   setClientStatus,
-  canShareScreen,
 }: ControlPanelProps) => {
   const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -229,10 +227,11 @@ const ControlPanel = ({
               )
             }
             onClick={() => {
-              if (!isSharingScreen) shareScreen(webrtc, client, setPeersState);
-              else stopShareScreen(webrtc, client, setPeersState);
+              isSharingScreen
+                ? stopShareScreen(webrtc, client, setPeersState)
+                : shareScreen(webrtc, client, setPeersState);
             }}
-            disabled={!canShareScreen || screenType.device === "mobile"}
+            disabled={screenType.device === "mobile"}
           />
           <MenuPopover>
             <ModeButton name="Options" onClick={onOpen} />

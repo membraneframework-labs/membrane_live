@@ -64,7 +64,8 @@ defmodule Membrane.Live.Mixfile do
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:membrane_rtc_engine, github: "jellyfish-dev/membrane_rtc_engine"},
+      {:membrane_rtc_engine,
+       github: "jellyfish-dev/membrane_rtc_engine", branch: "handle-screen-sharing-hls"},
 
       # Otel
       {:opentelemetry, "1.0.5"},

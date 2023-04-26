@@ -133,7 +133,6 @@ const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaPr
           peersState={peersState}
           setPeersState={setPeersState}
           setClientStatus={setClientStatus}
-          canShareScreen={clientStatus === "connected"}
           rerender={rerender}
         />
       )}
