@@ -83,7 +83,12 @@ defmodule MembraneLiveWeb.EventChannel do
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
-             {:ok, is_presenter} <- check_if_presenter(email, (should_be_presenter && can_be_presenter(id, socket, email)), id),
+             {:ok, is_presenter} <-
+               check_if_presenter(
+                 email,
+                 should_be_presenter && can_be_presenter(id, socket, email),
+                 id
+               ),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
              {:ok, is_request_presenting} <-
                check_if_request_presenting(email, requests_presenting, id) do
@@ -143,7 +148,7 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   defp can_be_presenter(id, socket, email) do
-    can_be_main_presenter(id, email) || (get_number_of_basic_presenters(id, socket) > 2)
+    can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) > 2
   end
 
   defp can_be_main_presenter(id, email) do
