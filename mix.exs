@@ -65,7 +65,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "handle-screen-sharing-hls"},
+       github: "jellyfish-dev/membrane_rtc_engine", branch: "hls-change-to-live-mixer"},
 
       # Otel
       {:opentelemetry, "1.0.5"},
@@ -79,7 +79,7 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_aac_fdk_plugin, "~> 0.14.0"},
       {:membrane_generator_plugin, "~> 0.8.1"},
       {:membrane_realtimer_plugin, "~> 0.6.0"},
-      {:membrane_audio_mix_plugin, "~> 0.12.0"},
+      {:membrane_audio_mix_plugin, github: "membraneframework/membrane_audio_mix_plugin", branch: "live-audio-mixer"},
       {:membrane_audio_filler_plugin, "~> 0.1.0"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.26.2"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.11.1"},
