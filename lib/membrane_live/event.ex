@@ -6,7 +6,6 @@ defmodule MembraneLive.Event do
   require Membrane.Logger
   require Membrane.OpenTelemetry
 
-  alias Membrane.HTTPAdaptiveStream.Manifest.SegmentDuration
   alias Membrane.ICE.TURNManager
   alias Membrane.RTC.Engine
   alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
@@ -369,9 +368,8 @@ defmodule MembraneLive.Event do
         storage: fn directory ->
           %FileStorage.Config{directory: directory} |> FileStorage.init()
         end,
-        segment_duration: SegmentDuration.new(Time.seconds(2), target_segment_duration),
-        partial_segment_duration:
-          SegmentDuration.new(Time.milliseconds(150), Time.milliseconds(400))
+        segment_duration: target_segment_duration,
+        partial_segment_duration: Time.milliseconds(400)
       }
     }
 

@@ -11,6 +11,18 @@ defmodule MembraneLiveWeb.HLSController do
   def index(
         conn,
         %{
+          "_HLS_skip" => _skip
+        } = params
+      ) do
+    params
+    |> Map.update!("filename", &String.replace(&1, ".m3u8", "_delta.m3u8"))
+    |> Map.delete("_HLS_skip")
+    |> then(&index(conn, &1))
+  end
+
+  def index(
+        conn,
+        %{
           "event_id" => event_id,
           "filename" => filename,
           "_HLS_msn" => segment,

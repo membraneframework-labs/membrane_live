@@ -65,7 +65,7 @@ defmodule Membrane.Live.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:membrane_rtc_engine,
-       github: "jellyfish-dev/membrane_rtc_engine", branch: "handle-screen-sharing-hls"},
+       github: "jellyfish-dev/membrane_rtc_engine", branch: "fix/segment_duration_module"},
 
       # Otel
       {:opentelemetry, "1.0.5"},
@@ -73,7 +73,7 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "1.0.0"},
       {:opentelemetry_exporter, "1.0.4"},
       {:membrane_h264_plugin, "~> 0.2.0"},
-      {:membrane_mp4_plugin, "~> 0.19.0"},
+      {:membrane_mp4_plugin, "~> 0.21.0"},
       {:membrane_aac_plugin, "~> 0.13.0"},
       {:membrane_opus_plugin, "~> 0.16.0"},
       {:membrane_aac_fdk_plugin, "~> 0.14.0"},
@@ -85,7 +85,9 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_ffmpeg_swscale_plugin, "~> 0.11.1"},
       {:membrane_video_compositor_plugin, "~> 0.3.1"},
       {:membrane_framerate_converter_plugin, "~> 0.6.0"},
-      {:membrane_http_adaptive_stream_plugin, "~> 0.13.0"}
+      # {:membrane_http_adaptive_stream_plugin, "~> 0.13.0"}
+      {:membrane_http_adaptive_stream_plugin,
+       github: "membraneframework/membrane_http_adaptive_stream_plugin", branch: "delta_manifest", override: true}
     ]
   end
 
