@@ -87,7 +87,9 @@ defmodule Membrane.Live.Mixfile do
       {:membrane_framerate_converter_plugin, "~> 0.6.0"},
       # {:membrane_http_adaptive_stream_plugin, "~> 0.13.0"}
       {:membrane_http_adaptive_stream_plugin,
-       github: "membraneframework/membrane_http_adaptive_stream_plugin", branch: "delta_manifest", override: true}
+       github: "membraneframework/membrane_http_adaptive_stream_plugin",
+       branch: "delta_manifest",
+       override: true}
     ]
   end
 
