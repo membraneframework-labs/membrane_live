@@ -206,3 +206,6 @@ test/files
 # Files created with release
 priv/static/*
 rel/*
+
+# asdf
+.tool-versions
