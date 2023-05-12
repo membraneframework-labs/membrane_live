@@ -209,3 +209,6 @@ rel/*
 
 # asdf
 .tool-versions
+
+#direnv
+.envrc
