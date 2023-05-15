@@ -148,11 +148,12 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   defp can_be_presenter(id, socket, email) do
-    can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) > 2
+    can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) <   2
   end
 
   defp can_be_main_presenter(id, email) do
-    get_main_presenter(id) == (email || [])
+    stored_presenter = get_main_presenter(id)
+    is_nil(stored_presenter) || stored_presenter == email
   end
 
   defp get_number_of_basic_presenters(id, socket) do
