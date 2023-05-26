@@ -64,9 +64,14 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
       </MenuButton>
       <MenuList>
         {showPresenterOptions && (
-          <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
-            {presenterText.unset}
-          </MenuItem>
+          <>
+            <MenuItem onClick={handleClick} value={presenterText.setMain} className="MenuOptionText">
+              {presenterText.setMain}
+            </MenuItem>
+            <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
+              {presenterText.unset}
+            </MenuItem>
+          </>
         )}
         {showNonpresenterOptions && (
           <>

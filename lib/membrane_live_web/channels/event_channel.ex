@@ -83,7 +83,12 @@ defmodule MembraneLiveWeb.EventChannel do
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
-             {:ok, is_presenter} <- check_if_presenter(email, should_be_presenter, id),
+             {:ok, is_presenter} <-
+               check_if_presenter(
+                 email,
+                 should_be_presenter && can_be_presenter(id, socket, email),
+                 id
+               ),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
              {:ok, is_request_presenting} <-
                check_if_request_presenting(email, requests_presenting, id) do
@@ -140,6 +145,15 @@ defmodule MembraneLiveWeb.EventChannel do
         send(event_pid, {:timer_action, action})
       end
     end
+  end
+
+  defp can_be_presenter(id, socket, email) do
+    can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) < 2
+  end
+
+  defp can_be_main_presenter(id, email) do
+    stored_presenter = get_main_presenter(id)
+    is_nil(stored_presenter) || stored_presenter == email
   end
 
   defp get_number_of_basic_presenters(id, socket) do
@@ -334,15 +348,36 @@ defmodule MembraneLiveWeb.EventChannel do
       ) do
     "event:" <> id = socket.topic
 
-    if is_ets_empty?(:main_presenters, id) do
+    main_presenter = get_main_presenter(id)
+
+    main_presenter =
+      if Presence.absent?(socket, main_presenter) do
+        remove_from_main_presenters(main_presenter, id)
+        nil
+      end
+
+    if is_nil(main_presenter) do
       MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
         moderator_topic: moderator_topic,
         main_presenter: true
       })
     else
-      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
-        message: "There can be only one main presenter."
-      })
+      proposed_presenter =
+        presenter_topic
+        |> String.split(":")
+        |> List.last()
+
+      case proposed_presenter do
+        ^main_presenter ->
+          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+            message: "This participant is already a main presenter."
+          })
+
+        _new_main_presenter ->
+          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
+            message: "There can be only one main presenter."
+          })
+      end
     end
 
     {:noreply, socket}

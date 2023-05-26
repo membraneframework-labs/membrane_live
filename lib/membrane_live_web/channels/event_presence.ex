@@ -5,4 +5,8 @@ defmodule MembraneLiveWeb.Presence do
   use Phoenix.Presence,
     otp_app: :membrane_live,
     pubsub_server: MembraneLive.PubSub
+
+  def absent?(topic, key) do
+    get_by_key(topic, key) |> Enum.empty?()
+  end
 end
