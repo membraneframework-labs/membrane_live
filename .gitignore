@@ -207,8 +207,8 @@ test/files
 priv/static/*
 rel/*
 
+# direnv
+.envrc
+
 # asdf
 .tool-versions
-
-#direnv
-.envrc
