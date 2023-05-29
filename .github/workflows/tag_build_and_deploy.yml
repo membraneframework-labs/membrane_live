@@ -71,6 +71,7 @@ jobs:
         with:
           remote_docker_host: ${{ secrets.PRODUCTION_HOST }}
           ssh_private_key: ${{ secrets.SSH_PRIV_KEY }}
+          ssh_port: ${{ secrets.SSH_PROD_PORT }}
           ssh_public_key: ${{ secrets.SSH_KNOWN_HOSTS}}
           stack_file_name: docker-compose.yml
           args: -p production --env-file .env up -d --remove-orphans
