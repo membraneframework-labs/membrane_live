@@ -1,6 +1,9 @@
 import { GsiButtonConfiguration } from "google-one-tap";
 import { HlsConfig } from "hls.js";
 
+// @ts-ignore
+export const areProductsEnabled: boolean = ARE_PRODUCTS_ENABLED == "true";
+
 export const FRAME_RATE = 24;
 export const CANVAS_WIDTH = 1920;
 export const CANVAS_HEIGHT = 1080;

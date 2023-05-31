@@ -11,6 +11,7 @@ import { useAllProductsQuery, useIsProductMutating } from "../../utils/useWebina
 import { groupBy } from "../../utils/collectionUtils";
 import ProductComponent, { ProductWithStatus } from "./ProductComponent";
 import ProductsList from "./ProductsList";
+import { areProductsEnabled } from "../../utils/const";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -225,14 +226,16 @@ const Sidebar = ({
         >
           Participants
         </button>
-        <button
-          className={`ParticipantsButton ${listMode === "products" && "Clicked"}`}
-          name="list"
-          onClick={() => setListMode("products")}
-        >
-          Products
-        </button>
-        {client.isModerator && (
+        {areProductsEnabled && (
+          <button
+            className={`ParticipantsButton ${listMode === "products" && "Clicked"}`}
+            name="list"
+            onClick={() => setListMode("products")}
+          >
+            Products
+          </button>
+        )}
+        {areProductsEnabled && client.isModerator && (
           <button
             className={`ParticipantsButton ${listMode === "select-products" && "Clicked"}`}
             name="list"
@@ -264,8 +267,10 @@ const Sidebar = ({
           isRecording={false}
         />
       )}
-      {listMode === "products" && <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />}
-      {listMode === "select-products" && client.isModerator && (
+      {areProductsEnabled && listMode === "products" && (
+        <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />
+      )}
+      {areProductsEnabled && listMode === "select-products" && client.isModerator && (
         <div className="ProductList">
           {productsWithStatus.map((product) => (
             <ProductComponent
