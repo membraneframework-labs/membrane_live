@@ -224,7 +224,7 @@ defmodule MembraneLiveWeb.HLSControllerTest do
         filename,
         content,
         %{byte_offset: offset},
-        %{mode: :binary},
+        %{mode: :binary, type: :partial_segment},
         storage
       )
 
