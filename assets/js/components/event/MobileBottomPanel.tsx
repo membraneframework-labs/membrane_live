@@ -4,6 +4,7 @@ import ChatBox from "./ChatBox";
 import type { CardStatus, ChatMessage, Client, Product } from "../../types/types";
 import { Slide } from "@chakra-ui/react";
 import ShareList from "./ShareList";
+import { areProductsEnabled } from "../../utils/const";
 
 import "../../../css/event/mobilebottompanel.css";
 
@@ -44,7 +45,9 @@ export const MobileBottomPanel = ({
         <div className="MobileBottomPanelHeader"></div>
         <div className="MobileBottomPanelContent">
           {card === "share" && <ShareList eventTitle={eventTitle} />}
-          {card === "products" && <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />}
+          {areProductsEnabled && card === "products" && (
+            <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />
+          )}
           {card === "chat" && (
             <ChatBox
               client={client}
