@@ -39,6 +39,7 @@ defmodule MembraneLiveWeb.HLSController do
   def index(conn, %{"filename" => filename} = params) do
     cond do
       filename == "index.m3u8" ->
+        conn = put_resp_content_type(conn, "application/vnd.apple.mpegurl", nil)
         handle_other_file_request(conn, params)
 
       String.match?(filename, ~r/\.m3u8$/) ->
@@ -146,6 +147,8 @@ defmodule MembraneLiveWeb.HLSController do
   end
 
   defp send_playlist(conn, path) do
+    conn = put_resp_content_type(conn, "application/vnd.apple.mpegurl", nil)
+
     if conn |> get_req_header("user-agent") |> is_ios_user?() do
       path
       |> get_non_ll_hls_playlist()
