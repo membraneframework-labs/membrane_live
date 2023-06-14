@@ -7,6 +7,8 @@ defmodule MembraneLiveWeb.HLSController do
 
   @ets_key :partial_segments
 
+  @playlist_content_type "application/vnd.apple.mpegurl"
+
   @spec index(Conn.t(), map) :: Conn.t()
   def index(
         conn,
@@ -39,6 +41,7 @@ defmodule MembraneLiveWeb.HLSController do
   def index(conn, %{"filename" => filename} = params) do
     cond do
       filename == "index.m3u8" ->
+        conn = put_resp_content_type(conn, @playlist_content_type, nil)
         handle_other_file_request(conn, params)
 
       String.match?(filename, ~r/\.m3u8$/) ->
@@ -146,6 +149,8 @@ defmodule MembraneLiveWeb.HLSController do
   end
 
   defp send_playlist(conn, path) do
+    conn = put_resp_content_type(conn, @playlist_content_type, nil)
+
     if conn |> get_req_header("user-agent") |> is_ios_user?() do
       path
       |> get_non_ll_hls_playlist()
