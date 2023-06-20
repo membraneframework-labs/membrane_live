@@ -13,7 +13,7 @@ import {
   Modal,
   ModalBody,
 } from "@chakra-ui/react";
-import { MembraneWebRTC } from "@jellyfish-dev/membrane-webrtc-js";
+import { WebRTCEndpoint } from "@jellyfish-dev/membrane-webrtc-js";
 import {
   Cam,
   CamDisabled,
@@ -121,7 +121,7 @@ const stopBeingPresenter = (
 
 type ControlPanelProps = {
   client: Client;
-  webrtc: MembraneWebRTC | null;
+  webrtc: WebRTCEndpoint | null;
   eventChannel: Channel | undefined;
   rerender: () => void;
   peersState: PeersState;
