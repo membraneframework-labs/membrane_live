@@ -1,21 +1,38 @@
-FROM membraneframeworklabs/docker_membrane AS build
-
+FROM hexpm/elixir:1.14.3-erlang-25.2.3-alpine-3.16.3 AS build
 
 # install build dependencies
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apk add --no-cache \
+    build-base \
     npm \
     git \
     python3 \
     make \
     cmake \
-    libssl-dev \ 
-    libsrtp2-dev \
-    ffmpeg \
-    clang-format \ 
-    libopus-dev \
+    curl \
+    openssl-dev \ 
+    libsrtp-dev \
+    ffmpeg-dev \
+    fdk-aac-dev \
+    opus-dev \
     pkgconf
 
+
+RUN git clone https://github.com/asdf-vm/asdf.git /root/.asdf -b v0.11.2
+ENV PATH /root/.asdf/bin:/root/.asdf/shims:$PATH
+
+RUN apk add --no-cache bash
+
+# Rust
+RUN asdf plugin-add rust \
+    && asdf install rust 1.65.0 \
+    && asdf global rust 1.65.0 \
+    && rm -rf /tmp/*
+
+# Ensure Rust was installed correctly
+RUN \ 
+    rustc --version; \
+    rustup --version; \
+    cargo --version;
 
 ARG VERSION
 ENV VERSION=${VERSION}
@@ -41,7 +58,7 @@ COPY lib lib
 
 RUN mix deps.get
 RUN mix setup
-RUN mix deps.compile
+RUN RUSTFLAGS="-C target-feature=-crt-static" mix deps.compile
 
 RUN mix assets.deploy
 
@@ -49,32 +66,16 @@ RUN mix assets.deploy
 RUN mix do compile, release
 
 # prepare release image
-FROM ubuntu:20.04 AS app
+FROM alpine:3.16.3 AS app
 
 # install runtime dependencies
-RUN apt-get update \ 
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apk add --no-cache \ 
     openssl \
-    libncurses5-dev \
-    libncursesw5-dev \
-    libsrtp2-dev \
+    libsrtp \
     ffmpeg \
-    clang-format \ 
+    fdk-aac \
     curl \
-    wget \
-    build-essential
-
-RUN cd /tmp/ \
-    && wget https://downloads.sourceforge.net/opencore-amr/fdk-aac-2.0.0.tar.gz \
-    && tar -xf fdk-aac-2.0.0.tar.gz && cd fdk-aac-2.0.0 \
-    && ./configure --prefix=/usr --disable-static \
-    && make && make install \
-    && cd / \
-    && rm -rf /tmp/*
-
-RUN apt remove build-essential -y \
-    wget \
-    && apt autoremove -y
+    wget
 
 WORKDIR /app
 
@@ -84,7 +85,7 @@ RUN chmod +x docker-entrypoint.sh
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
 
-RUN groupadd -r membrane && useradd --no-log-init -r -g membrane membrane
+RUN addgroup -S membrane && adduser -S membrane -G membrane
 
 RUN chown membrane:membrane /app
 
