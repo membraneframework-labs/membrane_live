@@ -156,7 +156,7 @@ defmodule MembraneLive.Event do
       end
     }
 
-    :ok = Engine.add_endpoint(state.rtc_engine, endpoint, peer_id: peer_id, node: peer_node)
+    :ok = Engine.add_endpoint(state.rtc_engine, endpoint, id: peer_id, node: peer_node)
 
     {:noreply, state}
   end
@@ -350,7 +350,6 @@ defmodule MembraneLive.Event do
       owner: self(),
       output_directory: "output/#{event_id}",
       mixer_config: %MixerConfig{
-        persist?: true,
         video: %CompositorConfig{
           stream_format: %Membrane.RawVideo{
             width: 1920,
@@ -373,7 +372,7 @@ defmodule MembraneLive.Event do
       }
     }
 
-    Engine.add_endpoint(rtc_engine, endpoint, endpoint_id: "hls_output")
+    Engine.add_endpoint(rtc_engine, endpoint, id: "hls_output")
     PubSub.subscribe(MembraneLive.PubSub, event_id)
   end
 

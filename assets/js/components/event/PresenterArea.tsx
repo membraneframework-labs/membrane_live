@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { connectWebrtc, leaveWebrtc } from "../../utils/rtcUtils";
 import { syncPresenters } from "../../utils/channelUtils";
 import { useRerender } from "../../utils/reactUtils";
-import { MembraneWebRTC } from "@jellyfish-dev/membrane-webrtc-js";
+import { WebRTCEndpoint } from "@jellyfish-dev/membrane-webrtc-js";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
@@ -27,7 +27,7 @@ const initialPeersState: PeersState = {
   isMainPresenter: false,
 };
 
-let webrtc: MembraneWebRTC | null = null;
+let webrtc: WebRTCEndpoint | null = null;
 let webrtcConnecting = false;
 
 type PresenterAreaProps = {

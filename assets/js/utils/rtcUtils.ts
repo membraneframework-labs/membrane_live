@@ -1,4 +1,4 @@
-import { MembraneWebRTC, SerializedMediaEvent, TrackContext } from "@jellyfish-dev/membrane-webrtc-js";
+import { WebRTCEndpoint, SerializedMediaEvent, TrackContext } from "@jellyfish-dev/membrane-webrtc-js";
 import { AUDIO_CONSTRAINTS, VIDEO_CONSTRAINTS, SCREEN_CONSTRAINTS } from "./const";
 import { Channel } from "phoenix";
 import type { User, Client, SourceType, PeersState } from "../types/types";
@@ -18,7 +18,7 @@ export const findTrackByType = (
 };
 
 export const changeTrackIsEnabled = (
-  webrtc: MembraneWebRTC | null,
+  webrtc: WebRTCEndpoint | null,
   user: User,
   sourceType: SourceType,
   peersState: PeersState
@@ -32,7 +32,7 @@ export const changeTrackIsEnabled = (
 };
 
 export const sendTrackStatusUpdate = (
-  webrtc: MembraneWebRTC,
+  webrtc: WebRTCEndpoint,
   user: User,
   sourceType: SourceType,
   peersState: PeersState
@@ -73,82 +73,76 @@ export const connectWebrtc = async (
     console.log(error);
   };
 
-  const webrtc = new MembraneWebRTC({
-    callbacks: {
-      onSendMediaEvent: (mediaEvent: SerializedMediaEvent) => {
-        webrtcChannel?.push("mediaEvent", { data: mediaEvent });
-      },
-      onConnectionError: () => {
-        onError("Error while connecting to WebRTC");
-      },
-      onJoinSuccess: () => {
-        setPeersState((prev) => {
-          const presenterStream = prev.peers[client.email] || {
-            name: client.name,
-            email: client.email,
-            stream: new MediaStream(),
-          };
+  const webrtc = new WebRTCEndpoint();
 
-          presenterStream.stream.getTracks().forEach((track) => {
-            prev.sourceIds[track.kind as SourceType] = webrtc.addTrack(
-              track,
-              presenterStream.stream,
-              { mainPresenter: prev.isMainPresenter, isScreenSharing: prev.isScreenSharing },
-              undefined,
-              1500
-            );
-          });
-
-          const peersState = { ...prev, peers: { ...prev.peers, [client.email]: presenterStream } };
-
-          sendTrackStatusUpdate(webrtc, client, "audio", peersState);
-          sendTrackStatusUpdate(webrtc, client, "video", peersState);
-
-          return peersState;
-        });
-      },
-      onJoinError: () => {
-        onError("Error while joining WebRTC connection");
-      },
-      onTrackReady: ({ track, peer, metadata }) => {
-        if (!(peer && track)) return;
-
-        setPeersState((prev) => addOrReplaceTrack(peer.metadata, track, prev));
-
-        if ("enabled" in metadata) {
-          track.enabled = metadata.enabled;
-          setPeersState((prev) => {
-            return { ...prev };
-          });
-        }
-      },
-      onTrackUpdated({ track, metadata }: TrackContext) {
-        if (!(track && "enabled" in metadata)) return;
-
-        track.enabled = metadata.enabled;
-        setPeersState((prev) => {
-          return { ...prev };
-        });
-      },
-      onTrackRemoved: () => {
-        // do nothing (We only update state, when peer leaves and do nothing when a single track is removed)
-      },
-      onPeerJoined: () => {
-        // do nothing
-      },
-      onPeerLeft: (peer) => {
-        setPeersState((prev) => removeStream(peer.metadata, prev));
-      },
-      onPeerUpdated: () => {
-        // do nothing
-      },
-      onRemoved: () => {
-        onError("You were removed from WebRTC connection");
-      },
-    },
+  webrtc.on("sendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
+    webrtcChannel?.push("mediaEvent", { data: mediaEvent });
   });
 
-  webrtc.join(client);
+  webrtc.on("connectionError", () => {
+    onError("Error while connecting to WebRTC");
+  });
+
+  webrtc.on("connected", () => {
+    setPeersState((prev) => {
+      const presenterStream = prev.peers[client.email] || {
+        name: client.name,
+        email: client.email,
+        stream: new MediaStream(),
+      };
+
+      presenterStream.stream.getTracks().forEach((track) => {
+        prev.sourceIds[track.kind as SourceType] = webrtc.addTrack(
+          track,
+          presenterStream.stream,
+          { mainPresenter: prev.isMainPresenter, isScreenSharing: prev.isScreenSharing },
+          undefined,
+          1500
+        );
+      });
+
+      const peersState = { ...prev, peers: { ...prev.peers, [client.email]: presenterStream } };
+
+      sendTrackStatusUpdate(webrtc, client, "audio", peersState);
+      sendTrackStatusUpdate(webrtc, client, "video", peersState);
+
+      return peersState;
+    });
+  });
+
+  webrtc.on("trackReady", ({ track, endpoint, metadata }) => {
+    if (!(endpoint && track)) return;
+
+    setPeersState((prev) => addOrReplaceTrack(endpoint.metadata, track, prev));
+
+    if ("enabled" in metadata) {
+      track.enabled = metadata.enabled;
+      setPeersState((prev) => {
+        return { ...prev };
+      });
+    }
+  });
+
+  webrtc.on("trackUpdated", ({ track, metadata }: TrackContext) => {
+    if (!(track && "enabled" in metadata)) return;
+
+    track.enabled = metadata.enabled;
+    setPeersState((prev) => {
+      return { ...prev };
+    });
+  });
+
+  webrtc.on("endpointRemoved", (endpoint) => {
+    if (endpoint.type === "webrtc") {
+      setPeersState((prev) => removeStream(endpoint.metadata, prev));
+    }
+  });
+
+  webrtc.on("disconnected", () => {
+    onError("You were removed from WebRTC connection");
+  });
+
+  webrtc.connect(client);
 
   webrtcChannel?.on("mediaEvent", (event: { data: string }) => {
     webrtc.receiveMediaEvent(event.data);
@@ -157,7 +151,7 @@ export const connectWebrtc = async (
 };
 
 export const shareScreen = async (
-  webrtc: MembraneWebRTC | null,
+  webrtc: WebRTCEndpoint | null,
   client: Client,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ): Promise<void> => {
@@ -185,7 +179,7 @@ export const shareScreen = async (
 };
 
 export const stopShareScreen = async (
-  webrtc: MembraneWebRTC | null,
+  webrtc: WebRTCEndpoint | null,
   client: Client,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ): Promise<void> => {
@@ -212,7 +206,7 @@ export const stopShareScreen = async (
 };
 
 export const changeSource = async (
-  webrtc: MembraneWebRTC | null,
+  webrtc: WebRTCEndpoint | null,
   client: Client,
   deviceId: string,
   sourceType: SourceType,
@@ -240,7 +234,7 @@ export const changeSource = async (
 };
 
 export const leaveWebrtc = (
-  webrtc: MembraneWebRTC | null,
+  webrtc: WebRTCEndpoint | null,
   client: Client,
   webrtcChannel: Channel | undefined,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
@@ -252,7 +246,7 @@ export const leaveWebrtc = (
     return removeStream(client, prev);
   });
 
-  webrtc?.leave();
+  webrtc?.disconnect();
 };
 
 export const addOrReplaceTrack = (user: User, track: MediaStreamTrack, peersState: PeersState): PeersState => {
@@ -296,7 +290,7 @@ export const askForPermissions = async (): Promise<void> => {
   tmpVideoStream.getTracks().forEach((track) => track.stop());
 };
 
-const updateTrackMetadata = (webrtc: MembraneWebRTC, track: MediaStreamTrack, peersState: PeersState) => {
+const updateTrackMetadata = (webrtc: WebRTCEndpoint, track: MediaStreamTrack, peersState: PeersState) => {
   const metadata = getTrackMetadata(track, peersState);
   webrtc.updateTrackMetadata(peersState.sourceIds[track.kind as SourceType], metadata);
 };
@@ -310,7 +304,7 @@ const getTrackMetadata = (track: MediaStreamTrack, peersState: PeersState) => {
 };
 
 const addOrReplaceWebrtcTrack = (
-  webrtc: MembraneWebRTC,
+  webrtc: WebRTCEndpoint,
   client: Client,
   track: MediaStreamTrack,
   peersState: PeersState,
@@ -323,7 +317,7 @@ const addOrReplaceWebrtcTrack = (
 };
 
 const webrtcAddTrack = (
-  webrtc: MembraneWebRTC,
+  webrtc: WebRTCEndpoint,
   track: MediaStreamTrack,
   peersState: PeersState,
   client: Client
@@ -333,7 +327,7 @@ const webrtcAddTrack = (
 };
 
 const webrtcReplaceTrack = (
-  webrtc: MembraneWebRTC,
+  webrtc: WebRTCEndpoint,
   track: MediaStreamTrack,
   peersState: PeersState,
   sourceType: SourceType
