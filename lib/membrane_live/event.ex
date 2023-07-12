@@ -377,7 +377,7 @@ defmodule MembraneLive.Event do
   end
 
   defp close_webinar(state) do
-    Engine.terminate(state.rtc_engine)
+    Engine.terminate(state.rtc_engine, asynchronous?: true)
 
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
     Webinars.mark_webinar_as_finished(state.event_id)
