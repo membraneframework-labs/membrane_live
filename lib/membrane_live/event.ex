@@ -377,7 +377,13 @@ defmodule MembraneLive.Event do
   end
 
   defp close_webinar(state) do
-    Engine.terminate(state.rtc_engine, asynchronous?: true)
+    result = Engine.terminate(state.rtc_engine, timeout: 10_000, force?: true)
+
+    if result == {:error, :timeout} do
+      Membrane.Logger.warn(
+        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with plaiyng HLS playlist."
+      )
+    end
 
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
     Webinars.mark_webinar_as_finished(state.event_id)
