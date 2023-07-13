@@ -381,7 +381,7 @@ defmodule MembraneLive.Event do
 
     if result == {:error, :timeout} do
       Membrane.Logger.warn(
-        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with plaiyng HLS playlist."
+        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
       )
     end
 
