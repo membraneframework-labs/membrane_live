@@ -71,19 +71,14 @@ defmodule Membrane.Live.Mixfile do
       {:opentelemetry_zipkin, "1.0.0"},
       {:opentelemetry_exporter, "1.0.4"},
 
-      # RTC Engine
-      {:membrane_rtc_engine, "~> 0.15.0"},
+      # RTC Engine and Endpoints
+      {:membrane_rtc_engine, "~> 0.16.0"},
+      {:membrane_rtc_engine_webrtc, "~> 0.1.0"},
+      {:membrane_rtc_engine_hls, "~> 0.1.0"},
 
-      # HLS Endpoint
-      {:membrane_h264_plugin, "~> 0.4.0"},
-      {:membrane_aac_plugin, "~> 0.15.0"},
-      {:membrane_opus_plugin, "~> 0.17.1"},
-      {:membrane_aac_fdk_plugin, "~> 0.15.1"},
+      # HLS Endpoint optional deps
       {:membrane_audio_mix_plugin, "~> 0.15.2"},
-      {:membrane_raw_audio_format, "~> 0.11.0"},
-      {:membrane_h264_ffmpeg_plugin, "~> 0.27.0"},
-      {:membrane_video_compositor_plugin, "0.5.1"},
-      {:membrane_http_adaptive_stream_plugin, "~> 0.15.0"}
+      {:membrane_video_compositor_plugin, "0.5.1"}
     ]
   end
 
