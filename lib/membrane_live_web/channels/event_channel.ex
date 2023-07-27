@@ -11,8 +11,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
   alias MembraneLive.Accounts
   alias MembraneLive.Chats
-  alias MembraneLive.Event
+  alias MembraneLive.EventController
   alias MembraneLive.Repo
+  alias MembraneLive.Room
   alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
@@ -28,7 +29,7 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, true} ->
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
-        maybe_send_timer_action(socket, id, :join)
+        EventController.update_event(:join, id)
 
         with gen_key <- UUID.uuid1(),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
@@ -69,7 +70,7 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
         :ets.insert_new(:main_presenters, {id, MapSet.new()})
 
-        maybe_send_timer_action(socket, id, :join)
+        EventController.update_event(:join, id)
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
@@ -136,17 +137,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  defp maybe_send_timer_action(socket, event_id, event_channel_action)
-       when event_channel_action in [:join, :terminate] do
-    event_pid = :global.whereis_name(event_id)
-
-    if event_pid != :undefined do
-      with {:ok, action} <- get_timer_action(socket, event_channel_action) do
-        send(event_pid, {:timer_action, action})
-      end
-    end
-  end
-
   defp can_be_presenter(id, socket, email) do
     can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) < 2
   end
@@ -167,56 +157,13 @@ defmodule MembraneLiveWeb.EventChannel do
     |> length()
   end
 
-  defp get_timer_action(socket, event_channel_action) do
-    prev_users_no = Presence.list(socket) |> map_size
-
-    case {prev_users_no, event_channel_action} do
-      {0, :join} ->
-        {:ok, :start_notify}
-
-      {1, :join} ->
-        {:ok, :stop}
-
-      {2, :terminate} ->
-        {:ok, :start_notify}
-
-      {1, :terminate} ->
-        {:ok, :start_kill}
-
-      _other ->
-        :noaction
-    end
-  end
-
   @impl true
-  def terminate(_reason, %Socket{topic: "event:" <> id} = socket) do
-    maybe_send_timer_action(socket, id, :terminate)
+  def terminate(_reason, %Socket{topic: "event:" <> id}) do
+    EventController.update_event(:leave, id)
     :ok
   end
 
   def terminate(_reason, _socket), do: :ok
-
-  @impl true
-  def handle_info(
-        {:DOWN, _ref, :process, from, _reason},
-        socket
-      ) do
-    if from == socket.assigns.event_pid do
-      # sometimes, when server recieves 2 join requests from the same peer in quick succession
-      # the Event and engine processes from the first join finish after second join has already happened
-      # in this case the new moderator channel process will recieve :DOWN from the older Event process
-      # it must restart the Event in that case
-      socket =
-        case create_event(socket) do
-          {:ok, new_socket} -> new_socket
-          {:error, _reason} -> socket
-        end
-
-      {:noreply, socket}
-    else
-      {:stop, :normal, socket}
-    end
-  end
 
   @impl true
   def handle_info({:media_event, event}, socket) do
@@ -235,12 +182,10 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   def handle_in("finish_event", %{}, socket) do
-    "event:" <> uuid = socket.topic
-    Webinars.mark_webinar_as_finished(uuid)
+    "event:" <> event_id = socket.topic
 
-    GenServer.cast(socket.assigns.event_pid, :finish_event)
+    EventController.send_kill(event_id)
 
-    broadcast!(socket, "finish_event", %{})
     {:noreply, socket}
   end
 
@@ -520,15 +465,12 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in(
         "last_viewer_answer",
         %{"answer" => answer},
-        socket
+        %{topic: "event:" <> event_id} = socket
       ) do
-    msg =
-      case answer do
-        "leave" -> {:timer_action, :end_event}
-        "stay" -> {:timer_action, :reset}
-      end
-
-    send(socket.assigns.event_pid, msg)
+    case answer do
+      "leave" -> EventController.send_response(:leave, event_id)
+      "stay" -> EventController.send_response(:stay, event_id)
+    end
 
     {:noreply, socket}
   end
@@ -589,11 +531,9 @@ defmodule MembraneLiveWeb.EventChannel do
     end
     |> case do
       {:ok, event_pid} ->
-        Process.monitor(event_pid)
         {:ok, Socket.assign(socket, %{event_pid: event_pid})}
 
       {:error, {:already_started, event_pid}} ->
-        Process.monitor(event_pid)
         {:ok, Socket.assign(socket, %{event_pid: event_pid})}
 
       {:error, :non_moderator} ->
@@ -618,7 +558,9 @@ defmodule MembraneLiveWeb.EventChannel do
         {:error, :webinar_finished}
 
       socket.assigns.is_moderator ->
-        Event.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
+        result = Room.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
+        EventController.room_created(socket.assigns.event_id)
+        result
 
       true ->
         {:error, :non_moderator}

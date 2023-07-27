@@ -1,4 +1,4 @@
-defmodule MembraneLive.Event do
+defmodule MembraneLive.Room do
   @moduledoc false
 
   use GenServer
@@ -14,8 +14,7 @@ defmodule MembraneLive.Event do
   alias Membrane.Time
   alias Membrane.WebRTC.Extension.{Mid, TWCC}
   alias Membrane.WebRTC.Track
-  alias MembraneLive.{Chats, Webinars}
-  alias MembraneLive.Event.Timer
+  alias MembraneLive.Chats
   alias MembraneLive.HLS.FileStorage
   alias Phoenix.PubSub
 
@@ -99,7 +98,6 @@ defmodule MembraneLive.Event do
        moderator_pid: nil,
        playlist_idl: nil,
        second_segment_ready?: false,
-       timer: Timer.create(self()),
        target_segment_duration: Time.as_milliseconds(target_segment_duration),
        start_time: nil
      }}
@@ -303,43 +301,23 @@ defmodule MembraneLive.Event do
     {:noreply, state}
   end
 
-  def handle_info({:timer_action, action}, %{timer: timer} = state) do
-    case Timer.handle_action(timer, action,
-           timeout: MembraneLive.get_env!(:last_peer_timeout_long_ms)
-         ) do
-      {:ok, timer} ->
-        {:noreply, %{state | timer: timer}}
+  @impl true
+  def handle_info({:room_controller, :kill}, state) do
+    result = Engine.terminate(state.rtc_engine, timeout: 10_000, force?: true)
 
-      {:timeout, _timer} ->
-        close_webinar(state)
+    if result == {:error, :timeout} do
+      Membrane.Logger.warn(
+        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
+      )
     end
-  end
 
-  def handle_info({:timer_timeout, action}, %{timer: timer} = state) do
-    case action do
-      :notify ->
-        timeout = MembraneLive.get_env!(:last_peer_timeout_short_ms)
-
-        {:ok, timer} = Timer.handle_action(timer, :start_kill, timeout: timeout)
-
-        MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "last_viewer_active", %{
-          timeout: timeout
-        })
-
-        {:noreply, %{state | timer: timer}}
-
-      :kill ->
-        close_webinar(state)
-    end
+    {:stop, :normal, state}
   end
 
   @impl true
   def handle_call(:is_playlist_playable, _from, state) do
     {:reply, stream_response_message(state), state}
   end
-
-  @impl true
-  def handle_cast(:finish_event, state), do: close_webinar(state)
 
   defp create_hls_endpoint(rtc_engine,
          event_id: event_id,
@@ -374,21 +352,6 @@ defmodule MembraneLive.Event do
 
     Engine.add_endpoint(rtc_engine, endpoint, id: "hls_output")
     PubSub.subscribe(MembraneLive.PubSub, event_id)
-  end
-
-  defp close_webinar(state) do
-    result = Engine.terminate(state.rtc_engine, timeout: 10_000, force?: true)
-
-    if result == {:error, :timeout} do
-      Membrane.Logger.warn(
-        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
-      )
-    end
-
-    MembraneLiveWeb.Endpoint.broadcast!("event:" <> state.event_id, "finish_event", %{})
-    Webinars.mark_webinar_as_finished(state.event_id)
-
-    {:stop, :normal, state}
   end
 
   defp handle_playlist_playable(state) do
