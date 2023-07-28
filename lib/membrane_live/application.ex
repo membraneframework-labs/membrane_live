@@ -9,7 +9,7 @@ defmodule MembraneLive.Application do
       {Phoenix.PubSub, name: MembraneLive.PubSub},
       MembraneLiveWeb.Presence,
       MembraneLiveWeb.Endpoint,
-      {MembraneLive.EventController, name: EventController}
+      {MembraneLive.EventService, name: EventService}
     ]
 
     [

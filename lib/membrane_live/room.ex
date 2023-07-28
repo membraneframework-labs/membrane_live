@@ -103,6 +103,11 @@ defmodule MembraneLive.Room do
      }}
   end
 
+  @spec kill(pid()) :: :close_room
+  def kill(pid) do
+    send(pid, :close_room)
+  end
+
   @impl true
   def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
     if state.peer_channels == %{} do
@@ -302,7 +307,7 @@ defmodule MembraneLive.Room do
   end
 
   @impl true
-  def handle_info({:room_controller, :kill}, state) do
+  def handle_info(:close_room, state) do
     result = Engine.terminate(state.rtc_engine, timeout: 10_000, force?: true)
 
     if result == {:error, :timeout} do

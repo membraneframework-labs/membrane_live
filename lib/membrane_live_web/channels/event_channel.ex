@@ -11,9 +11,8 @@ defmodule MembraneLiveWeb.EventChannel do
 
   alias MembraneLive.Accounts
   alias MembraneLive.Chats
-  alias MembraneLive.EventController
+  alias MembraneLive.EventService
   alias MembraneLive.Repo
-  alias MembraneLive.Room
   alias MembraneLive.Tokens
   alias MembraneLive.Webinars
   alias MembraneLive.Webinars.Webinar
@@ -29,7 +28,7 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, true} ->
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
-        EventController.update_event(:join, id)
+        EventService.update_event(:join, id)
 
         with gen_key <- UUID.uuid1(),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
@@ -70,7 +69,7 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
         :ets.insert_new(:main_presenters, {id, MapSet.new()})
 
-        EventController.update_event(:join, id)
+        EventService.update_event(:join, id)
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
@@ -159,7 +158,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def terminate(_reason, %Socket{topic: "event:" <> id}) do
-    EventController.update_event(:leave, id)
+    EventService.update_event(:leave, id)
     :ok
   end
 
@@ -184,7 +183,7 @@ defmodule MembraneLiveWeb.EventChannel do
   def handle_in("finish_event", %{}, socket) do
     "event:" <> event_id = socket.topic
 
-    EventController.send_kill(event_id)
+    EventService.send_kill(event_id)
 
     {:noreply, socket}
   end
@@ -468,8 +467,8 @@ defmodule MembraneLiveWeb.EventChannel do
         %{topic: "event:" <> event_id} = socket
       ) do
     case answer do
-      "leave" -> EventController.send_response(:leave, event_id)
-      "stay" -> EventController.send_response(:stay, event_id)
+      "leave" -> EventService.send_response(:leave, event_id)
+      "stay" -> EventService.send_response(:stay, event_id)
     end
 
     {:noreply, socket}
@@ -558,9 +557,7 @@ defmodule MembraneLiveWeb.EventChannel do
         {:error, :webinar_finished}
 
       socket.assigns.is_moderator ->
-        result = Room.start(socket.assigns.event_id, name: {:global, socket.assigns.event_id})
-        EventController.room_created(socket.assigns.event_id)
-        result
+        EventService.start_room(socket.assigns.event_id)
 
       true ->
         {:error, :non_moderator}

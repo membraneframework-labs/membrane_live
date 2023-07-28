@@ -47,8 +47,8 @@ config :logger, :console,
 
 config :membrane_live,
   hls_output_mount_path: "output",
-  last_peer_timeout_long_ms: 15 * 60 * 1000,
-  last_peer_timeout_short_ms: 2 * 60 * 1000
+  empty_event_timeout_ms: 15 * 60 * 1000,
+  last_peer_timeout_ms: 2 * 60 * 1000
 
 config :membrane_live, HLS.PubSub, pubsub: [name: HLS.PubSub, adapter: Phoenix.PubSub.PG2]
 
