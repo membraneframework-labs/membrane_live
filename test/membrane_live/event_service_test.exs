@@ -17,7 +17,7 @@ defmodule MembraneLive.EventServiceTest do
   end
 
   test "sends notify when there is one user", %{room_pid: room_pid, event_id: event_id} do
-    EventService.join_event(event_id)
+    EventService.user_joined(event_id)
 
     assert_last_viewer_active()
     assert_finish_event()
@@ -25,8 +25,8 @@ defmodule MembraneLive.EventServiceTest do
   end
 
   test "sends only finish event when event is empty", %{room_pid: room_pid, event_id: event_id} do
-    EventService.join_event(event_id)
-    EventService.leave_event(event_id)
+    EventService.user_joined(event_id)
+    EventService.user_left(event_id)
 
     refute_last_viewer_active()
     assert_finish_event()
@@ -37,8 +37,8 @@ defmodule MembraneLive.EventServiceTest do
     room_pid: room_pid,
     event_id: event_id
   } do
-    EventService.join_event(event_id)
-    EventService.join_event(event_id)
+    EventService.user_joined(event_id)
+    EventService.user_joined(event_id)
 
     refute_last_viewer_active()
     refute_finish_event()
@@ -46,7 +46,7 @@ defmodule MembraneLive.EventServiceTest do
   end
 
   test "handles client responses correctly", %{room_pid: room_pid, event_id: event_id} do
-    EventService.join_event(event_id)
+    EventService.user_joined(event_id)
 
     assert_last_viewer_active()
 

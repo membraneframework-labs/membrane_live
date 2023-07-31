@@ -27,8 +27,6 @@ defmodule MembraneLive.EventService do
 
   @type event :: %{users_number: non_neg_integer(), timer_ref: reference()}
   @type event_id :: String.t()
-  @type event_action :: :join | :leave
-  @type user_response :: :stay | :leave
 
   @type t :: %{
           events: %{event_id() => event()},
@@ -50,18 +48,18 @@ defmodule MembraneLive.EventService do
   Updates event state and start timer with action (`:notify`, `:kill`) if needed.
   Should be called every time someone joins event.
   """
-  @spec join_event(event_id()) :: {:event, event_action(), event_id()}
-  def join_event(event_id) do
-    send(EventService, {:event, :join, event_id})
+  @spec user_joined(event_id()) :: {:event, :user_joined, event_id()}
+  def user_joined(event_id) do
+    send(EventService, {:event, :user_joined, event_id})
   end
 
   @doc """
   Updates event state and start timer with action (`:notify`, `:kill`) if needed.
   Should be called every time someone leaves event.
   """
-  @spec leave_event(event_id()) :: {:event, event_action(), event_id()}
-  def leave_event(event_id) do
-    send(EventService, {:event, :leave, event_id})
+  @spec user_left(event_id()) :: {:event, :user_left, event_id()}
+  def user_left(event_id) do
+    send(EventService, {:event, :user_left, event_id})
   end
 
   @doc """
@@ -84,7 +82,7 @@ defmodule MembraneLive.EventService do
   Sets new timer with notifiaction.
   Should be called when user sends response to EventService notification `last_viewer_answer`.
   """
-  @spec stay_response(event_id()) :: {:response, event_id(), user_response()}
+  @spec stay_response(event_id()) :: {:response, event_id(), :stay}
   def stay_response(event_id) do
     send(EventService, {:response, event_id, :stay})
   end
@@ -93,7 +91,7 @@ defmodule MembraneLive.EventService do
   Ends the event or sets.
   Should be called when user sends `leave` response to EventService notification `last_viewer_answer`.
   """
-  @spec leave_response(event_id()) :: {:response, event_id(), user_response()}
+  @spec leave_response(event_id()) :: {:response, event_id(), :leave}
   def leave_response(event_id) do
     send(EventService, {:response, event_id, :leave})
   end
@@ -119,28 +117,28 @@ defmodule MembraneLive.EventService do
   end
 
   @impl true
-  def handle_info({:event, action, event_id}, state) do
+  def handle_info({:event, user_action, event_id}, state) do
     previous_users_number = get_in(state.events, [event_id, :users_number]) || 0
     timer_ref = get_in(state.events, [event_id, :timer_ref])
 
     users_number =
-      case action do
-        :join -> previous_users_number + 1
-        :leave -> previous_users_number - 1
+      case user_action do
+        :user_joined -> previous_users_number + 1
+        :user_left -> previous_users_number - 1
       end
 
     timer_ref =
       case users_number do
         0 ->
-          cancel_action(timer_ref)
-          kill_action(event_id)
+          cancel_timer(timer_ref)
+          kill_timer(event_id)
 
         1 ->
-          cancel_action(timer_ref)
-          notify_action(event_id)
+          cancel_timer(timer_ref)
+          notify_timer(event_id)
 
         2 ->
-          cancel_action(timer_ref)
+          cancel_timer(timer_ref)
           nil
 
         _other ->
@@ -157,7 +155,7 @@ defmodule MembraneLive.EventService do
       timeout: @response_timeout
     })
 
-    timer_ref = kill_action(event_id)
+    timer_ref = kill_timer(event_id)
     {:noreply, put_in(state, [:events, event_id, :timer_ref], timer_ref)}
   end
 
@@ -172,12 +170,12 @@ defmodule MembraneLive.EventService do
     users_number = get_in(state.events, [event_id, :users_number])
     timer_ref = get_in(state.events, [event_id, :timer_ref])
 
-    cancel_action(timer_ref)
+    cancel_timer(timer_ref)
 
     timer_ref =
       case users_number do
-        0 -> kill_action(event_id)
-        1 -> notify_action(event_id)
+        0 -> kill_timer(event_id)
+        1 -> notify_timer(event_id)
         _other -> nil
       end
 
@@ -214,13 +212,13 @@ defmodule MembraneLive.EventService do
     {:noreply, state}
   end
 
-  defp notify_action(event_id),
+  defp notify_timer(event_id),
     do: Process.send_after(EventService, {:notify, event_id}, @notify_after)
 
-  defp kill_action(event_id), do: Process.send_after(EventService, {:kill, event_id}, @kill_after)
+  defp kill_timer(event_id), do: Process.send_after(EventService, {:kill, event_id}, @kill_after)
 
-  defp cancel_action(nil), do: nil
-  defp cancel_action(ref), do: Process.cancel_timer(ref)
+  defp cancel_timer(nil), do: nil
+  defp cancel_timer(ref), do: Process.cancel_timer(ref)
 
   defp finish_event(event_id) do
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> event_id, "finish_event", %{})
