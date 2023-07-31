@@ -1,6 +1,6 @@
 defmodule MembraneLive.EventService do
   @moduledoc """
-  Module responsible for controlling live times of events.
+  Module responsible for controlling life times of events.
 
   EventService keeps track of the number of users in each event.
   The event service will set a timer that will:
@@ -18,9 +18,9 @@ defmodule MembraneLive.EventService do
 
   alias MembraneLive.Room
 
-  @notify_after MembraneLive.get_env!(:last_peer_timeout_ms)
-  @kill_after MembraneLive.get_env!(:empty_event_timeout_ms)
-  @response_timeout MembraneLive.get_env!(:empty_event_timeout_ms)
+  @notify_after Application.compile_env!(:membrane_live, :last_peer_timeout_ms)
+  @kill_after Application.compile_env!(:membrane_live, :empty_event_timeout_ms)
+  @response_timeout Application.compile_env!(:membrane_live, :response_timeout_ms)
 
   @enforce_keys []
   defstruct @enforce_keys ++ [events: %{}, pid_to_id: %{}]
@@ -48,11 +48,20 @@ defmodule MembraneLive.EventService do
 
   @doc """
   Updates event state and start timer with action (`:notify`, `:kill`) if needed.
-  Should be called every time someone joins or leaves event.
+  Should be called every time someone joins event.
   """
-  @spec update_event(event_action(), event_id()) :: {:event, event_action(), event_id()}
-  def update_event(action, event_id) do
-    send(EventService, {:event, action, event_id})
+  @spec join_event(event_id()) :: {:event, event_action(), event_id()}
+  def join_event(event_id) do
+    send(EventService, {:event, :join, event_id})
+  end
+
+  @doc """
+  Updates event state and start timer with action (`:notify`, `:kill`) if needed.
+  Should be called every time someone leaves event.
+  """
+  @spec leave_event(event_id()) :: {:event, event_action(), event_id()}
+  def leave_event(event_id) do
+    send(EventService, {:event, :leave, event_id})
   end
 
   @doc """
@@ -72,12 +81,21 @@ defmodule MembraneLive.EventService do
   end
 
   @doc """
-  Depending on a response ends the event or sets new timer with notifiaction.
+  Sets new timer with notifiaction.
   Should be called when user sends response to EventService notification `last_viewer_answer`.
   """
-  @spec send_response(user_response(), event_id()) :: {:response, event_id(), user_response()}
-  def send_response(user_response, event_id) do
-    send(EventService, {:response, event_id, user_response})
+  @spec stay_response(event_id()) :: {:response, event_id(), user_response()}
+  def stay_response(event_id) do
+    send(EventService, {:response, event_id, :stay})
+  end
+
+  @doc """
+  Ends the event or sets.
+  Should be called when user sends `leave` response to EventService notification `last_viewer_answer`.
+  """
+  @spec leave_response(event_id()) :: {:response, event_id(), user_response()}
+  def leave_response(event_id) do
+    send(EventService, {:response, event_id, :leave})
   end
 
   @doc """
@@ -178,8 +196,7 @@ defmodule MembraneLive.EventService do
     end
 
     unless is_nil(event) do
-      MembraneLiveWeb.Endpoint.broadcast!("event:" <> event_id, "finish_event", %{})
-      MembraneLive.Webinars.mark_webinar_as_finished(event_id)
+      finish_event(event_id)
     end
 
     {:noreply, state}
@@ -191,8 +208,7 @@ defmodule MembraneLive.EventService do
     {_event, state} = pop_in(state, [:events, event_id])
 
     unless is_nil(event_id) do
-      MembraneLiveWeb.Endpoint.broadcast!("event:" <> event_id, "finish_event", %{})
-      MembraneLive.Webinars.mark_webinar_as_finished(event_id)
+      finish_event(event_id)
     end
 
     {:noreply, state}
@@ -205,4 +221,9 @@ defmodule MembraneLive.EventService do
 
   defp cancel_action(nil), do: nil
   defp cancel_action(ref), do: Process.cancel_timer(ref)
+
+  defp finish_event(event_id) do
+    MembraneLiveWeb.Endpoint.broadcast!("event:" <> event_id, "finish_event", %{})
+    MembraneLive.Webinars.mark_webinar_as_finished(event_id)
+  end
 end

@@ -28,7 +28,7 @@ defmodule MembraneLiveWeb.EventChannel do
       {:ok, true} ->
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
 
-        EventService.update_event(:join, id)
+        EventService.join_event(id)
 
         with gen_key <- UUID.uuid1(),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
@@ -69,7 +69,7 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
         :ets.insert_new(:main_presenters, {id, MapSet.new()})
 
-        EventService.update_event(:join, id)
+        EventService.join_event(id)
 
         with {:ok, %{"user_id" => uuid}} <- Tokens.auth_decode(token),
              {:ok, name} <- Accounts.get_username(uuid),
@@ -158,7 +158,7 @@ defmodule MembraneLiveWeb.EventChannel do
 
   @impl true
   def terminate(_reason, %Socket{topic: "event:" <> id}) do
-    EventService.update_event(:leave, id)
+    EventService.leave_event(id)
     :ok
   end
 
@@ -467,8 +467,8 @@ defmodule MembraneLiveWeb.EventChannel do
         %{topic: "event:" <> event_id} = socket
       ) do
     case answer do
-      "leave" -> EventService.send_response(:leave, event_id)
-      "stay" -> EventService.send_response(:stay, event_id)
+      "leave" -> EventService.leave_response(event_id)
+      "stay" -> EventService.stay_response(event_id)
     end
 
     {:noreply, socket}

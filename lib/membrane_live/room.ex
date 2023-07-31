@@ -18,6 +18,7 @@ defmodule MembraneLive.Room do
   alias MembraneLive.HLS.FileStorage
   alias Phoenix.PubSub
 
+  @terminate_engine_timeout 10_000
   @mix_env Mix.env()
 
   def start(init_arg, opts) do
@@ -308,7 +309,7 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_info(:close_room, state) do
-    result = Engine.terminate(state.rtc_engine, timeout: 10_000, force?: true)
+    result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
 
     if result == {:error, :timeout} do
       Membrane.Logger.warn(

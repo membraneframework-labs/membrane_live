@@ -24,7 +24,8 @@ config :membrane_live,
   google_public_key_path: Path.expand("./test/files/keys/jwtRS256.key.pub"),
   google_pems_url: "http://localhost:#{bypass_port}",
   empty_event_timeout_ms: 100,
-  last_peer_timeout_ms: 100
+  last_peer_timeout_ms: 100,
+  response_timeout_ms: 100
 
 config :logger, level: :warn
 
