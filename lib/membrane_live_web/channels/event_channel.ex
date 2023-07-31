@@ -41,7 +41,7 @@ defmodule MembraneLiveWeb.EventChannel do
           })
 
           {:ok, %{generated_key: gen_key},
-           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key, event_pid: nil})}
+           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key})}
         end
 
       {:error, _error} ->
@@ -103,8 +103,6 @@ defmodule MembraneLiveWeb.EventChannel do
               is_auth: true,
               is_banned_from_chat: is_banned_from_chat
             })
-
-          if is_moderator, do: send(socket.assigns.event_pid, {:moderator, self()})
 
           {:ok, %{is_moderator: is_moderator}, socket}
         else
@@ -209,34 +207,14 @@ defmodule MembraneLiveWeb.EventChannel do
     {:reply, {:ok, %{"main_presenter" => is_main_presenter}}, socket}
   end
 
-  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> id} = socket) do
+  def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> event_id} = socket) do
     email = socket.assigns.user_email
-    {:ok, is_banned_from_chat} = check_if_banned_from_chat(email, id)
+    [user] = Presence.get_by_key(socket, email).metas
 
-    if not is_banned_from_chat do
-      %{metas: [%{name: name, is_auth: is_auth}]} = Presence.get_by_key(socket, email)
-
-      {:ok, is_presenter} = check_if_presenter(email, true, id)
-
-      key = if is_auth and is_presenter, do: :start_timestamps, else: :client_start_timestamps
-
-      offset =
-        case :ets.lookup(key, id) do
-          [{_key, timestamp}] ->
-            System.monotonic_time(:millisecond) - timestamp
-
-          [] ->
-            0
-        end
-
-      Chats.add_chat_message(id, name, email, is_auth, content, offset)
-
-      broadcast(socket, "chat_message", %{
-        "email" => email,
-        "name" => name,
-        "content" => content,
-        "offset" => offset
-      })
+    unless user.is_banned_from_chat do
+      user = Map.put(user, :email, email)
+      message = Chats.add_chat_message(event_id, user, content)
+      broadcast(socket, "chat_message", message)
     end
 
     {:noreply, socket}
@@ -255,7 +233,7 @@ defmodule MembraneLiveWeb.EventChannel do
     remove_from_main_presenters(email, id)
 
     if Map.has_key?(socket.assigns, :peer_id),
-      do: send(socket.assigns.event_pid, {:remove_peer_channel, self(), socket.assigns.peer_id})
+      do: EventService.remove_peer(socket.assigns.event_id, socket.assigns.peer_id)
 
     {:noreply, socket}
   end
@@ -498,58 +476,43 @@ defmodule MembraneLiveWeb.EventChannel do
   end
 
   @impl true
-  def handle_in("mediaEvent", %{"data" => event}, socket) do
-    send(socket.assigns.event_pid, {:media_event, socket.assigns.peer_id, event})
+  def handle_in("mediaEvent", %{"data" => media_event}, socket) do
+    EventService.media_event(socket.assigns.event_id, socket.assigns.peer_id, media_event)
     {:noreply, socket}
   end
 
   @impl true
   def handle_in("isPlaylistPlayable", _data, socket) do
-    socket = set_event_pid(socket)
+    case EventService.playable_playlist(socket.assigns.event_id) do
+      {:error, _reason} ->
+        {:noreply, socket}
 
-    if socket.assigns.event_pid != nil do
-      case :global.whereis_name(socket.assigns.event_id) do
-        :undefined ->
-          {:reply, {:ok, false}, socket}
-
-        _pid ->
-          {:reply, {:ok, GenServer.call(socket.assigns.event_pid, :is_playlist_playable)}, socket}
-      end
-    else
-      {:reply, {:ok, false}, socket}
+      response ->
+        {:reply, {:ok, response}, socket}
     end
   end
 
   defp create_event(socket) do
-    case :global.whereis_name(socket.assigns.event_id) do
-      :undefined ->
-        maybe_start_event(socket)
+    room_exists? = EventService.room_exists?(socket.assigns.event_id)
 
-      pid ->
-        {:ok, pid}
-    end
-    |> case do
-      {:ok, event_pid} ->
-        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
-
-      {:error, {:already_started, event_pid}} ->
-        {:ok, Socket.assign(socket, %{event_pid: event_pid})}
-
-      {:error, :non_moderator} ->
-        {:ok, Socket.assign(socket, %{event_pid: nil})}
-
-      {:error, reason} ->
+    case maybe_start_event(room_exists?, socket) do
+      {:error, :webinar_finished} ->
         Logger.error("""
         Failed to start room.
-        Room: #{inspect(socket.assigns.event_id)}
-        Reason: #{inspect(reason)}
+        Room: #{inspect(socket.assigns.event_id)}.
+        Reason: webinar is finished.
         """)
 
-        {:error, %{reason: "failed to start event: #{reason}"}}
+        {:error, %{reason: "failed to start event:  webinar is finished."}}
+
+      _else ->
+        {:ok, socket}
     end
   end
 
-  defp maybe_start_event(socket) do
+  defp maybe_start_event(true, _socket), do: :ok
+
+  defp maybe_start_event(false, socket) do
     {:ok, webinar} = Webinars.get_webinar(socket.assigns.event_id)
 
     cond do
@@ -564,22 +527,10 @@ defmodule MembraneLiveWeb.EventChannel do
     end
   end
 
-  defp set_event_pid(socket) do
-    case :global.whereis_name(socket.assigns.event_id) do
-      :undefined -> socket
-      pid -> Socket.assign(socket, %{event_pid: pid})
-    end
-  end
-
   defp join_event(socket) do
-    socket = set_event_pid(socket)
-
-    if is_nil(socket.assigns.event_pid),
-      do: raise("Event was not started before first joining attempt")
-
     peer_id = "#{UUID.uuid4()}"
 
-    send(socket.assigns.event_pid, {:add_peer_channel, self(), peer_id})
+    EventService.add_peer(socket.assigns.event_id, peer_id)
 
     {:ok, Socket.assign(socket, %{peer_id: peer_id})}
   end

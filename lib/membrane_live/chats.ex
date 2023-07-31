@@ -27,12 +27,47 @@ defmodule MembraneLive.Chats do
     |> Repo.all()
   end
 
-  def add_chat_message(event_id, user_name, user_email, is_auth, content, time_offset) do
-    if is_auth do
-      add_authenticated_chat_message(event_id, user_email, content, time_offset)
+  def add_chat_message(event_id, user, content) do
+    key =
+      if user.is_auth and user.is_presenter, do: :start_timestamps, else: :client_start_timestamps
+
+    offset =
+      case :ets.lookup(key, event_id) do
+        [{_key, timestamp}] ->
+          System.monotonic_time(:millisecond) - timestamp
+
+        [] ->
+          0
+      end
+
+    if user.is_auth do
+      add_authenticated_chat_message(event_id, user.email, content, offset)
     else
-      add_anonnymous_chat_message(event_id, user_email, user_name, content, time_offset)
+      add_anonnymous_chat_message(event_id, user.email, user.name, content, offset)
     end
+
+    %{
+      "email" => user.email,
+      "name" => user.name,
+      "content" => content,
+      "offset" => offset
+    }
+  end
+
+  def set_timestamp_client(event_id, target_segment_duration) do
+    :ets.insert_new(
+      :client_start_timestamps,
+      {event_id, System.monotonic_time(:millisecond) - target_segment_duration}
+    )
+  end
+
+  def set_timestamp_presenter(event_id) do
+    :ets.insert_new(:start_timestamps, {event_id, System.monotonic_time(:millisecond)})
+  end
+
+  def delete_timestamps(event_id) do
+    :ets.delete(:client_start_timestamps, event_id)
+    :ets.delete(:start_timestamps, event_id)
   end
 
   def clear_offsets(event_id) do

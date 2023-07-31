@@ -21,6 +21,8 @@ defmodule MembraneLive.Room do
   @terminate_engine_timeout 10_000
   @mix_env Mix.env()
 
+  @type peer_id :: String.t()
+
   def start(init_arg, opts) do
     GenServer.start(__MODULE__, init_arg, opts)
   end
@@ -96,7 +98,6 @@ defmodule MembraneLive.Room do
        peer_channels: %{},
        network_options: network_options,
        trace_ctx: trace_ctx,
-       moderator_pid: nil,
        playlist_idl: nil,
        second_segment_ready?: false,
        target_segment_duration: Time.as_milliseconds(target_segment_duration),
@@ -104,17 +105,42 @@ defmodule MembraneLive.Room do
      }}
   end
 
-  @spec kill(pid()) :: :close_room
-  def kill(pid) do
-    send(pid, :close_room)
+  @spec add_peer(pid(), peer_id()) :: :ok
+  def add_peer(room_pid, peer_id) do
+    GenServer.cast(room_pid, {:add_peer, self(), peer_id})
+  end
+
+  @spec remove_peer(pid(), peer_id()) :: :ok
+  def remove_peer(room_pid, peer_id) do
+    GenServer.cast(room_pid, {:remove_peer, self(), peer_id})
+  end
+
+  @spec media_event(pid(), peer_id(), any()) :: :ok
+  def media_event(room_pid, peer_id, event) do
+    GenServer.cast(room_pid, {:media_event, peer_id, event})
+  end
+
+  @type playlist :: %{
+          playlist_idl: String.t(),
+          name: String.t(),
+          start_time: pos_integer()
+        }
+
+  @spec playable_playlist(pid()) :: playlist()
+  def playable_playlist(room_pid) do
+    GenServer.call(room_pid, :playable_playlist)
+  end
+
+  @spec kill(pid()) :: :ok
+  def kill(room_pid) do
+    GenServer.cast(room_pid, :close_room)
   end
 
   @impl true
-  def handle_info({:add_peer_channel, peer_channel_pid, peer_id}, state) do
+  def handle_cast({:add_peer, peer_channel_pid, peer_id}, state) do
     if state.peer_channels == %{} do
-      :ets.delete(:start_timestamps, state.event_id)
-      :ets.delete(:client_start_timestamps, state.event_id)
       Chats.clear_offsets(state.event_id)
+      Chats.delete_timestamps(state.event_id)
     end
 
     state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
@@ -123,7 +149,7 @@ defmodule MembraneLive.Room do
     Membrane.Logger.info("New peer: #{inspect(peer_id)}. Accepting.")
     peer_node = node(peer_channel_pid)
 
-    :ets.insert_new(:start_timestamps, {state.event_id, System.monotonic_time(:millisecond)})
+    Chats.set_timestamp_presenter(state.event_id)
 
     handshake_opts =
       if state.network_options[:dtls_pkey] &&
@@ -166,18 +192,34 @@ defmodule MembraneLive.Room do
   end
 
   @impl true
-  def handle_info({:remove_peer_channel, peer_channel_pid, peer_id}, state) do
-    if peer_channel_pid == state.moderator_pid do
-      state = %{state | moderator_pid: nil}
-      {:ok, state} = handle_peer_left(state, peer_channel_pid)
-      Engine.remove_endpoint(state.rtc_engine, peer_id)
-      {:noreply, state}
-    else
-      {:ok, state} = handle_peer_left(state, peer_id)
+  def handle_cast({:remove_peer, _peer_channel_pid, peer_id}, state) do
+    {:ok, state} = handle_peer_left(state, peer_id)
+    Engine.remove_endpoint(state.rtc_engine, peer_id)
+    {:noreply, state}
+  end
 
-      Engine.remove_endpoint(state.rtc_engine, peer_id)
-      {:noreply, state}
+  @impl true
+  def handle_cast({:media_event, peer_id, event}, state) do
+    Engine.message_endpoint(state.rtc_engine, peer_id, {:media_event, event})
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_cast(:close_room, state) do
+    result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
+
+    if result == {:error, :timeout} do
+      Membrane.Logger.warn(
+        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
+      )
     end
+
+    {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_call(:playable_playlist, _from, state) do
+    {:reply, stream_response_message(state), state}
   end
 
   @impl true
@@ -209,8 +251,8 @@ defmodule MembraneLive.Room do
     Membrane.Logger.error("Restarting HLS Endpoint!")
 
     Chats.clear_offsets(state.event_id)
-    :ets.delete(:client_start_timestamps, state.event_id)
-    :ets.insert(:start_timestamps, {state.event_id, System.monotonic_time(:millisecond)})
+    Chats.delete_timestamps(state.event_id)
+    Chats.set_timestamp_presenter(event_id)
 
     :ok =
       create_hls_endpoint(rtc_engine,
@@ -237,18 +279,6 @@ defmodule MembraneLive.Room do
   end
 
   @impl true
-  def handle_info({:media_event, to, event}, state) do
-    Engine.message_endpoint(state.rtc_engine, to, {:media_event, event})
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info({:moderator, moderator_pid}, state) do
-    Process.monitor(moderator_pid)
-    {:noreply, %{state | moderator_pid: moderator_pid}}
-  end
-
-  @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     result =
       state.peer_channels
@@ -262,24 +292,14 @@ defmodule MembraneLive.Room do
 
         {:stop, :normal, state}
 
-      pid == state.moderator_pid ->
-        state = %{state | moderator_pid: nil}
-        {:ok, state} = handle_peer_left(state, pid)
-
-        with {peer_id, _peer_channel_pid} <- result do
-          Engine.remove_endpoint(state.rtc_engine, peer_id)
-        end
-
-        {:noreply, state}
-
       is_nil(result) ->
         {:noreply, state}
 
       true ->
-        {peer_id, _peer_channel_id} = result
+        {peer_id, _peer_channel_pid} = result
+        Engine.remove_endpoint(state.rtc_engine, peer_id)
         {:ok, state} = handle_peer_left(state, peer_id)
 
-        Engine.remove_endpoint(state.rtc_engine, peer_id)
         {:noreply, state}
     end
   end
@@ -305,24 +325,6 @@ defmodule MembraneLive.Room do
   @impl true
   def handle_info({:cleanup, _clean_function, _playlist_idl}, state) do
     {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(:close_room, state) do
-    result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
-
-    if result == {:error, :timeout} do
-      Membrane.Logger.warn(
-        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
-      )
-    end
-
-    {:stop, :normal, state}
-  end
-
-  @impl true
-  def handle_call(:is_playlist_playable, _from, state) do
-    {:reply, stream_response_message(state), state}
   end
 
   defp create_hls_endpoint(rtc_engine,
@@ -360,16 +362,14 @@ defmodule MembraneLive.Room do
     PubSub.subscribe(MembraneLive.PubSub, event_id)
   end
 
-  defp handle_playlist_playable(state) do
-    :ets.insert_new(
-      :client_start_timestamps,
-      {state.event_id, System.monotonic_time(:millisecond) - state.target_segment_duration}
-    )
+  defp handle_playlist_playable(
+         %{event_id: event_id, target_segment_duration: segment_duration} = state
+       ) do
+    Chats.set_timestamp_client(event_id, segment_duration)
 
     state = %{
       state
-      | start_time:
-          DateTime.utc_now() |> DateTime.add(-state.target_segment_duration, :millisecond)
+      | start_time: DateTime.utc_now() |> DateTime.add(-segment_duration, :millisecond)
     }
 
     send_broadcast(state)
