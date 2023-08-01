@@ -29,6 +29,11 @@ defmodule MembraneLive.EventService do
   @type event_id :: String.t()
   @type peer_id :: String.t()
   @type room_error :: {:error, String.t()}
+  @type playlist :: %{
+          playlist_idl: String.t(),
+          name: String.t(),
+          start_time: pos_integer()
+        }
 
   @type t :: %{
           events: %{event_id() => event()},
@@ -93,7 +98,7 @@ defmodule MembraneLive.EventService do
   Returns map containing all needed information for client to play playlist.
   If playlist isn't ready all fields in map wiil be empty.
   """
-  @spec playable_playlist(event_id()) :: Room.playlist() | room_error()
+  @spec playable_playlist(event_id()) :: playlist() | room_error()
   def playable_playlist(event_id) do
     case :global.whereis_name(event_id) do
       :undefined ->
