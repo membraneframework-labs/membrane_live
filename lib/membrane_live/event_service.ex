@@ -54,7 +54,7 @@ defmodule MembraneLive.EventService do
   @doc """
   Adds peer to the given event's room
   """
-  @spec add_peer(event_id(), peer_id()) :: :ok | room_error()
+  @spec add_peer(event_id(), peer_id()) :: :ok | :error | room_error()
   def add_peer(event_id, peer_id) do
     case :global.whereis_name(event_id) do
       :undefined ->
@@ -132,7 +132,7 @@ defmodule MembraneLive.EventService do
   In case of a room crash `EventService` will end the event.
   Should be called to spawn a room.
   """
-  @spec start_room(event_id()) :: :ok | :already_started
+  @spec start_room(event_id()) :: :ok | {:error, :already_started}
   def start_room(event_id) do
     GenServer.call(EventService, {:start_room, event_id})
   end
@@ -182,7 +182,7 @@ defmodule MembraneLive.EventService do
         {:reply, :ok, state}
 
       _pid ->
-        {:reply, :already_started, state}
+        {:reply, {:error, :already_started}, state}
     end
   end
 
@@ -260,7 +260,7 @@ defmodule MembraneLive.EventService do
     {_event_id, state} = pop_in(state, [:pid_to_id, pid])
 
     unless pid == :undefined do
-      Room.kill(pid)
+      Room.close(pid)
     end
 
     unless is_nil(event) do

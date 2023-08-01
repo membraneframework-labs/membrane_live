@@ -39,11 +39,9 @@ config :esbuild,
 
 config :membrane_live, MembraneLiveWeb.Endpoint, pubsub_server: MembraneLive.PubSub
 
-config :logger, level: :error
-
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:request_id, :event_id]
 
 config :membrane_live,
   hls_output_mount_path: "output",

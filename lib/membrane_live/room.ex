@@ -3,7 +3,7 @@ defmodule MembraneLive.Room do
 
   use GenServer
 
-  require Membrane.Logger
+  require Logger
   require Membrane.OpenTelemetry
 
   alias Membrane.ICE.TURNManager
@@ -33,7 +33,8 @@ defmodule MembraneLive.Room do
 
   @impl true
   def init(event_id) do
-    Membrane.Logger.info("Spawning room process: #{inspect(self())}")
+    Logger.metadata(event_id: event_id)
+    Logger.info("Spawning room process: #{inspect(self())}")
 
     turn_mock_ip = MembraneLive.get_env!(:integrated_turn_ip)
     turn_ip = if @mix_env == :prod, do: {0, 0, 0, 0}, else: turn_mock_ip
@@ -105,14 +106,14 @@ defmodule MembraneLive.Room do
      }}
   end
 
-  @spec add_peer(pid(), peer_id()) :: :ok
+  @spec add_peer(pid(), peer_id()) :: :ok | :error
   def add_peer(room_pid, peer_id) do
-    GenServer.cast(room_pid, {:add_peer, self(), peer_id})
+    GenServer.call(room_pid, {:add_peer, self(), peer_id})
   end
 
   @spec remove_peer(pid(), peer_id()) :: :ok
   def remove_peer(room_pid, peer_id) do
-    GenServer.cast(room_pid, {:remove_peer, self(), peer_id})
+    GenServer.call(room_pid, {:remove_peer, self(), peer_id})
   end
 
   @spec media_event(pid(), peer_id(), any()) :: :ok
@@ -131,13 +132,13 @@ defmodule MembraneLive.Room do
     GenServer.call(room_pid, :playable_playlist)
   end
 
-  @spec kill(pid()) :: :ok
-  def kill(room_pid) do
+  @spec close(pid()) :: :ok
+  def close(room_pid) do
     GenServer.cast(room_pid, :close_room)
   end
 
   @impl true
-  def handle_cast({:add_peer, peer_channel_pid, peer_id}, state) do
+  def handle_call({:add_peer, peer_channel_pid, peer_id}, _from, state) do
     if state.peer_channels == %{} do
       Chats.clear_offsets(state.event_id)
       Chats.delete_timestamps(state.event_id)
@@ -146,7 +147,7 @@ defmodule MembraneLive.Room do
     state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
     Process.monitor(peer_channel_pid)
 
-    Membrane.Logger.info("New peer: #{inspect(peer_id)}. Accepting.")
+    Logger.info("New peer: #{inspect(peer_id)}. Accepting.")
     peer_node = node(peer_channel_pid)
 
     Chats.set_timestamp_presenter(state.event_id)
@@ -186,22 +187,21 @@ defmodule MembraneLive.Room do
       end
     }
 
-    :ok = Engine.add_endpoint(state.rtc_engine, endpoint, id: peer_id, node: peer_node)
+    result = Engine.add_endpoint(state.rtc_engine, endpoint, id: peer_id, node: peer_node)
 
-    {:noreply, state}
+    {:reply, result, state}
   end
 
   @impl true
-  def handle_cast({:remove_peer, _peer_channel_pid, peer_id}, state) do
+  def handle_call({:remove_peer, _peer_channel_pid, peer_id}, _from, state) do
     {:ok, state} = handle_peer_left(state, peer_id)
     Engine.remove_endpoint(state.rtc_engine, peer_id)
-    {:noreply, state}
+    {:noreply, :ok, state}
   end
 
   @impl true
-  def handle_cast({:media_event, peer_id, event}, state) do
-    Engine.message_endpoint(state.rtc_engine, peer_id, {:media_event, event})
-    {:noreply, state}
+  def handle_call(:playable_playlist, _from, state) do
+    {:reply, stream_response_message(state), state}
   end
 
   @impl true
@@ -209,8 +209,8 @@ defmodule MembraneLive.Room do
     result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
 
     if result == {:error, :timeout} do
-      Membrane.Logger.warn(
-        "[Event: #{state.event_id}] RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
+      Logger.warn(
+        "RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
       )
     end
 
@@ -218,8 +218,9 @@ defmodule MembraneLive.Room do
   end
 
   @impl true
-  def handle_call(:playable_playlist, _from, state) do
-    {:reply, stream_response_message(state), state}
+  def handle_cast({:media_event, peer_id, event}, state) do
+    Engine.message_endpoint(state.rtc_engine, peer_id, {:media_event, event})
+    {:noreply, state}
   end
 
   @impl true
@@ -233,7 +234,7 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_info(%Message.EndpointCrashed{endpoint_id: "hls_output"}, state) do
-    Membrane.Logger.error("HLS endpoint has crashed!")
+    Logger.error("HLS endpoint has crashed!")
     new_state = %{state | playlist_idl: nil, second_segment_ready?: false}
     send_broadcast(new_state)
     Process.send_after(self(), :recreate_hls, 3000)
@@ -248,7 +249,7 @@ defmodule MembraneLive.Room do
           target_segment_duration: target_segment_duration
         } = state
       ) do
-    Membrane.Logger.error("Restarting HLS Endpoint!")
+    Logger.error("Restarting HLS Endpoint!")
 
     Chats.clear_offsets(state.event_id)
     Chats.delete_timestamps(state.event_id)
@@ -265,11 +266,11 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_info(%Message.EndpointCrashed{endpoint_id: endpoint_id}, state) do
-    Membrane.Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
+    Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
 
     case state.peer_channels[endpoint_id] do
       nil ->
-        Membrane.Logger.error("Endpoint crashed handling error: This peer doesn't exist already!")
+        Logger.error("Endpoint crashed handling error: This peer doesn't exist already!")
 
       peer_channel ->
         send(peer_channel, :endpoint_crashed)

@@ -55,17 +55,10 @@ defmodule MembraneLive.Chats do
 
   @spec add_chat_message(event_id(), user(), String.t()) :: channel_message()
   def add_chat_message(event_id, user, content) do
-    key =
-      if user.is_auth and user.is_presenter, do: :start_timestamps, else: :client_start_timestamps
-
     offset =
-      case :ets.lookup(key, event_id) do
-        [{_key, timestamp}] ->
-          System.monotonic_time(:millisecond) - timestamp
-
-        [] ->
-          0
-      end
+      user
+      |> get_timestamp_table()
+      |> calculate_offset(event_id)
 
     if user.is_auth do
       add_authenticated_chat_message(event_id, user.email, content, offset)
@@ -142,5 +135,20 @@ defmodule MembraneLive.Chats do
     %Chat{}
     |> Chat.changeset(attrs)
     |> Repo.insert()
+  end
+
+  defp get_timestamp_table(%{is_auth: true, is_presenter: true}), do: :start_timestamps
+
+  defp get_timestamp_table(%{is_auth: _is_auth, is_presenter: _is_presenter}),
+    do: :client_start_timestamps
+
+  defp calculate_offset(table, event_id) do
+    case :ets.lookup(table, event_id) do
+      [{_key, timestamp}] ->
+        System.monotonic_time(:millisecond) - timestamp
+
+      [] ->
+        0
+    end
   end
 end
