@@ -8,7 +8,8 @@ defmodule MembraneLive.Application do
       MembraneLive.Repo,
       {Phoenix.PubSub, name: MembraneLive.PubSub},
       MembraneLiveWeb.Presence,
-      MembraneLiveWeb.Endpoint
+      MembraneLiveWeb.Endpoint,
+      {MembraneLive.EventService, name: EventService}
     ]
 
     [
