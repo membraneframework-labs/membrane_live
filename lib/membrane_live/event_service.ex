@@ -56,12 +56,8 @@ defmodule MembraneLive.EventService do
   """
   @spec add_peer(event_id(), peer_id()) :: :ok | :error | room_error()
   def add_peer(event_id, peer_id) do
-    case :global.whereis_name(event_id) do
-      :undefined ->
-        room_doesnt_exist_error()
-
-      pid ->
-        Room.add_peer(pid, peer_id)
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.add_peer(pid, peer_id)
     end
   end
 
@@ -70,12 +66,8 @@ defmodule MembraneLive.EventService do
   """
   @spec remove_peer(event_id(), peer_id()) :: :ok | room_error()
   def remove_peer(event_id, peer_id) do
-    case :global.whereis_name(event_id) do
-      :undefined ->
-        room_doesnt_exist_error()
-
-      pid ->
-        Room.remove_peer(pid, peer_id)
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.remove_peer(pid, peer_id)
     end
   end
 
@@ -85,12 +77,8 @@ defmodule MembraneLive.EventService do
   """
   @spec media_event(event_id(), peer_id(), any()) :: :ok | room_error()
   def media_event(event_id, peer_id, event) do
-    case :global.whereis_name(event_id) do
-      :undefined ->
-        room_doesnt_exist_error()
-
-      pid ->
-        Room.media_event(pid, peer_id, event)
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.media_event(pid, peer_id, event)
     end
   end
 
@@ -100,12 +88,8 @@ defmodule MembraneLive.EventService do
   """
   @spec playable_playlist(event_id()) :: playlist() | room_error()
   def playable_playlist(event_id) do
-    case :global.whereis_name(event_id) do
-      :undefined ->
-        room_doesnt_exist_error()
-
-      pid ->
-        Room.playable_playlist(pid)
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.playable_playlist(pid)
     end
   end
 
@@ -295,5 +279,13 @@ defmodule MembraneLive.EventService do
     MembraneLive.Webinars.mark_webinar_as_finished(event_id)
   end
 
-  defp room_doesnt_exist_error(), do: {:error, "Room doesn't exist"}
+  defp get_room_pid(event_id) do
+    case :global.whereis_name(event_id) do
+      :undefined ->
+        {:error, "Room doesn't exist"}
+
+      pid ->
+        {:ok, pid}
+    end
+  end
 end
