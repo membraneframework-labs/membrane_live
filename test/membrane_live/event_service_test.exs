@@ -9,8 +9,8 @@ defmodule MembraneLive.EventServiceTest do
     event_id = Ecto.UUID.generate()
     @endpoint.subscribe("event:#{event_id}")
 
-    {:ok, room_pid} = EventService.start_room(event_id)
-
+    :ok = EventService.start_room(event_id)
+    room_pid = :global.whereis_name(event_id)
     Process.monitor(room_pid)
 
     %{room_pid: room_pid, event_id: event_id}
@@ -61,9 +61,9 @@ defmodule MembraneLive.EventServiceTest do
     assert_down(room_pid)
   end
 
-  test "returns error when room already exists", %{room_pid: room_pid, event_id: event_id} do
+  test "returns `:already_started` when room already exists", %{event_id: event_id} do
     response = EventService.start_room(event_id)
-    assert {:error, {:already_started, ^room_pid}} = response
+    assert {:error, :already_started} = response
   end
 
   defp assert_finish_event(timeout \\ 1_000), do: assert_broadcast("finish_event", %{}, timeout)

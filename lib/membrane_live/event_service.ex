@@ -27,6 +27,13 @@ defmodule MembraneLive.EventService do
 
   @type event :: %{users_number: non_neg_integer(), timer_ref: reference()}
   @type event_id :: String.t()
+  @type peer_id :: String.t()
+  @type room_error :: {:error, String.t()}
+  @type playlist :: %{
+          playlist_idl: String.t(),
+          name: String.t(),
+          start_time: pos_integer()
+        }
 
   @type t :: %{
           events: %{event_id() => event()},
@@ -43,6 +50,48 @@ defmodule MembraneLive.EventService do
 
   @impl true
   def init(_opts), do: {:ok, %__MODULE__{}}
+
+  @doc """
+  Adds peer to the given event's room
+  """
+  @spec add_peer(event_id(), peer_id()) :: :ok | :error | room_error()
+  def add_peer(event_id, peer_id) do
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.add_peer(pid, peer_id)
+    end
+  end
+
+  @doc """
+  Removes peer from given event's room
+  """
+  @spec remove_peer(event_id(), peer_id()) :: :ok | room_error()
+  def remove_peer(event_id, peer_id) do
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.remove_peer(pid, peer_id)
+    end
+  end
+
+  @doc """
+  Responsible for communication between peer and engine.
+  All media events send thru websocket should be passed thru this function to rooms.
+  """
+  @spec media_event(event_id(), peer_id(), any()) :: :ok | room_error()
+  def media_event(event_id, peer_id, event) do
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.media_event(pid, peer_id, event)
+    end
+  end
+
+  @doc """
+  Returns map containing all needed information for client to play playlist.
+  If playlist isn't ready all fields in map wiil be empty.
+  """
+  @spec playable_playlist(event_id()) :: playlist() | room_error()
+  def playable_playlist(event_id) do
+    with {:ok, pid} <- get_room_pid(event_id) do
+      Room.playable_playlist(pid)
+    end
+  end
 
   @doc """
   Updates event state and start timer with action (`:notify`, `:kill`) if needed.
@@ -67,14 +116,19 @@ defmodule MembraneLive.EventService do
   In case of a room crash `EventService` will end the event.
   Should be called to spawn a room.
   """
-  @spec start_room(event_id()) :: {:ok, pid()} | {:error, {:already_started, pid()}}
+  @spec start_room(event_id()) :: :ok | {:error, :already_started}
   def start_room(event_id) do
-    case GenServer.call(EventService, {:start_room, event_id}) do
-      {:already_started, _pid} = reason ->
-        {:error, reason}
+    GenServer.call(EventService, {:start_room, event_id})
+  end
 
-      pid ->
-        {:ok, pid}
+  @doc """
+  Checks whether a room was started or not.
+  """
+  @spec room_exists?(event_id()) :: boolean()
+  def room_exists?(event_id) do
+    case :global.whereis_name(event_id) do
+      :undefined -> false
+      _pid -> true
     end
   end
 
@@ -109,10 +163,10 @@ defmodule MembraneLive.EventService do
         {:ok, pid} = Room.start(event_id, name: {:global, event_id})
         state = put_in(state, [:pid_to_id, pid], event_id)
         Process.monitor(pid)
-        {:reply, pid, state}
+        {:reply, :ok, state}
 
-      pid ->
-        {:reply, {:already_started, pid}, state}
+      _pid ->
+        {:reply, {:error, :already_started}, state}
     end
   end
 
@@ -190,7 +244,7 @@ defmodule MembraneLive.EventService do
     {_event_id, state} = pop_in(state, [:pid_to_id, pid])
 
     unless pid == :undefined do
-      Room.kill(pid)
+      Room.close(pid)
     end
 
     unless is_nil(event) do
@@ -223,5 +277,15 @@ defmodule MembraneLive.EventService do
   defp finish_event(event_id) do
     MembraneLiveWeb.Endpoint.broadcast!("event:" <> event_id, "finish_event", %{})
     MembraneLive.Webinars.mark_webinar_as_finished(event_id)
+  end
+
+  defp get_room_pid(event_id) do
+    case :global.whereis_name(event_id) do
+      :undefined ->
+        {:error, "Room doesn't exist"}
+
+      pid ->
+        {:ok, pid}
+    end
   end
 end
