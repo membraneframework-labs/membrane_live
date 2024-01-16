@@ -10,9 +10,6 @@
     <link rel="stylesheet" href="https://use.typekit.net/rlp1ezr.css"/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
     <script src="https://accounts.google.com/gsi/client"></script>
-    <script type="text/javascript">
-      const ARE_PRODUCTS_ENABLED = "<%= Application.fetch_env!(:membrane_live, :products_enabled?) %>"
-    </script>
   </head>
   <body>
     <%= @inner_content %>

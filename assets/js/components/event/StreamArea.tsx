@@ -9,7 +9,7 @@ import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
-import type { Client, Product, ChatMessage, CardStatus } from "../../types/types";
+import type { Client, ChatMessage, CardStatus } from "../../types/types";
 
 import "../../../css/event/streamarea.css";
 
@@ -20,12 +20,10 @@ type StreamAreaProps = {
   eventChannel: Channel | undefined;
   privateChannel: Channel | undefined;
   eventTitle: string;
-  products: Product[];
   chatMessages: ChatMessage[];
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
-  enablePictureInPicture: () => void;
 };
 
 const StreamArea = ({
@@ -35,12 +33,10 @@ const StreamArea = ({
   eventChannel,
   privateChannel,
   eventTitle,
-  products,
   chatMessages,
   isChatLoaded,
   isBannedFromChat,
   attachVideo,
-  enablePictureInPicture,
 }: StreamAreaProps) => {
   const { device, orientation } = useContext(ScreenTypeContext);
   const [card, setCard] = useState<CardStatus>("hidden");
@@ -100,12 +96,10 @@ const StreamArea = ({
             isChatLoaded={isChatLoaded}
             isBannedFromChat={isBannedFromChat}
             client={client}
-            products={products}
             chatMessages={chatMessages}
             card={card}
             eventTitle={eventTitle}
             onBarClick={() => setCard("hidden")}
-            enablePictureInPicture={enablePictureInPicture}
           />
         )}
       </div>

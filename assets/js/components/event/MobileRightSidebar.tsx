@@ -39,12 +39,6 @@ export const MobileRightSidebar = ({ setCard }: Props) => {
       text: "CHAT",
       onClick: () => onButtonClick("chat"),
     },
-    {
-      id: "products",
-      icon: "/icons/gifts-regular.svg",
-      text: "PRODUCTS",
-      onClick: () => onButtonClick("products"),
-    },
   ];
 
   return (

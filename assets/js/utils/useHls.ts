@@ -7,7 +7,6 @@ export const useHls = (
 ): {
   attachVideo: (videoElem: HTMLVideoElement | null) => void;
   setSrc: React.Dispatch<React.SetStateAction<string>>;
-  enablePictureInPicture: () => void;
 } => {
   const [src, setSrc] = useState<string>("");
   const hls = useRef<Hls>(new Hls({ enableWorker: false, ...hlsConfig }));
@@ -22,15 +21,6 @@ export const useHls = (
     },
     [hls, playerRef]
   );
-
-  const enablePictureInPicture = useCallback(async () => {
-    const video = playerRef.current;
-    if (video && document.pictureInPictureEnabled) {
-      await video.requestPictureInPicture().catch((e) => {
-        console.log("Picture in picture could not be opened when clicking the product link. Reason: ", e);
-      });
-    }
-  }, [playerRef]);
 
   useEffect(() => {
     const initHls = () => {
@@ -83,5 +73,5 @@ export const useHls = (
   }),
     [src];
 
-  return { attachVideo, setSrc, enablePictureInPicture };
+  return { attachVideo, setSrc };
 };

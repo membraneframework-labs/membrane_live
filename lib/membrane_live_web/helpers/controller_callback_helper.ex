@@ -8,18 +8,16 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
         conn,
         params,
         callback,
-        show_callback? \\ false,
-        products? \\ false
+        show_callback? \\ false
       )
 
   def get_webinar_and_fire_callback(
         %{assigns: %{user_id: user_id}} = conn,
         %{"uuid" => uuid} = params,
         callback,
-        show_callback?,
-        products?
+        show_callback?
       ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid, products?),
+    with {:ok, webinar} <- Webinars.get_webinar(uuid),
          {:ok, webinar_db} <- is_user_authorized(webinar, user_id, show_callback?) do
       callback.(conn, Map.put(params, "webinar_db", webinar_db))
     else
@@ -38,10 +36,9 @@ defmodule MembraneLiveWeb.Helpers.ControllerCallbackHelper do
         conn,
         %{"uuid" => uuid} = params,
         callback,
-        show_callback?,
-        products?
+        show_callback?
       ) do
-    with {:ok, webinar} <- Webinars.get_webinar(uuid, products?),
+    with {:ok, webinar} <- Webinars.get_webinar(uuid),
          true <- show_callback? do
       callback.(conn, Map.put(params, "webinar_db", webinar))
     else

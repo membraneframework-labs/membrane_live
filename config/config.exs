@@ -4,8 +4,6 @@ config :membrane_live,
   ecto_repos: [MembraneLive.Repo],
   migration_primary_key: [name: :uuid, type: :binary_id]
 
-config :membrane_live, products_enabled?: false
-
 config :membrane_live, MembraneLiveWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [

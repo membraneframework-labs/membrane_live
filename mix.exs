@@ -39,7 +39,6 @@ defmodule Membrane.Live.Mixfile do
 
   defp deps do
     [
-      {:uuid, "~> 1.1"},
       {:jason, "~> 1.2"},
       {:joken, "~> 2.5"},
       {:swoosh, "~> 1.3"},
@@ -58,8 +57,8 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_inline_svg, "~> 1.4"},
       {:phoenix_live_view, "~> 0.17.5"},
       {:bimap, "~> 1.2", override: true},
+      {:bundlex, "1.1.1", override: true},
       {:cowlib, "~> 2.11.0", override: true},
-      {:ex_libsrtp, "~> 0.6.0", override: true},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
@@ -78,7 +77,7 @@ defmodule Membrane.Live.Mixfile do
 
       # HLS Endpoint optional deps
       {:membrane_audio_mix_plugin, "~> 0.15.2"},
-      {:membrane_video_compositor_plugin, "0.5.1"}
+      {:membrane_video_compositor_plugin, "0.5.2"}
     ]
   end
 

@@ -196,7 +196,7 @@ defmodule MembraneLive.Room do
   def handle_call({:remove_peer, _peer_channel_pid, peer_id}, _from, state) do
     {:ok, state} = handle_peer_left(state, peer_id)
     Engine.remove_endpoint(state.rtc_engine, peer_id)
-    {:noreply, :ok, state}
+    {:reply, :ok, state}
   end
 
   @impl true
@@ -209,7 +209,7 @@ defmodule MembraneLive.Room do
     result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
 
     if result == {:error, :timeout} do
-      Logger.warn(
+      Logger.warning(
         "RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
       )
     end

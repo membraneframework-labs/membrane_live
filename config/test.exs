@@ -27,6 +27,6 @@ config :membrane_live,
   last_peer_timeout_ms: 100,
   response_timeout_ms: 100
 
-config :logger, level: :warn
+config :logger, level: :warning
 
 config :phoenix, :plug_init_mode, :runtime

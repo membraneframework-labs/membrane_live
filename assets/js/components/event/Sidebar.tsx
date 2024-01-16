@@ -4,14 +4,9 @@ import { getPrivateChannelLink, switchAskingForBeingPresenter } from "../../util
 import { MenuVertical, User1, Crown1, Star1, QuestionCircle } from "react-swm-icon-pack";
 import { Channel } from "phoenix";
 import ChatBox from "./ChatBox";
-import type { Participant, Client, Product, ChatMessage } from "../../types/types";
+import type { Participant, Client, ChatMessage } from "../../types/types";
 import "../../../css/event/participants.css";
 import { sessionStorageSetPresentingRequest, sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
-import { useAllProductsQuery, useIsProductMutating } from "../../utils/useWebinarProducts";
-import { groupBy } from "../../utils/collectionUtils";
-import ProductComponent, { ProductWithStatus } from "./ProductComponent";
-import ProductsList from "./ProductsList";
-import { areProductsEnabled } from "../../utils/const";
 
 type ModeratorMenuProps = {
   moderatorClient: Client;
@@ -167,47 +162,26 @@ const Participant = ({ client, participant, eventChannel }: ParticipantProps) =>
   );
 };
 
-type SidebarMode = "participants" | "products" | "chat" | "select-products";
+type SidebarMode = "participants" | "chat";
 
 type ParticipantsListProps = {
   client: Client;
   eventChannel: Channel | undefined;
   isChatLoaded: boolean;
   chatMessages: ChatMessage[];
-  addProduct: (id: string) => void;
-  removeProduct: (id: string) => void;
-  products: Product[];
   participants: Participant[];
   isBannedFromChat: boolean;
-  enablePictureInPicture: () => void;
 };
-
-export const addStatus = (all: Product[], productsMap: Record<string, Product[]>): ProductWithStatus[] =>
-  all.map((product) => ({
-    ...product,
-    status: productsMap[product.id] ? "SELECTED" : "NOT-SELECTED",
-  }));
 
 const Sidebar = ({
   client,
   eventChannel,
   isChatLoaded,
   chatMessages,
-  products,
-  addProduct,
-  removeProduct,
   participants,
   isBannedFromChat,
-  enablePictureInPicture,
 }: ParticipantsListProps) => {
   const [listMode, setListMode] = useState<SidebarMode>("chat");
-  const isMutating = useIsProductMutating();
-
-  const productsMap: Record<string, Product[]> = groupBy(products, (product) => product.id);
-
-  const allProductsQuery = useAllProductsQuery(client.isModerator);
-  const allProducts: Product[] = allProductsQuery?.data?.data?.products || [];
-  const productsWithStatus: ProductWithStatus[] = addStatus(allProducts, productsMap);
 
   return (
     <div className="Participants">
@@ -226,24 +200,6 @@ const Sidebar = ({
         >
           Participants
         </button>
-        {areProductsEnabled && (
-          <button
-            className={`ParticipantsButton ${listMode === "products" && "Clicked"}`}
-            name="list"
-            onClick={() => setListMode("products")}
-          >
-            Products
-          </button>
-        )}
-        {areProductsEnabled && client.isModerator && (
-          <button
-            className={`ParticipantsButton ${listMode === "select-products" && "Clicked"}`}
-            name="list"
-            onClick={() => setListMode("select-products")}
-          >
-            Select products
-          </button>
-        )}
       </div>
       {listMode === "participants" && (
         <div className="ParticipantsList">
@@ -266,22 +222,6 @@ const Sidebar = ({
           isBannedFromChat={isBannedFromChat}
           isRecording={false}
         />
-      )}
-      {areProductsEnabled && listMode === "products" && (
-        <ProductsList products={products} enablePictureInPicture={enablePictureInPicture} />
-      )}
-      {areProductsEnabled && listMode === "select-products" && client.isModerator && (
-        <div className="ProductList">
-          {productsWithStatus.map((product) => (
-            <ProductComponent
-              key={product.id}
-              product={product}
-              add={addProduct}
-              remove={removeProduct}
-              isLoading={isMutating}
-            />
-          ))}
-        </div>
       )}
     </div>
   );
