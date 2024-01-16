@@ -30,7 +30,6 @@ defmodule MembraneLiveWeb.WebinarController do
       conn,
       params,
       &show_callback/2,
-      true,
       true
     )
   end
@@ -41,8 +40,7 @@ defmodule MembraneLiveWeb.WebinarController do
       conn,
       params,
       &update_callback/2,
-      false,
-      true
+      false
     )
   end
 
@@ -52,8 +50,7 @@ defmodule MembraneLiveWeb.WebinarController do
       conn,
       params,
       &delete_callback/2,
-      false,
-      true
+      false
     )
   end
 

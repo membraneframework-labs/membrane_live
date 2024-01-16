@@ -31,7 +31,6 @@ import type {
   Toast,
 } from "../types/types";
 import "../../css/event/event.css";
-import { useWebinarProducts } from "../utils/useWebinarProducts";
 import { useHls } from "../utils/useHls";
 import { useStartStream } from "../utils/StreamStartContext";
 import { syncAmIPresenter } from "../utils/modePanelUtils";
@@ -50,7 +49,6 @@ const Event = () => {
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 
   const screenType = useContext(ScreenTypeContext);
-  const { products, addProduct, removeProduct } = useWebinarProducts(eventInfo.uuid);
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
@@ -60,7 +58,7 @@ const Event = () => {
 
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
 
-  const { attachVideo, setSrc, enablePictureInPicture } = useHls(true, liveConfig);
+  const { attachVideo, setSrc } = useHls(true, liveConfig);
   const { setStreamStart } = useStartStream();
 
   const socket = useRef(new Socket("/socket", { heartbeatIntervalMs: 5000 }));
@@ -170,12 +168,10 @@ const Event = () => {
           eventChannel={eventChannel}
           privateChannel={privateChannel}
           eventTitle={eventInfo.title}
-          products={products}
           chatMessages={chatMessages}
           isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
           attachVideo={attachVideo}
-          enablePictureInPicture={enablePictureInPicture}
         />
         {screenType.device == "desktop" && (
           <Sidebar
@@ -183,12 +179,8 @@ const Event = () => {
             eventChannel={eventChannel}
             isChatLoaded={isChatLoaded}
             chatMessages={chatMessages}
-            products={products}
-            addProduct={addProduct}
-            removeProduct={removeProduct}
             participants={participants}
             isBannedFromChat={isBannedFromChat}
-            enablePictureInPicture={enablePictureInPicture}
           />
         )}
       </div>

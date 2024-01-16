@@ -8,7 +8,7 @@ export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
 
 export type ClientStatus = "idle" | "connected" | "disconnected";
 
-export type CardStatus = "hidden" | "share" | "chat" | "products";
+export type CardStatus = "hidden" | "share" | "chat";
 
 export interface User {
   name: string;
@@ -138,12 +138,4 @@ export type PresenterProposition = {
 export type PresenterPropositionServer = {
   moderator_topic: string;
   main_presenter: boolean;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  price: string;
-  itemUrl: string;
-  imageUrl: string;
 };

@@ -34,21 +34,16 @@ defmodule MembraneLive.Webinars do
   @spec list_recordings(any) :: list(Webinar.t())
   def list_recordings(user_id), do: list_webinars(user_id, true)
 
-  @spec get_webinar(String.t(), boolean()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
-  def get_webinar(uuid, include_products? \\ false) do
+  @spec get_webinar(String.t()) :: {:error, :no_webinar} | {:ok, Webinar.t()}
+  def get_webinar(uuid) do
     case Repo.get(Webinar, uuid) do
       nil -> {:error, :no_webinar}
-      webinar -> {:ok, load_products_if_needed(webinar, include_products?)}
+      webinar -> {:ok, webinar}
     end
   end
 
   @spec get_webinar!(binary()) :: {:ok, Webinar.t()}
   def get_webinar!(uuid), do: Repo.get!(Webinar, uuid)
-
-  @spec load_products_if_needed(Webinar.t(), boolean()) :: Webinar.t()
-  defp load_products_if_needed(webinar, load_products?) do
-    if load_products?, do: Repo.preload(webinar, [:products]), else: webinar
-  end
 
   @spec create_webinar(map(), binary()) :: any
   def create_webinar(attrs, moderator_id) do
