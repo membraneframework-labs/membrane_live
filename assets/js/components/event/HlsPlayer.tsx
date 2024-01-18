@@ -8,7 +8,6 @@ import { MediaController } from "media-chrome/dist/react";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { MobileRightSidebar } from "./MobileRightSidebar";
 import { CardStatus } from "../../types/types";
-
 import "../../../css/event/hlsplayer.css";
 
 type HlsPlayerProps = {

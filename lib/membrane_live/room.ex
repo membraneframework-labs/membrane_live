@@ -4,24 +4,22 @@ defmodule MembraneLive.Room do
   use GenServer
 
   require Logger
-  require Membrane.OpenTelemetry
 
-  alias Membrane.ICE.TURNManager
-  alias Membrane.RTC.Engine
-  alias Membrane.RTC.Engine.Endpoint.{HLS, WebRTC}
-  alias Membrane.RTC.Engine.Endpoint.HLS.{CompositorConfig, HLSConfig, MixerConfig}
-  alias Membrane.RTC.Engine.Message
-  alias Membrane.Time
-  alias Membrane.WebRTC.Extension.{Mid, TWCC}
-  alias Membrane.WebRTC.Track
+  alias Jellyfish
+  alias Jellyfish.Peer
+  alias Jellyfish.Component.HLS
+  alias Jellyfish.Notification.{ComponentCrashed, HlsPlayable, PeerCrashed}
+
   alias MembraneLive.Chats
-  alias MembraneLive.HLS.FileStorage
-  alias Phoenix.PubSub
 
-  @terminate_engine_timeout 10_000
-  @mix_env Mix.env()
+  # TODO: find out what value should it be (ms)
+  @segment_duration 3000
 
-  @type peer_id :: String.t()
+  @type playlist :: %{
+          playlist_idl: String.t(),
+          name: String.t(),
+          start_time: pos_integer()
+        }
 
   def start(init_arg, opts) do
     GenServer.start(__MODULE__, init_arg, opts)
@@ -33,101 +31,50 @@ defmodule MembraneLive.Room do
 
   @impl true
   def init(event_id) do
-    Logger.metadata(event_id: event_id)
     Logger.info("Spawning room process: #{inspect(self())}")
 
-    turn_mock_ip = MembraneLive.get_env!(:integrated_turn_ip)
-    turn_ip = if @mix_env == :prod, do: {0, 0, 0, 0}, else: turn_mock_ip
+    client =
+      Jellyfish.Client.new(server_address: "localhost:5002", server_api_token: "development")
 
-    trace_ctx = Membrane.OpenTelemetry.new_ctx()
-    Membrane.OpenTelemetry.attach(trace_ctx)
-
-    span_id = event_span_id(event_id)
-    room_span = Membrane.OpenTelemetry.start_span(span_id)
-    Membrane.OpenTelemetry.set_attributes(span_id, tracing_metadata())
-
-    rtc_engine_options = [
-      id: event_id,
-      trace_ctx: trace_ctx,
-      parent_span: room_span
-    ]
-
-    turn_cert_file =
-      case Application.fetch_env(:membrane_live, :integrated_turn_cert_pkey) do
-        {:ok, val} -> val
-        :error -> nil
-      end
-
-    integrated_turn_options = [
-      ip: turn_ip,
-      mock_ip: turn_mock_ip,
-      ports_range: MembraneLive.get_env!(:integrated_turn_port_range),
-      cert_file: turn_cert_file
-    ]
-
-    network_options = [
-      integrated_turn_options: integrated_turn_options,
-      integrated_turn_domain: MembraneLive.get_env!(:integrated_turn_domain),
-      dtls_pkey: Application.get_env(:membrane_live, :dtls_pkey),
-      dtls_cert: Application.get_env(:membrane_live, :dtls_cert)
-    ]
-
-    tcp_turn_port = Application.get_env(:membrane_live, :integrated_tcp_turn_port)
-    TURNManager.ensure_tcp_turn_launched(integrated_turn_options, port: tcp_turn_port)
-
-    if turn_cert_file do
-      tls_turn_port = Application.get_env(:membrane_live, :integrated_tls_turn_port)
-      TURNManager.ensure_tls_turn_launched(integrated_turn_options, port: tls_turn_port)
-    end
-
-    {:ok, pid} = Membrane.RTC.Engine.start(rtc_engine_options, [])
-    Engine.register(pid, self())
-    Process.monitor(pid)
-
-    target_segment_duration = Time.seconds(3)
-
-    :ok =
-      create_hls_endpoint(pid,
-        event_id: event_id,
-        target_segment_duration: target_segment_duration
+    {:ok, notifier} =
+      Jellyfish.WSNotifier.start(
+        server_address: "localhost:5002",
+        server_api_token: "development"
       )
+
+    :ok = Jellyfish.WSNotifier.subscribe_server_notifications(notifier)
+
+    {:ok, room, _jellyfish_address} =
+      Jellyfish.Room.create(client, video_codec: :h264, room_id: event_id)
+
+    {:ok, hls_component} =
+      Jellyfish.Room.add_component(client, room.id, %HLS{
+        low_latency: true,
+        persistent: true
+      })
 
     {:ok,
      %{
-       event_id: event_id,
-       rtc_engine: pid,
+       client: client,
+       room: room,
+       hls_component: hls_component,
        peer_channels: %{},
-       network_options: network_options,
-       trace_ctx: trace_ctx,
-       playlist_idl: nil,
-       second_segment_ready?: false,
-       target_segment_duration: Time.as_milliseconds(target_segment_duration),
+       playlist_ready?: false,
        start_time: nil
      }}
   end
 
-  @spec add_peer(pid(), peer_id()) :: :ok | :error
-  def add_peer(room_pid, peer_id) do
-    GenServer.call(room_pid, {:add_peer, self(), peer_id})
+  @spec add_peer(pid()) :: {:ok, Peer.id(), Jellyfish.Room.peer_token()} | :error
+  def add_peer(room_pid) do
+    GenServer.call(room_pid, {:add_peer, self()})
   end
 
-  @spec remove_peer(pid(), peer_id()) :: :ok
+  @spec remove_peer(pid(), Peer.id()) :: :ok
   def remove_peer(room_pid, peer_id) do
-    GenServer.call(room_pid, {:remove_peer, self(), peer_id})
+    GenServer.call(room_pid, {:remove_peer, peer_id})
   end
 
-  @spec media_event(pid(), peer_id(), any()) :: :ok
-  def media_event(room_pid, peer_id, event) do
-    GenServer.cast(room_pid, {:media_event, peer_id, event})
-  end
-
-  @type playlist :: %{
-          playlist_idl: String.t(),
-          name: String.t(),
-          start_time: pos_integer()
-        }
-
-  @spec playable_playlist(pid()) :: playlist()
+  @spec playable_playlist(pid()) :: boolean()
   def playable_playlist(room_pid) do
     GenServer.call(room_pid, :playable_playlist)
   end
@@ -138,286 +85,133 @@ defmodule MembraneLive.Room do
   end
 
   @impl true
-  def handle_call({:add_peer, peer_channel_pid, peer_id}, _from, state) do
-    if state.peer_channels == %{} do
-      Chats.clear_offsets(state.event_id)
-      Chats.delete_timestamps(state.event_id)
-    end
-
-    state = put_in(state, [:peer_channels, peer_id], peer_channel_pid)
+  def handle_call({:add_peer, peer_channel_pid}, _from, state) do
     Process.monitor(peer_channel_pid)
 
-    Logger.info("New peer: #{inspect(peer_id)}. Accepting.")
-    peer_node = node(peer_channel_pid)
+    {:ok, %Peer{id: peer_id}, peer_token} =
+      Jellyfish.Room.add_peer(state.client, state.room.id, Peer.WebRTC)
 
-    Chats.set_timestamp_presenter(state.event_id)
+    if state.peer_channels == %{} do
+      Chats.clear_offsets(state.room.id)
+      Chats.delete_timestamps(state.room.id)
+    end
 
-    handshake_opts =
-      if state.network_options[:dtls_pkey] &&
-           state.network_options[:dtls_cert] do
-        [
-          client_mode: false,
-          dtls_srtp: true,
-          pkey: state.network_options[:dtls_pkey],
-          cert: state.network_options[:dtls_cert]
-        ]
-      else
-        [
-          client_mode: false,
-          dtls_srtp: true
-        ]
-      end
+    state = handle_peer_added(state, peer_id, peer_channel_pid)
+    Chats.set_timestamp_presenter(state.room.id)
 
-    endpoint = %WebRTC{
-      rtc_engine: state.rtc_engine,
-      ice_name: peer_id,
-      owner: self(),
-      integrated_turn_options: state.network_options[:integrated_turn_options],
-      integrated_turn_domain: state.network_options[:integrated_turn_domain],
-      handshake_opts: handshake_opts,
-      log_metadata: [peer_id: peer_id],
-      trace_context: state.trace_ctx,
-      webrtc_extensions: [Mid, TWCC],
-      filter_codecs: fn %Track.Encoding{} = encoding ->
-        case encoding do
-          %{name: "opus"} -> true
-          %{name: "H264", format_params: fmtp} -> fmtp.profile_level_id === 0x42E01F
-          _unsupported_codec -> false
-        end
-      end
-    }
-
-    result = Engine.add_endpoint(state.rtc_engine, endpoint, id: peer_id, node: peer_node)
-
-    {:reply, result, state}
+    {:reply, {:ok, peer_id, peer_token}, state}
   end
 
   @impl true
-  def handle_call({:remove_peer, _peer_channel_pid, peer_id}, _from, state) do
-    {:ok, state} = handle_peer_left(state, peer_id)
-    Engine.remove_endpoint(state.rtc_engine, peer_id)
+  def handle_call({:remove_peer, peer_id}, _from, state) do
+    state = handle_peer_left(state, peer_id)
+    Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
+
     {:reply, :ok, state}
   end
 
   @impl true
   def handle_call(:playable_playlist, _from, state) do
-    {:reply, stream_response_message(state), state}
+    {:reply, playlist_playable_response(state), state}
   end
 
   @impl true
   def handle_cast(:close_room, state) do
-    result = Engine.terminate(state.rtc_engine, timeout: @terminate_engine_timeout, force?: true)
-
-    if result == {:error, :timeout} do
-      Logger.warning(
-        "RTC Engine was forced kill. This can cause some problems with playing HLS playlist."
-      )
-    end
+    :ok = Jellyfish.Room.delete(state.client, state.room.id)
 
     {:stop, :normal, state}
   end
 
-  @impl true
-  def handle_cast({:media_event, peer_id, event}, state) do
-    Engine.message_endpoint(state.rtc_engine, peer_id, {:media_event, event})
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(%Message.EndpointMessage{endpoint_id: to, message: {:media_event, data}}, state) do
-    if state.peer_channels[to] != nil do
-      send(state.peer_channels[to], {:media_event, data})
-    end
+  def handle_info(
+        {:jellyfish, %HlsPlayable{room_id: room_id}},
+        %{room: %{id: room_id}} = state
+      ) do
+    state = handle_playlist_playable(state)
 
     {:noreply, state}
-  end
-
-  @impl true
-  def handle_info(%Message.EndpointCrashed{endpoint_id: "hls_output"}, state) do
-    Logger.error("HLS endpoint has crashed!")
-    new_state = %{state | playlist_idl: nil, second_segment_ready?: false}
-    send_broadcast(new_state)
-    Process.send_after(self(), :recreate_hls, 3000)
-    {:noreply, new_state}
   end
 
   def handle_info(
-        :recreate_hls,
-        %{
-          event_id: event_id,
-          rtc_engine: rtc_engine,
-          target_segment_duration: target_segment_duration
-        } = state
+        {:jellyfish, %ComponentCrashed{room_id: room_id, component_id: component_id}},
+        %{room: %{id: room_id}, hls_component: %{id: component_id}} = state
       ) do
-    Logger.error("Restarting HLS Endpoint!")
+    Logger.error("HLS component has crashed!")
 
-    Chats.clear_offsets(state.event_id)
-    Chats.delete_timestamps(state.event_id)
-    Chats.set_timestamp_presenter(event_id)
+    new_state = %{state | playlist_ready?: false}
+    send_broadcast(new_state)
 
-    :ok =
-      create_hls_endpoint(rtc_engine,
-        event_id: event_id,
-        target_segment_duration: Time.milliseconds(target_segment_duration)
-      )
+    {:noreply, state}
+  end
+
+  def handle_info(
+        {:jellyfish, %PeerCrashed{room_id: room_id, peer_id: peer_id}},
+        %{room: %{id: room_id}} = state
+      ) do
+    Logger.error("Peer: #{peer_id}, has crashed!")
+
+    # it weird we shouldn't kill websocket channel we should at maximum remove him from peers
+    send(state.peer_channels[peer_id], :endpoint_crashed)
 
     {:noreply, state}
   end
 
   @impl true
-  def handle_info(%Message.EndpointCrashed{endpoint_id: endpoint_id}, state) do
-    Logger.error("Endpoint #{inspect(endpoint_id)} has crashed!")
-
-    case state.peer_channels[endpoint_id] do
-      nil ->
-        Logger.error("Endpoint crashed handling error: This peer doesn't exist already!")
-
-      peer_channel ->
-        send(peer_channel, :endpoint_crashed)
-    end
-
-    {:noreply, state}
-  end
+  def handle_info({:jellyfish, _message}, state), do: {:noreply, state}
 
   @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    result =
+    peer_id =
       state.peer_channels
       |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
-    cond do
-      pid == state.rtc_engine ->
-        state.event_id
-        |> event_span_id()
-        |> Membrane.OpenTelemetry.end_span()
-
-        {:stop, :normal, state}
-
-      is_nil(result) ->
-        {:noreply, state}
-
-      true ->
-        {peer_id, _peer_channel_pid} = result
-        Engine.remove_endpoint(state.rtc_engine, peer_id)
-        {:ok, state} = handle_peer_left(state, peer_id)
-
-        {:noreply, state}
-    end
-  end
-
-  @impl true
-  def handle_info({:playlist_playable, :audio, _playlist_idl}, state), do: {:noreply, state}
-
-  def handle_info({:playlist_playable, :video, _playlist_idl}, state) do
-    state = %{state | playlist_idl: Path.join(state.event_id, "")}
-    state = if state.second_segment_ready?, do: handle_playlist_playable(state), else: state
+    state =
+      if peer_id do
+        state
+      else
+        :ok = Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
+        handle_peer_left(state, peer_id)
+      end
 
     {:noreply, state}
   end
 
-  def handle_info(:second_segment_ready, state) do
-    PubSub.unsubscribe(MembraneLive.PubSub, state.event_id)
-    state = %{state | second_segment_ready?: true}
-    state = if state.playlist_idl, do: handle_playlist_playable(state), else: state
-
-    {:noreply, state}
+  defp handle_peer_added(state, peer_id, peer_channel_pid) do
+    put_in(state, [:peer_channels, peer_id], peer_channel_pid)
   end
-
-  @impl true
-  def handle_info({:cleanup, _clean_function, _playlist_idl}, state) do
-    {:noreply, state}
-  end
-
-  defp create_hls_endpoint(rtc_engine,
-         event_id: event_id,
-         target_segment_duration: target_segment_duration
-       ) do
-    endpoint = %HLS{
-      rtc_engine: rtc_engine,
-      owner: self(),
-      output_directory: "output/#{event_id}",
-      mixer_config: %MixerConfig{
-        video: %CompositorConfig{
-          stream_format: %Membrane.RawVideo{
-            width: 1920,
-            height: 1080,
-            pixel_format: :I420,
-            framerate: {24, 1},
-            aligned: true
-          }
-        }
-      },
-      hls_config: %HLSConfig{
-        hls_mode: :muxed_av,
-        mode: :live,
-        target_window_duration: :infinity,
-        storage: fn directory ->
-          %FileStorage.Config{directory: directory} |> FileStorage.init()
-        end,
-        segment_duration: target_segment_duration,
-        partial_segment_duration: Time.milliseconds(400)
-      }
-    }
-
-    Engine.add_endpoint(rtc_engine, endpoint, id: "hls_output")
-    PubSub.subscribe(MembraneLive.PubSub, event_id)
-  end
-
-  defp handle_playlist_playable(
-         %{event_id: event_id, target_segment_duration: segment_duration} = state
-       ) do
-    Chats.set_timestamp_client(event_id, segment_duration)
-
-    state = %{
-      state
-      | start_time: DateTime.utc_now() |> DateTime.add(-segment_duration, :millisecond)
-    }
-
-    send_broadcast(state)
-  end
-
-  defp tracing_metadata(),
-    do: [
-      {:"library.language", :erlang},
-      {:"library.name", :membrane_rtc_engine},
-      {:"library.version", "server:#{Application.spec(:membrane_rtc_engine, :vsn)}"}
-    ]
-
-  defp event_span_id(id), do: "event:#{id}"
 
   defp handle_peer_left(%{peer_channels: peer_channels} = state, _peer_id)
        when map_size(peer_channels) == 0,
-       do: {:ok, state}
+       do: state
 
   defp handle_peer_left(state, peer_id) do
-    state = Map.update!(state, :peer_channels, &Map.delete(&1, peer_id))
-
-    {:ok, state}
+    Map.update!(state, :peer_channels, &Map.delete(&1, peer_id))
   end
 
-  defp send_broadcast(state) do
-    message = stream_response_message(state)
+  defp handle_playlist_playable(state) do
+    Chats.set_timestamp_client(state.room.id, @segment_duration)
 
-    MembraneLiveWeb.Endpoint.broadcast!(
-      "event:" <> state.event_id,
-      "playlistPlayable",
-      message
-    )
+    start_time = DateTime.utc_now() |> DateTime.add(-@segment_duration, :millisecond)
+    state = %{state | start_time: start_time, playlist_ready?: true}
+    send_broadcast(state)
 
     state
   end
 
-  defp stream_response_message(state) do
-    start_stream_message = %{
-      playlist_idl: state.playlist_idl,
+  defp send_broadcast(state) do
+    MembraneLiveWeb.Endpoint.broadcast!(
+      "event:" <> state.room.id,
+      "playlistPlayable",
+      playlist_playable_response(state)
+    )
+  end
+
+  defp playlist_playable_response(state) do
+    %{
+      playlist_ready: state.playlist_ready?,
       name: "Live Stream 🎐",
       start_time: state.start_time
     }
-
-    stop_stream_message = %{playlist_idl: "", name: "", start_time: state.start_time}
-
-    if is_nil(state.playlist_idl),
-      do: stop_stream_message,
-      else: start_stream_message
   end
+
+  # TODO: on termination
 end

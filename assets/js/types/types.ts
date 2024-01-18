@@ -126,7 +126,7 @@ export type AwaitingMessage = {
 
 export type PlaylistPlayableMessage = {
   name: string;
-  playlist_idl: string;
+  playlist_ready: string;
   start_time: string;
 };
 

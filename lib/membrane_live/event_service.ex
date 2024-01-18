@@ -17,6 +17,7 @@ defmodule MembraneLive.EventService do
   require Logger
 
   alias MembraneLive.Room
+  alias Jellyfish.Peer
 
   @notify_after Application.compile_env!(:membrane_live, :last_peer_timeout_ms)
   @kill_after Application.compile_env!(:membrane_live, :empty_event_timeout_ms)
@@ -27,13 +28,7 @@ defmodule MembraneLive.EventService do
 
   @type event :: %{users_number: non_neg_integer(), timer_ref: reference()}
   @type event_id :: String.t()
-  @type peer_id :: String.t()
   @type room_error :: {:error, String.t()}
-  @type playlist :: %{
-          playlist_idl: String.t(),
-          name: String.t(),
-          start_time: pos_integer()
-        }
 
   @type t :: %{
           events: %{event_id() => event()},
@@ -54,17 +49,18 @@ defmodule MembraneLive.EventService do
   @doc """
   Adds peer to the given event's room
   """
-  @spec add_peer(event_id(), peer_id()) :: :ok | :error | room_error()
-  def add_peer(event_id, peer_id) do
+  @spec add_peer(event_id()) ::
+          {:ok, Peer.id(), Jellyfish.Room.peer_token()} | :error | room_error()
+  def add_peer(event_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
-      Room.add_peer(pid, peer_id)
+      Room.add_peer(pid)
     end
   end
 
   @doc """
   Removes peer from given event's room
   """
-  @spec remove_peer(event_id(), peer_id()) :: :ok | room_error()
+  @spec remove_peer(event_id(), Peer.id()) :: :ok | room_error()
   def remove_peer(event_id, peer_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
       Room.remove_peer(pid, peer_id)
@@ -72,22 +68,11 @@ defmodule MembraneLive.EventService do
   end
 
   @doc """
-  Responsible for communication between peer and engine.
-  All media events send thru websocket should be passed thru this function to rooms.
-  """
-  @spec media_event(event_id(), peer_id(), any()) :: :ok | room_error()
-  def media_event(event_id, peer_id, event) do
-    with {:ok, pid} <- get_room_pid(event_id) do
-      Room.media_event(pid, peer_id, event)
-    end
-  end
-
-  @doc """
   Returns map containing all needed information for client to play playlist.
   If playlist isn't ready all fields in map wiil be empty.
   """
-  @spec playable_playlist(event_id()) :: playlist() | room_error()
-  def playable_playlist(event_id) do
+  @spec playlist_playable?(event_id()) :: boolean
+  def playlist_playable?(event_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
       Room.playable_playlist(pid)
     end

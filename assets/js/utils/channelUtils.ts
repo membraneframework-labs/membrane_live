@@ -5,6 +5,7 @@ import { getErrorToast, getInfoToast } from "./toastUtils";
 import type { Participant, Client, User, Toast, Metas, MetasUser, PresenterProposition } from "../types/types";
 
 type EventChannelJoinResponse = {
+  token: string;
   is_moderator?: boolean;
   generated_key?: string;
 };
@@ -15,12 +16,14 @@ export const createEventChannel = (
   eventChannel: Channel,
   setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>,
+  setPresenterToken: React.Dispatch<React.SetStateAction<string>>,
   navigate: NavigateFunction,
   lastViewerPopup: (toast: Toast, timeout: number) => void
 ) => {
   eventChannel
     .join()
     .receive("ok", (response: EventChannelJoinResponse) => {
+      response.token && setPresenterToken(response.token);
       eventChannel.on("finish_event", () => {
         redirectToHomePage(navigate);
         getInfoToast(toast, "The event has finished.");
