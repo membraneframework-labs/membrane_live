@@ -10,13 +10,13 @@ const closeToast = (toast: Toast, toastName: ToastId) => {
   toast.close(toastName);
 };
 
-export const presenterPopup = (toast: Toast, client: Client, eventChannel: Channel, message: PresenterProposition) => {
+export const presenterPopup = (toast: Toast, client: Client, eventChannel: Channel, message: PresenterProposition, setPresenterToken: React.Dispatch<React.SetStateAction<string | undefined>>) => {
   let answer = "reject";
 
   const thisToast = toast({
     duration: 15_000,
     onCloseComplete: () => {
-      sendAnswer(toast, thisToast, eventChannel, answer, client.email, message);
+      sendAnswer(toast, thisToast, eventChannel, answer, client.email, message, setPresenterToken);
     },
     render: () => (
       <div className="Popup">
@@ -53,14 +53,15 @@ const sendAnswer = (
   eventChannel: Channel,
   answer: string,
   email: string,
-  message: PresenterProposition
+  message: PresenterProposition,
+  setPresenterToken: React.Dispatch<React.SetStateAction<string | undefined>>
 ) => {
   eventChannel.push("presenter_answer", {
     email: email,
     moderatorTopic: message.moderatorTopic,
     mainPresenter: message.mainPresenter,
     answer: answer,
-  });
+  }).receive("ok", (token) => setPresenterToken(token));;
   if (toast) toast.close(toastName);
 };
 

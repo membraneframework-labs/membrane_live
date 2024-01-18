@@ -4,6 +4,8 @@ import { Channel } from "phoenix";
 import type { User, Client, SourceType, PeersState } from "../types/types";
 import React from "react";
 
+const TOKEN = "asdfa"
+
 export type Sources = {
   audio: MediaDeviceInfo[];
   video: MediaDeviceInfo[];
@@ -65,7 +67,6 @@ export const getSources = async () => {
 };
 
 export const connectWebrtc = async (
-  webrtcChannel: Channel | undefined,
   client: Client,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ) => {
@@ -74,10 +75,6 @@ export const connectWebrtc = async (
   };
 
   const webrtc = new WebRTCEndpoint();
-
-  webrtc.on("sendMediaEvent", (mediaEvent: SerializedMediaEvent) => {
-    webrtcChannel?.push("mediaEvent", { data: mediaEvent });
-  });
 
   webrtc.on("connectionError", () => {
     onError("Error while connecting to WebRTC");
@@ -144,9 +141,6 @@ export const connectWebrtc = async (
 
   webrtc.connect(client);
 
-  webrtcChannel?.on("mediaEvent", (event: { data: string }) => {
-    webrtc.receiveMediaEvent(event.data);
-  });
   return webrtc;
 };
 
@@ -236,11 +230,8 @@ export const changeSource = async (
 export const leaveWebrtc = (
   webrtc: WebRTCEndpoint | null,
   client: Client,
-  webrtcChannel: Channel | undefined,
   setPeersState: React.Dispatch<React.SetStateAction<PeersState>>
 ) => {
-  webrtcChannel?.off("mediaEvent");
-
   setPeersState((prev) => {
     prev.peers[client.email]?.stream.getTracks().forEach((track) => track.stop());
     return removeStream(client, prev);

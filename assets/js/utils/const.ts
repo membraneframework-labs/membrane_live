@@ -9,27 +9,18 @@ export const CANVAS_HEIGHT = 1080;
 export const MILLISECONDS_IN_MINUTE = 60_000;
 export const DESCRIPTION_CHAR_LIMIT = 255;
 
-export const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
-  audio: true,
-  video: false,
-};
+export const AUDIO_CONSTRAINTS: MediaTrackConstraints | boolean = true;
 
-export const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
-  audio: false,
-  video: {
+export const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
     width: 1920,
     height: 1080,
     frameRate: FRAME_RATE,
-  },
 };
 
-export const SCREEN_CONSTRAINTS: MediaStreamConstraints = {
-  audio: false,
-  video: {
+export const SCREEN_CONSTRAINTS: MediaTrackConstraints = {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
     frameRate: FRAME_RATE,
-  },
 };
 
 export const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];

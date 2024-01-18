@@ -120,12 +120,6 @@ config :membrane_live, MembraneLiveWeb.Endpoint, [
 
 otel_state = :purge
 
-config :opentelemetry, :resource,
-  service: [
-    name: "membrane",
-    namespace: "membrane"
-  ]
-
 exporter =
   case otel_state do
     :local ->
