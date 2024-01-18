@@ -22,23 +22,12 @@ type PresenterAreaProps = {
 
 export type TrackMetadata = { enabled: boolean, type: string };
 
-export const {
-  useApi,
-  useSelector,
-  useStatus,
-  useDisconnect,
-  useConnect,
-  useCamera,
-  useSetupMedia,
-  useMicrophone,
-  useScreenshare,
-  JellyfishContextProvider
-} = create<
+export const { useApi, useSelector, useStatus, useDisconnect, useConnect, useCamera, useSetupMedia, useMicrophone, useScreenshare, JellyfishContextProvider } = create<
   User,
   TrackMetadata
 >();
 
-const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaProps) => {
+const PresenterArea = ({ client, presenterToken, eventChannel}: PresenterAreaProps) => {
   const [clientStatus, setClientStatus] = useState<ClientStatus>("idle");
 
   useSetupMedia({
@@ -78,33 +67,32 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
     <div className="PresenterArea">
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peers).length}`}>
-          {eventChannel && <ConfettiAnimation eventChannel={eventChannel}/>}
+          {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
           {Object.values(peers).map((peer) => {
-              const isSourceDisabled = (sourceType: SourceType) => {
-                const track = Object.values(peer.tracks).find((track) => track.metadata?.type == sourceType);
-                ;
-                const isEnabled = track?.metadata?.enabled;
+            const isSourceDisabled = (sourceType: SourceType) => {
+              const track = Object.values(peer.tracks).find((track) => track.metadata?.type == sourceType);;
+              const isEnabled = track?.metadata?.enabled;
 
-                return isEnabled === false;
-              };
+              return isEnabled === false;
+            };
 
-              const tracks = Object.values(peer.tracks);
-              const videoStream = tracks.find((track) => track.metadata?.type == "video")?.stream;
-              const audioStream = tracks.find((track) => track.metadata?.type == "audio")?.stream;
+            const tracks = Object.values(peer.tracks);
+            const videoStream = tracks.find((track) => track.metadata?.type == "video")?.stream;
+            const audioStream = tracks.find((track) => track.metadata?.type == "audio")?.stream;
 
-              const isMuted = isSourceDisabled("audio");
-              const isCamDisabled = isSourceDisabled("video");
+            const isMuted = isSourceDisabled("audio");
+            const isCamDisabled = isSourceDisabled("video");
 
-              return <RtcPlayer
-                isMyself={false}
-                metadata={peer.metadata}
-                videoStream={videoStream || null}
-                audioStream={audioStream || null}
-                isMuted={isMuted}
-                isCamDisabled={isCamDisabled}
-                key={peer.id}
-              />
-            }
+            return <RtcPlayer
+              isMyself={false}
+              metadata={peer.metadata}
+              videoStream={videoStream || null}
+              audioStream={audioStream || null}
+              isMuted={isMuted}
+              isCamDisabled={isCamDisabled}
+              key={peer.id}
+            />
+          }
           )}
           <RtcPlayer
             isMyself={true}
@@ -114,7 +102,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
             isMuted={!microphone.enabled}
             isCamDisabled={!camera.enabled}
           />
-          {eventChannel && <HeartAnimation eventChannel={eventChannel}/>}
+          {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
         </div>
       ) : clientStatus === "idle" ? (
         <RtcPlayer

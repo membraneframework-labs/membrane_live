@@ -143,7 +143,6 @@ const ControlPanel = ({
   };
 
   useEffect(() => {
-    // screenShare.stream && !screenShare.broadcast && screenShare.addTrack({type: "screenshare", enabled: true});
     console.log(screenShare);
   }, [screenShare])
 
