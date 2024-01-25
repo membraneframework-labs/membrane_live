@@ -101,7 +101,7 @@ export const createPrivateChannel = (
     .join()
     .receive("ok", () => {
       privateChannel.on("presenter_prop", (message: { moderator_topic: string; main_presenter: boolean }) => {
-        presenterPopup(toast, { moderatorTopic: message.moderator_topic, mainPresenter: message.main_presenter });
+        presenterPopup(toast, { moderatorTopic: message.moderator_topic });
       });
       privateChannel.on("presenter_answer", (message: { name: string; answer: string }) => {
         getInfoToast(toast, `User ${message.name} ${message.answer}ed your request.`);

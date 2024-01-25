@@ -8,9 +8,6 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
   def check_if_presenter(email, should_be_presenter, id),
     do: check_if_exist_in_ets(:presenters, email, should_be_presenter, id)
 
-  def check_if_main_presenter(email, should_be_presenter, id),
-    do: check_if_exist_in_ets(:main_presenters, email, should_be_presenter, id)
-
   def check_if_request_presenting(email, requests_presenting, id),
     do: check_if_exist_in_ets(:presenting_requests, email, requests_presenting, id)
 
@@ -20,11 +17,7 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
   def add_to_banned_from_chat(email, id), do: add_to_list_in_ets(:banned_from_chat, email, id)
   def remove_from_presenters(email, id), do: remove_from_list_in_ets(:presenters, email, id)
 
-  def remove_from_main_presenters(email, id),
-    do: remove_from_list_in_ets(:main_presenters, email, id)
-
   def add_to_presenters(email, id), do: add_to_list_in_ets(:presenters, email, id)
-  def add_to_main_presenters(email, id), do: add_to_list_in_ets(:main_presenters, email, id)
 
   def remove_from_presenting_requests(email, id),
     do: remove_from_list_in_ets(:presenting_requests, email, id)
@@ -37,20 +30,6 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
     if presenters == MapSet.new([]), do: true, else: false
   end
 
-  def get_main_presenter(id), do: get_main_presenter(:main_presenters, id)
-
-  defp get_main_presenter(ets_key, id) do
-    [{_key, main_presenters}] = :ets.lookup(ets_key, id)
-    main_presenters = MapSet.to_list(main_presenters)
-
-    if main_presenters == [] do
-      nil
-    else
-      [main_presenter | _rest] = main_presenters
-      main_presenter
-    end
-  end
-
   defp check_if_exist_in_ets(ets_key, email, client_bool, id) do
     [{_key, presenters}] = :ets.lookup(ets_key, id)
     in_ets = MapSet.member?(presenters, email)
@@ -61,7 +40,6 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
 
       {false, true} ->
         remove_from_presenters(email, id)
-        remove_from_main_presenters(email, id)
         {:ok, false}
 
       {false, false} ->

@@ -1,7 +1,7 @@
 defmodule MembraneLive.EventServiceTest do
   @moduledoc false
 
-  use MembraneLiveWeb.ChannelCase, async: true
+  use MembraneLiveWeb.ChannelCase, async: false
 
   alias MembraneLive.EventService
 

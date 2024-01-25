@@ -50,7 +50,7 @@ defmodule MembraneLive.EventService do
   Adds peer to the given event's room
   """
   @spec add_peer(event_id()) ::
-          {:ok, Peer.id(), Jellyfish.Room.peer_token()} | :error | room_error()
+          {:ok, Peer.id(), Jellyfish.Room.peer_token()} | {:error, term()}
   def add_peer(event_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
       Room.add_peer(pid)

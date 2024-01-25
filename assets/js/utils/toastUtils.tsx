@@ -66,7 +66,6 @@ const sendAnswer = (
     .push("presenter_answer", {
       email: email,
       moderatorTopic: message.moderatorTopic,
-      mainPresenter: message.mainPresenter,
       answer: answer,
     })
     .receive("ok", (token) => setPresenterToken(token));

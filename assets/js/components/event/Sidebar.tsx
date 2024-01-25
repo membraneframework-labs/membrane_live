@@ -18,7 +18,6 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
   const link = getPrivateChannelLink();
   const presenterText = {
     setBasic: "Set as a presenter",
-    setMain: "Set as a main presenter",
     unset: "Set as a normal participant",
   };
   const banFromChatText = {
@@ -33,11 +32,9 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
     const clickedValue = (e.target as HTMLTextAreaElement).value;
     switch (clickedValue) {
       case presenterText.setBasic:
-      case presenterText.setMain:
         eventChannel?.push("presenter_prop", {
           moderatorTopic: link + moderatorClient.email,
           presenterTopic: link + participant.email,
-          mainPresenter: clickedValue == presenterText.setMain,
         });
         break;
       case presenterText.unset:
@@ -61,9 +58,6 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
       <MenuList>
         {showPresenterOptions && (
           <>
-            <MenuItem onClick={handleClick} value={presenterText.setMain} className="MenuOptionText">
-              {presenterText.setMain}
-            </MenuItem>
             <MenuItem onClick={handleClick} value={presenterText.unset} className="MenuOptionText">
               {presenterText.unset}
             </MenuItem>
@@ -74,9 +68,6 @@ const ModeratorMenu = ({ moderatorClient, participant, eventChannel }: Moderator
             <MenuItem onClick={handleClick} value={presenterText.setBasic} className="MenuOptionText">
               {presenterText.setBasic}
             </MenuItem>
-            <MenuItem onClick={handleClick} value={presenterText.setMain} className="MenuOptionText">
-              {presenterText.setMain}
-            </MenuItem>{" "}
           </>
         )}
         {!participant.isModerator && (

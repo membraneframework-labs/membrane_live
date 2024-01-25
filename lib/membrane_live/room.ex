@@ -64,7 +64,7 @@ defmodule MembraneLive.Room do
      }}
   end
 
-  @spec add_peer(pid()) :: {:ok, Peer.id(), Jellyfish.Room.peer_token()} | :error
+  @spec add_peer(pid()) :: {:ok, Peer.id(), Jellyfish.Room.peer_token()} | {:error, term()}
   def add_peer(room_pid) do
     GenServer.call(room_pid, {:add_peer, self()})
   end
@@ -86,20 +86,23 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_call({:add_peer, peer_channel_pid}, _from, state) do
-    Process.monitor(peer_channel_pid)
+    case Jellyfish.Room.add_peer(state.client, state.room.id, Peer.WebRTC) do
+      {:ok, %Peer{id: peer_id}, peer_token} ->
+        Process.monitor(peer_channel_pid)
 
-    {:ok, %Peer{id: peer_id}, peer_token} =
-      Jellyfish.Room.add_peer(state.client, state.room.id, Peer.WebRTC)
+        if state.peer_channels == %{} do
+          Chats.clear_offsets(state.room.id)
+          Chats.delete_timestamps(state.room.id)
+        end
 
-    if state.peer_channels == %{} do
-      Chats.clear_offsets(state.room.id)
-      Chats.delete_timestamps(state.room.id)
+        state = handle_peer_added(state, peer_id, peer_channel_pid)
+        Chats.set_timestamp_presenter(state.room.id)
+
+        {:reply, {:ok, peer_id, peer_token}, state}
+
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
     end
-
-    state = handle_peer_added(state, peer_id, peer_channel_pid)
-    Chats.set_timestamp_presenter(state.room.id)
-
-    {:reply, {:ok, peer_id, peer_token}, state}
   end
 
   @impl true
