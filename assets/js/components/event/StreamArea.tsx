@@ -74,7 +74,6 @@ const StreamArea = ({
     if (eventChannel) {
       eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
       eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => {
-        console.log(`to jest waidomosc ${message}`);
         addHlsUrl(message);
       });
     }

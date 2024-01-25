@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
@@ -57,6 +57,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
 
   const camera = useCamera();
   const microphone = useMicrophone();
+  const screenshare = useScreenshare();
   const peers = useSelector((state) => Object.values(state.remote));
 
   const connect = useConnect();
@@ -72,7 +73,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
         <div className={`StreamsGrid Grid${Object.values(peers).length}`}>
           {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
           {Object.values(peers).map((peer) => {
-            const isSourceDisabled = (sourceType: SourceType) => {
+            const isSourceDisabled = (sourceType: SourceType | "screenshare") => {
               const track = Object.values(peer.tracks).find((track) => track.metadata?.type == sourceType);
               const isEnabled = track?.metadata?.enabled;
 
@@ -80,22 +81,35 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
             };
 
             const tracks = Object.values(peer.tracks);
+            const screenshare = tracks.find((track) => track.metadata?.type == "screenshare")?.stream;
             const videoStream = tracks.find((track) => track.metadata?.type == "video")?.stream;
             const audioStream = tracks.find((track) => track.metadata?.type == "audio")?.stream;
 
             const isMuted = isSourceDisabled("audio");
             const isCamDisabled = isSourceDisabled("video");
+            const isScreenDisabled = isSourceDisabled("screenshare");
 
             return (
-              <RtcPlayer
-                isMyself={false}
-                metadata={peer.metadata}
-                videoStream={videoStream || null}
-                audioStream={audioStream || null}
-                isMuted={isMuted}
-                isCamDisabled={isCamDisabled}
-                key={peer.id}
-              />
+              <Fragment key={peer.id}>
+                {screenshare && (
+                  <RtcPlayer
+                    isMyself={false}
+                    metadata={peer.metadata}
+                    videoStream={screenshare || null}
+                    audioStream={null}
+                    isMuted={false}
+                    isCamDisabled={isScreenDisabled}
+                  />
+                )}
+                <RtcPlayer
+                  isMyself={false}
+                  metadata={peer.metadata}
+                  videoStream={videoStream || null}
+                  audioStream={audioStream || null}
+                  isMuted={isMuted}
+                  isCamDisabled={isCamDisabled}
+                />
+              </Fragment>
             );
           })}
           <RtcPlayer
@@ -106,6 +120,16 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
             isMuted={!microphone.enabled}
             isCamDisabled={!camera.enabled}
           />
+          {screenshare.stream && (
+            <RtcPlayer
+              isMyself={true}
+              metadata={client}
+              videoStream={screenshare.stream}
+              audioStream={null}
+              isMuted={false}
+              isCamDisabled={!screenshare.enabled}
+            />
+          )}
           {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
         </div>
       ) : clientStatus === "idle" ? (
