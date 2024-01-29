@@ -77,3 +77,14 @@ export const redirectToHomePage = (navigate: NavigateFunction) => {
   // which is desired in this case, so the page is reloaded manually
   window.location.reload();
 };
+
+export const getRecordingLink = (setRecordingLink: React.Dispatch<React.SetStateAction<string>>) => {
+  axiosWithoutInterceptor
+    .get(`/resources/recordings/link/` + getChannelId())
+    .then((response: { data: { link: string } }) => {
+      setRecordingLink(response.data.link);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};

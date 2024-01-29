@@ -56,9 +56,8 @@ const StreamArea = ({
 
   const addHlsUrl = useCallback(
     (message: PlaylistPlayableMessage): void => {
-      const link = `http://localhost:5002/hls/${eventInfo.uuid}/index.m3u8`;
-      if (message.playlist_ready) {
-        setSrc(link);
+      if (message.playlist_ready && !amIPresenter) {
+        setSrc(message.link);
         setPresenterName(message.name);
         if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
       } else {
@@ -67,7 +66,7 @@ const StreamArea = ({
         if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
       }
     },
-    [setSrc, setStreamStart, eventInfo]
+    [setSrc, setStreamStart, amIPresenter]
   );
 
   useEffect(() => {

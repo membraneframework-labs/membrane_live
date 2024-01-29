@@ -16,7 +16,7 @@ export const createEventChannel = (
   eventChannel: Channel,
   setEventChannel: React.Dispatch<React.SetStateAction<Channel | undefined>>,
   setClient: React.Dispatch<React.SetStateAction<Client>>,
-  setPresenterToken: React.Dispatch<React.SetStateAction<string>>,
+  setPresenterToken: React.Dispatch<React.SetStateAction<string | undefined>>,
   navigate: NavigateFunction,
   lastViewerPopup: (toast: Toast, timeout: number) => void
 ) => {

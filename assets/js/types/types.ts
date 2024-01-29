@@ -127,6 +127,7 @@ export type PlaylistPlayableMessage = {
   name: string;
   playlist_ready: string;
   start_time: string;
+  link: string;
 };
 
 export type PresenterProposition = {

@@ -4,6 +4,10 @@ defmodule MembraneLiveWeb.RecordingsView do
 
   # credo:disable-for-this-file
 
+  def render("link.json", %{link: link}) do
+    %{link: link}
+  end
+
   def render("index.json", %{webinars: webinars}) do
     %{webinars: render_many(webinars, WebinarView, "webinar.json")}
   end

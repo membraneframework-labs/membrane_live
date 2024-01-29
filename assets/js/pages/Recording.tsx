@@ -6,7 +6,7 @@ import { useHls } from "../utils/useHls";
 import ChatBox from "../components/event/ChatBox";
 import { StreamStartProvider } from "../utils/StreamStartContext";
 import { ScreenTypeContext } from "../utils/ScreenTypeContext";
-import { getEventInfo, initEventInfo } from "../utils/headerUtils";
+import { getEventInfo, initEventInfo, getRecordingLink } from "../utils/headerUtils";
 import { useToast } from "@chakra-ui/react";
 import { useRecordingChatMessages } from "../utils/useRecordingChatMessages";
 import type { Client, EventInfo } from "../types/types";
@@ -25,11 +25,13 @@ const Recording = () => {
   const screenType = useContext(ScreenTypeContext);
   const { chatMessages, isChatLoaded, addMessage } = useRecordingChatMessages();
   const { attachVideo, setSrc } = useHls(true, recordingConfig);
+  const [recordingLink, setRecordingLink] = useState<string>("");
+
+  getRecordingLink(setRecordingLink);
 
   useEffect(() => {
-    const splitUrl = window.location.pathname.split("/");
-    setSrc(`${splitUrl[0]}/video/${splitUrl[2]}/index.m3u8`);
-  }, [setSrc]);
+    recordingLink && setSrc(recordingLink);
+  }, [setSrc, recordingLink]);
 
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 

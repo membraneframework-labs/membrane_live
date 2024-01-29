@@ -16,8 +16,8 @@ defmodule MembraneLive.EventService do
 
   require Logger
 
-  alias MembraneLive.Room
   alias Jellyfish.Peer
+  alias MembraneLive.Room
 
   @notify_after Application.compile_env!(:membrane_live, :last_peer_timeout_ms)
   @kill_after Application.compile_env!(:membrane_live, :empty_event_timeout_ms)
@@ -29,6 +29,12 @@ defmodule MembraneLive.EventService do
   @type event :: %{users_number: non_neg_integer(), timer_ref: reference()}
   @type event_id :: String.t()
   @type room_error :: {:error, String.t()}
+  @type playlist_response :: %{
+          playlist_ready: boolean(),
+          name: String.t(),
+          link: String.t(),
+          start_time: pos_integer()
+        }
 
   @type t :: %{
           events: %{event_id() => event()},
@@ -60,7 +66,7 @@ defmodule MembraneLive.EventService do
   @doc """
   Removes peer from given event's room
   """
-  @spec remove_peer(event_id(), Peer.id()) :: :ok | room_error()
+  @spec remove_peer(event_id(), Peer.id()) :: :ok | {:error, term()}
   def remove_peer(event_id, peer_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
       Room.remove_peer(pid, peer_id)
@@ -71,7 +77,7 @@ defmodule MembraneLive.EventService do
   Returns map containing all needed information for client to play playlist.
   If playlist isn't ready all fields in map wiil be empty.
   """
-  @spec playlist_playable?(event_id()) :: boolean
+  @spec playlist_playable?(event_id()) :: playlist_response() | {:error, term()}
   def playlist_playable?(event_id) do
     with {:ok, pid} <- get_room_pid(event_id) do
       Room.playable_playlist(pid)
@@ -145,9 +151,11 @@ defmodule MembraneLive.EventService do
   def handle_call({:start_room, event_id}, _from, state) do
     case :global.whereis_name(event_id) do
       :undefined ->
+        # We don't handle Room.start error correctly
         {:ok, pid} = Room.start(event_id, name: {:global, event_id})
         state = put_in(state, [:pid_to_id, pid], event_id)
         Process.monitor(pid)
+
         {:reply, :ok, state}
 
       _pid ->

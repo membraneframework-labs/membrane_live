@@ -25,7 +25,7 @@ defmodule MembraneLiveWeb.Helpers.EtsHelper do
   def add_to_presenting_request(email, id),
     do: add_to_list_in_ets(:presenting_requests, email, id)
 
-  def is_ets_empty?(ets_key, id) do
+  def ets_empty?(ets_key, id) do
     [{_key, presenters}] = :ets.lookup(ets_key, id)
     if presenters == MapSet.new([]), do: true, else: false
   end

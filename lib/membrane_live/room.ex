@@ -6,18 +6,17 @@ defmodule MembraneLive.Room do
   require Logger
 
   alias Jellyfish
-  alias Jellyfish.Peer
   alias Jellyfish.Component.HLS
-  alias Jellyfish.Notification.{ComponentCrashed, HlsPlayable, PeerCrashed}
+  alias Jellyfish.Peer
+  alias Jellyfish.Notification.{ComponentCrashed, HlsPlayable, PeerCrashed, RoomCrashed}
 
   alias MembraneLive.Chats
 
-  # TODO: find out what value should it be (ms)
-  @segment_duration 3000
-
-  @type playlist :: %{
-          playlist_idl: String.t(),
+  @segment_duration 6_000
+  @type playlist_response :: %{
+          playlist_ready: boolean(),
           name: String.t(),
+          link: String.t(),
           start_time: pos_integer()
         }
 
@@ -33,35 +32,30 @@ defmodule MembraneLive.Room do
   def init(event_id) do
     Logger.info("Spawning room process: #{inspect(self())}")
 
-    client =
-      Jellyfish.Client.new(server_address: "localhost:5002", server_api_token: "development")
+    client = Jellyfish.Client.new()
 
-    {:ok, notifier} =
-      Jellyfish.WSNotifier.start(
-        server_address: "localhost:5002",
-        server_api_token: "development"
-      )
-
-    :ok = Jellyfish.WSNotifier.subscribe_server_notifications(notifier)
-
-    {:ok, room, _jellyfish_address} =
-      Jellyfish.Room.create(client, video_codec: :h264, room_id: event_id)
-
-    {:ok, hls_component} =
-      Jellyfish.Room.add_component(client, room.id, %HLS{
-        low_latency: true,
-        persistent: true
-      })
-
-    {:ok,
-     %{
-       client: client,
-       room: room,
-       hls_component: hls_component,
-       peer_channels: %{},
-       playlist_ready?: false,
-       start_time: nil
-     }}
+    with {:ok, notifier} <- Jellyfish.WSNotifier.start(),
+         :ok <- Jellyfish.WSNotifier.subscribe_server_notifications(notifier),
+         {:ok, room, _jellyfish_address} <-
+           Jellyfish.Room.create(client, video_codec: :h264, room_id: event_id),
+         {:ok, hls_component} <-
+           Jellyfish.Room.add_component(client, room.id, %HLS{
+             low_latency: true,
+             persistent: true
+           }) do
+      {:ok,
+       %{
+         client: client,
+         room: room,
+         hls_component: hls_component,
+         peer_channels: %{},
+         playlist_ready?: false,
+         start_time: nil,
+         jellyfish_address: Application.fetch_env!(:jellyfish_server_sdk, :server_address)
+       }}
+    else
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   @spec add_peer(pid()) :: {:ok, Peer.id(), Jellyfish.Room.peer_token()} | {:error, term()}
@@ -69,12 +63,12 @@ defmodule MembraneLive.Room do
     GenServer.call(room_pid, {:add_peer, self()})
   end
 
-  @spec remove_peer(pid(), Peer.id()) :: :ok
+  @spec remove_peer(pid(), Peer.id()) :: :ok | {:error, term()}
   def remove_peer(room_pid, peer_id) do
     GenServer.call(room_pid, {:remove_peer, peer_id})
   end
 
-  @spec playable_playlist(pid()) :: boolean()
+  @spec playable_playlist(pid()) :: playlist_response()
   def playable_playlist(room_pid) do
     GenServer.call(room_pid, :playable_playlist)
   end
@@ -107,10 +101,15 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_call({:remove_peer, peer_id}, _from, state) do
-    state = handle_peer_left(state, peer_id)
-    Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
+    case Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id) do
+      :ok ->
+        ## TODO: maybe always
+        state = handle_peer_left(state, peer_id)
+        {:reply, :ok, state}
 
-    {:reply, :ok, state}
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
   end
 
   @impl true
@@ -152,10 +151,19 @@ defmodule MembraneLive.Room do
       ) do
     Logger.error("Peer: #{peer_id}, has crashed!")
 
-    # it weird we shouldn't kill websocket channel we should at maximum remove him from peers
+    # in this case we should remove peer from presenters
     send(state.peer_channels[peer_id], :endpoint_crashed)
 
     {:noreply, state}
+  end
+
+  def handle_info(
+        {:jellyfish, %RoomCrashed{room_id: room_id}},
+        %{room: %{id: room_id}} = state
+      ) do
+    Logger.error("Room: #{room_id}, has crashed!")
+
+    {:stop, :normal, state}
   end
 
   @impl true
@@ -171,11 +179,26 @@ defmodule MembraneLive.Room do
       if peer_id do
         state
       else
+        # what about removing user from list of presnters
         :ok = Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
         handle_peer_left(state, peer_id)
       end
 
     {:noreply, state}
+  end
+
+  @impl true
+  def terminate(reason, state) do
+    if reason != :normal, do: Logger.error("Room terminated with reason: #{inspect(reason)}")
+
+    case Jellyfish.Room.delete(state.client, state.room.id) do
+      {:ok, _} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.error("Error removing room #{state.room.id}, reason: #{reason}")
+        {:error, reason}
+    end
   end
 
   defp handle_peer_added(state, peer_id, peer_channel_pid) do
@@ -212,9 +235,8 @@ defmodule MembraneLive.Room do
     %{
       playlist_ready: state.playlist_ready?,
       name: "Live Stream 🎐",
+      link: "http://#{state.jellyfish_address}/hls/#{state.room.id}/index.m3u8",
       start_time: state.start_time
     }
   end
-
-  # TODO: on termination
 end

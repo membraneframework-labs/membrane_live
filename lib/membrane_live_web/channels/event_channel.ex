@@ -96,18 +96,7 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, is_request_presenting} <-
                check_if_request_presenting(email, requests_presenting, id) do
           {is_presenter, socket, peer_token} =
-            if is_presenter do
-              case join_event(socket) do
-                {:ok, socket, peer_token} ->
-                  {true, socket, peer_token}
-
-                {:error, _reason} ->
-                  remove_from_presenters(email, id)
-                  {false, socket, nil}
-              end
-            else
-              {false, socket, nil}
-            end
+            maybe_join_event_on_startup(socket, email, id, is_presenter)
 
           {:ok, _ref} =
             Presence.track(socket, email, %{
@@ -494,6 +483,21 @@ defmodule MembraneLiveWeb.EventChannel do
 
       {:error, _reason} = error ->
         error
+    end
+  end
+
+  defp maybe_join_event_on_startup(socket, _email, _id, false) do
+    {false, socket, nil}
+  end
+
+  defp maybe_join_event_on_startup(socket, email, id, true) do
+    case join_event(socket) do
+      {:ok, socket, peer_token} ->
+        {true, socket, peer_token}
+
+      {:error, _reason} ->
+        remove_from_presenters(email, id)
+        {false, socket, nil}
     end
   end
 
