@@ -107,7 +107,7 @@ defmodule MembraneLive.EventService do
   In case of a room crash `EventService` will end the event.
   Should be called to spawn a room.
   """
-  @spec start_room(event_id()) :: :ok | {:error, :already_started}
+  @spec start_room(event_id()) :: :ok | :already_started | {:error, term()}
   def start_room(event_id) do
     GenServer.call(EventService, {:start_room, event_id})
   end
@@ -149,17 +149,15 @@ defmodule MembraneLive.EventService do
 
   @impl true
   def handle_call({:start_room, event_id}, _from, state) do
-    case :global.whereis_name(event_id) do
-      :undefined ->
-        # We don't handle Room.start error correctly
-        {:ok, pid} = Room.start(event_id, name: {:global, event_id})
-        state = put_in(state, [:pid_to_id, pid], event_id)
-        Process.monitor(pid)
+    with :undefined <- :global.whereis_name(event_id),
+         {:ok, pid} <- Room.start(event_id, name: {:global, event_id}) do
+      state = put_in(state, [:pid_to_id, pid], event_id)
+      Process.monitor(pid)
 
-        {:reply, :ok, state}
-
-      _pid ->
-        {:reply, {:error, :already_started}, state}
+      {:reply, :ok, state}
+    else
+      {:error, reason} -> {:reply, {:error, reason}, state}
+      _pid -> {:reply, :already_started, state}
     end
   end
 

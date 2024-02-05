@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
 import type { User } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
@@ -13,16 +13,21 @@ type RtcPlayerProps = {
 };
 
 const RtcPlayer = ({ isMyself, audioStream, videoStream, metadata, isMuted, isCamDisabled }: RtcPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const loadVideo = useCallback(
+    (media: HTMLAudioElement | null) => {
+      if (!media) return;
+      media.srcObject = videoStream || null;
+    },
+    [videoStream]
+  );
 
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.srcObject = videoStream;
-  }, [videoStream]);
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.srcObject = audioStream;
-  }, [audioStream]);
+  const loadAudio = useCallback(
+    (media: HTMLAudioElement | null) => {
+      if (!media) return;
+      media.srcObject = audioStream || null;
+    },
+    [audioStream]
+  );
 
   return (
     <div className="RtcPlayer">
@@ -44,7 +49,7 @@ const RtcPlayer = ({ isMyself, audioStream, videoStream, metadata, isMuted, isCa
         playsInline
         disablePictureInPicture
         muted={true}
-        ref={videoRef}
+        ref={loadVideo}
         className="PresenterVideo"
       />
       <div className="BottomBarPresenter">
@@ -54,7 +59,7 @@ const RtcPlayer = ({ isMyself, audioStream, videoStream, metadata, isMuted, isCa
         </div>
       </div>
       <div className="AudioBar"></div>
-      {!isMyself && <audio autoPlay ref={audioRef} />}
+      <audio autoPlay ref={loadAudio} muted={isMyself} />
     </div>
   );
 };

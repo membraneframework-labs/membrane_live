@@ -32,7 +32,7 @@ import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { ModeButton } from "./ModePanel";
 import { sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
 import { useDisconnect, useCamera, useMicrophone, useScreenshare, TrackMetadata } from "./PresenterArea";
-import type { UseCameraResult, UseMicrophoneResult } from "@jellyfish-dev/react-client-sdk/.";
+import type { UseCameraResult, UseMicrophoneResult } from "@jellyfish-dev/react-client-sdk";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -99,16 +99,42 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-const stopBeingPresenter = (
-  disconnect: () => void,
-  eventChannel: Channel | undefined,
-  client: Client,
-  setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>
+const getDropdownButton = (
+  key: string,
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>
 ) => {
-  setClientStatus("disconnected");
-  eventChannel?.push("presenter_remove", { email: client.email });
-  disconnect();
-  sessionStorageUnsetIsPresenter();
+  return (
+    <DropdownButton
+      key={key}
+      mainText={`${device.deviceInfo?.kind} source`}
+      currentSourceName={device.deviceInfo?.label}
+      sources={device.devices || []}
+      onSelectSource={(deviceId) => {
+        device.start(deviceId);
+      }}
+    />
+  );
+};
+
+const getMuteButton = (
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>,
+  IconEnabled: Icon,
+  IconDisabled: Icon
+) => {
+  return (
+    <GenericButton
+      icon={
+        device.enabled ? (
+          <IconEnabled className="PanelButton Enabled" />
+        ) : (
+          <IconDisabled className="PanelButton Disabled" />
+        )
+      }
+      onClick={() => {
+        device.setEnable(!device.enabled);
+      }}
+    />
+  );
 };
 
 type ControlPanelProps = {
@@ -126,42 +152,11 @@ const ControlPanel = ({ client, eventChannel, setClientStatus }: ControlPanelPro
   const microphone = useMicrophone();
   const screenShare = useScreenshare();
 
-  const getDropdownButton = (
-    key: string,
-    device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>
-  ) => {
-    return (
-      <DropdownButton
-        key={key}
-        mainText={`${device.deviceInfo?.kind} source`}
-        currentSourceName={camera.deviceInfo?.label}
-        sources={device.devices || []}
-        onSelectSource={(deviceId) => {
-          camera.start(deviceId);
-        }}
-      />
-    );
-  };
-
-  const getMuteButton = (
-    device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>,
-    IconEnabled: Icon,
-    IconDisabled: Icon
-  ) => {
-    return (
-      <GenericButton
-        icon={
-          device.enabled ? (
-            <IconEnabled className="PanelButton Enabled" />
-          ) : (
-            <IconDisabled className="PanelButton Disabled" />
-          )
-        }
-        onClick={() => {
-          device.setEnable(!device.enabled);
-        }}
-      />
-    );
+  const stopBeingPresenter = () => {
+    setClientStatus("disconnected");
+    eventChannel?.push("presenter_remove", { email: client.email });
+    disconnect();
+    sessionStorageUnsetIsPresenter();
   };
 
   return (
@@ -170,10 +165,7 @@ const ControlPanel = ({ client, eventChannel, setClientStatus }: ControlPanelPro
         <div className="CenterIcons">
           {getMuteButton(camera, Cam, CamDisabled)}
           {getMuteButton(microphone, Microphone, MicrophoneDisabled)}
-          <GenericButton
-            icon={<PhoneDown className="DisconnectButton" />}
-            onClick={() => stopBeingPresenter(disconnect, eventChannel, client, setClientStatus)}
-          />
+          <GenericButton icon={<PhoneDown className="DisconnectButton" />} onClick={stopBeingPresenter} />
           <GenericButton
             icon={
               !screenShare.stream && screenType.device !== "mobile" ? (

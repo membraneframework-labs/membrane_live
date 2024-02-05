@@ -5,6 +5,7 @@ import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
 import { NavigateFunction } from "react-router-dom";
 import type { EventInfo, OriginalEventInfo, Toast } from "../types/types";
+import { AxiosResponse } from "axios";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -78,13 +79,5 @@ export const redirectToHomePage = (navigate: NavigateFunction) => {
   window.location.reload();
 };
 
-export const getRecordingLink = (setRecordingLink: React.Dispatch<React.SetStateAction<string>>) => {
-  axiosWithoutInterceptor
-    .get(`/resources/recordings/link/` + getChannelId())
-    .then((response: { data: { link: string } }) => {
-      setRecordingLink(response.data.link);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
+export const getRecordingLink = (): Promise<AxiosResponse<{ link: string }>> =>
+  axiosWithoutInterceptor.get(`/resources/recordings/link/` + getChannelId());

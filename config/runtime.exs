@@ -56,7 +56,14 @@ config :membrane_live, MembraneLiveWeb.Endpoint, [
   {protocol, args}
 ]
 
+secure? =
+  case System.get_env("JELLYFISH_SECURE", "false") do
+    "true" -> true
+    "false" -> false
+    _else -> raise "`JELLYFISH_SECURE` must be set to either `true` or `false`."
+  end
+
 config :jellyfish_server_sdk,
-  server_address: "localhost:5002",
-  server_api_token: "development",
-  secure?: false
+  server_address: System.get_env("JELLYFISH_ADDRESS", "localhost:5002"),
+  server_api_token: System.get_env("JELLYFISH_TOKEN", "development"),
+  secure?: secure?

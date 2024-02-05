@@ -338,7 +338,6 @@ defmodule MembraneLiveWeb.EventChannel do
             &%{
               &1
               | is_presenter: true,
-                ## request presenting przeniesc do proposition
                 is_request_presenting: false
             }
           )
@@ -445,14 +444,14 @@ defmodule MembraneLiveWeb.EventChannel do
     room_exists? = EventService.room_exists?(socket.assigns.event_id)
 
     case maybe_start_event(room_exists?, socket) do
-      {:error, :webinar_finished} ->
+      {:error, reason} ->
         Logger.error("""
         Failed to start room.
         Room: #{inspect(socket.assigns.event_id)}.
-        Reason: webinar is finished.
+        Reason: #{reason}.
         """)
 
-        {:error, %{reason: "failed to start event:  webinar is finished."}}
+        {:error, %{reason: reason}}
 
       _else ->
         {:ok, socket}
@@ -472,7 +471,7 @@ defmodule MembraneLiveWeb.EventChannel do
         EventService.start_room(socket.assigns.event_id)
 
       true ->
-        {:error, :non_moderator}
+        :non_moderator
     end
   end
 

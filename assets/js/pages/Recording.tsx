@@ -25,13 +25,14 @@ const Recording = () => {
   const screenType = useContext(ScreenTypeContext);
   const { chatMessages, isChatLoaded, addMessage } = useRecordingChatMessages();
   const { attachVideo, setSrc } = useHls(true, recordingConfig);
-  const [recordingLink, setRecordingLink] = useState<string>("");
-
-  getRecordingLink(setRecordingLink);
 
   useEffect(() => {
-    recordingLink && setSrc(recordingLink);
-  }, [setSrc, recordingLink]);
+    getRecordingLink()
+      .then((resp) => setSrc(resp.data.link))
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [setSrc]);
 
   const [eventInfo, setEventInfo] = useState<EventInfo>(initEventInfo());
 

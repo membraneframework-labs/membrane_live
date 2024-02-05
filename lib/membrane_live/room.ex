@@ -34,9 +34,10 @@ defmodule MembraneLive.Room do
 
     client = Jellyfish.Client.new()
 
+    ## TODO: rewrite it to use only one notifier for whole application
     with {:ok, notifier} <- Jellyfish.WSNotifier.start(),
          :ok <- Jellyfish.WSNotifier.subscribe_server_notifications(notifier),
-         {:ok, room, _jellyfish_address} <-
+         {:ok, room, jellyfish_address} <-
            Jellyfish.Room.create(client, video_codec: :h264, room_id: event_id),
          {:ok, hls_component} <-
            Jellyfish.Room.add_component(client, room.id, %HLS{
@@ -51,7 +52,7 @@ defmodule MembraneLive.Room do
          peer_channels: %{},
          playlist_ready?: false,
          start_time: nil,
-         jellyfish_address: Application.fetch_env!(:jellyfish_server_sdk, :server_address)
+         jellyfish_address: jellyfish_address
        }}
     else
       {:error, reason} -> {:error, reason}
@@ -101,10 +102,10 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_call({:remove_peer, peer_id}, _from, state) do
+    state = handle_peer_left(state, peer_id)
+
     case Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id) do
       :ok ->
-        ## TODO: maybe always
-        state = handle_peer_left(state, peer_id)
         {:reply, :ok, state}
 
       {:error, reason} ->
@@ -142,7 +143,7 @@ defmodule MembraneLive.Room do
     new_state = %{state | playlist_ready?: false}
     send_broadcast(new_state)
 
-    {:noreply, state}
+    {:stop, :normal, state}
   end
 
   def handle_info(
@@ -151,7 +152,6 @@ defmodule MembraneLive.Room do
       ) do
     Logger.error("Peer: #{peer_id}, has crashed!")
 
-    # in this case we should remove peer from presenters
     send(state.peer_channels[peer_id], :endpoint_crashed)
 
     {:noreply, state}
@@ -179,7 +179,6 @@ defmodule MembraneLive.Room do
       if peer_id do
         state
       else
-        # what about removing user from list of presnters
         :ok = Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
         handle_peer_left(state, peer_id)
       end
@@ -204,10 +203,6 @@ defmodule MembraneLive.Room do
   defp handle_peer_added(state, peer_id, peer_channel_pid) do
     put_in(state, [:peer_channels, peer_id], peer_channel_pid)
   end
-
-  defp handle_peer_left(%{peer_channels: peer_channels} = state, _peer_id)
-       when map_size(peer_channels) == 0,
-       do: state
 
   defp handle_peer_left(state, peer_id) do
     Map.update!(state, :peer_channels, &Map.delete(&1, peer_id))
