@@ -99,43 +99,46 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-const getDropdownButton = (
-  key: string,
-  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>
-) => {
-  return (
-    <DropdownButton
-      key={key}
-      mainText={`${device.deviceInfo?.kind} source`}
-      currentSourceName={device.deviceInfo?.label}
-      sources={device.devices || []}
-      onSelectSource={(deviceId) => {
-        device.start(deviceId);
-      }}
-    />
-  );
-};
+const DeviceButton = ({
+  key,
+  device,
+}: {
+  key: string;
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>;
+}) => (
+  <DropdownButton
+    key={key}
+    mainText={`${device.deviceInfo?.kind} source`}
+    currentSourceName={device.deviceInfo?.label}
+    sources={device.devices || []}
+    onSelectSource={(deviceId) => {
+      device.start(deviceId);
+    }}
+  />
+);
 
-const getMuteButton = (
-  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>,
-  IconEnabled: Icon,
-  IconDisabled: Icon
-) => {
-  return (
-    <GenericButton
-      icon={
-        device.enabled ? (
-          <IconEnabled className="PanelButton Enabled" />
-        ) : (
-          <IconDisabled className="PanelButton Disabled" />
-        )
-      }
-      onClick={() => {
-        device.setEnable(!device.enabled);
-      }}
-    />
-  );
-};
+const MuteButton = ({
+  device,
+  IconEnabled,
+  IconDisabled,
+}: {
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>;
+  IconEnabled: Icon;
+  IconDisabled: Icon;
+}) => (
+  <GenericButton
+    icon={
+      device.enabled ? (
+        <IconEnabled className="PanelButton Enabled" />
+      ) : (
+        <IconDisabled className="PanelButton Disabled" />
+      )
+    }
+    onClick={() => {
+      device.setEnable(!device.enabled);
+    }}
+  />
+);
 
 type ControlPanelProps = {
   client: Client;
@@ -163,8 +166,8 @@ const ControlPanel = ({ client, eventChannel, setClientStatus }: ControlPanelPro
     <>
       <div className="ControlPanel">
         <div className="CenterIcons">
-          {getMuteButton(camera, Cam, CamDisabled)}
-          {getMuteButton(microphone, Microphone, MicrophoneDisabled)}
+          <MuteButton device={camera} IconEnabled={Cam} IconDisabled={CamDisabled} />
+          <MuteButton device={microphone} IconEnabled={Microphone} IconDisabled={MicrophoneDisabled} />
           <GenericButton icon={<PhoneDown className="DisconnectButton" />} onClick={stopBeingPresenter} />
           <GenericButton
             icon={
@@ -184,7 +187,7 @@ const ControlPanel = ({ client, eventChannel, setClientStatus }: ControlPanelPro
             <SettingsModal
               isOpen={isOpen}
               onClose={onClose}
-              elements={[getDropdownButton("1", microphone), getDropdownButton("2", camera)]}
+              elements={[<DeviceButton key={"1"} device={microphone} />, <DeviceButton key={"2"} device={camera} />]}
             />
           </MenuPopover>
         </div>
