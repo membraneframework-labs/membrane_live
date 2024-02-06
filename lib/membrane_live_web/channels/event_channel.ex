@@ -38,6 +38,7 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
           Presence.track(socket, gen_key, %{
             name: name,
+            email: gen_key,
             is_moderator: false,
             is_presenter: false,
             is_auth: false,
@@ -45,7 +46,7 @@ defmodule MembraneLiveWeb.EventChannel do
           })
 
           {:ok, %{generated_key: gen_key},
-           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key})}
+           Phoenix.Socket.assign(socket, %{event_id: id, email: gen_key})}
         end
 
       {:error, _error} ->
@@ -82,7 +83,7 @@ defmodule MembraneLiveWeb.EventChannel do
                Socket.assign(socket, %{
                  is_moderator: is_moderator,
                  event_id: id,
-                 user_email: email
+                 email: email
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
@@ -101,6 +102,7 @@ defmodule MembraneLiveWeb.EventChannel do
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
+              email: email,
               is_moderator: is_moderator,
               is_presenter: is_presenter,
               is_request_presenting: is_request_presenting,
@@ -198,13 +200,17 @@ defmodule MembraneLiveWeb.EventChannel do
   ######
 
   def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> event_id} = socket) do
-    email = socket.assigns.user_email
-    [user] = Presence.get_by_key(socket, email).metas
+    [user] = Presence.get_by_key(socket, socket.assigns.email).metas
 
-    unless user.is_banned_from_chat do
-      user = Map.put(user, :email, email)
-      message = Chats.add_chat_message(event_id, user, content)
-      broadcast(socket, "chat_message", message)
+    correct_user? = Enum.all?([:name, :is_auth, :is_presenter, :email], &Map.has_key?(user, &1))
+
+    cond do
+      correct_user? and not user.is_banned_from_chat ->
+        message = Chats.add_chat_message(event_id, user, content)
+        broadcast(socket, "chat_message", message)
+
+      not correct_user? ->
+        Logger.error("Incorrect user tried to send chat message")
     end
 
     {:noreply, socket}

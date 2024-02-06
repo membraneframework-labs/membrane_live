@@ -17,32 +17,6 @@ jobs:
       - checkout
       - run: docker compose -f docker-compose-test.yml up test --exit-code-from test
 
-  # Job equal to elixir/lint, but without using dialyzer (rtc_engine does not support it)
-  lint_wo_dialyzer:
-    executor:
-      mix_env: dev
-      name: elixir/docker_membrane
-    steps:
-      - checkout
-      - run:
-          command: mkdir -p priv
-          name: Ensure priv dir exists
-      - elixir/get_mix_deps
-      - elixir/use_build_cache:
-          before-save:
-            - run: mix compile
-          env: dev
-          regenerate: true
-      - run:
-          command: mix format --check-formatted
-          name: Check code formatting
-      - run:
-          command: mix credo
-          name: Run Credo linter
-      - run:
-          command: 'mix docs && mix docs 2>&1 | (! grep -q "warning:")'
-          name: Check docs generation for warnings
-
   # Install dependencies and run linter on front-end, possibly run tests in the future
   lint_frontend:
     working_directory: ~/membrane_live/assets
@@ -71,5 +45,5 @@ workflows:
     jobs:
       - test
       - elixir/build_test
-      - lint_wo_dialyzer
+      - elixir/lint
       - lint_frontend

@@ -171,16 +171,16 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    peer_id =
+    {peer_id, _peer_channel_pid} =
       state.peer_channels
       |> Enum.find(fn {_peer_id, peer_channel_pid} -> peer_channel_pid == pid end)
 
     state =
       if peer_id do
-        state
-      else
-        :ok = Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
+        Jellyfish.Room.delete_peer(state.client, state.room.id, peer_id)
         handle_peer_left(state, peer_id)
+      else
+        state
       end
 
     {:noreply, state}
@@ -191,7 +191,7 @@ defmodule MembraneLive.Room do
     if reason != :normal, do: Logger.error("Room terminated with reason: #{inspect(reason)}")
 
     case Jellyfish.Room.delete(state.client, state.room.id) do
-      {:ok, _} ->
+      :ok ->
         :ok
 
       {:error, reason} ->

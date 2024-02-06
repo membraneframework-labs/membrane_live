@@ -63,6 +63,7 @@ defmodule Membrane.Live.Mixfile do
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
 
       # Jellyfish
       {:jellyfish_server_sdk, "~> 0.3.0"}
