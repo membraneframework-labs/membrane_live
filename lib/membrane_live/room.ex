@@ -108,8 +108,8 @@ defmodule MembraneLive.Room do
       :ok ->
         {:reply, :ok, state}
 
-      {:error, reason} ->
-        {:reply, {:error, reason}, state}
+      {:error, _reason} ->
+        {:stop, :peer_crashed, state}
     end
   end
 
@@ -120,8 +120,6 @@ defmodule MembraneLive.Room do
 
   @impl true
   def handle_cast(:close_room, state) do
-    :ok = Jellyfish.Room.delete(state.client, state.room.id)
-
     {:stop, :normal, state}
   end
 
@@ -143,7 +141,7 @@ defmodule MembraneLive.Room do
     new_state = %{state | playlist_ready?: false}
     send_broadcast(new_state)
 
-    {:stop, :normal, state}
+    {:stop, :component_crashed, state}
   end
 
   def handle_info(
@@ -163,7 +161,7 @@ defmodule MembraneLive.Room do
       ) do
     Logger.error("Room: #{room_id}, has crashed!")
 
-    {:stop, :normal, state}
+    {:stop, :room_crashed, state}
   end
 
   @impl true
