@@ -8,6 +8,13 @@ defmodule MembraneLiveWeb.RecordingsController do
   action_fallback(MembraneLiveWeb.FallbackController)
 
   @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
+  def index(conn, %{"recording_id" => id}) do
+    jellyfish_address = Application.fetch_env!(:jellyfish_server_sdk, :server_address)
+    link = "http://#{jellyfish_address}/recording/#{id}/index.m3u8"
+    render(conn, "link.json", link: link)
+  end
+
+  @spec index(Plug.Conn.t(), any) :: Plug.Conn.t()
   def index(conn, _params) do
     webinars = Webinars.list_recordings(conn.assigns.user_id)
     render(conn, "index.json", webinars: webinars)

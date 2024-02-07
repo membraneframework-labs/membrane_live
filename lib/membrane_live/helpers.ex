@@ -10,7 +10,7 @@ defmodule MembraneLive.Helpers do
     :crypto.hash(:md5, :erlang.pid_to_list(pid)) |> Base.encode16(case: :lower)
   end
 
-  def is_valid_uuid(uuid) do
+  def valid_uuid?(uuid) do
     String.match?(uuid, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   end
 

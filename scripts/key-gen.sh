@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 DIR="./test/files/keys"
 ORGIN_DIR=`pwd`
 

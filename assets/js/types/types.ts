@@ -34,7 +34,6 @@ export type PeersState = {
   cameraTrack: MediaStreamTrack | undefined;
   sourceIds: { audio: string; video: string };
   isScreenSharing: boolean;
-  isMainPresenter: boolean;
 };
 
 export interface Client extends User {
@@ -126,13 +125,13 @@ export type AwaitingMessage = {
 
 export type PlaylistPlayableMessage = {
   name: string;
-  playlist_idl: string;
+  playlist_ready: string;
   start_time: string;
+  link: string;
 };
 
 export type PresenterProposition = {
   moderatorTopic: string;
-  mainPresenter: boolean;
 };
 
 export type PresenterPropositionServer = {

@@ -1,7 +1,7 @@
 defmodule MembraneLive.EventServiceTest do
   @moduledoc false
 
-  use MembraneLiveWeb.ChannelCase, async: true
+  use MembraneLiveWeb.ChannelCase, async: false
 
   alias MembraneLive.EventService
 
@@ -63,7 +63,7 @@ defmodule MembraneLive.EventServiceTest do
 
   test "returns `:already_started` when room already exists", %{event_id: event_id} do
     response = EventService.start_room(event_id)
-    assert {:error, :already_started} = response
+    assert :already_started = response
   end
 
   defp assert_finish_event(timeout \\ 1_000), do: assert_broadcast("finish_event", %{}, timeout)

@@ -9,7 +9,7 @@ defmodule MembraneLive.Chats do
   alias MembraneLive.Chats.Chat
   alias MembraneLive.Repo
 
-  @type event_id :: String.t()
+  @type event_id :: binary()
 
   @type user :: %{
           is_auth: boolean(),

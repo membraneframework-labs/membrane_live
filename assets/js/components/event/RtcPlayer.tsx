@@ -1,38 +1,33 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { User1, CamDisabled, MicrophoneDisabled } from "react-swm-icon-pack";
-import type { PresenterStream, SourceType } from "../../types/types";
+import type { User } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
+  metadata: User | null;
+  audioStream: MediaStream | null;
+  videoStream: MediaStream | null;
   isMyself: boolean;
-  presenterStream: PresenterStream;
+  isMuted: boolean;
+  isCamDisabled: boolean;
 };
 
-const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  const connectStreams = useCallback(
-    (sourceType: SourceType) => {
-      if (!presenterStream) return;
-      if (videoRef.current && sourceType == "video") videoRef.current.srcObject = presenterStream.stream;
-      if (audioRef.current && sourceType == "audio") audioRef.current.srcObject = presenterStream.stream;
+const RtcPlayer = ({ isMyself, audioStream, videoStream, metadata, isMuted, isCamDisabled }: RtcPlayerProps) => {
+  const loadVideo = useCallback(
+    (media: HTMLAudioElement | null) => {
+      if (!media) return;
+      media.srcObject = videoStream || null;
     },
-    [presenterStream]
+    [videoStream]
   );
 
-  const isSourceDisabled = (sourceType: SourceType) => {
-    const isEnabled = presenterStream?.stream.getTracks().find((elem) => elem.kind == sourceType)?.enabled;
-    return isEnabled === false;
-  };
-
-  const isMuted = isSourceDisabled("audio");
-  const isCamDisabled = isSourceDisabled("video");
-
-  useEffect(() => {
-    connectStreams("audio");
-    connectStreams("video");
-  }, [connectStreams, presenterStream]);
+  const loadAudio = useCallback(
+    (media: HTMLAudioElement | null) => {
+      if (!media) return;
+      media.srcObject = audioStream || null;
+    },
+    [audioStream]
+  );
 
   return (
     <div className="RtcPlayer">
@@ -49,22 +44,22 @@ const RtcPlayer = ({ isMyself, presenterStream }: RtcPlayerProps) => {
         )}
       </div>
       <video
-        key={presenterStream.email}
+        key={metadata?.email}
         autoPlay
         playsInline
         disablePictureInPicture
         muted={true}
-        ref={videoRef}
+        ref={loadVideo}
         className="PresenterVideo"
       />
       <div className="BottomBarPresenter">
         <div className="PresenterName">
           {isMyself && <User1 className="YouIcon" />}
-          {isMyself ? "You" : presenterStream.name}
+          {isMyself ? "You" : metadata?.name}
         </div>
       </div>
       <div className="AudioBar"></div>
-      {!isMyself && <audio autoPlay ref={audioRef} />}
+      <audio autoPlay ref={loadAudio} muted={isMyself} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useContext } from "react";
 import {
   Button,
   Menu,
@@ -13,7 +13,6 @@ import {
   Modal,
   ModalBody,
 } from "@chakra-ui/react";
-import { WebRTCEndpoint } from "@jellyfish-dev/membrane-webrtc-js";
 import {
   Cam,
   CamDisabled,
@@ -24,25 +23,16 @@ import {
   ScreenDisabled,
   Icon,
 } from "react-swm-icon-pack";
-import {
-  shareScreen,
-  changeSource,
-  changeTrackIsEnabled,
-  getSources,
-  Sources,
-  checkTrackIsEnabled,
-  getCurrentDeviceName,
-  askForPermissions,
-  stopShareScreen,
-} from "../../utils/rtcUtils";
 import { Channel } from "phoenix";
 import GenericButton from "../helpers/GenericButton";
-import type { Client, SourceType, PeersState, ClientStatus } from "../../types/types";
+import type { Client, ClientStatus } from "../../types/types";
 import "../../../css/event/controlpanel.css";
 import MenuPopover from "../helpers/MenuPopover";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
 import { ModeButton } from "./ModePanel";
 import { sessionStorageUnsetIsPresenter } from "../../utils/storageUtils";
+import { useDisconnect, useCamera, useMicrophone, useScreenshare, TrackMetadata } from "./PresenterArea";
+import type { UseCameraResult, UseMicrophoneResult } from "@jellyfish-dev/react-client-sdk";
 
 type DropdownListProps = {
   sources: MediaDeviceInfo[];
@@ -109,127 +99,86 @@ const SettingsModal = ({ isOpen, onClose, elements }: SettingsModalProps) => {
   );
 };
 
-const stopBeingPresenter = (
-  eventChannel: Channel | undefined,
-  client: Client,
-  setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>
-) => {
-  setClientStatus("disconnected");
-  eventChannel?.push("presenter_remove", { email: client.email });
-  sessionStorageUnsetIsPresenter();
-};
+const DeviceButton = ({
+  key,
+  device,
+}: {
+  key: string;
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>;
+}) => (
+  <DropdownButton
+    key={key}
+    mainText={`${device.deviceInfo?.kind} source`}
+    currentSourceName={device.deviceInfo?.label}
+    sources={device.devices || []}
+    onSelectSource={(deviceId) => {
+      device.start(deviceId);
+    }}
+  />
+);
+
+const MuteButton = ({
+  device,
+  IconEnabled,
+  IconDisabled,
+}: {
+  device: UseMicrophoneResult<TrackMetadata> | UseCameraResult<TrackMetadata>;
+  IconEnabled: Icon;
+  IconDisabled: Icon;
+}) => (
+  <GenericButton
+    icon={
+      device.enabled ? (
+        <IconEnabled className="PanelButton Enabled" />
+      ) : (
+        <IconDisabled className="PanelButton Disabled" />
+      )
+    }
+    onClick={() => {
+      device.setEnable(!device.enabled);
+    }}
+  />
+);
 
 type ControlPanelProps = {
   client: Client;
-  webrtc: WebRTCEndpoint | null;
   eventChannel: Channel | undefined;
-  rerender: () => void;
-  peersState: PeersState;
-  setPeersState: React.Dispatch<React.SetStateAction<PeersState>>;
   setClientStatus: React.Dispatch<React.SetStateAction<ClientStatus>>;
 };
 
-const ControlPanel = ({
-  client,
-  webrtc,
-  eventChannel,
-  rerender,
-  peersState,
-  setPeersState,
-  setClientStatus,
-}: ControlPanelProps) => {
-  const [sources, setSources] = useState<Sources>({ audio: [], video: [] });
+const ControlPanel = ({ client, eventChannel, setClientStatus }: ControlPanelProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const screenType = useContext(ScreenTypeContext);
 
-  const updateAvailableSources = useCallback(async () => {
-    await askForPermissions();
-    const sources = await getSources();
-    if (sources != null) {
-      setSources(sources);
+  const disconnect = useDisconnect();
+  const camera = useCamera();
+  const microphone = useMicrophone();
+  const screenShare = useScreenshare();
 
-      const prepareDevice = (kind: SourceType) => {
-        const deviceName = getCurrentDeviceName(client, kind, peersState);
-        if (deviceName === undefined) {
-          changeSource(webrtc, client, sources[kind][0].deviceId, kind, setPeersState);
-        }
-      };
-
-      prepareDevice("audio");
-      prepareDevice("video");
-    }
-  }, [client, peersState, setPeersState, webrtc]);
-
-  useEffect(() => {
-    updateAvailableSources();
-  }, [updateAvailableSources]);
-
-  useEffect(() => {
-    navigator.mediaDevices.ondevicechange = updateAvailableSources;
-
-    return () => {
-      navigator.mediaDevices.ondevicechange = null;
-    };
-  }, [peersState, updateAvailableSources]);
-
-  const getDropdownButton = (sourceType: SourceType) => {
-    return (
-      <DropdownButton
-        key={sourceType}
-        mainText={`${sourceType} source`}
-        currentSourceName={getCurrentDeviceName(client, sourceType, peersState)}
-        sources={sources[sourceType]}
-        onSelectSource={(deviceId) => {
-          changeSource(webrtc, client, deviceId, sourceType, setPeersState).then(() => {
-            rerender();
-          });
-        }}
-      />
-    );
+  const stopBeingPresenter = () => {
+    setClientStatus("disconnected");
+    eventChannel?.push("presenter_remove", { email: client.email });
+    disconnect();
+    sessionStorageUnsetIsPresenter();
   };
-
-  const getMuteButton = (sourceType: SourceType, IconEnabled: Icon, IconDisabled: Icon) => {
-    return (
-      <GenericButton
-        icon={
-          checkTrackIsEnabled(client, sourceType, peersState) !== false ? (
-            <IconEnabled className="PanelButton Enabled" />
-          ) : (
-            <IconDisabled className="PanelButton Disabled" />
-          )
-        }
-        onClick={() => {
-          changeTrackIsEnabled(webrtc, client, sourceType, peersState);
-          rerender();
-        }}
-      />
-    );
-  };
-
-  const isSharingScreen: boolean = peersState.isScreenSharing;
 
   return (
     <>
       <div className="ControlPanel">
         <div className="CenterIcons">
-          {getMuteButton("video", Cam, CamDisabled)}
-          {getMuteButton("audio", Microphone, MicrophoneDisabled)}
-          <GenericButton
-            icon={<PhoneDown className="DisconnectButton" />}
-            onClick={() => stopBeingPresenter(eventChannel, client, setClientStatus)}
-          />
+          <MuteButton device={camera} IconEnabled={Cam} IconDisabled={CamDisabled} />
+          <MuteButton device={microphone} IconEnabled={Microphone} IconDisabled={MicrophoneDisabled} />
+          <GenericButton icon={<PhoneDown className="DisconnectButton" />} onClick={stopBeingPresenter} />
           <GenericButton
             icon={
-              !isSharingScreen && screenType.device !== "mobile" ? (
+              !screenShare.stream && screenType.device !== "mobile" ? (
                 <ScreenShare className="PanelButton" />
               ) : (
                 <ScreenDisabled className="PanelButton" />
               )
             }
             onClick={() => {
-              isSharingScreen
-                ? stopShareScreen(webrtc, client, setPeersState)
-                : shareScreen(webrtc, client, setPeersState);
+              screenShare.stream ? screenShare.stop() : screenShare.start();
             }}
             disabled={screenType.device === "mobile"}
           />
@@ -238,7 +187,7 @@ const ControlPanel = ({
             <SettingsModal
               isOpen={isOpen}
               onClose={onClose}
-              elements={[getDropdownButton("audio"), getDropdownButton("video")]}
+              elements={[<DeviceButton key={"1"} device={microphone} />, <DeviceButton key={"2"} device={camera} />]}
             />
           </MenuPopover>
         </div>

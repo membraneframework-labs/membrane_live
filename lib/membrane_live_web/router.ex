@@ -24,8 +24,6 @@ defmodule MembraneLiveWeb.Router do
     get("/", PageController, :index)
     get("/event/*page", PageController, :index)
     get("/recordings/*page", PageController, :index)
-    get("/video/:event_id/:filename", HLSController, :index)
-    get("/video/:event_id/:stream_id/:filename", HLSController, :index)
   end
 
   scope "/", MembraneLiveWeb do
@@ -57,6 +55,7 @@ defmodule MembraneLiveWeb.Router do
     pipe_through(:browser)
     pipe_through(:auth_unrestricted)
 
+    get("/link/:recording_id", RecordingsController, :index)
     get("/", RecordingsController, :index)
   end
 

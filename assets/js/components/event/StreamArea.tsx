@@ -1,6 +1,6 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import ModePanel from "./ModePanel";
-import PresenterArea from "./PresenterArea";
+import PresenterArea, { JellyfishContextProvider } from "./PresenterArea";
 import HlsPlayer from "./HlsPlayer";
 import { Channel } from "phoenix";
 import { ScreenTypeContext } from "../../utils/ScreenTypeContext";
@@ -9,34 +9,33 @@ import { switchAskingForBeingPresenter } from "../../utils/channelUtils";
 import MobileHlsBar from "./MobileHlsBar";
 import { MobileBottomPanel } from "./MobileBottomPanel";
 import { useAutoHideMobileBottomBar } from "../../utils/useAutoHideMobileBottomBar";
-import type { Client, ChatMessage, CardStatus } from "../../types/types";
+import type { Client, ChatMessage, CardStatus, EventInfo, PlaylistPlayableMessage } from "../../types/types";
 
 import "../../../css/event/streamarea.css";
+import { liveConfig } from "../../utils/const";
+import { useStartStream } from "../../utils/StreamStartContext";
+import { useHls } from "../../utils/useHls";
 
 type StreamAreaProps = {
   client: Client;
   amIPresenter: boolean;
-  presenterName: string;
   eventChannel: Channel | undefined;
-  privateChannel: Channel | undefined;
-  eventTitle: string;
+  eventInfo: EventInfo;
   chatMessages: ChatMessage[];
   isChatLoaded: boolean;
   isBannedFromChat: boolean;
-  attachVideo: (videoElem: HTMLVideoElement | null) => void;
+  presenterToken: string | undefined;
 };
 
 const StreamArea = ({
   client,
   amIPresenter,
-  presenterName,
   eventChannel,
-  privateChannel,
-  eventTitle,
+  eventInfo,
   chatMessages,
   isChatLoaded,
   isBannedFromChat,
-  attachVideo,
+  presenterToken,
 }: StreamAreaProps) => {
   const { device, orientation } = useContext(ScreenTypeContext);
   const [card, setCard] = useState<CardStatus>("hidden");
@@ -51,29 +50,59 @@ const StreamArea = ({
     [eventChannel, client]
   );
 
+  const [presenterName, setPresenterName] = useState<string>("");
+  const { setStreamStart } = useStartStream();
+  const { attachVideo, setSrc } = useHls(true, liveConfig);
+
+  const addHlsUrl = useCallback(
+    (message: PlaylistPlayableMessage): void => {
+      if (message.playlist_ready && !amIPresenter) {
+        setSrc(message.link);
+        setPresenterName(message.name);
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      } else {
+        setSrc("");
+        setPresenterName("");
+        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
+      }
+    },
+    [setSrc, setStreamStart, amIPresenter]
+  );
+
+  useEffect(() => {
+    if (eventChannel) {
+      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
+      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => {
+        addHlsUrl(message);
+      });
+    }
+  }, [eventChannel, addHlsUrl]);
+
   return (
     <div className="StreamArea">
       {device === "desktop" && (
         <ModePanel presenterName={presenterName} eventChannel={eventChannel} amIPresenter={amIPresenter} />
       )}
       <div className="Stream">
-        {amIPresenter ? (
-          <PresenterArea client={client} privateChannel={privateChannel} eventChannel={eventChannel} />
+        {amIPresenter && presenterToken ? (
+          <JellyfishContextProvider>
+            <PresenterArea client={client} eventChannel={eventChannel} presenterToken={presenterToken} />
+          </JellyfishContextProvider>
         ) : (
           <div className="HlsDiv">
             {presenterName ? (
               <>
                 <HlsPlayer
-                  attachVideo={attachVideo}
                   presenterName={presenterName}
                   eventChannel={eventChannel}
                   addMessage={undefined}
                   setCard={setCard}
+                  attachVideo={attachVideo}
                 />
                 {device === "mobile" && (
                   <MobileHlsBar
                     client={client}
-                    eventTitle={eventTitle}
+                    eventTitle={eventInfo.title}
                     amIPresenter={amIPresenter}
                     switchAsking={switchAsking}
                   />
@@ -98,7 +127,7 @@ const StreamArea = ({
             client={client}
             chatMessages={chatMessages}
             card={card}
-            eventTitle={eventTitle}
+            eventTitle={eventInfo.title}
             onBarClick={() => setCard("hidden")}
           />
         )}

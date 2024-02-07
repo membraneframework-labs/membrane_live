@@ -19,6 +19,10 @@ defmodule MembraneLiveWeb.EventChannel do
   alias MembraneLiveWeb.Presence
   alias Phoenix.Socket
 
+  ###
+  ### Jellyfish Lifecycle
+  ###
+
   @impl true
   def join("event:" <> id, %{"username" => name}, socket) do
     case webinar_exists(id) do
@@ -34,6 +38,7 @@ defmodule MembraneLiveWeb.EventChannel do
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(gen_key, id) do
           Presence.track(socket, gen_key, %{
             name: name,
+            email: gen_key,
             is_moderator: false,
             is_presenter: false,
             is_auth: false,
@@ -41,7 +46,7 @@ defmodule MembraneLiveWeb.EventChannel do
           })
 
           {:ok, %{generated_key: gen_key},
-           Phoenix.Socket.assign(socket, %{event_id: id, user_email: gen_key})}
+           Phoenix.Socket.assign(socket, %{event_id: id, email: gen_key})}
         end
 
       {:error, _error} ->
@@ -67,7 +72,6 @@ defmodule MembraneLiveWeb.EventChannel do
         :ets.insert_new(:presenters, {id, MapSet.new()})
         :ets.insert_new(:presenting_requests, {id, MapSet.new()})
         :ets.insert_new(:banned_from_chat, {id, MapSet.new()})
-        :ets.insert_new(:main_presenters, {id, MapSet.new()})
 
         EventService.user_joined(id)
 
@@ -79,24 +83,26 @@ defmodule MembraneLiveWeb.EventChannel do
                Socket.assign(socket, %{
                  is_moderator: is_moderator,
                  event_id: id,
-                 user_email: email
+                 email: email
                }),
              [] <- Presence.get_by_key(socket, email),
              {:ok, socket} <- create_event(socket),
              {:ok, is_presenter} <-
                check_if_presenter(
                  email,
-                 should_be_presenter && can_be_presenter(id, socket, email),
+                 should_be_presenter,
                  id
                ),
              {:ok, is_banned_from_chat} <- check_if_banned_from_chat(email, id),
              {:ok, is_request_presenting} <-
                check_if_request_presenting(email, requests_presenting, id) do
-          {:ok, socket} = if is_presenter, do: join_event(socket), else: {:ok, socket}
+          {is_presenter, socket, peer_token} =
+            maybe_join_event_on_startup(socket, email, id, is_presenter)
 
           {:ok, _ref} =
             Presence.track(socket, email, %{
               name: name,
+              email: email,
               is_moderator: is_moderator,
               is_presenter: is_presenter,
               is_request_presenting: is_request_presenting,
@@ -104,7 +110,7 @@ defmodule MembraneLiveWeb.EventChannel do
               is_banned_from_chat: is_banned_from_chat
             })
 
-          {:ok, %{is_moderator: is_moderator}, socket}
+          {:ok, %{is_moderator: is_moderator, token: peer_token}, socket}
         else
           %{metas: _presence} ->
             {:error,
@@ -134,26 +140,6 @@ defmodule MembraneLiveWeb.EventChannel do
     {:error, %{reason: "This link is wrong."}}
   end
 
-  defp can_be_presenter(id, socket, email) do
-    can_be_main_presenter(id, email) || get_number_of_basic_presenters(id, socket) < 2
-  end
-
-  defp can_be_main_presenter(id, email) do
-    stored_presenter = get_main_presenter(id)
-    is_nil(stored_presenter) || stored_presenter == email
-  end
-
-  defp get_number_of_basic_presenters(id, socket) do
-    main_presenter = get_main_presenter(id)
-
-    Presence.list(socket)
-    |> Enum.map(fn {email, %{metas: [meta | _rest]}} -> {email, meta} end)
-    |> Enum.filter(fn {email, %{is_presenter: is_presenter}} ->
-      is_presenter and email != main_presenter
-    end)
-    |> length()
-  end
-
   @impl true
   def terminate(_reason, %Socket{topic: "event:" <> id}) do
     EventService.user_left(id)
@@ -162,21 +148,9 @@ defmodule MembraneLiveWeb.EventChannel do
 
   def terminate(_reason, _socket), do: :ok
 
-  @impl true
-  def handle_info({:media_event, event}, socket) do
-    push(socket, "mediaEvent", %{data: event})
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_info(:endpoint_crashed, socket) do
-    push(socket, "error", %{
-      message: "WebRTC Endpoint has crashed. Please refresh the page to reconnect"
-    })
-
-    {:stop, :normal, socket}
-  end
+  ###
+  ### Channel Messages
+  ###
 
   def handle_in("finish_event", %{}, socket) do
     "event:" <> event_id = socket.topic
@@ -197,181 +171,47 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in(
-        "am_i_main_presenter",
-        %{"is_presenter" => is_presenter},
-        %{topic: "private:" <> topic_id} = socket
-      ) do
-    [id, email] = String.split(topic_id, ":")
-    {:ok, is_main_presenter} = check_if_main_presenter(email, is_presenter, id)
-    {:reply, {:ok, %{"main_presenter" => is_main_presenter}}, socket}
+  @impl true
+  def handle_in("isPlaylistPlayable", _data, socket) do
+    case EventService.playlist_playable?(socket.assigns.event_id) do
+      {:error, _reason} ->
+        {:noreply, socket}
+
+      response ->
+        {:reply, {:ok, response}, socket}
+    end
   end
+
+  def handle_in(
+        "last_viewer_answer",
+        %{"answer" => answer},
+        %{topic: "event:" <> event_id} = socket
+      ) do
+    case answer do
+      "leave" -> EventService.leave_response(event_id)
+      "stay" -> EventService.stay_response(event_id)
+    end
+
+    {:noreply, socket}
+  end
+
+  ######
+  ###### Chat Related
+  ######
 
   def handle_in("chat_message", %{"content" => content}, %{topic: "event:" <> event_id} = socket) do
-    email = socket.assigns.user_email
-    [user] = Presence.get_by_key(socket, email).metas
+    [user] = Presence.get_by_key(socket, socket.assigns.email).metas
 
-    unless user.is_banned_from_chat do
-      user = Map.put(user, :email, email)
-      message = Chats.add_chat_message(event_id, user, content)
-      broadcast(socket, "chat_message", message)
+    correct_user? = Enum.all?([:name, :is_auth, :is_presenter, :email], &Map.has_key?(user, &1))
+
+    cond do
+      correct_user? and not user.is_banned_from_chat ->
+        message = Chats.add_chat_message(event_id, user, content)
+        broadcast(socket, "chat_message", message)
+
+      not correct_user? ->
+        Logger.error("Incorrect user tried to send chat message")
     end
-
-    {:noreply, socket}
-  end
-
-  # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
-  # server (sends information to presenter) -> presenter (shows alert that it's been removed
-  # and sends message back) -> server (updates presenter in Presence)
-  # such design is caused by user Presence that can be updated only with its socket-channel combination
-  # (socket parameter in function below)
-  def handle_in("presenter_remove", %{"email" => email}, socket) do
-    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, false))
-
-    "event:" <> id = socket.topic
-    remove_from_presenters(email, id)
-    remove_from_main_presenters(email, id)
-
-    if Map.has_key?(socket.assigns, :peer_id),
-      do: EventService.remove_peer(socket.assigns.event_id, socket.assigns.peer_id)
-
-    {:noreply, socket}
-  end
-
-  def handle_in("presenter_remove", %{"presenterTopic" => presenter_topic}, socket) do
-    props =
-      presenter_topic
-      |> String.split(":")
-      |> List.last()
-      |> then(&Presence.get_by_key(socket, &1))
-
-    case props do
-      %{metas: [%{is_presenter: true}]} ->
-        MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
-
-      [] ->
-        raise "Error: Trying to remove presenter role from nonexistent participant"
-
-      %{metas: [%{}]} ->
-        raise "Error: Trying to remove presenter role from participant that is no a presenter"
-    end
-
-    {:noreply, socket}
-  end
-
-  def handle_in(
-        "presenter_prop",
-        %{
-          "moderatorTopic" => moderator_topic,
-          "presenterTopic" => presenter_topic,
-          "mainPresenter" => true
-        },
-        socket
-      ) do
-    "event:" <> id = socket.topic
-
-    main_presenter = get_main_presenter(id)
-
-    main_presenter =
-      if Presence.absent?(socket, main_presenter) do
-        remove_from_main_presenters(main_presenter, id)
-        nil
-      end
-
-    if is_nil(main_presenter) do
-      MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
-        moderator_topic: moderator_topic,
-        main_presenter: true
-      })
-    else
-      proposed_presenter =
-        presenter_topic
-        |> String.split(":")
-        |> List.last()
-
-      case proposed_presenter do
-        ^main_presenter ->
-          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
-            message: "This participant is already a main presenter."
-          })
-
-        _new_main_presenter ->
-          MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
-            message: "There can be only one main presenter."
-          })
-      end
-    end
-
-    {:noreply, socket}
-  end
-
-  def handle_in(
-        "presenter_prop",
-        %{
-          "moderatorTopic" => moderator_topic,
-          "presenterTopic" => presenter_topic,
-          "mainPresenter" => false
-        },
-        socket
-      ) do
-    "event:" <> id = socket.topic
-    number_of_basic_presenters = get_number_of_basic_presenters(id, socket)
-
-    if number_of_basic_presenters < 2 do
-      MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
-        moderator_topic: moderator_topic,
-        main_presenter: false
-      })
-    else
-      MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "error", %{
-        message: "There can be only two main presenters."
-      })
-    end
-
-    {:noreply, socket}
-  end
-
-  def handle_in(
-        "presenter_answer",
-        %{
-          "answer" => answer,
-          "email" => email,
-          "moderatorTopic" => moderator_topic,
-          "mainPresenter" => main_presenter?
-        },
-        socket
-      ) do
-    if answer == "accept" do
-      {:ok, _ref} =
-        Presence.update(
-          socket,
-          email,
-          &%{
-            &1
-            | is_presenter: true,
-              is_request_presenting: false
-          }
-        )
-
-      "event:" <> id = socket.topic
-      add_to_presenters(email, id)
-      if main_presenter?, do: add_to_main_presenters(email, id)
-      remove_from_presenting_requests(email, id)
-    else
-      {:ok, _ref} =
-        Presence.update(
-          socket,
-          email,
-          &%{&1 | is_request_presenting: false}
-        )
-    end
-
-    %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
-
-    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "presenter_answer", %{
-      :name => name,
-      :answer => answer
-    })
 
     {:noreply, socket}
   end
@@ -429,27 +269,141 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  def handle_in(
-        "presenter_ready",
-        %{"email" => _email},
-        socket
-      ) do
-    {:ok, socket} = join_event(socket)
+  ######
+  ###### Presenter Related
+  ######
+
+  # removing works in 4 stages: moderator (chooses presenter to remove and sends message) ->
+  # server (sends information to presenter) -> presenter (shows alert that it's been removed
+  # and sends message back) -> server (updates presenter in Presence)
+  # such design is caused by user Presence that can be updated only with its socket-channel combination
+  # (socket parameter in function below)
+  def handle_in("presenter_remove", %{"email" => email}, socket) do
+    {:ok, _ref} = Presence.update(socket, email, &Map.put(&1, :is_presenter, false))
+
+    "event:" <> id = socket.topic
+    remove_from_presenters(email, id)
+
+    if Map.has_key?(socket.assigns, :peer_id),
+      do: EventService.remove_peer(socket.assigns.event_id, socket.assigns.peer_id)
+
+    {:noreply, socket}
+  end
+
+  def handle_in("presenter_remove", %{"presenterTopic" => presenter_topic}, socket) do
+    props =
+      presenter_topic
+      |> String.split(":")
+      |> List.last()
+      |> then(&Presence.get_by_key(socket, &1))
+
+    case props do
+      %{metas: [%{is_presenter: true}]} ->
+        MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_remove", %{})
+
+      [] ->
+        raise "Error: Trying to remove presenter role from nonexistent participant"
+
+      %{metas: [%{}]} ->
+        raise "Error: Trying to remove presenter role from participant that is no a presenter"
+    end
 
     {:noreply, socket}
   end
 
   def handle_in(
-        "last_viewer_answer",
-        %{"answer" => answer},
-        %{topic: "event:" <> event_id} = socket
+        "presenter_prop",
+        %{
+          "moderatorTopic" => moderator_topic,
+          "presenterTopic" => presenter_topic
+        },
+        socket
       ) do
-    case answer do
-      "leave" -> EventService.leave_response(event_id)
-      "stay" -> EventService.stay_response(event_id)
-    end
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), presenter_topic, "presenter_prop", %{
+      moderator_topic: moderator_topic
+    })
 
     {:noreply, socket}
+  end
+
+  def handle_in(
+        "presenter_answer",
+        %{
+          "answer" => "accept",
+          "email" => email,
+          "moderatorTopic" => moderator_topic
+        },
+        socket
+      ) do
+    case join_event(socket) do
+      {:ok, socket, token} ->
+        {:ok, _ref} =
+          Presence.update(
+            socket,
+            email,
+            &%{
+              &1
+              | is_presenter: true,
+                is_request_presenting: false
+            }
+          )
+
+        "event:" <> id = socket.topic
+        add_to_presenters(email, id)
+        remove_from_presenting_requests(email, id)
+
+        %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
+
+        MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "presenter_answer", %{
+          :name => name,
+          :answer => "accept"
+        })
+
+        {:reply, {:ok, token}, socket}
+
+      {:error, reason} ->
+        {:ok, _ref} =
+          Presence.update(
+            socket,
+            email,
+            &%{&1 | is_request_presenting: false}
+          )
+
+        %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
+
+        MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "presenter_answer", %{
+          :name => name,
+          :answer => "reject"
+        })
+
+        {:reply, {:error, reason}, socket}
+    end
+  end
+
+  def handle_in(
+        "presenter_answer",
+        %{
+          "answer" => "reject",
+          "email" => email,
+          "moderatorTopic" => moderator_topic
+        },
+        socket
+      ) do
+    {:ok, _ref} =
+      Presence.update(
+        socket,
+        email,
+        &%{&1 | is_request_presenting: false}
+      )
+
+    %{metas: [%{name: name}]} = Presence.get_by_key(socket, email)
+
+    MembraneLiveWeb.Endpoint.broadcast_from!(self(), moderator_topic, "presenter_answer", %{
+      :name => name,
+      :answer => "reject"
+    })
+
+    {:reply, {:ok, nil}, socket}
   end
 
   def handle_in(
@@ -475,35 +429,35 @@ defmodule MembraneLiveWeb.EventChannel do
     {:noreply, socket}
   end
 
-  @impl true
-  def handle_in("mediaEvent", %{"data" => media_event}, socket) do
-    EventService.media_event(socket.assigns.event_id, socket.assigns.peer_id, media_event)
-    {:noreply, socket}
-  end
+  ###
+  ### Internal messeges
+  ###
 
   @impl true
-  def handle_in("isPlaylistPlayable", _data, socket) do
-    case EventService.playable_playlist(socket.assigns.event_id) do
-      {:error, _reason} ->
-        {:noreply, socket}
+  def handle_info(:endpoint_crashed, socket) do
+    push(socket, "error", %{
+      message: "WebRTC Endpoint has crashed. Please refresh the page to reconnect"
+    })
 
-      response ->
-        {:reply, {:ok, response}, socket}
-    end
+    {:stop, :normal, socket}
   end
+
+  ###
+  ### Private Functions
+  ###
 
   defp create_event(socket) do
     room_exists? = EventService.room_exists?(socket.assigns.event_id)
 
     case maybe_start_event(room_exists?, socket) do
-      {:error, :webinar_finished} ->
+      {:error, reason} ->
         Logger.error("""
         Failed to start room.
         Room: #{inspect(socket.assigns.event_id)}.
-        Reason: webinar is finished.
+        Reason: #{reason}.
         """)
 
-        {:error, %{reason: "failed to start event:  webinar is finished."}}
+        {:error, %{reason: reason}}
 
       _else ->
         {:ok, socket}
@@ -523,16 +477,33 @@ defmodule MembraneLiveWeb.EventChannel do
         EventService.start_room(socket.assigns.event_id)
 
       true ->
-        {:error, :non_moderator}
+        :non_moderator
     end
   end
 
   defp join_event(socket) do
-    peer_id = "#{UUID.uuid4()}"
+    case EventService.add_peer(socket.assigns.event_id) do
+      {:ok, peer_id, peer_token} ->
+        {:ok, Socket.assign(socket, %{peer_id: peer_id}), peer_token}
 
-    EventService.add_peer(socket.assigns.event_id, peer_id)
+      {:error, _reason} = error ->
+        error
+    end
+  end
 
-    {:ok, Socket.assign(socket, %{peer_id: peer_id})}
+  defp maybe_join_event_on_startup(socket, _email, _id, false) do
+    {false, socket, nil}
+  end
+
+  defp maybe_join_event_on_startup(socket, email, id, true) do
+    case join_event(socket) do
+      {:ok, socket, peer_token} ->
+        {true, socket, peer_token}
+
+      {:error, _reason} ->
+        remove_from_presenters(email, id)
+        {false, socket, nil}
+    end
   end
 
   defp webinar_exists(id) do

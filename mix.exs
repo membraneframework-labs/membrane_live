@@ -56,28 +56,17 @@ defmodule Membrane.Live.Mixfile do
       {:phoenix_pubsub, "~> 2.1"},
       {:phoenix_inline_svg, "~> 1.4"},
       {:phoenix_live_view, "~> 0.17.5"},
+      {:bunch, "~> 1.1"},
       {:bimap, "~> 1.2", override: true},
-      {:bundlex, "1.1.1", override: true},
       {:cowlib, "~> 2.11.0", override: true},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:esbuild, "~> 0.6", runtime: Mix.env() == :dev},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
 
-      # Otel
-      {:opentelemetry, "1.0.5"},
-      {:opentelemetry_api, "1.0.3"},
-      {:opentelemetry_zipkin, "1.0.0"},
-      {:opentelemetry_exporter, "1.0.4"},
-
-      # RTC Engine and Endpoints
-      {:membrane_rtc_engine, "~> 0.16.0"},
-      {:membrane_rtc_engine_webrtc, "~> 0.1.0"},
-      {:membrane_rtc_engine_hls, "~> 0.1.0"},
-
-      # HLS Endpoint optional deps
-      {:membrane_audio_mix_plugin, "~> 0.15.2"},
-      {:membrane_video_compositor_plugin, "0.5.2"}
+      # Jellyfish
+      {:jellyfish_server_sdk, "~> 0.3.0"}
     ]
   end
 

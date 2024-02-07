@@ -7,8 +7,7 @@ config :membrane_live, MembraneLive.Repo,
   password: "swm123",
   hostname: "localhost",
   database: "membrane_live_test",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+  pool: Ecto.Adapters.SQL.Sandbox
 
 config :membrane_live, MembraneLiveWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],

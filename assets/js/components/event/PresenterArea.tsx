@@ -1,143 +1,160 @@
-import { useEffect, useState } from "react";
-import { connectWebrtc, leaveWebrtc } from "../../utils/rtcUtils";
-import { syncPresenters } from "../../utils/channelUtils";
-import { useRerender } from "../../utils/reactUtils";
-import { WebRTCEndpoint } from "@jellyfish-dev/membrane-webrtc-js";
+import { Fragment, useEffect, useState } from "react";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
-import type {
-  User,
-  Client,
-  ClientStatus,
-  PeersState,
-  PresenterStream,
-  PresenterPropositionServer,
-} from "../../types/types";
+import type { Client, ClientStatus, SourceType, User } from "../../types/types";
 import "../../../css/event/presenterarea.css";
-import { sessionStorageGetIsPresenter } from "../../utils/storageUtils";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
+import { Track, TrackId, create } from "@jellyfish-dev/react-client-sdk";
+import { AUDIO_CONSTRAINTS, SCREEN_CONSTRAINTS, VIDEO_CONSTRAINTS } from "../../utils/const";
 
-const initialPeersState: PeersState = {
-  peers: {},
-  cameraTrack: undefined,
-  sourceIds: { audio: "", video: "" },
-  isScreenSharing: false,
-  isMainPresenter: false,
+const getTrack = (
+  sourceType: SourceType | "screenshare",
+  tracks: Record<TrackId, Track<TrackMetadata>>
+): {
+  isDisabled: boolean;
+  stream: MediaStream | null;
+} => {
+  const track = Object.values(tracks).find((track) => track.metadata?.type == sourceType);
+  return { isDisabled: !track?.metadata?.enabled, stream: track?.stream || null };
 };
-
-let webrtc: WebRTCEndpoint | null = null;
-let webrtcConnecting = false;
 
 type PresenterAreaProps = {
   client: Client;
-  privateChannel: Channel | undefined;
+  presenterToken: string;
   eventChannel: Channel | undefined;
 };
 
-const PresenterArea = ({ client, privateChannel, eventChannel }: PresenterAreaProps) => {
-  const [presenters, setPresenters] = useState<{ [key: string]: User }>({});
+export type TrackMetadata = { enabled: boolean; type: string };
+
+export const {
+  useSelector,
+  useDisconnect,
+  useConnect,
+  useCamera,
+  useSetupMedia,
+  useMicrophone,
+  useScreenshare,
+  JellyfishContextProvider,
+} = create<User, TrackMetadata>();
+
+const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaProps) => {
   const [clientStatus, setClientStatus] = useState<ClientStatus>("idle");
-  const [peersState, setPeersState] = useState<PeersState>(initialPeersState);
 
-  const rerender = useRerender();
+  useSetupMedia({
+    camera: {
+      trackConstraints: VIDEO_CONSTRAINTS,
+      defaultTrackMetadata: { type: "video", enabled: true },
+      autoStreaming: true,
+      preview: false,
+    },
+    microphone: {
+      trackConstraints: AUDIO_CONSTRAINTS,
+      defaultTrackMetadata: { type: "audio", enabled: true },
+      autoStreaming: true,
+      preview: false,
+    },
+    screenshare: {
+      trackConstraints: SCREEN_CONSTRAINTS,
+      defaultTrackMetadata: { type: "screenshare", enabled: true },
+      autoStreaming: true,
+      preview: false,
+    },
+    startOnMount: true,
+  });
 
-  const disconnectedPresenterStream: PresenterStream = { ...client, stream: new MediaStream() };
-
-  const getCurrentPresenterStream = () => {
-    return (
-      Object.values(peersState.peers).find(
-        (presenterStream: PresenterStream) => presenterStream.email == client.email
-      ) || disconnectedPresenterStream
-    );
-  };
-
-  const onPresenterReady = () => {
-    setClientStatus("connected");
-
-    eventChannel?.push("presenter_ready", {
-      email: client.email,
-    });
-  };
-
-  useEffect(() => {
-    if (privateChannel) {
-      const ref = privateChannel.on("presenter_prop", (message: PresenterPropositionServer) =>
-        setPeersState((prev) => {
-          return { ...prev, isMainPresenter: message.main_presenter };
-        })
-      );
-      privateChannel
-        .push("am_i_main_presenter", { is_presenter: sessionStorageGetIsPresenter() })
-        .receive("ok", (message: { main_presenter: boolean }) =>
-          setPeersState((prev) => {
-            return { ...prev, isMainPresenter: message.main_presenter };
-          })
-        );
-
-      return () => privateChannel?.off("presenter_prop", ref);
-    }
-  }, [privateChannel]);
+  const camera = useCamera();
+  const microphone = useMicrophone();
+  const screenshare = useScreenshare();
+  const peers = useSelector((state) => Object.values(state.remote));
+  const rawClient = useSelector((state) => state.connectivity.client);
 
   useEffect(() => {
-    const tryToConnectPresenter = !webrtcConnecting && webrtc == null && clientStatus == "connected";
-    const clientShouldDisconnect = (clientStatus == "idle" && webrtc != null) || clientStatus == "disconnected";
+    const cb = () => setClientStatus("connected");
+    rawClient?.on("joined", cb);
 
-    if (tryToConnectPresenter) {
-      webrtcConnecting = true;
-      connectWebrtc(eventChannel, client, setPeersState).then((value) => {
-        webrtc = value;
-        webrtcConnecting = false;
-      });
-    } else if (clientShouldDisconnect) {
-      leaveWebrtc(webrtc, client, eventChannel, setPeersState);
-      webrtc = null;
-    }
-  }, [presenters, clientStatus, eventChannel, client, setPeersState]);
+    return () => {
+      rawClient?.removeListener("joined", cb);
+    };
+  }, [setClientStatus, rawClient]);
 
-  useEffect(() => {
-    syncPresenters(eventChannel, setPresenters);
-  }, [eventChannel]);
-
-  const getRtcPlayer = (presenterStream: PresenterStream) => {
-    return (
-      <RtcPlayer
-        isMyself={client.email == presenterStream.email}
-        presenterStream={presenterStream}
-        key={presenterStream.email}
-      />
-    );
-  };
+  const connect = useConnect();
 
   return (
     <div className="PresenterArea">
       {clientStatus === "connected" ? (
-        <div className={`StreamsGrid Grid${Object.values(peersState.peers).length}`}>
+        <div className={`StreamsGrid Grid${Object.values(peers).length}`}>
           {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
-          {Object.values(peersState.peers).map((presenterStream) => {
-            return getRtcPlayer(presenterStream);
+          {Object.values(peers).map((peer) => {
+            const audio = getTrack("audio", peer.tracks);
+            const video = getTrack("video", peer.tracks);
+            const screenshare = getTrack("screenshare", peer.tracks);
+            console.log(screenshare.stream, "screeenshsare");
+
+            return (
+              <Fragment key={peer.id}>
+                {screenshare.stream && (
+                  <RtcPlayer
+                    isMyself={false}
+                    metadata={peer.metadata}
+                    videoStream={screenshare.stream || null}
+                    audioStream={null}
+                    isMuted={false}
+                    isCamDisabled={screenshare.isDisabled}
+                  />
+                )}
+                <RtcPlayer
+                  isMyself={false}
+                  metadata={peer.metadata}
+                  videoStream={video?.stream || null}
+                  audioStream={audio.stream || null}
+                  isMuted={audio.isDisabled}
+                  isCamDisabled={video.isDisabled}
+                />
+              </Fragment>
+            );
           })}
+          <RtcPlayer
+            isMyself={true}
+            metadata={client}
+            videoStream={camera.stream}
+            audioStream={microphone.stream}
+            isMuted={!microphone.enabled}
+            isCamDisabled={!camera.enabled}
+          />
+          {screenshare.stream && (
+            <RtcPlayer
+              isMyself={true}
+              metadata={client}
+              videoStream={screenshare.stream}
+              audioStream={null}
+              isMuted={false}
+              isCamDisabled={!screenshare.enabled}
+            />
+          )}
           {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
         </div>
       ) : clientStatus === "idle" ? (
-        getRtcPlayer(getCurrentPresenterStream())
+        <RtcPlayer
+          isMyself={true}
+          metadata={client}
+          videoStream={camera.stream}
+          audioStream={microphone.stream}
+          isMuted={!microphone.enabled}
+          isCamDisabled={!camera.enabled}
+        />
       ) : (
         <></>
       )}
       {clientStatus !== "disconnected" && (
-        <ControlPanel
-          client={client}
-          webrtc={webrtc}
-          eventChannel={eventChannel}
-          peersState={peersState}
-          setPeersState={setPeersState}
-          setClientStatus={setClientStatus}
-          rerender={rerender}
-        />
+        <ControlPanel client={client} eventChannel={eventChannel} setClientStatus={setClientStatus} />
       )}
       {clientStatus === "idle" && (
-        <button className="StartPresentingButton" onClick={onPresenterReady}>
+        <button
+          className="StartPresentingButton"
+          onClick={() => connect({ peerMetadata: client, token: presenterToken })}
+        >
           Start presenting
         </button>
       )}

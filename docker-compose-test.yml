@@ -1,0 +1,89 @@
+version: "3"
+
+services:
+  test:
+    image: hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.16.5
+    command: >
+      sh -c "cd app/ &&
+             mkdir -p priv && 
+             chmod +x ./scripts/key-gen.sh &&
+             apk add openssh &&
+             apk add git &&
+             mix local.hex --force &&
+             mix local.rebar --force &&
+             mix deps.get &&
+             mix deps.compile &&
+             mix ecto.create &&
+             mix ecto.migrate &&
+             ./scripts/key-gen.sh && 
+             mix test --warnings-as-errors"
+    environment:
+      POSTGRES_USER: swm
+      POSTGRES_PASSWORD: swm123
+      POSTGRES_HOST: membrane-live-db
+      JELLYFISH_ADDRESS: jellyfish:5002
+      GOOGLE_CLIENT_ID: m0cKiNgGo0g7eId2137-13371234567890.apps.google.id
+    volumes:
+      - .:/app
+    ports:
+      - "4000:4000"
+    depends_on:
+      membrane-live-db:
+        condition: service_started
+      jellyfish:
+        condition: service_healthy
+
+  membrane-live-db:
+    image: postgres:14.5-alpine
+    environment:
+      POSTGRES_USER: swm
+      POSTGRES_PASSWORD: swm123
+      POSTGRES_DB: live_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-q",
+          "-d",
+          "${POSTGRES_DB:-membrane_live_db}",
+          "-U",
+          "${POSTGRES_USER:-membrane}"
+        ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+
+  jellyfish:
+    image: "ghcr.io/jellyfish-dev/jellyfish:${TAG:-edge}"
+    container_name: jellyfish
+    restart: on-failure
+    healthcheck:
+      test: >
+        curl --fail -H "authorization: Bearer development" http://localhost:5002/room || exit 1
+      interval: 3s
+      retries: 2
+      timeout: 2s
+      start_period: 30s
+    environment:
+      JF_HOST: "jellyfish:5002"
+      JF_INTEGRATED_TURN_IP: "${INTEGRATED_TURN_IP:-127.0.0.1}"
+      JF_INTEGRATED_TURN_LISTEN_IP: "0.0.0.0"
+      JF_INTEGRATED_TURN_PORT_RANGE: "50000-50050"
+      JF_INTEGRATED_TCP_TURN_PORT: "49999"
+      JF_SERVER_API_TOKEN: "development"
+      JF_PORT: 5002
+    ports:
+      - "5002:5002"
+      - "49999:49999"
+      - "50000-50050:50000-50050/udp"
+
+volumes:
+  pgdata:

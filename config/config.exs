@@ -42,7 +42,6 @@ config :logger, :console,
   metadata: [:request_id, :event_id]
 
 config :membrane_live,
-  hls_output_mount_path: "output",
   empty_event_timeout_ms: 15 * 60 * 1000,
   last_peer_timeout_ms: 2 * 60 * 1000,
   response_timeout_ms: 2 * 60 * 1000

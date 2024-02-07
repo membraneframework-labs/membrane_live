@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Channel, Socket } from "phoenix";
 import { createEventChannel, createPrivateChannel, getChannelId, syncEventChannel } from "../utils/channelUtils";
 import Header from "../components/event/Header";
@@ -17,22 +17,13 @@ import { getErrorToast, lastPersonPopup, presenterPopup } from "../utils/toastUt
 import { useNavigate } from "react-router-dom";
 import NamePopup from "../components/event/NamePopup";
 import { getEventInfo, initEventInfo, redirectToHomePage } from "../utils/headerUtils";
-import { liveConfig, pageTitlePrefix } from "../utils/const";
+import { pageTitlePrefix } from "../utils/const";
 import { axiosWithInterceptor } from "../services";
 import Sidebar from "../components/event/Sidebar";
 import { useChatMessages } from "../utils/useChatMessages";
 import { ScreenTypeContext } from "../utils/ScreenTypeContext";
-import type {
-  Client,
-  EventInfo,
-  Participant,
-  PlaylistPlayableMessage,
-  PresenterProposition,
-  Toast,
-} from "../types/types";
+import type { Client, EventInfo, Participant, PresenterProposition, Toast } from "../types/types";
 import "../../css/event/event.css";
-import { useHls } from "../utils/useHls";
-import { useStartStream } from "../utils/StreamStartContext";
 import { syncAmIPresenter } from "../utils/modePanelUtils";
 
 const Event = () => {
@@ -54,12 +45,9 @@ const Event = () => {
   const [isBannedFromChat, setIsBannedFromChat] = useState(false);
 
   const [amIPresenter, setAmIPresenter] = useState<boolean>(false);
-  const [presenterName, setPresenterName] = useState<string>("");
+  const [presenterToken, setPresenterToken] = useState<string>();
 
   const { chatMessages, isChatLoaded } = useChatMessages(eventChannel);
-
-  const { attachVideo, setSrc } = useHls(true, liveConfig);
-  const { setStreamStart } = useStartStream();
 
   const socket = useRef(new Socket("/socket", { heartbeatIntervalMs: 5000 }));
   socket.current.connect();
@@ -92,6 +80,7 @@ const Event = () => {
             channel,
             setEventChannel,
             setClient,
+            setPresenterToken,
             navigate,
             (toast: Toast, timeout: number) =>
               lastPersonPopup(toast, channel, timeout, () => redirectToHomePage(navigate))
@@ -118,7 +107,8 @@ const Event = () => {
         channel,
         eventChannel,
         client,
-        (toast, message: PresenterProposition) => presenterPopup(toast, client, eventChannel, message),
+        (toast, message: PresenterProposition) =>
+          presenterPopup(toast, client, eventChannel, message, setPresenterToken),
         setPrivateChannel
       );
     }
@@ -130,29 +120,9 @@ const Event = () => {
     }
   }, [client.email, eventChannel]);
 
-  const addHlsUrl = useCallback(
-    (message: PlaylistPlayableMessage): void => {
-      const link = window.location.href.split("event")[0] + "video/";
-      if (message.playlist_idl) {
-        setSrc(`${link}${message.playlist_idl}/index.m3u8`);
-        setPresenterName(message.name);
-        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
-      } else {
-        setSrc("");
-        setPresenterName("");
-        if (setStreamStart) setStreamStart(new Date(Date.parse(message.start_time)));
-      }
-    },
-    [setSrc, setStreamStart]
-  );
-
   useEffect(() => {
-    if (eventChannel) {
-      eventChannel.on("playlistPlayable", (message) => addHlsUrl(message));
-      eventChannel.push("isPlaylistPlayable", {}).receive("ok", (message) => addHlsUrl(message));
-      syncAmIPresenter(eventChannel, setAmIPresenter, client);
-    }
-  }, [addHlsUrl, client, eventChannel]);
+    eventChannel && syncAmIPresenter(eventChannel, setAmIPresenter, client);
+  }, [client, eventChannel]);
 
   return (
     <div className="EventPage">
@@ -164,14 +134,12 @@ const Event = () => {
         <StreamArea
           client={client}
           amIPresenter={amIPresenter}
-          presenterName={presenterName}
           eventChannel={eventChannel}
-          privateChannel={privateChannel}
-          eventTitle={eventInfo.title}
+          eventInfo={eventInfo}
           chatMessages={chatMessages}
           isChatLoaded={isChatLoaded}
           isBannedFromChat={isBannedFromChat}
-          attachVideo={attachVideo}
+          presenterToken={presenterToken}
         />
         {screenType.device == "desktop" && (
           <Sidebar

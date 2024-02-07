@@ -12,7 +12,7 @@ const ConfettiAnimation = ({ eventChannel }: ConfettiAnimationProps) => {
   const confettiAnimationMessage = "animation_confetti";
 
   useEffect(() => {
-    let timeoutRef: number | null = null;
+    let timeoutRef: NodeJS.Timeout | null = null;
     const ref = eventChannel?.on(confettiAnimationMessage, () => {
       setIsRun(true);
       timeoutRef = setTimeout(() => setIsRun(false), 2_500);

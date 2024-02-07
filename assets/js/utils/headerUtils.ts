@@ -5,6 +5,7 @@ import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
 import { NavigateFunction } from "react-router-dom";
 import type { EventInfo, OriginalEventInfo, Toast } from "../types/types";
+import { AxiosResponse } from "axios";
 
 export const initEventInfo = (): EventInfo => {
   return {
@@ -77,3 +78,6 @@ export const redirectToHomePage = (navigate: NavigateFunction) => {
   // which is desired in this case, so the page is reloaded manually
   window.location.reload();
 };
+
+export const getRecordingLink = (): Promise<AxiosResponse<{ link: string }>> =>
+  axiosWithoutInterceptor.get(`/resources/recordings/link/` + getChannelId());
