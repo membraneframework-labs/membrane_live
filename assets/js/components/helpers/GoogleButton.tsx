@@ -3,6 +3,7 @@ import { useToast } from "@chakra-ui/react";
 import { pageTitlePrefix } from "../../utils/const";
 import { fetchTokenAndRedirect } from "../../utils/googleAuthUtils";
 import { CredentialResponse, GsiButtonConfiguration } from "google-one-tap";
+import { googleClientId } from "../../utils/const";
 import { Channel } from "phoenix";
 
 // currently GSI library is available only via script
@@ -26,7 +27,7 @@ const GoogleButton = ({ eventChannel, buttonId, options, className }: GoogleButt
     document.title = `${pageTitlePrefix} | Login`;
 
     google.accounts.id.initialize({
-      client_id: "1003639280735-i6pl1d6m7f70m4ml66hgbno54qdj4a7o.apps.googleusercontent.com",
+      client_id: googleClientId,
       ux_mode: "popup",
       callback: (response: CredentialResponse) => fetchTokenAndRedirect(response, eventChannel, toast),
     });
