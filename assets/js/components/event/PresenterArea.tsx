@@ -27,13 +27,13 @@ type PresenterAreaProps = {
   eventChannel: Channel | undefined;
 };
 
-const sourceTypeSchema = z.union([z.literal("screenshare"), z.union([z.literal("audio"), z.literal("video")])])
-export type SourceType = z.infer<typeof sourceTypeSchema>
+const sourceTypeSchema = z.union([z.literal("screenshare"), z.union([z.literal("audio"), z.literal("video")])]);
+export type SourceType = z.infer<typeof sourceTypeSchema>;
 
 const trackMetadataSchema = z.object({
   enabled: z.boolean(),
-  type: sourceTypeSchema
-})
+  type: sourceTypeSchema,
+});
 
 export type TrackMetadata = z.infer<typeof trackMetadataSchema>;
 
@@ -48,7 +48,7 @@ export const {
   JellyfishContextProvider,
 } = create<User, TrackMetadata>({
   peerMetadataParser: (obj) => userSchema.parse(obj),
-  trackMetadataParser: (obj) => trackMetadataSchema.parse(obj)
+  trackMetadataParser: (obj) => trackMetadataSchema.parse(obj),
 });
 
 const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaProps) => {
@@ -97,7 +97,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
     <div className="PresenterArea">
       {clientStatus === "connected" ? (
         <div className={`StreamsGrid Grid${Object.values(peers).length}`}>
-          {eventChannel && <ConfettiAnimation eventChannel={eventChannel}/>}
+          {eventChannel && <ConfettiAnimation eventChannel={eventChannel} />}
           {Object.values(peers).map((peer) => {
             const audio = getTrack("audio", peer.tracks);
             const video = getTrack("video", peer.tracks);
@@ -144,7 +144,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
               isCamDisabled={!screenshare.enabled}
             />
           )}
-          {eventChannel && <HeartAnimation eventChannel={eventChannel}/>}
+          {eventChannel && <HeartAnimation eventChannel={eventChannel} />}
         </div>
       ) : clientStatus === "idle" ? (
         <RtcPlayer
@@ -159,8 +159,7 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
         <></>
       )}
       {clientStatus !== "disconnected" && (
-        <ControlPanel client={client} eventChannel={eventChannel}
-                      setClientStatus={setClientStatus}/>
+        <ControlPanel client={client} eventChannel={eventChannel} setClientStatus={setClientStatus} />
       )}
       {clientStatus === "idle" && (
         <button

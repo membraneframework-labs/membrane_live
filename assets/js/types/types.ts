@@ -8,9 +8,9 @@ export type CardStatus = "hidden" | "share" | "chat";
 export const userSchema = z.object({
   name: z.string(),
   email: z.string(),
-})
+});
 
-export type User = z.infer<typeof userSchema>
+export type User = z.infer<typeof userSchema>;
 
 export interface Participant extends User {
   isPresenter: boolean;
@@ -113,4 +113,3 @@ export type PlaylistPlayableMessage = {
 export type PresenterProposition = {
   moderatorTopic: string;
 };
-
