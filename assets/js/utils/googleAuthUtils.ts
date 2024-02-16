@@ -2,9 +2,9 @@ import axios from "axios";
 import { Channel } from "phoenix";
 import { axiosWithInterceptor } from "../services";
 import { isUserAuthenticated } from "../services/jwtApi";
-import { storageSetJwt, storageSetName, storageSetEmail, sessionStorageSetPicture } from "../utils/storageUtils";
+import { storageSetJwt, storageSetName, storageSetEmail, sessionStorageSetPicture } from "./storageUtils";
 import { CredentialResponse } from "google-one-tap";
-import { getErrorToast } from "../utils/toastUtils";
+import { getErrorToast } from "./toastUtils";
 import type { Toast } from "../types/types";
 
 const fetchToken = async (googleResponse: CredentialResponse, toast: Toast) => {

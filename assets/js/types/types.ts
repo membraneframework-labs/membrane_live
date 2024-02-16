@@ -1,19 +1,16 @@
 import { useToast } from "@chakra-ui/react";
-
-export type Mode = "presenters" | "hls";
-
-export type SourceType = "audio" | "video";
-
-export type RtcStatus = "disconnected" | "connecting" | "rtc_player_ready";
+import { z } from "zod";
 
 export type ClientStatus = "idle" | "connected" | "disconnected";
 
 export type CardStatus = "hidden" | "share" | "chat";
 
-export interface User {
-  name: string;
-  email: string;
-}
+export const userSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+})
+
+export type User = z.infer<typeof userSchema>
 
 export interface Participant extends User {
   isPresenter: boolean;
@@ -23,27 +20,10 @@ export interface Participant extends User {
   isBannedFromChat: boolean;
 }
 
-export interface PresenterStream extends User {
-  isMicOn?: boolean;
-  isCamOn?: boolean;
-  stream: MediaStream;
-}
-
-export type PeersState = {
-  peers: { [key: string]: PresenterStream };
-  cameraTrack: MediaStreamTrack | undefined;
-  sourceIds: { audio: string; video: string };
-  isScreenSharing: boolean;
-};
-
 export interface Client extends User {
   isModerator: boolean;
   isAuthenticated: boolean;
 }
-
-export type LocationState = {
-  pathToReturnTo: string;
-};
 
 export type EventFormInput = {
   title: string;
@@ -134,7 +114,3 @@ export type PresenterProposition = {
   moderatorTopic: string;
 };
 
-export type PresenterPropositionServer = {
-  moderator_topic: string;
-  main_presenter: boolean;
-};

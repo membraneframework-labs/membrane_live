@@ -4,7 +4,7 @@ import type { User } from "../../types/types";
 import "../../../css/event/rtcplayer.css";
 
 type RtcPlayerProps = {
-  metadata: User | null;
+  metadata: User | undefined;
   audioStream: MediaStream | null;
   videoStream: MediaStream | null;
   isMyself: boolean;
