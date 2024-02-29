@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "outDir": "../priv/static",
     "strict": true,
-    "target": "es2017"
+    "target": "es2020"
   },
   "include": ["js"]
 }

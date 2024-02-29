@@ -1,6 +1,6 @@
 import { Channel, Presence } from "phoenix";
 import { axiosWithoutInterceptor } from "../services";
-import { getChannelId } from "../utils/channelUtils";
+import { getChannelId } from "./channelUtils";
 import { getErrorToast } from "./toastUtils";
 import { getEventResourcesType } from "./dashboardUtils";
 import { NavigateFunction } from "react-router-dom";

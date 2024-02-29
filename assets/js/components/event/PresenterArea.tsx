@@ -2,15 +2,16 @@ import { Fragment, useEffect, useState } from "react";
 import RtcPlayer from "./RtcPlayer";
 import ControlPanel from "./ControlPanel";
 import { Channel } from "phoenix";
-import type { Client, ClientStatus, SourceType, User } from "../../types/types";
+import { Client, ClientStatus, User, userSchema } from "../../types/types";
 import "../../../css/event/presenterarea.css";
 import HeartAnimation from "./animations/HeartAnimation";
 import ConfettiAnimation from "./animations/ConfettiAnimation";
-import { Track, TrackId, create } from "@jellyfish-dev/react-client-sdk";
+import { create, Track, TrackId } from "@jellyfish-dev/react-client-sdk";
 import { AUDIO_CONSTRAINTS, SCREEN_CONSTRAINTS, VIDEO_CONSTRAINTS } from "../../utils/const";
+import { z } from "zod";
 
 const getTrack = (
-  sourceType: SourceType | "screenshare",
+  sourceType: SourceType,
   tracks: Record<TrackId, Track<TrackMetadata>>
 ): {
   isDisabled: boolean;
@@ -26,7 +27,15 @@ type PresenterAreaProps = {
   eventChannel: Channel | undefined;
 };
 
-export type TrackMetadata = { enabled: boolean; type: string };
+const sourceTypeSchema = z.union([z.literal("screenshare"), z.union([z.literal("audio"), z.literal("video")])]);
+export type SourceType = z.infer<typeof sourceTypeSchema>;
+
+const trackMetadataSchema = z.object({
+  enabled: z.boolean(),
+  type: sourceTypeSchema,
+});
+
+export type TrackMetadata = z.infer<typeof trackMetadataSchema>;
 
 export const {
   useSelector,
@@ -37,7 +46,10 @@ export const {
   useMicrophone,
   useScreenshare,
   JellyfishContextProvider,
-} = create<User, TrackMetadata>();
+} = create<User, TrackMetadata>({
+  peerMetadataParser: (obj) => userSchema.parse(obj),
+  trackMetadataParser: (obj) => trackMetadataSchema.parse(obj),
+});
 
 const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaProps) => {
   const [clientStatus, setClientStatus] = useState<ClientStatus>("idle");
@@ -90,7 +102,6 @@ const PresenterArea = ({ client, presenterToken, eventChannel }: PresenterAreaPr
             const audio = getTrack("audio", peer.tracks);
             const video = getTrack("video", peer.tracks);
             const screenshare = getTrack("screenshare", peer.tracks);
-            console.log(screenshare.stream, "screeenshsare");
 
             return (
               <Fragment key={peer.id}>

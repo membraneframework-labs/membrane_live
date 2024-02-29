@@ -30,7 +30,7 @@ config :esbuild,
   version: "0.16.5",
   default: [
     args:
-      ~w(js/app.tsx --bundle  --loader:.svg=dataurl --target=es2017 --jsx=automatic --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+      ~w(js/app.tsx --bundle  --loader:.svg=dataurl --target=es2020 --jsx=automatic --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
